@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Solar do Espinhaço · Design System V3.3</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════ */
+:root {
+  --c-white:      #FFFFFF;
+  --c-cream:      #FAFAF9;
+  --c-s50:        #FAFAF9;
+  --c-s100:       #F5F5F4;
+  --c-s200:       #E7E5E4;
+  --c-s300:       #D6D3D1;
+  --c-s400:       #A8A29E;
+  --c-s500:       #78716C;
+  --c-s600:       #57534E;
+  --c-s700:       #44403C;
+  --c-s800:       #292423;
+  --c-s900:       #1C1917;
+  --c-pine:       #2C3E35;
+  --c-pine-deep:  #1C2922;
+  --c-pine-mid:   #3D5547;
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-italic:  'Instrument Serif', serif;
+  --ease-out:     cubic-bezier(0.2, 1, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+body { font-family: var(--font-sans); overflow-x: hidden; }
+h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
+::selection { background: var(--c-s900); color: #fff; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--c-s100); }
+::-webkit-scrollbar-thumb { background: var(--c-s300); border-radius: 99px; }
+
+/* ═══════════════════════════════════════
+   GLASS CLASSES (Jamaican Scape)
+═══════════════════════════════════════ */
+.glass-panel {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.glass-badge {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.glass-card {
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ═══════════════════════════════════════
+   TOP NAV · Jamaican Scape pattern
+   Padrão exato: transparente em repouso,
+   vidro verde-pine ao passar o mouse
+═══════════════════════════════════════ */
+.nav-top {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 50;
+  /* Transparente em repouso — sem fundo, sem blur */
+  background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: background 0.35s ease, backdrop-filter 0.35s ease, -webkit-backdrop-filter 0.35s ease, border-color 0.35s ease;
+}
+.nav-top:hover {
+  /* Pine green + vidro ao hover — identidade da marca */
+  background: rgba(44, 62, 53, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom-color: rgba(255,255,255,0.10);
+}
+.nav-top-inner {
+  max-width: 80rem; margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex; align-items: center;
+  height: 6rem;
+  gap: 1.5rem;
+}
+.nav-logo {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.6rem;
+  background: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  box-shadow: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.45);
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.35s ease;
+}
+.nav-top:hover .nav-logo {
+  background: rgba(255,255,255,0.12);
+}
+.nav-top:hover .nav-logo:hover {
+  background: rgba(255,255,255,0.22);
+}
+.nav-top a:not(.nav-logo):not(.nav-cta) {
+  font-size: 0.7rem; text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.40);
+  text-decoration: none; white-space: nowrap;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+.nav-top a:not(.nav-logo):not(.nav-cta):hover { color: #fff; }
+.nav-phone {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  color: rgba(255,255,255,0.88);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.40);
+  text-decoration: none; white-space: nowrap;
+  font-size: 0.82rem; letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+.nav-phone:hover { color: #fff; }
+.nav-cta {
+  background: #fff; color: var(--c-s900) !important;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 600; white-space: nowrap;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.nav-cta:hover { background: var(--c-s100); }
+
+/* ═══════════════════════════════════════
+   SPEC ROWS (Jamaican Scape)
+═══════════════════════════════════════ */
+.spec-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 140px;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #E7E5E4;
+  gap: 2rem;
+}
+.spec-row:hover { background: #FAFAF9; }
+.spec-label {
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: #78716C; font-family: var(--font-sans);
+}
+
+/* ═══════════════════════════════════════
+   SWATCHES (Jamaican Scape)
+═══════════════════════════════════════ */
+.swatch {
+  height: 80px; border-radius: 0.5rem;
+  border: 1px solid #D6D3D1;
+  display: flex; align-items: flex-end;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.65rem; font-weight: 500;
+}
+
+/* ═══════════════════════════════════════
+   COMPONENT CARDS (Jamaican Scape)
+═══════════════════════════════════════ */
+.component-card {
+  border: 1px solid #E7E5E4;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+.component-card h4 {
+  font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: #78716C; margin-bottom: 1.25rem;
+  font-family: var(--font-sans);
+}
+.button-variants { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+
+/* ═══════════════════════════════════════
+   ICON GRID (Jamaican Scape)
+═══════════════════════════════════════ */
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 1rem;
+}
+.icon-item {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 0.5rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid #E7E5E4; border-radius: 0.75rem;
+  text-align: center;
+  transition: all 0.25s var(--ease-out);
+  cursor: default;
+}
+.icon-item:hover {
+  border-color: var(--c-pine);
+  background: rgba(44,62,53,0.04);
+  transform: translateY(-2px);
+}
+.icon-item span { font-size: 0.62rem; color: #78716C; line-height: 1.3; }
+
+/* ═══════════════════════════════════════
+   SECTION HEADER (Jamaican Scape)
+═══════════════════════════════════════ */
+.section-header { margin-bottom: 2.5rem; }
+.section-header h2 {
+  font-size: 2.5rem; font-family: var(--font-serif);
+  color: #1C1917; margin-bottom: 0.5rem; line-height: 1;
+}
+.section-header p { font-size: 0.875rem; color: #78716C; line-height: 1.6; }
+
+/* ═══════════════════════════════════════
+   KEYFRAMES
+═══════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1;    transform: scale(1.06); }
+  50%       { opacity: 0.82; transform: scale(1);    }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-18px) rotate(2deg); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 0.65; transform: scale(1.12); }
+}
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+  50%       { transform: none;            animation-timing-function: cubic-bezier(0,0,0.2,1); }
+}
+@keyframes orb1 {
+  0%, 100% { transform: translate(0,0)        scale(1);    }
+  33%       { transform: translate(40px,-50px) scale(1.08); }
+  66%       { transform: translate(-30px,25px) scale(0.94); }
+}
+@keyframes orb2 {
+  0%, 100% { transform: translate(0,0)         scale(1);    }
+  33%       { transform: translate(-50px,30px)  scale(0.92); }
+  66%       { transform: translate(35px,-40px)  scale(1.06); }
+}
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ═══════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════ */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity 0.72s var(--ease-out), transform 0.72s var(--ease-out);
+}
+.reveal.visible  { opacity: 1; transform: translateY(0); }
+.reveal-left {
+  opacity: 0; transform: translateX(-28px);
+  transition: opacity 0.72s var(--ease-out), transform 0.72s var(--ease-out);
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+.reveal-scale {
+  opacity: 0; transform: scale(0.94);
+  transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
+}
+.reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+/* ═══════════════════════════════════════
+   HERO AMBIENT ORBS
+═══════════════════════════════════════ */
+.hero-orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); pointer-events: none;
+}
+
+/* ═══════════════════════════════════════
+   BUTTON SHIMMER
+═══════════════════════════════════════ */
+.btn-glow { position: relative; overflow: hidden; }
+.btn-glow::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.28) 50%, transparent 70%);
+  background-size: 200% 100%;
+  opacity: 0; transition: opacity 0.3s;
+}
+.btn-glow:hover::after { opacity: 1; animation: shimmer 0.6s ease forwards; }
+
+/* ═══════════════════════════════════════
+   TOOLTIP
+═══════════════════════════════════════ */
+.tooltip-wrap { position: relative; display: inline-flex; }
+.tooltip-box {
+  position: absolute; bottom: calc(100% + 10px);
+  left: 50%; transform: translateX(-50%) translateY(6px);
+  background: var(--c-pine); color: white;
+  font-size: 0.68rem; padding: 0.4rem 0.8rem;
+  border-radius: 0.35rem; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  letter-spacing: 0.02em; font-family: var(--font-sans);
+}
+.tooltip-box::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--c-pine);
+}
+.tooltip-wrap:hover .tooltip-box { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  z-index: 100; display: none;
+  align-items: center; justify-content: center;
+}
+.modal-backdrop.open { display: flex; animation: fadeIn 0.25s ease; }
+.modal-content {
+  background: white; border-radius: 1rem;
+  padding: 2rem; max-width: 480px; width: 90%;
+  animation: scaleIn 0.32s var(--ease-spring);
+  position: relative;
+}
+
+/* ═══════════════════════════════════════
+   MOTION DEMO
+═══════════════════════════════════════ */
+.motion-demo {
+  width: 100%; height: 90px;
+  border: 1px solid #E7E5E4; border-radius: 0.5rem;
+  margin-bottom: 1rem; background: #F5F5F4;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ═══════════════════════════════════════
+   PINE SECTION
+═══════════════════════════════════════ */
+.pine-section {
+  background: linear-gradient(135deg, var(--c-pine-deep) 0%, var(--c-pine) 50%, var(--c-pine-deep) 100%);
+}
+
+/* ═══════════════════════════════════════
+   TICKER
+═══════════════════════════════════════ */
+.ticker-wrap  { overflow: hidden; white-space: nowrap; }
+.ticker-inner { display: inline-flex; animation: marquee 30s linear infinite; }
+</style>
+</head>
+<body class="bg-stone-50 text-stone-600 antialiased">
+
+<!-- ═══════════════════════════════════════════════════
+     TOP NAV (Jamaican Scape pattern)
+═══════════════════════════════════════════════════ -->
+<nav class="nav-top" id="siteNav">
+  <div class="nav-top-inner">
+    <a href="#hero" class="nav-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" style="flex-shrink:0; opacity:0.92;">
+        <path d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2"/>
+      </svg>
+      <span>Solar do Espinhaço</span>
+    </a>
+    <div style="display:flex; align-items:center; gap:2rem; margin-left:1.5rem;">
+      <a href="#hero">Hero</a>
+      <a href="#typography">Tipografia</a>
+      <a href="#colors">Cores</a>
+      <a href="#components">Componentes</a>
+      <a href="#icons">Ícones</a>
+      <a href="#motion">Animações</a>
+    </div>
+    <span style="flex:1;"></span>
+    <div style="display:flex; align-items:center; gap:1.5rem;">
+      <a href="tel:+5531997552452" class="nav-phone">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 6s1.5.5 2.5 1.5S18 10 18 10M14.5 3S17 3.5 19.5 6S21 11 21 11M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.27-.27.67-.36 1.02-.24c1.12.37 2.33.57 3.58.57c.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C9.39 21 3 14.61 3 7c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1c0 1.25.2 2.45.57 3.57c.11.35.03.74-.24 1.02z"/>
+        </svg>
+        <span>+55 (31) 9975-5245</span>
+      </a>
+      <a href="icones.html" class="nav-cta">Reserve Agora</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 0 · HERO
+═══════════════════════════════════════════════════ -->
+<section id="hero" class="relative h-screen w-full overflow-hidden bg-stone-900">
+
+  <!-- Background image -->
+  <div class="absolute inset-0 z-0">
+    <img
+      src="assets/images/serra-hero.avif"
+      alt="Solar do Espinhaço | Lapinha da Serra"
+      class="w-full h-full object-cover opacity-55 scale-105"
+      style="animation: pulse 14s ease-in-out infinite;"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-transparent"></div>
+  </div>
+
+  <!-- Ambient orbs -->
+  <div class="hero-orb" style="width:560px;height:560px;top:-120px;right:-80px;
+    background:radial-gradient(circle,rgba(44,62,53,0.4) 0%,transparent 70%);
+    animation:orb1 20s ease-in-out infinite;"></div>
+  <div class="hero-orb" style="width:420px;height:420px;bottom:40px;left:-90px;
+    background:radial-gradient(circle,rgba(44,62,53,0.28) 0%,transparent 70%);
+    animation:orb2 24s ease-in-out infinite;"></div>
+  <div class="hero-orb" style="width:320px;height:320px;top:38%;right:22%;
+    background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);
+    animation:glowPulse 10s ease-in-out infinite;"></div>
+
+  <!-- Main grid -->
+  <div class="relative z-10 h-full max-w-7xl mx-auto px-6 pt-28 pb-10 flex flex-col justify-between">
+
+    <!-- Top row -->
+    <div class="flex justify-between items-start" style="animation: fadeDown 0.9s 0.1s ease both;">
+      <div class="glass-badge px-4 py-2 rounded-full flex items-center gap-2">
+        <iconify-icon icon="solar:star-shine-linear" width="11" class="text-white"></iconify-icon>
+        <span class="text-[9px] font-semibold tracking-[0.22em] uppercase text-white">Design System · V3.3</span>
+      </div>
+      <div class="glass-badge px-4 py-2 rounded-full hidden md:flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-emerald-400" style="animation:glowPulse 2s infinite;"></div>
+        <span class="text-[9px] font-medium tracking-widest uppercase text-stone-300">Lapinha da Serra · MG</span>
+      </div>
+    </div>
+
+    <!-- Center block: transparent text hero (Jamaican Scape signature) -->
+    <div class="flex flex-col lg:flex-row items-start lg:items-end gap-10">
+      <div class="flex-1">
+        <div style="animation: fadeUp 1s 0.25s ease both; opacity:0; animation-fill-mode:both;">
+          <span class="block text-stone-500 text-[10px] tracking-[0.38em] uppercase mb-5 pl-1">
+            Chalé · Lapinha da Serra · Minas Gerais
+          </span>
+          <!-- mix-blend-overlay = o lettering "transparente" do Jamaican Scape -->
+          <h1 class="leading-[0.82] tracking-tighter mix-blend-overlay" style="font-family:var(--font-serif);">
+            <span class="block text-white font-medium"
+                  style="font-size:clamp(4.5rem,11vw,9.5rem);">SOLAR DO</span>
+            <span class="block text-stone-100 font-light opacity-88"
+                  style="font-size:clamp(2.5rem,5.5vw,5rem); margin-left:clamp(2rem,6vw,7rem);">
+              ESPINHAÇO
+            </span>
+          </h1>
+        </div>
+        <div style="animation: fadeUp 1s 0.55s ease both; opacity:0; animation-fill-mode:both;">
+          <p class="text-stone-400 text-sm font-light leading-relaxed mt-6 max-w-sm">
+            Sistema de design completo — tipografia, cores, componentes e animações para a estadia em um chalé único na Serra do Espinhaço.
+          </p>
+        </div>
+      </div>
+
+      <!-- Floating info card (Jamaican Scape glass-panel) -->
+      <div class="hidden lg:block" style="animation: fadeUp 1s 0.7s ease both; opacity:0; animation-fill-mode:both;">
+        <div class="glass-panel rounded-2xl p-6 max-w-[230px]">
+          <div class="text-stone-500 text-[9px] uppercase tracking-[0.25em] mb-3 pb-3 border-b border-white/10">
+            Referência Completa
+          </div>
+          <div class="space-y-3.5">
+            <div class="flex items-center gap-2.5">
+              <iconify-icon icon="solar:palette-linear" width="14" class="text-stone-500"></iconify-icon>
+              <span class="text-stone-300 text-xs">Paleta de cores semântica</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <iconify-icon icon="solar:text-field-linear" width="14" class="text-stone-500"></iconify-icon>
+              <span class="text-stone-300 text-xs">Escala tipográfica H1–caption</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <iconify-icon icon="solar:widget-2-linear" width="14" class="text-stone-500"></iconify-icon>
+              <span class="text-stone-300 text-xs">8 categorias de componentes</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <iconify-icon icon="solar:star-angle-linear" width="14" class="text-stone-500"></iconify-icon>
+              <span class="text-stone-300 text-xs">Animações documentadas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: glass booking bar (Jamaican Scape pattern) -->
+    <div style="animation: fadeUp 1s 0.95s ease both; opacity:0; animation-fill-mode:both;">
+      <div class="glass-panel rounded-2xl md:rounded-full p-1.5 shadow-2xl shadow-black/35 w-full max-w-3xl mx-auto hover:-translate-y-1 transition-transform duration-300">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center">
+
+          <!-- Check-in -->
+          <div class="flex-1 px-5 py-3 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-l-full md:rounded-r-none border-b md:border-b-0 md:border-r border-white/[0.07]">
+            <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-0.5 group-hover:text-stone-400 transition-colors cursor-pointer">
+              <iconify-icon icon="solar:calendar-mark-linear" width="11"></iconify-icon>
+              Check-in
+            </label>
+            <div class="text-stone-100 text-sm font-medium">15 Junho, 2025</div>
+          </div>
+
+          <!-- Dot divider -->
+          <div class="hidden md:flex items-center px-2">
+            <div class="w-1 h-1 rounded-full bg-stone-700"></div>
+          </div>
+
+          <!-- Check-out -->
+          <div class="flex-1 px-5 py-3 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-none border-b md:border-b-0 md:border-r border-white/[0.07]">
+            <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-0.5 group-hover:text-stone-400 transition-colors cursor-pointer">
+              <iconify-icon icon="solar:calendar-mark-linear" width="11"></iconify-icon>
+              Check-out
+            </label>
+            <div class="text-stone-100 text-sm font-medium">18 Junho, 2025</div>
+          </div>
+
+          <!-- Guests -->
+          <div class="flex-1 px-5 py-3 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-none">
+            <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-0.5 group-hover:text-stone-400 transition-colors cursor-pointer">
+              <iconify-icon icon="solar:users-group-rounded-linear" width="11"></iconify-icon>
+              Hóspedes
+            </label>
+            <div class="text-stone-100 text-sm font-medium">2 Adultos, 1 Criança</div>
+          </div>
+
+          <!-- CTA -->
+          <div class="px-1.5 py-1.5 md:pr-1.5">
+            <button class="btn-glow w-full md:w-auto bg-stone-100 text-stone-900 rounded-full px-8 py-3.5 flex items-center justify-center gap-2 hover:bg-white transition-colors shadow-lg font-semibold text-xs tracking-widest uppercase">
+              Reservar
+              <iconify-icon icon="solar:arrow-right-linear" width="14"></iconify-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator (Jamaican Scape animate-bounce) -->
+  <div class="absolute bottom-8 left-8 hidden md:flex items-center gap-3"
+       style="animation: fadeIn 2s 1.8s ease both; opacity:0; animation-fill-mode:both;">
+    <div class="flex flex-col items-center gap-1" style="animation: bounce 2s infinite;">
+      <div class="h-10 w-[1px] bg-gradient-to-b from-stone-500 to-transparent"></div>
+      <iconify-icon icon="solar:alt-arrow-down-linear" width="12" class="text-stone-500"></iconify-icon>
+    </div>
+    <span class="text-[9px] uppercase tracking-[0.28em] text-stone-600"
+          style="-webkit-writing-mode:vertical-rl; writing-mode:vertical-rl; transform:rotate(180deg);">Explorar</span>
+  </div>
+
+</section>
+
+<!-- ── MARQUEE TICKER (Jamaican Scape) ── -->
+<div class="ticker-wrap bg-stone-900 py-3">
+  <div class="ticker-inner">
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Check-in / Check-out</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Tipografia Cormorant Garamond</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Glassmorphism</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Paleta Forest &amp; Stone</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Iconify Solar</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Scroll Reveal</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Lapinha da Serra · MG</span>
+    <!-- duplicate for seamless loop -->
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Solar do Espinhaço</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Tipografia Cormorant Garamond</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Glassmorphism</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Paleta Forest &amp; Stone</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Iconify Solar</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Scroll Reveal</span>
+    <span class="text-[9px] uppercase tracking-[0.25em] text-stone-600 px-8">★ Mix-blend-overlay</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 1 · TYPOGRAPHY
+═══════════════════════════════════════════════════ -->
+<section id="typography" class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="section-header reveal">
+      <h2>Tipografia</h2>
+      <p>Famílias tipográficas, escala, pesos, entrelinha e letter-spacing especificados por função.</p>
+    </div>
+
+    <!-- Font families -->
+    <div class="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
+      <div class="border border-stone-200 rounded-xl p-7">
+        <div class="spec-label mb-2">Fonte Display · Headings</div>
+        <p class="text-xs text-stone-500 mb-3">CDN Google Fonts · Cormorant Garamond</p>
+        <div style="font-family:var(--font-serif); font-size:2.5rem; font-weight:500; color:#1C1917;" class="mb-1">
+          Cormorant Garamond
+        </div>
+        <div style="font-family:var(--font-serif); font-size:1.6rem; font-style:italic; font-weight:300; color:#A8A29E;" class="mb-3">
+          Italic &amp; Light Variant
+        </div>
+        <p class="text-xs text-stone-400">Pesos: 300 · 400 · 500 · 600 · italic 300 · italic 400</p>
+      </div>
+      <div class="border border-stone-200 rounded-xl p-7">
+        <div class="spec-label mb-2">Fonte Body · UI</div>
+        <p class="text-xs text-stone-500 mb-3">CDN Google Fonts · Inter</p>
+        <div style="font-family:var(--font-sans); font-size:2.5rem; font-weight:400; color:#1C1917;" class="mb-1">
+          Inter
+        </div>
+        <div style="font-family:var(--font-sans); font-size:1.4rem; font-weight:300; color:#A8A29E;" class="mb-3">
+          Light — legibilidade máxima
+        </div>
+        <p class="text-xs text-stone-400">Pesos: 200 · 300 · 400 · 500 · 600 · 700</p>
+      </div>
+    </div>
+
+    <!-- Type scale -->
+    <div class="overflow-hidden reveal">
+      <div class="bg-stone-50 px-6 py-3 border-b border-stone-200">
+        <span class="spec-label">Escala Tipográfica Completa</span>
+      </div>
+
+      <!-- H1 -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">H1 · Display Hero</div>
+          <div style="font-family:var(--font-serif); font-size:clamp(3rem,5.5vw,5rem); font-weight:500; color:#1C1917; letter-spacing:-0.04em; line-height:0.86;">
+            Solar do Espinhaço
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Hero sections · mix-blend-overlay</p>
+          <p class="text-xs text-stone-400 font-mono">letter-spacing: -0.04em · lh: 0.82</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">56–96px<br/>Serif 500<br/>lh 0.82</div>
+      </div>
+
+      <!-- H2 -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">H2 · Section Title</div>
+          <div style="font-family:var(--font-serif); font-size:2.25rem; font-weight:500; color:#1C1917; letter-spacing:-0.02em; line-height:1.1;">
+            Refúgio na Serra
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Cabeçalhos de seção</p>
+          <p class="text-xs text-stone-400 font-mono">letter-spacing: -0.02em</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">36px<br/>Serif 500<br/>lh 1.1</div>
+      </div>
+
+      <!-- H3 -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">H3 · Card Title</div>
+          <div style="font-family:var(--font-sans); font-size:1.5rem; font-weight:500; color:#1C1917; letter-spacing:-0.01em;">
+            Chalé Único · Vista Serra
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Títulos de cards e painéis</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">24px<br/>Sans 500<br/>lh 1.25</div>
+      </div>
+
+      <!-- H4 -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">H4 · Subsection</div>
+          <div style="font-family:var(--font-sans); font-size:1.125rem; font-weight:500; color:#1C1917;">
+            Café da Manhã Mineiro
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Subtítulos, labels de card</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">18px<br/>Sans 500<br/>lh 1.4</div>
+      </div>
+
+      <!-- Body lg -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">Body Large</div>
+          <div style="font-family:var(--font-sans); font-size:1rem; font-weight:400; color:#57534E; line-height:1.65; max-width:28rem;">
+            O Solar do Espinhaço é um chalé único na Lapinha da Serra — trilhas, cachoeiras e gastronomia mineira a poucos passos da varanda.
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Parágrafos principais, chamadas</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">16px<br/>Sans 400<br/>lh 1.65</div>
+      </div>
+
+      <!-- Body -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">Body Regular</div>
+          <div style="font-family:var(--font-sans); font-size:0.875rem; font-weight:400; color:#57534E; line-height:1.55; max-width:28rem;">
+            Ambiente acolhedor com vistas para a Serra do Espinhaço. Ideal para casais e pequenas famílias.
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Descrições, conteúdo geral</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">14px<br/>Sans 400<br/>lh 1.55</div>
+      </div>
+
+      <!-- Body sm -->
+      <div class="spec-row">
+        <div>
+          <div class="spec-label mb-2">Body Small · Label</div>
+          <div style="font-family:var(--font-sans); font-size:0.75rem; font-weight:400; color:#78716C; letter-spacing:0.08em; text-transform:uppercase;">
+            Wi-Fi · Café · Piscina · Pet Friendly · Spa
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Tags, amenidades, labels de UI</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">12px<br/>Sans 400<br/>ls 0.08em</div>
+      </div>
+
+      <!-- Caption -->
+      <div class="spec-row" style="border-bottom:none;">
+        <div>
+          <div class="spec-label mb-2">Caption · Eyebrow</div>
+          <div style="font-family:var(--font-sans); font-size:0.625rem; font-weight:400; color:#A8A29E; letter-spacing:0.32em; text-transform:uppercase;">
+            Lapinha da Serra · Minas Gerais · Brasil
+          </div>
+        </div>
+        <div class="hidden md:block">
+          <p class="text-xs text-stone-500 mb-1">Eyebrows, metadados, localização</p>
+        </div>
+        <div class="text-right text-xs text-stone-500">10px<br/>Sans 400<br/>ls 0.32em</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 2 · COLORS
+═══════════════════════════════════════════════════ -->
+<section id="colors" class="py-24 bg-stone-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="section-header reveal">
+      <h2>Sistema de Cores</h2>
+      <p>Paleta completa com hex, RGB, HSL e regras de uso semântico.</p>
+    </div>
+
+    <!-- Pine brand color -->
+    <div class="mb-12 reveal">
+      <h3 class="spec-label mb-5">Cor da Marca · Pine Forest</h3>
+      <div class="rounded-xl overflow-hidden border border-stone-200">
+        <div class="h-36 flex items-end p-6"
+             style="background:linear-gradient(135deg,#1C2922,#2C3E35,#3D5547);">
+          <div>
+            <div class="text-white font-medium mb-1" style="font-family:var(--font-serif); font-size:1.75rem;">Pine Forest</div>
+            <div class="text-stone-400 text-xs font-mono">#2C3E35 · rgb(44,62,53) · hsl(158°,17%,21%)</div>
+          </div>
+        </div>
+        <div class="bg-white p-5 grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div>
+            <div class="spec-label mb-1">Papel Semântico</div>
+            <p class="text-xs text-stone-600 leading-relaxed">Substitui o preto; fundos escuros premium, texto principal em dark mode</p>
+          </div>
+          <div>
+            <div class="spec-label mb-1">Uso · Texto</div>
+            <p class="text-xs text-stone-600 leading-relaxed">Títulos sobre fundo claro, corpo elegante</p>
+          </div>
+          <div>
+            <div class="spec-label mb-1">Uso · Background</div>
+            <p class="text-xs text-stone-600 leading-relaxed">Navbars, footers, hero overlays, seções escuras</p>
+          </div>
+          <div>
+            <div class="spec-label mb-1">Contraste</div>
+            <p class="text-xs text-stone-600 leading-relaxed">AA ✓ sobre branco · AAA ✓ texto branco sobre pine</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stone palette -->
+    <div class="mb-12 reveal">
+      <h3 class="spec-label mb-5">Paleta Stone · Neutros</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div><div class="swatch" style="background:#FAFAF9;color:#78716C;border:1px solid #e7e5e4;">50</div><div class="spec-label mt-2 block">stone-50</div><div class="text-[10px] text-stone-400">#FAFAF9</div><div class="text-[9px] text-stone-300">hsl(60°,7%,98%)</div></div>
+        <div><div class="swatch" style="background:#F5F5F4;color:#78716C;border:1px solid #e7e5e4;">100</div><div class="spec-label mt-2 block">stone-100</div><div class="text-[10px] text-stone-400">#F5F5F4</div><div class="text-[9px] text-stone-300">hsl(60°,3%,96%)</div></div>
+        <div><div class="swatch" style="background:#E7E5E4;color:#78716C;">200</div><div class="spec-label mt-2 block">stone-200</div><div class="text-[10px] text-stone-400">#E7E5E4</div><div class="text-[9px] text-stone-300">hsl(30°,4%,90%)</div></div>
+        <div><div class="swatch" style="background:#D6D3D1;color:#44403C;">300</div><div class="spec-label mt-2 block">stone-300</div><div class="text-[10px] text-stone-400">#D6D3D1</div><div class="text-[9px] text-stone-300">hsl(30°,4%,83%)</div></div>
+        <div><div class="swatch" style="background:#A8A29E;color:#fff;">400</div><div class="spec-label mt-2 block">stone-400</div><div class="text-[10px] text-stone-400">#A8A29E</div><div class="text-[9px] text-stone-300">hsl(30°,4%,64%)</div></div>
+        <div><div class="swatch" style="background:#78716C;color:#fff;">500</div><div class="spec-label mt-2 block">stone-500</div><div class="text-[10px] text-stone-400">#78716C</div><div class="text-[9px] text-stone-300">hsl(30°,5%,45%)</div></div>
+        <div><div class="swatch" style="background:#57534E;color:#fff;">600</div><div class="spec-label mt-2 block">stone-600</div><div class="text-[10px] text-stone-400">#57534E</div><div class="text-[9px] text-stone-300">hsl(30°,5%,33%)</div></div>
+        <div><div class="swatch" style="background:#44403C;color:#fff;">700</div><div class="spec-label mt-2 block">stone-700</div><div class="text-[10px] text-stone-400">#44403C</div><div class="text-[9px] text-stone-300">hsl(30°,6%,25%)</div></div>
+        <div><div class="swatch" style="background:#292423;color:#fff;">800</div><div class="spec-label mt-2 block">stone-800</div><div class="text-[10px] text-stone-400">#292423</div><div class="text-[9px] text-stone-300">hsl(10°,6%,15%)</div></div>
+        <div><div class="swatch" style="background:#1C1917;color:#fff;">900</div><div class="spec-label mt-2 block">stone-900</div><div class="text-[10px] text-stone-400">#1C1917</div><div class="text-[9px] text-stone-300">hsl(20°,9%,10%)</div></div>
+      </div>
+    </div>
+
+    <!-- Opacity variants -->
+    <div class="mb-12 reveal">
+      <h3 class="spec-label mb-5">Variantes de Opacidade · Pine #2C3E35</h3>
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div><div class="swatch" style="background:rgba(44,62,53,1);color:#fff;">100%</div><div class="spec-label mt-2 block">Pine 100</div><div class="text-[10px] text-stone-400">rgba(44,62,53,1)</div></div>
+        <div><div class="swatch" style="background:rgba(44,62,53,0.75);color:#fff;">75%</div><div class="spec-label mt-2 block">Pine 75</div><div class="text-[10px] text-stone-400">rgba(44,62,53,.75)</div></div>
+        <div><div class="swatch" style="background:rgba(44,62,53,0.5);color:#1C1917;">50%</div><div class="spec-label mt-2 block">Pine 50</div><div class="text-[10px] text-stone-400">rgba(44,62,53,.5)</div></div>
+        <div><div class="swatch" style="background:rgba(44,62,53,0.25);color:#1C1917;border:1px solid #e7e5e4;">25%</div><div class="spec-label mt-2 block">Pine 25</div><div class="text-[10px] text-stone-400">rgba(44,62,53,.25)</div></div>
+        <div><div class="swatch" style="background:rgba(44,62,53,0.08);color:#78716C;border:1px solid #e7e5e4;">8%</div><div class="spec-label mt-2 block">Pine 8</div><div class="text-[10px] text-stone-400">rgba(44,62,53,.08)</div></div>
+      </div>
+    </div>
+
+    <!-- Semantic roles -->
+    <div class="mb-12 reveal">
+      <h3 class="spec-label mb-5">Papéis Semânticos</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Primary · Pine</div>
+          <div class="flex gap-2 mb-3">
+            <div class="w-10 h-10 rounded-lg" style="background:#2C3E35;"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:rgba(44,62,53,0.5);"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:rgba(44,62,53,0.12); border:1px solid #e7e5e4;"></div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed">CTAs, navbar escura, footer, bordas de destaque, hover states</p>
+        </div>
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Neutral · Stone</div>
+          <div class="flex gap-2 mb-3">
+            <div class="w-10 h-10 rounded-lg" style="background:#1C1917;"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:#78716C;"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:#F5F5F4; border:1px solid #e7e5e4;"></div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed">Textos, fundos neutros, bordas, separadores, placeholders</p>
+        </div>
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Glass · Overlay</div>
+          <div class="flex gap-2 mb-3">
+            <div class="w-10 h-10 rounded-lg" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(8px);"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);"></div>
+            <div class="w-10 h-10 rounded-lg" style="background:rgba(0,0,0,0.45);"></div>
+          </div>
+          <p class="text-xs text-stone-500 leading-relaxed">glass-badge, glass-panel, glass-card · sempre sobre imagens ou fundo escuro</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gradients -->
+    <div class="reveal">
+      <h3 class="spec-label mb-5">Gradientes</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Hero Overlay</div>
+          <div class="h-20 rounded-lg mb-3 bg-gradient-to-b from-black/50 via-transparent to-black/80"></div>
+          <p class="text-xs text-stone-400 font-mono text-[10px]">from-black/50 via-transparent to-black/80</p>
+        </div>
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Pine Dark Section</div>
+          <div class="h-20 rounded-lg mb-3" style="background:linear-gradient(135deg,#1C2922,#2C3E35,#3D5547);"></div>
+          <p class="text-xs text-stone-400 font-mono text-[10px]">#1C2922 → #2C3E35 → #3D5547</p>
+        </div>
+        <div class="border border-stone-200 rounded-xl p-5 bg-white">
+          <div class="spec-label mb-3">Image Scrim (card bottom)</div>
+          <div class="h-20 rounded-lg mb-3 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent"></div>
+          <p class="text-xs text-stone-400 font-mono text-[10px]">from-stone-900/90 to-transparent</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 3 · UI COMPONENTS
+═══════════════════════════════════════════════════ -->
+<section id="components" class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="section-header reveal">
+      <h2>Componentes UI</h2>
+      <p>Biblioteca completa com estados interativos, animações e especificações de construção.</p>
+    </div>
+
+    <!-- ── BUTTONS ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Botões</h3>
+      <div class="component-card reveal">
+        <h4>Variantes · Fundo Claro</h4>
+        <div class="button-variants mb-8">
+          <button class="btn-glow bg-stone-900 text-white px-7 py-3 text-xs tracking-widest uppercase font-semibold hover:bg-stone-700 transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+            Reservar Agora
+          </button>
+          <button class="btn-glow text-white px-7 py-3 text-xs tracking-widest uppercase font-semibold transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5" style="background:#2C3E35;">
+            Ver Disponibilidade
+          </button>
+          <button class="btn-glow bg-stone-100 text-stone-900 rounded-full px-6 py-3 flex items-center gap-2 hover:bg-stone-900 hover:text-white transition-all duration-300 shadow-sm">
+            <span class="text-xs tracking-widest uppercase font-semibold">Ver Quartos</span>
+            <iconify-icon icon="solar:arrow-right-linear" width="14"></iconify-icon>
+          </button>
+          <button class="text-xs tracking-widest uppercase text-stone-900 border border-stone-300 px-7 py-3 hover:bg-stone-900 hover:text-white hover:border-stone-900 transition-all duration-300">
+            Saiba Mais
+          </button>
+          <button class="text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors duration-200 flex items-center gap-1.5">
+            Ver Galeria <iconify-icon icon="solar:arrow-right-up-linear" width="12"></iconify-icon>
+          </button>
+        </div>
+
+        <!-- Glass buttons -->
+        <div class="rounded-xl p-5 mb-5" style="background:linear-gradient(135deg,#1C2922,#2C3E35);">
+          <div class="spec-label mb-4" style="color:rgba(255,255,255,0.3);">Variantes · Fundo Escuro</div>
+          <div class="button-variants">
+            <button class="glass-badge px-6 py-3 rounded-full text-white text-xs tracking-widest uppercase font-medium hover:bg-white/20 transition-colors flex items-center gap-2">
+              <iconify-icon icon="solar:calendar-mark-linear" width="14"></iconify-icon>
+              Check-in
+            </button>
+            <button class="glass-panel px-6 py-3 rounded-full text-stone-300 text-xs tracking-widest uppercase hover:bg-white/10 transition-colors">
+              Ver Detalhes
+            </button>
+            <button class="bg-white text-stone-900 rounded-full px-6 py-3 text-xs tracking-widest uppercase font-semibold hover:bg-stone-100 transition-colors shadow-lg btn-glow">
+              Reservar
+            </button>
+          </div>
+        </div>
+
+        <!-- Specs -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-stone-50 rounded-lg p-3">
+            <div class="spec-label mb-1">Padding</div>
+            <p class="text-xs text-stone-600">V: 12–16px · H: 28–32px</p>
+          </div>
+          <div class="bg-stone-50 rounded-lg p-3">
+            <div class="spec-label mb-1">Texto</div>
+            <p class="text-xs text-stone-600">10–12px · 600 · uppercase · ls 0.1em</p>
+          </div>
+          <div class="bg-stone-50 rounded-lg p-3">
+            <div class="spec-label mb-1">Hover</div>
+            <p class="text-xs text-stone-600">transition 300ms · -translate-y-0.5</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INPUTS ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Inputs</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Email subscription (Jamaican Scape) -->
+        <div class="component-card reveal">
+          <h4>Input de Assinatura</h4>
+          <form class="flex flex-col sm:flex-row gap-0 sm:border-b border-stone-300 pb-1">
+            <input class="bg-transparent py-3 px-2 w-full outline-none text-stone-900 placeholder-stone-400 text-sm border-b sm:border-0 border-stone-300 mb-4 sm:mb-0 focus:border-stone-600 transition-colors"
+                   placeholder="Seu e-mail" type="email"/>
+            <button class="whitespace-nowrap py-3 px-6 text-xs uppercase tracking-widest text-stone-900 hover:text-stone-500 transition-colors font-medium" type="submit">
+              Assinar
+            </button>
+          </form>
+        </div>
+
+        <!-- Booking glass -->
+        <div class="component-card reveal" style="background:#1C2922; border-color:#2C3E35;">
+          <h4 style="color:rgba(255,255,255,0.3);">Input de Reserva (Glass)</h4>
+          <div class="space-y-3">
+            <div class="glass-panel rounded-xl px-4 py-3 focus-within:border-white/30 transition-all">
+              <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-stone-500 mb-0.5">
+                <iconify-icon icon="solar:calendar-mark-linear" width="10"></iconify-icon>
+                Check-in
+              </label>
+              <input type="text" value="15 Junho, 2025" class="bg-transparent text-stone-100 text-sm outline-none w-full"/>
+            </div>
+            <div class="glass-panel rounded-xl px-4 py-3">
+              <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-stone-500 mb-0.5">
+                <iconify-icon icon="solar:calendar-mark-linear" width="10"></iconify-icon>
+                Check-out
+              </label>
+              <input type="text" value="18 Junho, 2025" class="bg-transparent text-stone-100 text-sm outline-none w-full"/>
+            </div>
+            <div class="glass-panel rounded-xl px-4 py-3">
+              <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-wider text-stone-500 mb-0.5">
+                <iconify-icon icon="solar:users-group-rounded-linear" width="10"></iconify-icon>
+                Hóspedes
+              </label>
+              <input type="text" value="2 Adultos, 1 Criança" class="bg-transparent text-stone-100 text-sm outline-none w-full"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARDS ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Cards</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- Room card -->
+        <div class="reveal-scale border border-stone-200 rounded-xl overflow-hidden group hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5">
+          <div class="relative overflow-hidden">
+            <img src="assets/images/chale-interior.avif"
+                 alt="Suíte" class="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <div class="absolute top-3 left-3">
+              <div class="glass-badge px-2.5 py-1 rounded-full">
+                <span class="text-[9px] font-semibold uppercase tracking-wider text-white">Disponível</span>
+              </div>
+            </div>
+          </div>
+          <div class="p-5">
+            <h4 class="text-stone-900 font-medium mb-1.5" style="font-family:var(--font-serif); font-size:1.25rem;">Chalé Vista Serra</h4>
+            <p class="text-xs text-stone-500 mb-4 leading-relaxed">Vista panorâmica, cama king, banheira de imersão e varanda privativa.</p>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex items-center gap-1 text-stone-400">
+                <iconify-icon icon="solar:bed-linear" width="13"></iconify-icon>
+                <span class="text-[10px]">King</span>
+              </div>
+              <div class="flex items-center gap-1 text-stone-400">
+                <iconify-icon icon="solar:bath-linear" width="13"></iconify-icon>
+                <span class="text-[10px]">Banheira</span>
+              </div>
+              <div class="flex items-center gap-1 text-stone-400">
+                <iconify-icon icon="solar:wifi-square-linear" width="13"></iconify-icon>
+                <span class="text-[10px]">Wi-Fi</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-stone-400">A partir de</span>
+                <div class="text-stone-900 font-semibold text-sm">R$ 650 <span class="text-stone-400 font-normal text-xs">/noite</span></div>
+              </div>
+              <button class="text-[10px] tracking-widest uppercase text-stone-900 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                Reservar <iconify-icon icon="solar:alt-arrow-right-linear" width="10"></iconify-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info card (Jamaican Scape style) -->
+        <div class="reveal-scale border border-stone-200 rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
+          <div class="flex justify-between items-start mb-5">
+            <span class="text-3xl text-stone-200" style="font-family:var(--font-serif);">04</span>
+            <iconify-icon icon="solar:spa-linear" width="22" class="text-stone-400"></iconify-icon>
+          </div>
+          <h4 class="text-base text-stone-900 font-medium mb-1.5">Spa &amp; Bem-Estar</h4>
+          <p class="text-xs text-stone-500 leading-relaxed mb-5">Massagens, sauna a lenha e meditação guiada com vista para a Serra do Espinhaço.</p>
+          <span class="text-[10px] uppercase tracking-wider text-stone-900 font-semibold flex items-center gap-1 hover:gap-2 transition-all cursor-pointer">
+            Ver Serviços <iconify-icon icon="solar:alt-arrow-right-linear" width="10"></iconify-icon>
+          </span>
+        </div>
+
+        <!-- Dark feature card -->
+        <div class="reveal-scale rounded-xl overflow-hidden relative" style="background:linear-gradient(135deg,#1C2922,#2C3E35);">
+          <div class="absolute inset-0 opacity-15">
+            <img src="assets/images/banheira.avif"
+                 class="w-full h-full object-cover"/>
+          </div>
+          <div class="relative p-6 flex flex-col justify-between min-h-[290px]">
+            <div>
+              <div class="glass-badge px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-5">
+                <iconify-icon icon="solar:star-shine-linear" width="11" class="text-white"></iconify-icon>
+                <span class="text-[9px] text-white uppercase tracking-widest font-medium">Destaque</span>
+              </div>
+              <h4 class="text-white mb-2" style="font-family:var(--font-serif); font-size:1.6rem; font-weight:500;">Pacote Lua de Mel</h4>
+              <p class="text-stone-400 text-xs leading-relaxed">3 noites, café da manhã, jantar à luz de velas e spa para dois com vista para a Serra.</p>
+            </div>
+            <button class="glass-panel rounded-full px-5 py-2.5 text-white text-xs uppercase tracking-widest font-medium hover:bg-white/15 transition-colors w-full text-center mt-4 btn-glow">
+              Ver Pacote
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NAVBARS ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Navbars</h3>
+      <div class="space-y-4">
+        <!-- Light -->
+        <div class="component-card reveal">
+          <h4>Navbar Light</h4>
+          <div class="border border-stone-200 rounded-lg overflow-hidden">
+            <div class="bg-white px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <iconify-icon icon="solar:leaf-linear" width="18" class="text-stone-700"></iconify-icon>
+                <span class="font-medium text-stone-900 tracking-wide" style="font-family:var(--font-serif); font-size:1.1rem;">Lapinha</span>
+              </div>
+              <div class="hidden md:flex items-center gap-6">
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors">O Chalé</a>
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors">Experiências</a>
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors">Gastronomia</a>
+              </div>
+              <button class="bg-stone-900 text-white px-5 py-2 text-xs tracking-widest uppercase font-semibold hover:bg-stone-700 transition-colors">
+                Reservar
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Dark glass -->
+        <div class="component-card reveal" style="background:#1C2922; border-color:#2C3E35;">
+          <h4 style="color:rgba(255,255,255,0.3);">Navbar Dark / Glass</h4>
+          <div class="rounded-lg overflow-hidden" style="background:rgba(28,41,34,0.96); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08);">
+            <div class="px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <iconify-icon icon="solar:leaf-linear" width="18" class="text-stone-400"></iconify-icon>
+                <span class="font-medium text-white tracking-wide" style="font-family:var(--font-serif); font-size:1.1rem;">Lapinha</span>
+              </div>
+              <div class="hidden md:flex items-center gap-6">
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-500 hover:text-white transition-colors">Quartos</a>
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-500 hover:text-white transition-colors">Experiências</a>
+                <a href="#" class="text-xs uppercase tracking-wider text-stone-500 hover:text-white transition-colors">Sobre</a>
+              </div>
+              <button class="glass-badge px-5 py-2 rounded-full text-white text-xs tracking-widest uppercase font-medium hover:bg-white/20 transition-colors">
+                Reservar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── BADGES ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Badges</h3>
+      <div class="component-card reveal">
+        <h4>Variantes de Badge</h4>
+        <div class="button-variants mb-6">
+          <span class="bg-stone-100 text-stone-700 text-[9px] uppercase tracking-wider font-semibold px-3 py-1.5 rounded-full">Disponível</span>
+          <span class="text-white text-[9px] uppercase tracking-wider font-semibold px-3 py-1.5 rounded-full" style="background:#2C3E35;">Destaque</span>
+          <span class="bg-amber-50 text-amber-700 border border-amber-200 text-[9px] uppercase tracking-wider font-semibold px-3 py-1.5 rounded-full">Última Vaga</span>
+          <span class="bg-stone-900 text-white text-[9px] uppercase tracking-wider font-semibold px-3 py-1.5 rounded-full">Novo</span>
+          <span class="bg-stone-100 text-stone-500 text-[9px] uppercase tracking-wider font-medium px-3 py-1.5 rounded-full">Esgotado</span>
+        </div>
+        <div class="rounded-xl p-5" style="background:linear-gradient(135deg,#1C2922,#2C3E35);">
+          <div class="spec-label mb-4" style="color:rgba(255,255,255,0.3);">Glass Badges</div>
+          <div class="button-variants">
+            <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
+              <iconify-icon icon="solar:swimming-linear" width="11" class="text-white"></iconify-icon>
+              <span class="text-[9px] font-medium tracking-widest uppercase text-white">Piscina</span>
+            </div>
+            <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
+              <iconify-icon icon="solar:cup-hot-linear" width="11" class="text-white"></iconify-icon>
+              <span class="text-[9px] font-medium tracking-widest uppercase text-white">Café da Manhã</span>
+            </div>
+            <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
+              <iconify-icon icon="solar:spa-linear" width="11" class="text-white"></iconify-icon>
+              <span class="text-[9px] font-medium tracking-widest uppercase text-white">Spa Incluso</span>
+            </div>
+            <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
+              <iconify-icon icon="solar:star-shine-linear" width="11" class="text-white"></iconify-icon>
+              <span class="text-[9px] font-medium tracking-widest uppercase text-white">5 Estrelas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOOLTIPS ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Tooltips</h3>
+      <div class="component-card reveal">
+        <h4>Hover para exibir</h4>
+        <div class="button-variants">
+          <div class="tooltip-wrap">
+            <button class="bg-stone-100 text-stone-700 px-5 py-3 text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all">
+              <iconify-icon icon="solar:calendar-mark-linear" width="15"></iconify-icon>
+            </button>
+            <div class="tooltip-box">Verificar disponibilidade</div>
+          </div>
+          <div class="tooltip-wrap">
+            <button class="bg-stone-100 text-stone-700 px-5 py-3 text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all">
+              <iconify-icon icon="solar:spa-linear" width="15"></iconify-icon>
+            </button>
+            <div class="tooltip-box">Reservar Spa</div>
+          </div>
+          <div class="tooltip-wrap">
+            <button class="bg-stone-100 text-stone-700 px-5 py-3 text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all">
+              <iconify-icon icon="solar:phone-calling-linear" width="15"></iconify-icon>
+            </button>
+            <div class="tooltip-box">(31) 9 9999-9999</div>
+          </div>
+          <div class="tooltip-wrap">
+            <button class="bg-stone-100 text-stone-700 px-5 py-3 text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all">
+              <iconify-icon icon="solar:map-point-linear" width="15"></iconify-icon>
+            </button>
+            <div class="tooltip-box">Lapinha da Serra · MG</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MODAL ── -->
+    <div class="mb-16">
+      <h3 class="spec-label mb-5 reveal">Modal</h3>
+      <div class="component-card reveal">
+        <h4>Modal de Reserva · scaleIn + backdrop blur</h4>
+        <button onclick="document.getElementById('demo-modal').classList.add('open')"
+                class="btn-glow bg-stone-900 text-white px-7 py-3 text-xs tracking-widest uppercase font-semibold hover:bg-stone-700 transition-colors">
+          Abrir Modal de Reserva
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MODAL OVERLAY -->
+<div id="demo-modal" class="modal-backdrop" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-content">
+    <button onclick="document.getElementById('demo-modal').classList.remove('open')"
+            class="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors">
+      <iconify-icon icon="solar:close-circle-linear" width="24"></iconify-icon>
+    </button>
+    <div class="text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-4">Confirmação de Reserva</div>
+    <h3 class="text-stone-900 mb-1" style="font-family:var(--font-serif); font-size:1.75rem;">Chalé Solar do Espinhaço</h3>
+    <p class="text-sm text-stone-500 mb-6">15–18 de Junho, 2025 · 2 Adultos · 3 noites</p>
+    <div class="border border-stone-200 rounded-xl p-4 mb-6 bg-stone-50">
+      <div class="flex justify-between text-xs text-stone-600 mb-2"><span>R$ 650 × 3 noites</span><span>R$ 1.950</span></div>
+      <div class="flex justify-between text-xs text-stone-600 mb-3"><span>Taxas e impostos</span><span>R$ 195</span></div>
+      <div class="flex justify-between text-sm font-semibold text-stone-900 pt-3 border-t border-stone-200"><span>Total</span><span>R$ 2.145</span></div>
+    </div>
+    <button onclick="document.getElementById('demo-modal').classList.remove('open')"
+            class="btn-glow w-full bg-stone-900 text-white py-3.5 text-xs tracking-widest uppercase font-semibold hover:bg-stone-700 transition-colors mb-3">
+      Confirmar Reserva
+    </button>
+    <button onclick="document.getElementById('demo-modal').classList.remove('open')"
+            class="w-full text-xs tracking-widest uppercase text-stone-400 hover:text-stone-900 transition-colors py-2">
+      Cancelar
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 4 · ICONS
+═══════════════════════════════════════════════════ -->
+<section id="icons" class="py-24 bg-stone-50">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="section-header reveal">
+      <h2>Ícones</h2>
+      <p>Sistema Iconify Solar — os ícones herdam a cor via CSS e escala via atributo <code class="text-[10px] bg-stone-200 px-1.5 py-0.5 rounded font-mono">width</code>.</p>
+    </div>
+
+    <!-- Sizes & contexts -->
+    <div class="mb-12 reveal">
+      <h3 class="spec-label mb-5">Tamanhos &amp; Contextos</h3>
+      <div class="border border-stone-200 rounded-xl p-8 bg-white">
+        <div class="grid grid-cols-4 md:grid-cols-8 gap-6">
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="12" class="block mx-auto mb-2 text-stone-600"></iconify-icon><span class="text-[9px] text-stone-400">12 · badge</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="16" class="block mx-auto mb-2 text-stone-600"></iconify-icon><span class="text-[9px] text-stone-400">16 · caption</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="18" class="block mx-auto mb-2 text-stone-600"></iconify-icon><span class="text-[9px] text-stone-400">18 · nav</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="20" class="block mx-auto mb-2 text-stone-600"></iconify-icon><span class="text-[9px] text-stone-400">20 · button</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="24" class="block mx-auto mb-2 text-stone-600"></iconify-icon><span class="text-[9px] text-stone-400">24 · card</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="32" class="block mx-auto mb-2 text-stone-400"></iconify-icon><span class="text-[9px] text-stone-400">32 · section</span></div>
+          <div class="text-center"><iconify-icon icon="solar:sun-2-linear" width="24" class="block mx-auto mb-2" style="color:#2C3E35;"></iconify-icon><span class="text-[9px] text-stone-400">Pine</span></div>
+          <div class="text-center p-2 rounded-lg" style="background:#1C2922;"><iconify-icon icon="solar:sun-2-linear" width="24" class="block mx-auto mb-2 text-white"></iconify-icon><span class="text-[9px]" style="color:rgba(255,255,255,0.3);">White</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hotel icon grid -->
+    <div class="reveal">
+      <h3 class="spec-label mb-5">Ícones de Hotelaria · Conjunto Completo</h3>
+      <div class="icon-grid">
+        <div class="icon-item"><iconify-icon icon="solar:bed-linear" width="24" class="text-stone-600"></iconify-icon><span>bed</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:bath-linear" width="24" class="text-stone-600"></iconify-icon><span>bath</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:calendar-mark-linear" width="24" class="text-stone-600"></iconify-icon><span>check-in</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:calendar-linear" width="24" class="text-stone-600"></iconify-icon><span>calendar</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:users-group-rounded-linear" width="24" class="text-stone-600"></iconify-icon><span>guests</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:wifi-square-linear" width="24" class="text-stone-600"></iconify-icon><span>wi-fi</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:snowflake-linear" width="24" class="text-stone-600"></iconify-icon><span>A/C</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:tv-linear" width="24" class="text-stone-600"></iconify-icon><span>TV</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:safe-square-linear" width="24" class="text-stone-600"></iconify-icon><span>cofre</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:fridge-linear" width="24" class="text-stone-600"></iconify-icon><span>frigobar</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:balcony-linear" width="24" class="text-stone-600"></iconify-icon><span>varanda</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:spa-linear" width="24" class="text-stone-600"></iconify-icon><span>spa</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:swimming-linear" width="24" class="text-stone-600"></iconify-icon><span>piscina</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:cup-hot-linear" width="24" class="text-stone-600"></iconify-icon><span>café</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:leaf-linear" width="24" class="text-stone-600"></iconify-icon><span>eco</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:star-shine-linear" width="24" class="text-stone-600"></iconify-icon><span>estrela</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:map-point-linear" width="24" class="text-stone-600"></iconify-icon><span>local</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:phone-calling-linear" width="24" class="text-stone-600"></iconify-icon><span>telefone</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:sun-2-linear" width="24" class="text-stone-600"></iconify-icon><span>sol</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:water-drops-linear" width="24" class="text-stone-600"></iconify-icon><span>água</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:tag-price-linear" width="24" class="text-stone-600"></iconify-icon><span>preço</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:arrow-right-linear" width="24" class="text-stone-600"></iconify-icon><span>arrow →</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:arrow-right-up-linear" width="24" class="text-stone-600"></iconify-icon><span>arrow ↗</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:instagram-linear" width="24" class="text-stone-600"></iconify-icon><span>instagram</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 5 · ANIMATIONS
+═══════════════════════════════════════════════════ -->
+<section id="motion" class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="section-header reveal">
+      <h2>Animações</h2>
+      <p>Sistema de movimento — entradas, loops, transições e efeitos interativos com keyframes documentados.</p>
+    </div>
+
+    <!-- Entrance -->
+    <div class="mb-14">
+      <h3 class="spec-label mb-5 reveal">Animações de Entrada</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">fadeIn</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">opacity: 0→1 · 0.7s ease-out</p>
+          <div class="motion-demo" id="demo-fi"><span class="text-stone-500 text-xs">fade in</span></div>
+          <button onclick="replayDemo('demo-fi','fadeIn 0.7s ease')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">fadeUp</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">opacity+translateY(32px) → visible · 0.72s</p>
+          <div class="motion-demo" id="demo-fu"><span class="text-stone-500 text-xs">fade up</span></div>
+          <button onclick="replayDemo('demo-fu','fadeUp 0.72s var(--ease-out)')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">scaleIn · Modal / Card</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">scale(0.92)+opacity → 1 · 0.65s spring</p>
+          <div class="motion-demo" id="demo-si"><span class="text-stone-500 text-xs">scale in</span></div>
+          <button onclick="replayDemo('demo-si','scaleIn 0.65s cubic-bezier(0.34,1.56,0.64,1)')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">shimmer · Botão Glow</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">gradient sweep on hover · 0.6s · btn-glow class</p>
+          <div class="motion-demo bg-stone-900 flex items-center justify-center">
+            <button class="btn-glow bg-stone-100 text-stone-900 px-7 py-3 text-xs uppercase tracking-widest font-semibold">Hover aqui</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Loops -->
+    <div class="mb-14">
+      <h3 class="spec-label mb-5 reveal">Loops &amp; Contínuos</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">pulse · Hero Background</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">scale 1→1.06 · 14s ease-in-out infinite</p>
+          <div class="motion-demo overflow-hidden rounded-lg">
+            <img src="assets/images/trilha.avif"
+                 class="w-full h-full object-cover"
+                 style="animation: pulse 4s ease-in-out infinite;"/>
+          </div>
+          <p class="text-xs text-stone-500">Imagem de fundo do hero</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">float · Decorativo</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">translateY(0→-18px) · 3.5s ease-in-out infinite</p>
+          <div class="motion-demo flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center shadow-md"
+                 style="animation: float 3.5s ease-in-out infinite;">
+              <iconify-icon icon="solar:leaf-linear" width="24" style="color:#2C3E35;"></iconify-icon>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500">Elementos flutuantes decorativos</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">bounce · Scroll Indicator</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">translateY(-25%→0) · 2s ease infinite</p>
+          <div class="motion-demo flex items-center justify-center">
+            <div class="flex flex-col items-center gap-1" style="animation: bounce 2s infinite;">
+              <div class="h-10 w-[1px] bg-gradient-to-b from-stone-500 to-transparent"></div>
+              <iconify-icon icon="solar:alt-arrow-down-linear" width="14" class="text-stone-500"></iconify-icon>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500">Indicador de scroll do hero</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">marquee · Ticker</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">translateX(0→-50%) · 30s linear infinite</p>
+          <div class="motion-demo overflow-hidden rounded-lg bg-stone-900 flex-col gap-0 justify-start p-0">
+            <div class="ticker-wrap bg-stone-900 h-full w-full flex items-center">
+              <div class="ticker-inner" style="animation-duration:8s;">
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Solar do Espinhaço</span>
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Lapinha da Serra</span>
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Spa &amp; Natureza</span>
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Solar do Espinhaço</span>
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Lapinha da Serra</span>
+                <span class="text-[9px] text-stone-500 px-4 uppercase tracking-widest">★ Spa &amp; Natureza</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500">Ticker abaixo do hero</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">glowPulse · Orb Ambiental</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">opacity+scale · 10s ease-in-out infinite</p>
+          <div class="motion-demo rounded-lg overflow-hidden relative" style="background:#1C2922;">
+            <div style="position:absolute;width:200px;height:200px;top:50%;left:50%;transform:translate(-50%,-50%);
+                        background:radial-gradient(circle,rgba(44,62,53,0.6) 0%,transparent 70%);
+                        filter:blur(30px);border-radius:50%;animation:glowPulse 4s ease-in-out infinite;"></div>
+          </div>
+          <p class="text-xs text-stone-500">Orbs ambientais do hero</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-1.5">spinSlow · Decorativo</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">rotate(0→360deg) · 20s linear infinite</p>
+          <div class="motion-demo flex items-center justify-center">
+            <div style="width:48px;height:48px;border:1px solid #E7E5E4;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;
+                        animation:spinSlow 20s linear infinite;">
+              <iconify-icon icon="solar:star-shine-linear" width="20" class="text-stone-400"></iconify-icon>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500">Acentos rotativos</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hover transitions -->
+    <div class="mb-14">
+      <h3 class="spec-label mb-5 reveal">Hover &amp; Transições Interativas</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-2">Scale · Image on Hover</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">group-hover:scale-110 · duration-700ms</p>
+          <div class="motion-demo overflow-hidden rounded-lg cursor-pointer group">
+            <img src="assets/images/chale-quarto.avif"
+                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+          </div>
+          <p class="text-xs text-stone-500">Cards com imagem</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-2">Lift · Card Elevation</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">hover:-translate-y-1.5 · hover:shadow-2xl · 500ms</p>
+          <div class="motion-demo flex items-center justify-center">
+            <div class="border border-stone-200 rounded-xl p-4 hover:-translate-y-2 hover:shadow-xl transition-all duration-500 cursor-pointer bg-white w-24 text-center">
+              <iconify-icon icon="solar:bed-linear" width="24" class="text-stone-600 block mx-auto mb-2"></iconify-icon>
+              <p class="text-[10px] text-stone-500">Hover</p>
+            </div>
+          </div>
+          <p class="text-xs text-stone-500">Cards de quarto, produto</p>
+        </div>
+
+        <div class="border border-stone-200 rounded-xl p-6 reveal">
+          <div class="spec-label mb-2">Color Fill · Button</div>
+          <p class="text-xs text-stone-400 font-mono mb-4">hover:bg-stone-900 · hover:text-white · 300ms</p>
+          <div class="motion-demo flex items-center justify-center">
+            <button class="border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-300 px-6 py-3 text-xs uppercase tracking-widest font-semibold cursor-pointer">
+              Hover fill
+            </button>
+          </div>
+          <p class="text-xs text-stone-500">Botões outline</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Timing reference -->
+    <div class="reveal">
+      <h3 class="spec-label mb-5">Referência de Timing &amp; Easing</h3>
+      <div class="border border-stone-200 rounded-xl overflow-hidden">
+        <div class="bg-stone-50 px-6 py-3 border-b border-stone-200">
+          <span class="spec-label">Tabela de Temporização</span>
+        </div>
+        <div class="divide-y divide-stone-100">
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Quick UI feedback</span><span class="text-stone-400 font-mono">150ms · ease</span><span class="text-stone-400">Clicks, toggles rápidos</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Standard transition</span><span class="text-stone-400 font-mono">300ms · ease-out</span><span class="text-stone-400">Botões, hover states, cores</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Scroll reveal</span><span class="text-stone-400 font-mono">720ms · cubic-bezier(0.2,1,0.2,1)</span><span class="text-stone-400">Elementos entrando em viewport</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Modal / card open</span><span class="text-stone-400 font-mono">320ms · spring(0.34,1.56,0.64,1)</span><span class="text-stone-400">Overlays, modais, popups</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Image scale (hover)</span><span class="text-stone-400 font-mono">700ms · ease</span><span class="text-stone-400">Cards com imagem de background</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs"><span class="text-stone-500">Hero pulse loop</span><span class="text-stone-400 font-mono">14s · ease-in-out · infinite</span><span class="text-stone-400">Background do hero section</span></div>
+          <div class="px-6 py-4 grid grid-cols-3 text-xs border-none"><span class="text-stone-500">Ambient orb drift</span><span class="text-stone-400 font-mono">18–24s · ease-in-out · infinite</span><span class="text-stone-400">Orbs decorativos no hero</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PINE CLOSING SECTION
+═══════════════════════════════════════════════════ -->
+<section class="pine-section py-28 relative overflow-hidden">
+  <div class="hero-orb" style="width:500px;height:500px;top:-80px;right:-60px;
+    background:radial-gradient(circle,rgba(255,255,255,0.05) 0%,transparent 70%);
+    animation:orb1 22s ease-in-out infinite;"></div>
+  <div class="hero-orb" style="width:350px;height:350px;bottom:-60px;left:-40px;
+    background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);
+    animation:orb2 27s ease-in-out infinite;"></div>
+
+  <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+    <span class="text-[9px] uppercase tracking-[0.38em] text-stone-600 mb-6 block reveal">
+      Lapinha da Serra · Minas Gerais · Brasil
+    </span>
+    <h2 class="text-white tracking-tighter leading-[0.84] mb-8 mix-blend-overlay reveal"
+        style="font-family:var(--font-serif); font-size:clamp(3rem,8vw,6.5rem); font-weight:500;">
+      Uma experiência<br/><em style="font-style:italic; font-weight:300;">inesquecível</em>
+    </h2>
+    <p class="text-stone-400 text-sm leading-relaxed max-w-md mx-auto mb-10 reveal">
+      Design system V3.3 do Solar do Espinhaço — glassmorphism, Cormorant Garamond, Solar icons e tipografia mix-blend-overlay sobre paisagens da Serra.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-3 justify-center reveal">
+      <button class="glass-badge px-8 py-4 rounded-full text-white text-xs uppercase tracking-widest font-semibold hover:bg-white/20 transition-colors flex items-center gap-2 justify-center btn-glow">
+        <iconify-icon icon="solar:calendar-mark-linear" width="14"></iconify-icon>
+        Fazer Reserva
+      </button>
+      <button class="glass-panel px-8 py-4 rounded-full text-stone-300 text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">
+        Ver Quartos
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-stone-900 text-stone-500 py-10 text-xs font-light">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+      <iconify-icon icon="solar:leaf-linear" width="16" class="text-stone-600"></iconify-icon>
+      <span class="font-medium text-stone-400" style="font-family:var(--font-serif); font-size:1rem;">Solar do Espinhaço</span>
+      <span class="text-stone-700 mx-1">·</span>
+      <span>Design System V3.3</span>
+    </div>
+    <span class="text-stone-700">Maio 2026</span>
+  </div>
+</footer>
+
+<script>
+/* ── NAV: só aparece no hover — sem lógica de scroll (padrão Jamaican Scape) ── */
+
+/* ── SCROLL REVEAL ── */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const delay = parseFloat(entry.target.dataset.delay || 0);
+      setTimeout(() => entry.target.classList.add('visible'), delay * 1000);
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i) => {
+  el.dataset.delay = (i % 5) * 0.08;
+  io.observe(el);
+});
+
+/* ── MOTION DEMO REPLAY ── */
+function replayDemo(id, anim) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.animation = 'none';
+  el.offsetHeight; /* force reflow */
+  el.style.animation = anim;
+}
+
+/* ── AUTO TRIGGER DEMOS ── */
+const demoMap = {
+  'demo-fi': 'fadeIn 0.7s ease',
+  'demo-fu': 'fadeUp 0.72s cubic-bezier(0.2,1,0.2,1)',
+  'demo-si': 'scaleIn 0.65s cubic-bezier(0.34,1.56,0.64,1)'
+};
+const demoObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const anim = demoMap[entry.target.id];
+      if (anim) {
+        setTimeout(() => { entry.target.style.animation = 'none'; entry.target.offsetHeight; entry.target.style.animation = anim; }, 200);
+      }
+      demoObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+Object.keys(demoMap).forEach(id => { const el = document.getElementById(id); if (el) demoObserver.observe(el); });
+</script>
+</body>
+</html>

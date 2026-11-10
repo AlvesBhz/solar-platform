@@ -1,0 +1,214 @@
+/* ═══════════════════════════════════════════════════════════════
+   SOLAR DO ESPINHAÇO · DESIGN TOKENS
+   Cores, tipografia e variáveis semânticas
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Carregue antes desta folha:
+   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+*/
+
+:root {
+  /* ─── COLOR · NEUTRALS (Stone) ─────────────────────── */
+  --c-white:      #FFFFFF;
+  --c-cream:      #FAFAF9;
+  --c-s50:        #FAFAF9;
+  --c-s100:       #F5F5F4;
+  --c-s200:       #E7E5E4;
+  --c-s300:       #D6D3D1;
+  --c-s400:       #A8A29E;
+  --c-s500:       #78716C;
+  --c-s600:       #57534E;
+  --c-s700:       #44403C;
+  --c-s800:       #292423;
+  --c-s900:       #1C1917;
+
+  /* ─── COLOR · BRAND (Pine) ─────────────────────────── */
+  --c-pine:       #2C3E35;
+  --c-pine-deep:  #1C2922;
+  --c-pine-mid:   #3D5547;
+
+  /* ─── COLOR · SEMANTIC (foreground / background) ───── */
+  --fg-1:         var(--c-s900); /* títulos, texto principal */
+  --fg-2:         var(--c-s600); /* texto secundário, parágrafo */
+  --fg-3:         var(--c-s500); /* metadados */
+  --fg-4:         var(--c-s400); /* placeholders, muted */
+  --fg-inverse:   #FFFFFF;       /* texto sobre fundos escuros */
+
+  --bg-1:         var(--c-white); /* página clara */
+  --bg-2:         var(--c-cream); /* alternância de seção */
+  --bg-3:         var(--c-s100);  /* superfícies sutis */
+  --bg-dark-1:    var(--c-s900);  /* página escura */
+  --bg-dark-2:    var(--c-pine-deep);
+  --bg-dark-3:    var(--c-pine);
+
+  --border-1:     var(--c-s200);  /* divisor padrão */
+  --border-2:     var(--c-s300);  /* contraste de input */
+  --border-dark:  rgba(255,255,255,0.08);
+
+  /* ─── COLOR · OVERLAY / GLASS ──────────────────────── */
+  --glass-bg-1:   rgba(255,255,255,0.03);  /* glass-panel */
+  --glass-bg-2:   rgba(255,255,255,0.07);  /* glass-card */
+  --glass-bg-3:   rgba(255,255,255,0.10);  /* glass-badge */
+  --glass-bd:     rgba(255,255,255,0.08);
+  --glass-bd-2:   rgba(255,255,255,0.15);
+  --glass-bd-3:   rgba(255,255,255,0.20);
+  --scrim-top:    rgba(0,0,0,0.50);
+  --scrim-bottom: rgba(0,0,0,0.80);
+
+  /* ─── COLOR · STATUS (uso parcimonioso) ────────────── */
+  --c-available:  #059669;        /* "disponível" / pulse dot */
+  --c-warning:    #B45309;        /* "última vaga" */
+  --c-warning-bg: #FFFBEB;
+  --c-error:      #B91C1C;
+
+  /* ─── TYPE · FAMILIES ──────────────────────────────── */
+  --font-serif:   'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-italic:  'Instrument Serif', Georgia, serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ─── SPACING ──────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ─── RADII ────────────────────────────────────────── */
+  --r-xs:  4px;
+  --r-sm:  6px;
+  --r-md:  8px;
+  --r-lg:  12px;
+  --r-xl:  16px;
+  --r-2xl: 24px;
+  --r-pill: 9999px;
+
+  /* ─── SHADOW ───────────────────────────────────────── */
+  --shadow-sm:    0 1px 2px rgba(28,25,23,0.05);
+  --shadow-md:    0 4px 12px rgba(28,25,23,0.08);
+  --shadow-lg:    0 12px 32px rgba(28,25,23,0.12);
+  --shadow-xl:    0 24px 60px rgba(28,25,23,0.18);
+  --shadow-glass: 0 24px 60px rgba(0,0,0,0.35);
+
+  /* ─── MOTION ───────────────────────────────────────── */
+  --ease-out:     cubic-bezier(0.2, 1, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:     150ms;
+  --dur-base:     300ms;
+  --dur-slow:     720ms;
+  --dur-image:    700ms;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SEMANTIC TYPE STYLES
+   ═══════════════════════════════════════════════════════════════ */
+
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: var(--font-sans); color: var(--fg-2); background: var(--bg-1); }
+
+/* H1 — Display Hero · 56–96px · serif 500 · lh 0.82 · usado com mix-blend-overlay */
+h1, .ds-h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 5.5vw, 5rem);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  color: var(--fg-1);
+}
+
+/* H2 — Section Title · 36px */
+h2, .ds-h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 3vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--fg-1);
+}
+
+/* H3 — Card Title · 24px · sans */
+h3, .ds-h3 {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+}
+
+/* H4 — Subsection · 18px */
+h4, .ds-h4 {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--fg-1);
+}
+
+/* Body large · 16px · lh 1.65 — parágrafo principal */
+.ds-body-lg, p {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--fg-2);
+}
+
+/* Body regular · 14px · lh 1.55 — descrições */
+.ds-body {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--fg-2);
+}
+
+/* Body small / Label · 12px · uppercase · ls 0.08em — tags, amenities */
+.ds-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+/* Eyebrow / Caption · 10px · ls 0.32em — localização, metadado */
+.ds-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--fg-4);
+}
+
+/* Mono · numerais, códigos, datas */
+.ds-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--fg-3);
+}
+
+/* Italic display — para destaques tipo "inesquecível" */
+.ds-italic {
+  font-family: var(--font-italic);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Selection */
+::selection { background: var(--c-s900); color: #fff; }
+
+/* Scrollbar (WebKit) */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--c-s100); }
+::-webkit-scrollbar-thumb { background: var(--c-s300); border-radius: 99px; }
