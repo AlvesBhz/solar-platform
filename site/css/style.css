@@ -1012,7 +1012,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 .cta-bg {
   position: absolute;
   inset: -12%;
-  background: url('assets/images/serra-hero.avif') center / cover no-repeat;
+  background: url('../assets/images/serra-hero.avif') center / cover no-repeat;
   will-change: transform;
   transform: scale(1.12) translateY(0);
   transition: transform 0.05s linear;
