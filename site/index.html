@@ -1,0 +1,1160 @@
+﻿<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Solar do Espinhaço · Design System V3.3</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=block" rel="stylesheet"/>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-stone-50 text-stone-600 antialiased">
+
+<!-- ═══════════════════════════════════════════════════
+     TOP NAV (Jamaican Scape pattern)
+═══════════════════════════════════════════════════ -->
+<nav class="nav-top" id="siteNav">
+  <div class="nav-top-inner">
+
+    <!-- Esquerda: hamburger + menu inline -->
+    <div class="nav-menu-zone" id="menuZone">
+      <button class="nav-burger" id="menuBurger"
+              aria-label="Abrir menu" aria-expanded="false" aria-controls="siteMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="site-menu" id="siteMenu" aria-label="Menu">
+        <ul class="site-menu-list">
+          <li class="site-menu-item"><a href="#dobra-2">O Chalé</a></li>
+          <li class="site-menu-item"><a href="#passeios-priv">Experiências</a></li>
+          <li class="site-menu-item"><a href="#cta-final">Contato</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Centro: logotipo tipográfico -->
+    <a href="#hero" aria-label="Ir para o início" id="navLogoGroup" onclick="event.preventDefault(); window.scrollTo({top:0, behavior:'smooth'});" style="display:flex; align-items:center; justify-content:center; white-space:nowrap; text-decoration:none; cursor:pointer; transition:opacity 0.3s ease;" onmouseenter="this.style.opacity='0.75'" onmouseleave="this.style.opacity='1'">
+      <!-- Ícone folha em disco -->
+      <div id="navLogoDisc" style="position:relative; width:33px; height:33px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,255,255,0.48);"></div>
+        <iconify-icon icon="solar:leaf-linear" width="19" style="color:rgba(255,255,255,0.88);"></iconify-icon>
+      </div>
+      <!-- Divider + Wordmark — expande durante animação -->
+      <div id="navLogoExpand" style="display:flex; align-items:center; max-width:0; overflow:hidden; opacity:0;">
+        <div style="width:1px; height:33px; background:rgba(255,255,255,0.18); flex-shrink:0; margin-left:13px;"></div>
+        <div id="navLogoWordmark" style="margin-left:13px; transform:translateX(-10px);">
+          <div style="font-family:'Inter',sans-serif; font-weight:400; font-size:8.5px; letter-spacing:0.38em; text-transform:uppercase; color:rgba(255,255,255,0.60); line-height:1; text-shadow:0 1px 8px rgba(0,0,0,0.55);">Solar do</div>
+          <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.08em; text-transform:uppercase; line-height:1; color:rgba(255,255,255,0.93); margin-top:4px; text-shadow:0 2px 12px rgba(0,0,0,0.40);">Espinhaço</div>
+        </div>
+      </div>
+    </a>
+
+    <!-- Direita: idioma inline + reservar -->
+    <div id="navRight" style="display:flex; align-items:center; justify-content:flex-end; gap:1.5rem;">
+
+      <!-- PT EN ES inline -->
+      <div class="lang-inline">
+        <button class="lang-inline-btn active" data-lang="pt" onclick="setLang('pt')">PT</button>
+        <button class="lang-inline-btn"        data-lang="en" onclick="setLang('en')">EN</button>
+        <button class="lang-inline-btn"        data-lang="es" onclick="setLang('es')">ES</button>
+      </div>
+
+      <!-- Botão Reservar em vidro -->
+      <button id="navReserveBtn" onclick="openBkPopup(event)"
+         style="display:inline-flex;align-items:center;gap:0.45rem;
+                background:rgba(255,255,255,0.10);
+                backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+                border:1px solid rgba(255,255,255,0.22);border-radius:999px;
+                padding:0.52rem 1.15rem;
+                font-size:0.68rem;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;
+                color:#fff;cursor:pointer;white-space:nowrap;
+                transition:background 0.3s ease,border-color 0.3s ease,transform 0.3s var(--ease-spring);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Reservar
+      </button>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     HERO · fica fixo enquanto o Chalé sobe por cima
+═══════════════════════════════════════════════════ -->
+<section id="hero" class="relative h-screen w-full overflow-hidden bg-stone-900">
+
+  <!-- Background image -->
+  <div class="absolute inset-0 z-0">
+    <img
+      src="assets/images/serra-hero.avif"
+      alt="Solar do Espinhaço | Lapinha da Serra"
+      class="w-full h-full object-cover opacity-55 scale-105"
+      style="animation: pulse 14s ease-in-out infinite;"
+    />
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-transparent"></div>
+  </div>
+
+  <!-- Ambient orbs -->
+  <div class="hero-orb" style="width:560px;height:560px;top:-120px;right:-80px;
+    background:radial-gradient(circle,rgba(44,62,53,0.4) 0%,transparent 70%);
+    animation:orb1 20s ease-in-out infinite;"></div>
+  <div class="hero-orb" style="width:420px;height:420px;bottom:40px;left:-90px;
+    background:radial-gradient(circle,rgba(44,62,53,0.28) 0%,transparent 70%);
+    animation:orb2 24s ease-in-out infinite;"></div>
+  <div class="hero-orb" style="width:320px;height:320px;top:38%;right:22%;
+    background:radial-gradient(circle,rgba(255,255,255,0.04) 0%,transparent 70%);
+    animation:glowPulse 10s ease-in-out infinite;"></div>
+
+  <!-- Main grid -->
+  <div class="relative z-10 h-full max-w-7xl mx-auto px-6 pt-28 pb-48 flex flex-col justify-center">
+
+    <!-- Center block: transparent text hero (Jamaican Scape signature) -->
+    <div class="flex flex-col lg:flex-row items-start lg:items-end gap-10">
+      <div class="flex-1">
+        <div id="heroTitle" style="animation: fadeIn 1.2s 0.3s ease both; opacity:0; animation-fill-mode:both;">
+          <span class="block text-[10px] tracking-[0.32em] uppercase mb-5 pl-1"
+                style="color:rgba(255,255,255,0.55); text-shadow:0 1px 8px rgba(0,0,0,0.7);">
+            Chalé Boutique · Lapinha da Serra · Minas Gerais
+          </span>
+          <!-- mix-blend-overlay = o lettering "transparente" do Jamaican Scape -->
+          <h1 class="leading-[0.82] tracking-tighter mix-blend-overlay" style="font-family:var(--font-serif);">
+            <span class="block text-white font-medium"
+                  style="font-size:clamp(3.6rem,9vw,7.8rem);">SOLAR DO</span>
+            <span class="block text-stone-100 font-light opacity-88"
+                  style="font-size:clamp(2rem,4.5vw,4rem); margin-left:clamp(2rem,6vw,7rem);">
+              ESPINHAÇO
+            </span>
+          </h1>
+        </div>
+        <div style="animation: fadeUp 1s 0.55s ease both; opacity:0; animation-fill-mode:both;">
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Frase — surge após o título sumir -->
+  <div id="heroPhrase">
+    <p>O espinhaço te conecta com a natureza.</p>
+  </div>
+
+  <!-- Scroll indicator — centralizado -->
+  <div id="heroScroll" class="hidden md:flex flex-col items-center gap-2"
+       style="position:absolute; bottom:2rem; left:50%; transform:translateX(-50%);
+              animation: fadeIn 2s 1.8s ease both; opacity:0; animation-fill-mode:both;
+              transition: opacity 1s ease;">
+    <span class="text-[9px] uppercase tracking-[0.28em]"
+          style="color:rgba(255,255,255,0.65); text-shadow:0 1px 6px rgba(0,0,0,0.5);">Explorar</span>
+    <div class="flex flex-col items-center gap-1" style="animation: bounce 2s infinite;">
+      <div class="h-8 w-[1px]" style="background:linear-gradient(to bottom, rgba(255,255,255,0.55), transparent);"></div>
+      <iconify-icon icon="solar:alt-arrow-down-linear" width="12" style="color:rgba(255,255,255,0.55);"></iconify-icon>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     2ª DOBRA — ROOM CARD EDITORIAL
+═══════════════════════════════════════════════════ -->
+<section id="dobra-2" style="padding:6.5rem 0 7.5rem; background:var(--c-cream);">
+  <div style="max-width:90rem; margin:0 auto; padding:0 2.5rem;">
+
+    <!-- Cabeçalho editorial -->
+    <header class="chale-head-reveal"
+            style="margin-bottom:3.75rem; display:flex; flex-wrap:wrap;
+                   align-items:flex-end; justify-content:space-between; gap:2rem;">
+      <div>
+        <div style="display:flex; align-items:center; gap:0.9rem; margin-bottom:1.35rem;">
+          <div style="width:30px; height:1px; background:var(--c-pine); opacity:0.32;"></div>
+          <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                       letter-spacing:0.30em; text-transform:uppercase; color:var(--c-pine-mid);">
+            Ambientes · Chalé Boutique
+          </span>
+        </div>
+        <h2 style="font-family:var(--font-serif); font-size:clamp(2rem,3.6vw,3.2rem);
+                   font-weight:400; letter-spacing:-0.02em; color:var(--c-pine-deep);
+                   margin:0; line-height:1.07;">
+          Conforto que respira,<br>
+          <em style="font-style:italic; font-weight:300; color:var(--c-s500);">natureza que abraça</em>
+        </h2>
+      </div>
+    </header>
+
+    <div class="d2-grid reveal">
+
+      <!-- Coluna esquerda: slideshow -->
+      <div class="d2-img-wrap">
+        <div class="d2-slideshow">
+          <div class="d2-slide is-active">
+            <img class="d2-slide-img"
+                 src="assets/images/Suite.jpeg"
+                 alt="Suíte — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Suíte 2.png"
+                 alt="Suíte 2 — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Suíte 3.png"
+                 alt="Suíte 3 — Solar do Espinhaço" />
+          </div>
+          <div class="d2-dots">
+            <button class="d2-dot is-active" aria-label="Slide 1"></button>
+            <button class="d2-dot" aria-label="Slide 2"></button>
+            <button class="d2-dot" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna direita: conteúdo -->
+      <div class="d2-content">
+
+        <!-- Eyebrow -->
+        <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.75rem;">
+          <span style="font-family:var(--font-sans); font-size:0.65rem; font-weight:400;
+                       letter-spacing:0.12em; color:var(--c-s400);">01</span>
+          <div style="width:36px; height:1px; background:var(--c-s300);"></div>
+        </div>
+
+        <!-- Título -->
+        <h2 style="font-family:var(--font-serif); font-size:clamp(1.35rem,2.1vw,1.9rem);
+                   font-weight:400; letter-spacing:-0.01em; color:var(--c-pine-deep);
+                   margin:0 0 1.4rem; line-height:1.1;">
+          Suíte
+        </h2>
+
+        <!-- Parágrafo -->
+        <p style="font-family:var(--font-sans); font-weight:300; font-size:0.9rem;
+                  line-height:1.85; color:var(--c-s500); margin:0 0 1.75rem; padding-right:4rem;">
+          A suíte é um refúgio de linhas serenas e materiais nobres, onde o desenho do espaço privilegia
+          o descanso e a vista para a Serra do Espinhaço. Cada elemento foi selecionado para oferecer
+          conforto duradouro e uma estadia em absoluta tranquilidade.
+          <br><br>
+          O banheiro, revestido em pedra natural e com acabamentos precisos, traduz a atmosfera de um spa
+          privativo. Um espaço concebido para transformar o banho em um momento de bem-estar e contemplação.
+        </p>
+
+        <!-- Comodidades -->
+        <div class="d2-amenities" style="grid-template-columns:repeat(3,1fr); gap:0.9rem 1.25rem;">
+
+          <!-- 01 · Quarto 28 m² -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="3.5" y="3.5" width="13" height="13" rx="0.75"/>
+              <line x1="3.5" y1="19.5" x2="16.5" y2="19.5"/>
+              <polyline points="5 18 3.5 19.5 5 21"/>
+              <polyline points="15 18 16.5 19.5 15 21"/>
+              <line x1="20" y1="3.5" x2="20" y2="16.5"/>
+              <polyline points="18.5 5 20 3.5 21.5 5"/>
+              <polyline points="18.5 15 20 16.5 21.5 15"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Quarto 28 m²</span>
+          </div>
+
+          <!-- 02 · Vista Panorâmica -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M2 20.5 L8.5 9 L13 16 L16.5 11 L22 20.5Z"/>
+              <circle cx="19.5" cy="6" r="2"/>
+              <line x1="17.5" y1="7.4" x2="15" y2="10.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Vista Panorâmica</span>
+          </div>
+
+          <!-- 03 · Ar Quente e Frio -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:snowflake-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Ar Quente e Frio</span>
+          </div>
+
+          <!-- 04 · Banheira de Imersão -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M3.5 10 Q3.5 7.5 7 7 L17 7 Q20.5 7.5 20.5 10 L20.5 17 Q20.5 19.5 12 19.5 Q3.5 19.5 3.5 17 Z"/>
+              <path d="M3.5 10 Q3.5 8.5 7 8.5 L17 8.5 Q20.5 8.5 20.5 10"/>
+              <line x1="10" y1="7" x2="10" y2="5"/>
+              <path d="M10 5 Q10 4 11.5 4 L13 4"/>
+              <path d="M13 4 Q14.5 4 14.5 5 L14.5 7"/>
+              <line x1="7" y1="19.5" x2="6" y2="22"/>
+              <line x1="17" y1="19.5" x2="18" y2="22"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Banheira de Imersão</span>
+          </div>
+
+          <!-- 05 · Cama King Size -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:bed-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Cama King Size</span>
+          </div>
+
+          <!-- 06 · Roupa de Cama 600 Fios -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:layers-minimalistic-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Roupa de Cama 600 Fios</span>
+          </div>
+
+          <!-- 07 · Smart TV 4K -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:tv-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Smart TV 55'</span>
+          </div>
+
+          <!-- 08 · Soundbar -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="1.5" y="9.5" width="21" height="5" rx="2.5"/>
+              <circle cx="4" cy="12" r="0.5" fill="currentColor" stroke="none"/>
+              <circle cx="8" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="10.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="13" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="15.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="20" cy="12" r="1.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Soundbar</span>
+          </div>
+
+          <!-- 09 · Streaming -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:play-circle-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Streaming</span>
+          </div>
+
+          <!-- 10 · Closet & Roupão -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:hanger-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Closet &amp; Roupão</span>
+          </div>
+
+          <!-- 11 · Toalhas Algodão Egípcio -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <line x1="3" y1="4" x2="21" y2="4"/>
+              <path d="M7 4 L7 7 L17 7 L17 4"/>
+              <rect x="7" y="7" width="10" height="14" rx="1.5"/>
+              <line x1="9.5" y1="12" x2="14.5" y2="12"/>
+              <line x1="9.5" y1="15" x2="14.5" y2="15"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Toalhas Algodão Egípcio</span>
+          </div>
+
+          <!-- 12 · Ducha Dupla -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <line x1="6" y1="2" x2="6" y2="5.5"/>
+              <line x1="18" y1="2" x2="18" y2="5.5"/>
+              <rect x="3" y="5.5" width="6" height="2.5" rx="1"/>
+              <rect x="15" y="5.5" width="6" height="2.5" rx="1"/>
+              <line x1="4.5" y1="10.5" x2="4.5" y2="13"/>
+              <line x1="6" y1="11.5" x2="6" y2="14"/>
+              <line x1="7.5" y1="10.5" x2="7.5" y2="13"/>
+              <line x1="16.5" y1="10.5" x2="16.5" y2="13"/>
+              <line x1="18" y1="11.5" x2="18" y2="14"/>
+              <line x1="19.5" y1="10.5" x2="19.5" y2="13"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Ducha Dupla</span>
+          </div>
+
+          <!-- 13 · Box até o Teto -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <line x1="3" y1="2" x2="21" y2="2"/>
+              <line x1="3" y1="22" x2="21" y2="22"/>
+              <line x1="3" y1="2" x2="3" y2="22"/>
+              <line x1="21" y1="2" x2="21" y2="22"/>
+              <line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="3 2"/>
+              <line x1="7" y1="2" x2="7" y2="7"/>
+              <rect x="4.5" y="7" width="7" height="2.5" rx="1"/>
+              <line x1="6" y1="12" x2="6" y2="14.5"/>
+              <line x1="8" y1="11" x2="8" y2="13.5"/>
+              <line x1="10" y1="12" x2="10" y2="14.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Box até o Teto</span>
+          </div>
+
+        </div><!-- /.d2-amenities -->
+
+      </div><!-- /.d2-content -->
+
+    </div><!-- /.d2-grid -->
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     3ª DOBRA
+═══════════════════════════════════════════════════ -->
+<section id="dobra-3" style="padding:0.5rem 0 7.5rem; background:var(--c-cream);">
+  <div style="max-width:90rem; margin:0 auto; padding:0 2.5rem;">
+
+    <div class="d2-grid d2-grid--rev reveal">
+
+      <!-- Coluna esquerda: conteúdo -->
+      <div class="d2-content">
+
+        <!-- Eyebrow -->
+        <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.75rem;">
+          <span style="font-family:var(--font-sans); font-size:0.65rem; font-weight:400;
+                       letter-spacing:0.12em; color:var(--c-s400);">02</span>
+          <div style="width:36px; height:1px; background:var(--c-s300);"></div>
+        </div>
+
+        <!-- Título -->
+        <h2 style="font-family:var(--font-serif); font-size:clamp(1.35rem,2.1vw,1.9rem);
+                   font-weight:400; letter-spacing:-0.01em; color:var(--c-pine-deep);
+                   margin:0 0 1.4rem; line-height:1.1;">
+          Sala Integrada
+        </h2>
+
+        <!-- Parágrafo -->
+        <p style="font-family:var(--font-sans); font-weight:300; font-size:0.875rem;
+                  line-height:1.78; color:var(--c-s500); margin:0 0 1.75rem; padding-right:3rem;">
+          A sala com cozinha integrada foi pensada como o coração da estadia: um ambiente
+          fluido, de marcenaria sob medida e madeiras nobres, onde os espaços conversam
+          entre si. Portas de correr abrem o ambiente por completo para o deck, e a
+          Cordilheira do Espinhaço passa a fazer parte da sala — do preparo de uma
+          refeição ao descanso no fim do dia.
+        </p>
+
+        <!-- Comodidades -->
+        <div class="d2-amenities" style="grid-template-columns:repeat(3,1fr); gap:0.9rem 1.25rem;">
+
+          <!-- 01 · Sala Integrada 26 m² -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="6" y="6" width="12" height="12" rx="0.5"/>
+              <rect x="8" y="12" width="5" height="3.5" rx="0.4"/>
+              <rect x="8" y="10.5" width="5" height="1.5" rx="0.4"/>
+              <circle cx="15" cy="13.5" r="1.5"/>
+              <line x1="6" y1="6" x2="3" y2="3"/>
+              <polyline points="5.5 3 3 3 3 5.5"/>
+              <line x1="18" y1="6" x2="21" y2="3"/>
+              <polyline points="18.5 3 21 3 21 5.5"/>
+              <line x1="6" y1="18" x2="3" y2="21"/>
+              <polyline points="5.5 21 3 21 3 18.5"/>
+              <line x1="18" y1="18" x2="21" y2="21"/>
+              <polyline points="18.5 21 21 21 21 18.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Sala 26 m²</span>
+          </div>
+
+          <!-- 02 · Cozinha Completa -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="1.5"/>
+              <line x1="2.5" y1="12" x2="21.5" y2="12"/>
+              <circle cx="8" cy="7.5" r="2.5"/>
+              <circle cx="8" cy="7.5" r="1" fill="currentColor" stroke="none"/>
+              <circle cx="16" cy="7.5" r="2.5"/>
+              <circle cx="16" cy="7.5" r="1" fill="currentColor" stroke="none"/>
+              <rect x="5.5" y="13.5" width="13" height="6.5" rx="1"/>
+              <line x1="8" y1="15" x2="16" y2="15"/>
+              <rect x="7.5" y="16.5" width="9" height="3" rx="0.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Cozinha Completa</span>
+          </div>
+
+          <!-- 03 · Sofá Cama -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:sofa-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Sofá Cama</span>
+          </div>
+
+          <!-- 03 · Smart TV 65' -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:tv-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Smart TV 65'</span>
+          </div>
+
+          <!-- 04 · Soundbar -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="1.5" y="9.5" width="21" height="5" rx="2.5"/>
+              <circle cx="4" cy="12" r="0.5" fill="currentColor" stroke="none"/>
+              <circle cx="8" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="10.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="13" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="15.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+              <circle cx="20" cy="12" r="1.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Soundbar</span>
+          </div>
+
+          <!-- 05 · Streaming -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:play-circle-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Streaming</span>
+          </div>
+
+          <!-- 06 · Echo Show -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="2" y="3" width="20" height="14" rx="1.5"/>
+              <circle cx="12" cy="5" r="0.75" fill="currentColor" stroke="none"/>
+              <circle cx="12" cy="11" r="3.5"/>
+              <path d="M9.5 11 Q9.5 8.5 12 8.5 Q14.5 8.5 14.5 11"/>
+              <path d="M7 17 L5.5 22 L18.5 22 L17 17"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Echo Show</span>
+          </div>
+
+          <!-- 07 · Robot Vacuum -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <circle cx="12" cy="13" r="9"/>
+              <path d="M5.5 7.5 Q12 4.5 18.5 7.5"/>
+              <line x1="7.5" y1="8.2" x2="16.5" y2="8.2"/>
+              <circle cx="12" cy="14" r="2.5"/>
+              <line x1="3.5" y1="18" x2="2" y2="16"/>
+              <line x1="3.5" y1="18" x2="2.5" y2="20"/>
+              <line x1="3.5" y1="18" x2="5.5" y2="19.5"/>
+              <line x1="20.5" y1="18" x2="22" y2="16"/>
+              <line x1="20.5" y1="18" x2="21.5" y2="20"/>
+              <line x1="20.5" y1="18" x2="18.5" y2="19.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Robot Vacuum</span>
+          </div>
+
+          <!-- 08 · Vista Panorâmica -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M2 20.5 L8.5 9 L13 16 L16.5 11 L22 20.5Z"/>
+              <circle cx="19.5" cy="6" r="2"/>
+              <line x1="17.5" y1="7.4" x2="15" y2="10.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Vista Panorâmica</span>
+          </div>
+
+        </div><!-- /.d2-amenities -->
+
+      </div><!-- /.d2-content -->
+
+      <!-- Coluna direita: slideshow sala -->
+      <div class="d2-img-wrap">
+        <div class="d2-slideshow">
+          <div class="d2-slide is-active">
+            <img class="d2-slide-img"
+                 src="assets/images/Sala + Cozinha.png"
+                 alt="Sala integrada — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Sala.png"
+                 alt="Sala — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Sala 2.png"
+                 alt="Sala 2 — Solar do Espinhaço" />
+          </div>
+          <div class="d2-dots">
+            <button class="d2-dot is-active" aria-label="Slide 1"></button>
+            <button class="d2-dot" aria-label="Slide 2"></button>
+            <button class="d2-dot" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.d2-grid -->
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     DOBRA — PISCINA E DECK
+═══════════════════════════════════════════════════ -->
+<section id="dobra-piscina" style="padding:0.5rem 0 7.5rem; background:var(--c-cream);">
+  <div style="max-width:90rem; margin:0 auto; padding:0 2.5rem;">
+
+    <div class="d2-grid reveal">
+
+      <!-- Coluna esquerda: slideshow -->
+      <div class="d2-img-wrap">
+        <div class="d2-slideshow">
+          <div class="d2-slide is-active">
+            <img class="d2-slide-img"
+                 src="assets/images/Piscina.jpeg"
+                 alt="Piscina — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Frente Dia 3.png"
+                 alt="Deck — Solar do Espinhaço" />
+          </div>
+          <div class="d2-slide">
+            <img class="d2-slide-img"
+                 src="assets/images/Frente Noite 2.png"
+                 alt="Piscina noturna — Solar do Espinhaço" />
+          </div>
+          <div class="d2-dots">
+            <button class="d2-dot is-active" aria-label="Slide 1"></button>
+            <button class="d2-dot" aria-label="Slide 2"></button>
+            <button class="d2-dot" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna direita: conteúdo -->
+      <div class="d2-content">
+
+        <!-- Eyebrow -->
+        <div style="display:flex; align-items:center; gap:0.85rem; margin-bottom:1.75rem;">
+          <span style="font-family:var(--font-sans); font-size:0.65rem; font-weight:400;
+                       letter-spacing:0.12em; color:var(--c-s400);">03</span>
+          <div style="width:36px; height:1px; background:var(--c-s300);"></div>
+        </div>
+
+        <!-- Título -->
+        <h2 style="font-family:var(--font-serif); font-size:clamp(1.35rem,2.1vw,1.9rem);
+                   font-weight:400; letter-spacing:-0.01em; color:var(--c-pine-deep);
+                   margin:0 0 1.4rem; line-height:1.1;">
+          Piscina e Deck
+        </h2>
+
+        <!-- Parágrafo -->
+        <p style="font-family:var(--font-sans); font-weight:300; font-size:0.9rem;
+                  line-height:1.85; color:var(--c-s500); margin:0 0 1.75rem; padding-right:4rem;">
+          A área externa é onde a hospedagem encontra a paisagem. Sob o pergolado envidraçado,
+          o deck em cumaru convida à permanência em qualquer estação — do almoço ao ar livre
+          às noites de inverno junto ao calor do fogo. Poucos passos adiante, a piscina de
+          borda infinita aquecida se desenha em frente à serra, dissolvendo o limite entre
+          a água e o horizonte.
+        </p>
+
+        <!-- Comodidades -->
+        <div class="d2-amenities" style="grid-template-columns:repeat(3,1fr); gap:0.9rem 1.25rem;">
+
+          <!-- 01 · Piscina Aquecida -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M2 16 Q5 13 8 16 Q11 19 14 16 Q17 13 22 16"/>
+              <path d="M2 12 Q5 9 8 12 Q11 15 14 12 Q17 9 22 12"/>
+              <path d="M8 5 Q8 3 10 3 L14 3 Q16 3 16 5 L16 9"/>
+              <line x1="8" y1="9" x2="16" y2="9"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Piscina Aquecida</span>
+          </div>
+
+          <!-- 02 · Deck de Madeira -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="2" y="14" width="20" height="3" rx="0.5"/>
+              <line x1="5" y1="14" x2="5" y2="22"/>
+              <line x1="9" y1="14" x2="9" y2="22"/>
+              <line x1="13" y1="14" x2="13" y2="22"/>
+              <line x1="17" y1="14" x2="17" y2="22"/>
+              <line x1="19" y1="14" x2="19" y2="22"/>
+              <line x1="2" y1="17" x2="22" y2="17"/>
+              <line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Deck de Madeira</span>
+          </div>
+
+          <!-- 03 · Vista Panorâmica -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M2 20.5 L8.5 9 L13 16 L16.5 11 L22 20.5Z"/>
+              <circle cx="19.5" cy="6" r="2"/>
+              <line x1="17.5" y1="7.4" x2="15" y2="10.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Vista Panorâmica</span>
+          </div>
+
+          <!-- 04 · Espreguiçadeiras -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <circle cx="17" cy="4" r="1.5"/>
+              <path d="M3 14 L8 10 L13 13 L18 9"/>
+              <line x1="3" y1="14" x2="3" y2="20"/>
+              <line x1="18" y1="9" x2="20" y2="20"/>
+              <line x1="3" y1="17" x2="20" y2="17"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Espreguiçadeiras</span>
+          </div>
+
+          <!-- 05 · Iluminação Noturna -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M12 2 Q7 6 7 11 A5 5 0 0 0 17 11 Q17 6 12 2Z"/>
+              <line x1="9" y1="17" x2="15" y2="17"/>
+              <line x1="10" y1="20" x2="14" y2="20"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Iluminação Noturna</span>
+          </div>
+
+          <!-- 06 · Área Privativa -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <rect x="3" y="11" width="18" height="11" rx="1.5"/>
+              <path d="M7 11 L7 7 Q7 3 12 3 Q17 3 17 7 L17 11"/>
+              <circle cx="12" cy="16.5" r="1.5"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Área Privativa</span>
+          </div>
+
+          <!-- 07 · Toalhas de Piscina -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <line x1="3" y1="4" x2="21" y2="4"/>
+              <path d="M7 4 L7 7 L17 7 L17 4"/>
+              <rect x="7" y="7" width="10" height="14" rx="1.5"/>
+              <line x1="9.5" y1="12" x2="14.5" y2="12"/>
+              <line x1="9.5" y1="15" x2="14.5" y2="15"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Toalhas de Piscina</span>
+          </div>
+
+          <!-- 08 · Paisagismo Nativo -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M12 22 L12 10"/>
+              <path d="M12 16 Q8 14 6 10 Q10 9 12 13"/>
+              <path d="M12 13 Q16 11 18 7 Q14 6 12 10"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Paisagismo Nativo</span>
+          </div>
+
+          <!-- 09 · Hidromassagem -->
+          <div class="d2-amenity">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <path d="M3.5 10 Q3.5 7.5 7 7 L17 7 Q20.5 7.5 20.5 10 L20.5 17 Q20.5 19.5 12 19.5 Q3.5 19.5 3.5 17 Z"/>
+              <path d="M7 7 Q6.5 5 8 4"/>
+              <path d="M12 7 Q11.5 5 13 4"/>
+              <path d="M17 7 Q16.5 5 18 4"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:0.57rem; font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Hidromassagem</span>
+          </div>
+
+        </div><!-- /.d2-amenities -->
+
+      </div><!-- /.d2-content -->
+
+    </div><!-- /.d2-grid -->
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     PASSEIOS PRIVATIVOS
+═══════════════════════════════════════════════════ -->
+<section id="passeios-priv">
+
+  <!-- spacer (≡ wp-block-spacer height:100px) -->
+  <div style="height:2rem" aria-hidden="true"></div>
+
+  <!-- bloco de texto centrado (≡ wp-columns 25/50/25 + awa-text--centered-type) -->
+  <div class="sx-text-block">
+    <div class="sx-eyebrow" id="sxEyebrow">
+      <div class="sx-eyebrow-line"></div>
+      <span class="sx-eyebrow-text">Lapinha da Serra &nbsp;·&nbsp; Passeios Exclusivos</span>
+      <div class="sx-eyebrow-line"></div>
+    </div>
+    <h2 class="sx-heading" id="sxHeading">
+      Crie seu próprio caminho com <em>passeios privativos.</em>
+    </h2>
+    <p class="sx-subtext" id="sxSubtext">
+      O Solar do Espinhaço organiza roteiros exclusivos para que cada hóspede explore
+      a Serra no seu próprio ritmo, conectando-se de forma genuína com a natureza,
+      a história e a hospitalidade de Lapinha da Serra.
+    </p>
+  </div>
+
+  <!-- figura full-width (≡ wp-block-image > figure.aligncenter.size-full) -->
+  <figure class="sx-figure">
+    <img
+      src="assets/images/trilha.avif"
+      alt="Trilha pela Serra do Espinhaço"
+      loading="lazy"
+    />
+  </figure>
+
+  <!-- filtro (≡ awa-content-list__filter) -->
+  <div class="sx-filter-area">
+    <div class="sx-filter-wrap" id="sxFilterWrap">
+      <button class="sx-filter-btn" id="sxFilterBtn" aria-expanded="false" aria-haspopup="listbox">
+        Filtrar por tipo +
+      </button>
+      <div class="sx-filter-menu" role="listbox">
+        <span class="sx-filter-item is-active" data-filter="todos">Todos</span>
+        <span class="sx-filter-item" data-filter="cachoeiras">Cachoeiras</span>
+        <span class="sx-filter-item" data-filter="pocos">Poços</span>
+        <span class="sx-filter-item" data-filter="trilhas">Trilhas &amp; Picos</span>
+        <span class="sx-filter-item" data-filter="aquatico">Aquático</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- grade de cards -->
+  <div class="sx-content-list">
+    <div class="sx-cards-grid" id="sxCardsGrid">
+
+      <div class="sx-card" data-type="cachoeiras">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/Piscina.jpeg" alt="Cachoeira do Lajeado" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Cachoeira do Lajeado</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>A Cachoeira do Lajeado destaca-se por sua imponente queda de cerca de quarenta metros sobre um paredão de pedra, que forma, ao pé do salto, um amplo poço de águas verdes e cristalinas. Considerada um dos melhores pontos de mergulho da região, pode ser alcançada a pé, a cavalo ou de caiaque, conforme o nível das águas e a sua preferência.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="cachoeiras">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/trilha.avif" alt="Cachoeira Bicame" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Cachoeira Bicame</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Inserido em uma área de preservação alimentada pelo Rio das Pedras, o Bicame oferece uma piscina natural funda e de águas esverdeadas, emoldurada pela vegetação nativa. Com visitação limitada a poucas pessoas por dia, garante exclusividade e silêncio. O acesso pode ser feito pela trilha ou, quando a lagoa está cheia, por um agradável trajeto de canoa.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="pocos">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/Piscina.jpeg" alt="Poço do Soberbo" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Poço do Soberbo</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Reservado aos que apreciam o desafio, o Poço do Soberbo é alcançado por uma trilha longa, de cerca de dezessete quilômetros, que exige preparo físico. Afastado do movimento, recompensa o esforço com isolamento, silêncio e a satisfação de um mergulho verdadeiramente conquistado.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="cachoeiras">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/trilha.avif" alt="Cachoeira Rapel" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Cachoeira Rapel</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>A poucos passos do vilarejo, a Cachoeira do Rapel reúne, em um mesmo cenário, o descanso e a aventura. Suas águas convidam ao banho tranquilo, enquanto o paredão serve de palco para a prática de rapel, conduzida com total segurança. Uma excursão versátil, que se adapta ao ritmo e ao interesse de cada visitante.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="cachoeiras">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/Piscina.jpeg" alt="Cachoeira Paraíso" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Cachoeira Paraíso</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Reservada e de acesso discreto, a Cachoeira do Paraíso surge a partir de um desvio no caminho do Pico da Lapinha. Com cerca de vinte metros de queda e raras presenças por perto, é um refúgio para quem busca privacidade e contemplação — um convite a desacelerar diante da água.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="pocos">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/Piscina.jpeg" alt="Poço do Boqueirão" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Poço do Boqueirão</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>O mais acessível e procurado dos poços da Lapinha, a apenas quinze minutos de caminhada do centro. Suas águas escuras e cristalinas, com até vinte metros de profundidade, são abraçadas por um pequeno desfiladeiro de pedra que forma uma ducha natural. Refrescante o ano inteiro, é ideal para visitantes de todas as idades.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="trilhas">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/serra-hero.avif" alt="Travessia Lapinha – Tabuleiro" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Travessia Lapinha – Tabuleiro</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Uma das travessias mais clássicas do montanhismo brasileiro, percorre a Serra do Espinhaço ao longo de dois a três dias, com pernoites em meio à serra. Tem como destino a Cachoeira do Tabuleiro, a mais alta de Minas Gerais, com 273 metros de queda. Indicada a caminhantes preparados, é sempre realizada com guia credenciado.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="trilhas">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/trilha.avif" alt="Pinturas Rupestres" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Pinturas Rupestres</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Ao pé do Pico do Breu, um paredão rochoso guarda pinturas rupestres de quase sete mil anos, produzidas com pigmentos naturais de ferro e manganês. Alcançado de barco ou por trilha, sempre com guia, é um patrimônio frágil e protegido — uma autêntica viagem no tempo, indicada a quem aprecia história, cultura e a dimensão ancestral da serra.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="aquatico">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/Piscina.jpeg" alt="Stand Up e Caiaque" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Stand Up e Caiaque</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Sobre as águas calmas da represa, o stand-up paddle e o caiaque permitem explorar enseadas escondidas e pequenas praias. Ao entardecer, a superfície se transforma em espelho e o sol doura as montanhas — cenário das remadas guiadas ao pôr do sol e, em datas especiais, sob a lua cheia. Atividade adequada a iniciantes e experientes.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="trilhas">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/serra-hero.avif" alt="Pico da Lapinha" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Pico da Lapinha</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>Segundo ponto mais alto da Serra do Cipó, com cerca de 1.647 metros, o Pico da Lapinha recompensa a subida íngreme com uma vista soberana do vilarejo e da lagoa. É um dos mirantes naturais mais memoráveis da região, indicado a quem tem disposição para a caminhada.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="trilhas">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/trilha.avif" alt="Pico do Breu" loading="lazy"/>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Pico do Breu</h3>
+          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <div class="sx-card__excerpt">
+            <p>O ponto mais alto da região, a cerca de 1.687 metros. Sua trilha exigente, recomendada a caminhantes experientes e acompanhados de guia, conduz a um cume de onde se descortina um verdadeiro mar de montanhas, que alcança, em dias claros, a região do Pico do Itambé.</p>
+          </div>
+          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+    </div><!-- /.sx-cards-grid -->
+  </div><!-- /.sx-content-list -->
+
+</section><!-- /#passeios-priv -->
+
+<!-- ═══════════════════════════════════════════════════
+     DOBRA 05 — CTA FINAL + FOOTER INTEGRADO
+═══════════════════════════════════════════════════ -->
+<section class="cta-section" id="cta-final">
+
+  <!-- Background com parallax -->
+  <div class="cta-bg" id="ctaBg"></div>
+
+  <!-- Overlay multicamada -->
+  <div class="cta-overlay"></div>
+  <div class="cta-vignette"></div>
+
+
+  <!-- Conteúdo central -->
+  <div class="cta-inner">
+
+    <!-- Eyebrow -->
+    <div class="cta-eyebrow" id="ctaEyebrow">
+      <div class="cta-eyebrow-line"></div>
+      <span class="cta-eyebrow-text">Lapinha da Serra &nbsp;·&nbsp; Minas Gerais</span>
+      <div class="cta-eyebrow-line"></div>
+    </div>
+
+    <!-- Headline principal -->
+    <h2 class="cta-headline" id="ctaHeadline">
+      Sua estadia na serra<br>
+      <em>começa aqui.</em>
+    </h2>
+
+    <!-- Subheadline -->
+    <p class="cta-sub" id="ctaSub">
+      O Solar do Espinhaço reserva para você um espaço onde o tempo desacelera
+      e a natureza volta a fazer sentido.
+    </p>
+
+  </div><!-- /.cta-inner -->
+
+  <!-- Footer integrado — dentro da seção com background da serra -->
+  <div class="cta-footer-integrated">
+    <div class="cfi-main">
+
+      <!-- Marca -->
+      <div class="cfi-brand">
+        <div class="cfi-logo-wrap">
+          <!-- Disco com folha -->
+          <div style="position:relative; width:33px; height:33px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,255,255,0.48);"></div>
+            <iconify-icon icon="solar:leaf-linear" width="19" style="color:rgba(255,255,255,0.88);"></iconify-icon>
+          </div>
+          <!-- Divisor + Wordmark -->
+          <div style="display:flex; align-items:center;">
+            <div style="width:1px; height:33px; background:rgba(255,255,255,0.18); flex-shrink:0; margin-left:13px;"></div>
+            <div style="margin-left:13px;">
+              <div style="font-family:'Inter',sans-serif; font-weight:400; font-size:8.5px; letter-spacing:0.38em; text-transform:uppercase; color:rgba(255,255,255,0.60); line-height:1; text-shadow:0 1px 8px rgba(0,0,0,0.55);">Solar do</div>
+              <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.08em; text-transform:uppercase; line-height:1; color:rgba(255,255,255,0.93); margin-top:4px; text-shadow:0 2px 12px rgba(0,0,0,0.40);">Espinhaço</div>
+            </div>
+          </div>
+        </div>
+        <p class="cfi-tagline">Uma pousada boutique na Serra do Espinhaço. Silêncio, paisagem e hospitalidade em Lapinha da Serra.</p>
+        <div class="cfi-social-icons">
+          <a href="https://instagram.com/solardoespinhaco" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://wa.me/5531997555245" target="_blank" rel="noopener" aria-label="WhatsApp">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Contato -->
+      <nav class="cfi-nav" aria-label="Contato">
+        <span class="cfi-nav-title">Contato</span>
+        <ul>
+          <li><a href="tel:+5531997555245">Telefone · +55 31 9 9755-5245</a></li>
+          <li><a href="mailto:reservas@solardoespinhaco.com.br">reservas@solardoespinhaco.com.br</a></li>
+          <li><a href="https://www.solardoespinhaco.com.br" target="_blank" rel="noopener">www.solardoespinhaco.com.br</a></li>
+        </ul>
+      </nav>
+
+      <!-- Localização -->
+      <nav class="cfi-nav" aria-label="Localização">
+        <span class="cfi-nav-title">Localização</span>
+        <ul>
+          <li><span>Rua Olhos D'água, nº 22</span></li>
+          <li><span>Lapinha da Serra — MG</span></li>
+          <li><a href="https://maps.app.goo.gl/XfvBXTmR62YSmWRt5" target="_blank" rel="noopener">Ver no mapa →</a></li>
+        </ul>
+      </nav>
+
+      <!-- Informações -->
+      <nav class="cfi-nav" aria-label="Informações">
+        <span class="cfi-nav-title">Informações</span>
+        <ul>
+          <li><span>Check-in 15h · Check-out 12h</span></li>
+          <li><span>Reservas direto pelo site</span></li>
+        </ul>
+      </nav>
+
+    </div><!-- /.cfi-main -->
+
+    <div class="cfi-bottom">
+      <div class="cfi-bottom-inner">
+        <span class="cfi-copy">© 2026 Solar do Espinhaço. Todos os direitos reservados.</span>
+        <div class="cfi-legal">
+          <a href="#">Política de Privacidade</a>
+          <a href="#">Termos de Uso</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.cta-footer-integrated -->
+
+</section><!-- /#cta-final -->
+
+<!-- ═══════════════════════════════════════════════════
+     JS · SITE (extraído dos <script> inline)
+═══════════════════════════════════════════════════ -->
+<script src="js/main.js"></script>
+
+<!-- ═══════════════════════════════════════════════════
+     BOOKING POPUP — abre ao clicar em Reservar
+═══════════════════════════════════════════════════ -->
+<div id="bkPopup" role="dialog" aria-modal="true" aria-label="Fazer reserva">
+  <div id="bookingBar" class="glass-panel rounded-2xl md:rounded-full p-1.5 shadow-2xl shadow-black/35 w-full max-w-3xl mx-auto">
+    <div id="bookingAnchor" class="flex flex-col md:flex-row items-stretch">
+
+      <!-- Check-in -->
+      <div class="flex-1 flex flex-col justify-center px-6 py-4 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-l-full md:rounded-r-none border-b md:border-b-0 md:border-r border-white/[0.07]"
+           data-field="checkin" onclick="Booking.open('checkin')">
+        <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-1 group-hover:text-stone-400 transition-colors cursor-pointer">
+          <iconify-icon icon="solar:calendar-mark-linear" width="11"></iconify-icon>
+          Check-in
+        </label>
+        <div class="text-stone-100 text-[0.78rem] font-medium" id="checkinDisplay">Selecionar data</div>
+      </div>
+
+      <!-- Check-out -->
+      <div class="flex-1 flex flex-col justify-center px-6 py-4 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-none border-b md:border-b-0 md:border-r border-white/[0.07]"
+           data-field="checkout" onclick="Booking.open('checkout')">
+        <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-1 group-hover:text-stone-400 transition-colors cursor-pointer">
+          <iconify-icon icon="solar:calendar-mark-linear" width="11"></iconify-icon>
+          Check-out
+        </label>
+        <div class="text-stone-100 text-[0.78rem] font-medium" id="checkoutDisplay">Selecionar data</div>
+      </div>
+
+      <!-- Hóspedes -->
+      <div class="flex-1 flex flex-col justify-center px-6 py-4 cursor-pointer group hover:bg-white/5 transition-colors rounded-xl md:rounded-none"
+           onclick="Booking.open('guests')">
+        <label class="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-stone-500 mb-1 group-hover:text-stone-400 transition-colors cursor-pointer">
+          <iconify-icon icon="solar:users-group-rounded-linear" width="11"></iconify-icon>
+          Hóspedes
+        </label>
+        <div class="text-stone-100 text-[0.78rem] font-medium" id="guestsDisplay">2 Adultos, 1 Criança</div>
+      </div>
+
+      <!-- CTA -->
+      <div class="px-1.5 py-1.5 md:pr-1.5 md:self-center">
+        <button class="btn-glow w-full md:w-auto bg-stone-100 text-stone-900 rounded-full px-6 py-2.5 flex items-center justify-center gap-1.5 hover:bg-white transition-colors shadow-lg font-semibold text-[0.62rem] tracking-widest uppercase">
+          Ver disponibilidade
+          <iconify-icon icon="solar:arrow-right-linear" width="12"></iconify-icon>
+        </button>
+      </div>
+
+    </div><!-- /#bookingAnchor -->
+  </div><!-- /#bookingBar -->
+</div><!-- /#bkPopup -->
+
+</body>
+</html>
