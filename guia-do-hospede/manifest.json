@@ -1,0 +1,15 @@
+{
+  "name": "Guia do Hóspede · Solar do Espinhaço",
+  "short_name": "Solar Espinhaço",
+  "description": "Guia do hóspede do Solar do Espinhaço — Lapinha da Serra, MG. Wi-Fi, check-in, trilhas, restaurantes e contatos de emergência, tudo no seu bolso.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#1C2922",
+  "theme_color": "#1C2922",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

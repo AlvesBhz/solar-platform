@@ -1,0 +1,318 @@
+/* ══════════════════════════════════════════════════════════
+   KEYFRAMES (mesmos do index.html / design system)
+═══════════════════════════════════════════════════════════ */
+@keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp   { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn  { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes pulse     { 0%, 100% { opacity: 1; transform: scale(1.06); } 50% { opacity: 0.82; transform: scale(1); } }
+@keyframes glowPulse { 0%, 100% { opacity: 0.35; transform: scale(1); } 50% { opacity: 0.65; transform: scale(1.12); } }
+@keyframes bounce    { 0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); } 50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); } }
+@keyframes orb1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-50px) scale(1.08); } 66% { transform: translate(-30px,25px) scale(0.94); } }
+@keyframes orb2 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-50px,30px) scale(0.92); } 66% { transform: translate(35px,-40px) scale(1.06); } }
+@keyframes shimmer { from { background-position: -200% center; } to { background-position: 200% center; } }
+@keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ══════════════════════════════════════════════════════════
+   SCROLL REVEAL
+═══════════════════════════════════════════════════════════ */
+.reveal       { opacity: 0; transform: translateY(28px); transition: opacity 0.72s var(--ease-out), transform 0.72s var(--ease-out); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ══════════════════════════════════════════════════════════
+   APP SHELL — telas full-screen roteadas em JS
+═══════════════════════════════════════════════════════════ */
+.app-shell { min-height: 100vh; min-height: 100dvh; }
+
+.screen { display: none; }
+.screen.active { display: block; animation: screenIn 0.45s var(--ease-out); }
+
+.hero-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+
+/* ── Tela CLARA (fundo cream) ── */
+.screen-light {
+  background: var(--c-cream);
+  color: var(--c-s900);
+  min-height: 100vh; min-height: 100dvh;
+  padding-bottom: var(--bottom-nav-h);
+}
+
+/* Barra superior fixa das telas internas */
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: rgba(250,250,249,0.86);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  padding: max(14px, env(safe-area-inset-top)) 18px 14px;
+  display: flex; align-items: center; gap: 14px;
+  border-bottom: 1px solid rgba(28,41,34,0.06);
+}
+.btn-back {
+  width: var(--tap-min); height: var(--tap-min);
+  border-radius: 50%;
+  background: var(--c-pine);
+  color: var(--c-cream);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; border: none; cursor: pointer;
+  transition: transform 0.2s var(--ease-out);
+}
+.btn-back:active { transform: scale(0.90); }
+.btn-back iconify-icon { width: 18px; height: 18px; font-size: 18px; }
+.topbar-cr { font-family: var(--font-sans); font-size: 9px; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase; color: var(--c-s500); }
+.topbar-h2 { font-family: var(--font-serif); font-weight: 500; font-size: 20px; letter-spacing: -0.01em; color: var(--c-s900); line-height: 1; }
+.topbar-ic {
+  width: var(--tap-min); height: var(--tap-min);
+  border-radius: 50%;
+  border: 1px solid rgba(28,41,34,0.14);
+  color: var(--c-pine);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.topbar-ic iconify-icon { width: 19px; height: 19px; font-size: 19px; }
+
+/* Foto de destaque no topo da tela interna */
+.s-hero { position: relative; height: 280px; background-size: cover; background-position: center; overflow: hidden; }
+.s-hero::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(28,41,34,0.20) 0%, rgba(28,41,34,0.10) 40%, rgba(250,250,249,1) 100%); }
+.s-hero-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 0 20px 26px; z-index: 1; }
+.s-hero-content .stamp { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-s500); }
+.s-hero h1 { font-family: var(--font-serif); font-weight: 500; font-size: clamp(2.1rem, 10vw, 3.4rem); letter-spacing: -0.03em; line-height: 0.94; color: var(--c-s900); margin: 8px 0 0; max-width: 18ch; }
+.s-hero h1 .it { font-family: var(--font-italic); font-style: italic; font-weight: 400; }
+.s-hero p { margin-top: 14px; font-size: 13.5px; font-weight: 300; color: var(--c-s600); line-height: 1.6; max-width: 32em; }
+
+/* Variante sem foto (locais sem imagem própria — evita usar
+   fotografia de banco de imagens desconectada do imóvel real) */
+.s-hero-plain {
+  position: relative; overflow: hidden;
+  padding: 28px 20px 26px;
+  background: linear-gradient(160deg, var(--c-pine-deep) 0%, var(--c-pine) 100%);
+}
+.s-hero-plain iconify-icon.watermark {
+  position: absolute; right: -18px; bottom: -22px;
+  font-size: 150px; width: 150px; height: 150px;
+  color: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+.s-hero-plain .stamp { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(250,250,249,0.5); position: relative; }
+.s-hero-plain h1 { font-family: var(--font-serif); font-weight: 500; font-size: clamp(2.1rem, 10vw, 3rem); letter-spacing: -0.03em; line-height: 0.98; color: var(--c-cream); margin: 8px 0 0; max-width: 18ch; position: relative; }
+.s-hero-plain h1 .it { font-family: var(--font-italic); font-style: italic; font-weight: 400; color: var(--c-gold-lt); }
+.s-hero-plain p { margin-top: 14px; font-size: 13.5px; font-weight: 300; color: rgba(250,250,249,0.72); line-height: 1.6; max-width: 32em; position: relative; }
+
+/* ══════════════════════════════════════════════════════════
+   COVER (tela inicial · primeira dobra)
+═══════════════════════════════════════════════════════════ */
+.cover-screen { min-height: 100vh; min-height: 100dvh; }
+.cover-explore {
+  align-self: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  background: none; border: none; cursor: pointer; padding: 0.5rem;
+}
+.cover-bg {
+  position: absolute; inset: 0;
+  background-image: url('../assets/images/serra-hero.avif');
+  background-size: cover; background-position: center;
+  opacity: 0.55;
+  animation: pulse 14s ease-in-out infinite;
+}
+.cover-title { font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.05em; line-height: 0.82; color: #fff; mix-blend-mode: overlay; }
+.cover-title .l1 { display: block; font-size: clamp(3.2rem, 15vw, 6rem); }
+.cover-title .l2 { display: block; font-family: var(--font-italic); font-style: italic; font-weight: 400; font-size: clamp(1.9rem, 8vw, 3.4rem); margin-left: clamp(0.5rem, 4vw, 2rem); margin-top: -0.15em; letter-spacing: -0.02em; }
+.wm-watermark {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: var(--font-serif); font-weight: 400; color: rgba(255,255,255,0.04);
+  font-size: clamp(90px, 26vw, 200px); letter-spacing: -0.04em; line-height: 1;
+  white-space: nowrap; pointer-events: none; mix-blend-mode: overlay; z-index: 0;
+}
+.explore-tag { -webkit-writing-mode: vertical-rl; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(250,250,249,0.5); }
+
+
+/* ══════════════════════════════════════════════════════════
+   SITE NAV — réplica exata do nav-top do index.html
+   (fixo à tela, transparente em repouso, vidro pine ao rolar)
+═══════════════════════════════════════════════════════════ */
+.nav-top {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 60;
+  background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  padding-top: env(safe-area-inset-top);
+  transition: background 0.45s ease, backdrop-filter 0.45s ease, -webkit-backdrop-filter 0.45s ease, border-color 0.45s ease;
+}
+.nav-top.is-scrolled {
+  background: rgba(44, 62, 53, 0.90);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom-color: rgba(255,255,255,0.10);
+}
+.nav-top-inner {
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 3.5rem;
+}
+.nav-top a { text-decoration: none; }
+.nav-top a:not(.nav-logo) {
+  font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.40);
+  white-space: nowrap; padding: 0.5rem 0;
+  transition: color 0.3s ease;
+}
+.nav-top a:not(.nav-logo):hover { color: #fff; }
+.nav-logo { transition: opacity 0.3s ease; }
+.nav-logo:hover { opacity: 0.82; }
+
+.nav-menu-zone { display: flex; align-items: center; overflow: hidden; }
+.nav-burger {
+  display: flex; flex-direction: column; gap: 5px;
+  width: 36px; height: 36px;
+  align-items: flex-start; justify-content: center;
+  background: none; border: none; cursor: pointer;
+  padding: 0; flex-shrink: 0;
+}
+.nav-burger span {
+  display: block; height: 1px;
+  background: rgba(255,255,255,0.82);
+  transform-origin: left center;
+  transition: width 0.35s var(--ease-out), opacity 0.25s ease, transform 0.35s var(--ease-out), background 0.25s ease;
+}
+.nav-burger span:nth-child(1) { width: 26px; }
+.nav-burger span:nth-child(2) { width: 18px; }
+.nav-burger span:nth-child(3) { width: 22px; }
+.nav-burger.is-open span { background: #fff; }
+.nav-burger.is-open span:nth-child(1) { transform: rotate(43deg); width: 24px; }
+.nav-burger.is-open span:nth-child(2) { opacity: 0; width: 0; }
+.nav-burger.is-open span:nth-child(3) { transform: rotate(-43deg); width: 24px; }
+
+/* Réplica exata da abertura do menu do index.html: o painel cresce
+   na horizontal (max-width 0 → 480px), ao lado do hambúrguer, sem
+   sair da própria barra — não é um painel suspenso abaixo dela. */
+.site-menu {
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  flex-shrink: 0;
+  transition: max-width 0.55s var(--ease-out), opacity 0.42s ease;
+}
+.site-menu.is-open {
+  max-width: 480px;
+  opacity: 1;
+  pointer-events: auto;
+}
+.site-menu-list {
+  list-style: none; margin: 0;
+  padding: 0 0 0 1.25rem;
+  display: flex; align-items: center; gap: 1.25rem;
+  white-space: nowrap;
+}
+.site-menu-item { flex-shrink: 0; }
+.site-menu-item a {
+  display: inline-block;
+  min-height: var(--tap-min);
+  padding: 0.6rem 0 0.6rem 0;
+  color: rgba(255,255,255,0.85); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.10em;
+  background-image: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85));
+  background-size: 0% 1px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  padding-bottom: 2px;
+  transition: color 0.28s ease, background-size 0.30s var(--ease-out);
+}
+.site-menu-item a:hover { color: #fff; background-size: 100% 1px; }
+
+.lang-inline { display: flex; align-items: center; gap: 0; }
+.lang-inline-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 0.4rem 0.5rem;
+  font-family: var(--font-sans); font-size: 0.6rem;
+  font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.40);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.40);
+  transition: color 0.25s ease;
+}
+.lang-inline-btn:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.18); }
+.lang-inline-btn:hover, .lang-inline-btn.active { color: rgba(255,255,255,0.90); }
+
+/* ══════════════════════════════════════════════════════════
+   HOME / MENU (conteúdo abaixo do hero)
+═══════════════════════════════════════════════════════════ */
+.home-header {
+  position: sticky; top: 0; z-index: 30;
+  padding: max(14px, env(safe-area-inset-top)) 20px 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: linear-gradient(180deg, rgba(28,41,34,0.92) 0%, rgba(28,41,34,0.70) 70%, transparent 100%);
+}
+
+.h-group { display: flex; align-items: baseline; gap: 10px; margin: 26px 0 14px; }
+.h-group .n { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; color: var(--c-s400); }
+.h-group h3 { font-family: var(--font-serif); font-weight: 500; font-size: 19px; color: var(--c-s100); margin: 0; }
+.h-group .rule { flex: 1; height: 1px; background: linear-gradient(to right, rgba(255,255,255,0.15), transparent); }
+.h-group .tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--c-s500); white-space: nowrap; }
+
+/* ── Busca (Home) ── */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 0 14px;
+  min-height: var(--tap-min);
+  margin: 4px 0 6px;
+}
+.search-bar iconify-icon { color: rgba(250,250,249,0.45); width: 17px; height: 17px; flex-shrink: 0; }
+.search-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--c-cream); font-size: 14px; font-family: var(--font-sans);
+  padding: 12px 0;
+}
+.search-bar input::placeholder { color: rgba(250,250,249,0.35); }
+.search-clear {
+  background: none; border: none; color: rgba(250,250,249,0.45);
+  cursor: pointer; display: none; padding: 6px; flex-shrink: 0;
+}
+.search-bar.has-value .search-clear { display: inline-flex; }
+.search-empty { display: none; text-align: center; padding: 30px 20px; color: rgba(250,250,249,0.5); font-size: 13px; }
+.search-empty.show { display: block; }
+
+/* ══════════════════════════════════════════════════════════
+   BOTTOM NAVIGATION — navegação principal do app
+═══════════════════════════════════════════════════════════ */
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+  display: flex;
+  background: rgba(28,41,34,0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+}
+/* Na tela de abertura (Hero) a navegação inferior fica escondida —
+   o hambúrguer e o botão "Abrir o guia" já dão acesso ao conteúdo,
+   e a barra só faria sombra sobre a foto e o ticker. */
+body.on-cover .bottom-nav { display: none; }
+.bn-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px;
+  min-height: var(--tap-min);
+  background: none; border: none; cursor: pointer;
+  color: rgba(250,250,249,0.5);
+  padding: 6px 2px;
+  border-radius: 12px;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.bn-item iconify-icon { width: 20px; height: 20px; font-size: 20px; }
+.bn-item span { font-size: 9px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.bn-item.active { color: var(--c-gold); }
+.bn-item:active { background: rgba(255,255,255,0.06); }
+
+/* Some seções (telas leves) ficam por cima da bottom nav —
+   dá contraste suficiente para permanecer legível */
+.screen-light ~ .bottom-nav,
+body.on-light-screen .bottom-nav {
+  background: rgba(250,250,249,0.92);
+  border-top-color: rgba(28,41,34,0.08);
+}
+body.on-light-screen .bn-item { color: rgba(28,41,34,0.45); }
+body.on-light-screen .bn-item.active { color: var(--c-pine); }

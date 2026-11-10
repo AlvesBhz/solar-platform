@@ -1,0 +1,55 @@
+/* ══════════════════════════════════════════════════════════
+   BASE · reset, tipografia, comportamento global
+═══════════════════════════════════════════════════════════ */
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background: var(--c-pine-deep);
+  color: var(--c-cream);
+  overflow-x: hidden;
+  width: 100%;
+}
+
+img, svg, video { max-width: 100%; }
+
+h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
+.font-italic-serif, .font-italic-serif * { font-family: var(--font-italic) !important; font-style: italic; font-weight: 400; }
+
+::selection { background: var(--c-pine); color: var(--c-cream); }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--c-s900); }
+::-webkit-scrollbar-thumb { background: var(--c-pine-mid); border-radius: 99px; }
+
+iconify-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ── Foco visível — acessibilidade de teclado (desktop/tablet) ── */
+:focus-visible {
+  outline: 2px solid var(--c-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+button, a, input, [tabindex] { -webkit-tap-highlight-color: transparent; }
+
+/* ── Respeita preferência do usuário por menos movimento ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

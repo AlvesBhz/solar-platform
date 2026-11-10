@@ -1,0 +1,48 @@
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVIDADE
+   Mobile-first: os estilos-base (variables/base/components/
+   layout) já cobrem 320–480px. Este arquivo ajusta apenas o
+   que muda a partir daí — telas pequenas primeiro, depois
+   tablets/desktop como fallback (o produto foi pensado para
+   celular; telas maiores centralizam a mesma experiência).
+═══════════════════════════════════════════════════════════ */
+
+/* ── Celulares muito pequenos (320–359px): aperta respiros ── */
+@media (max-width: 359px) {
+  .cover-screen .px-6 { padding-left: 16px !important; padding-right: 16px !important; }
+  .l-card { padding: 18px; }
+  .place-img { width: 64px; height: 64px; }
+  .fab-wa { right: 12px; }
+}
+
+/* ── A partir de tablets (≥ 640px): mais respiro, grades maiores ── */
+@media (min-width: 640px) {
+  .menu-wrap, .l-card-wrap, .max-w-2xl { max-width: 640px; }
+  .s-hero { height: 340px; }
+  .cover-title .l1 { font-size: clamp(4.5rem, 12vw, 7rem); }
+}
+
+/* ── Desktop / tablets grandes (≥ 900px): o guia continua
+      centralizado como um "app" — não vira um site desktop ── */
+@media (min-width: 900px) {
+  .app-shell, .screen { max-width: 900px; margin: 0 auto; }
+  .screen-light, .cover-screen, #menu { box-shadow: 0 0 80px rgba(0,0,0,0.25); }
+  body { background: var(--c-s900); }
+  .bottom-nav { max-width: 900px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; }
+
+  /* nav-top e o FAB do WhatsApp são fixos à viewport inteira (para
+     funcionar corretamente em celular, onde o app ocupa a tela toda).
+     Só nesta faixa de largura — em que a tela vira uma coluna
+     centralizada de 900px, como o resto do app — eles precisam
+     acompanhar essa mesma coluna, e não colar nas bordas reais
+     da janela do navegador. */
+  .nav-top-inner { max-width: 900px; margin: 0 auto; }
+  .fab-wa { right: calc(50vw - 450px + 16px); }
+}
+
+/* ── Altura reduzida (celular em paisagem) ── */
+@media (max-height: 480px) and (orientation: landscape) {
+  .cover-screen .flex.flex-col.justify-between { padding-top: 6px; padding-bottom: 6px; }
+  .cover-title .l1 { font-size: clamp(2.4rem, 9vw, 3.6rem); }
+  .s-hero { height: 180px; }
+}

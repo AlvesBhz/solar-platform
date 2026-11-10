@@ -1,0 +1,121 @@
+{
+  "property": {
+    "name": "Solar do Espinhaço",
+    "tagline": "Guia do hóspede · Lapinha da Serra · Minas Gerais",
+    "address": "Rua Olhos D'água, nº 22 · Lapinha da Serra · Santana do Riacho · MG",
+    "mapsUrl": "https://maps.app.goo.gl/XfvBXTmR62YSmWRt5",
+    "phone": "+5531997555245",
+    "phoneDisplay": "+55 31 9 9755-5245",
+    "whatsapp": "5531997555245",
+    "email": "reservas@solardoespinhaco.com.br",
+    "instagram": "solardoespinhaco",
+    "checkin": "14h00",
+    "checkout": "12h00"
+  },
+  "wifi": {
+    "network": "SolarEspinhaço",
+    "password": "lapinha2024",
+    "band": "200 Mbps · Fibra"
+  },
+  "emergencyNational": [
+    { "label": "SAMU · ambulância", "tel": "192", "icon": "solar:medical-kit-linear" },
+    { "label": "Bombeiros", "tel": "193", "icon": "solar:flame-linear" },
+    { "label": "Polícia Militar", "tel": "190", "icon": "solar:shield-keyhole-linear" },
+    { "label": "Defesa Civil", "tel": "199", "icon": "solar:cloud-storm-linear" }
+  ],
+  "menu": [
+    {
+      "id": "wifi", "group": "01", "kind": "pinned", "icon": "solar:wi-fi-router-linear",
+      "label": "Wi-Fi", "value": "Conectar", "foot": "Rede & senha →"
+    },
+    {
+      "id": "checkin", "group": "01", "kind": "pinned", "icon": "solar:clock-circle-linear",
+      "label": "Estadia", "value": "14h — 12h", "foot": "Check-in / out →"
+    },
+    {
+      "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear",
+      "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/Suite.jpeg"
+    },
+    {
+      "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear",
+      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.png"
+    },
+    {
+      "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear",
+      "num": "B · 01 — 1.686 metros", "title": "A serra <em>à porta</em>", "image": "assets/images/trilha.avif"
+    },
+    {
+      "id": "restaurantes", "group": "02", "kind": "tile", "icon": "solar:chef-hat-minimalistic-linear",
+      "num": "B · 02 — no vilarejo", "title": "Onde <em>comer</em>", "solid": true
+    },
+    {
+      "id": "compras", "group": "02", "kind": "tile", "icon": "solar:cart-3-linear",
+      "num": "B · 03 — mercado & farmácia", "title": "Compras", "solid": true
+    },
+    {
+      "id": "lapinha", "group": "02", "kind": "tile", "wide": true, "icon": "solar:map-point-linear",
+      "num": "B · 04 — o lugarejo · 500 hab · 140km de BH", "title": "Lapinha", "image": "assets/images/serra-hero.avif"
+    },
+    {
+      "id": "regras", "group": "03", "kind": "util", "icon": "solar:documents-linear", "label": "Combinações"
+    },
+    {
+      "id": "transporte", "group": "03", "kind": "util", "icon": "solar:bus-linear", "label": "Como chegar"
+    },
+    {
+      "id": "servicos", "group": "03", "kind": "util", "icon": "solar:bell-linear", "label": "Serviços"
+    },
+    {
+      "id": "emergencia", "group": "03", "kind": "util", "icon": "solar:shield-warning-linear", "label": "Emergência"
+    },
+    {
+      "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear",
+      "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/Piscina.jpeg"
+    }
+  ],
+  "groups": {
+    "01": { "title": "Sua estadia", "tag": "essenciais" },
+    "02": { "title": "A região", "tag": "Espinhaço · cipó" },
+    "03": { "title": "Prático", "tag": "o feijão com arroz" },
+    "04": { "title": "Antes de partir", "tag": "um último gesto" }
+  },
+  "places": {
+    "serraPerto": [
+      { "title": "Cachoeira do Boqueirão", "text": "O poço mais visitado, com 20m de profundidade e salva-vidas. Caminhada quase plana, ideal para crianças.", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:running-linear", "text": "500 m a pé" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Cachoeira do Rapel", "text": "40 m de paredão para rapel, num dos pontos mais altos da Lapinha. Queda forte só fora da seca.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:running-linear", "text": "1,8 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Poço Verde & Ducha Natural", "text": "Águas notavelmente cristalinas no caminho do Boqueirão. Boa parada antes ou depois do banho principal.", "icon": "solar:waterdrop-linear", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:clock-circle-linear", "text": "30 min" }] }
+    ],
+    "serraLonge": [
+      { "title": "Cachoeira do Lajeado", "text": "Queda de 40m em paredão rochoso, com poço cristalino e fundo. Trilha quase plana ao redor do lago.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h" }, { "icon": "solar:running-linear", "text": "12 km" }] },
+      { "title": "Cachoeira do Bicame", "text": "Uma das mais bonitas da Serra do Cipó. Limite de 30 visitantes/dia — saia cedo e leve voucher.", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h" }, { "icon": "solar:running-linear", "text": "18 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 30" }] },
+      { "title": "Poço do Soberbo", "text": "O maior poço natural da Serra do Cipó — 18m de profundidade, 30m de diâmetro, três cursos d'água.", "icon": "solar:waterdrop-linear", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:running-linear", "text": "18 km" }] }
+    ],
+    "restaurantesEspeciais": [
+      { "title": "Bistrô Lapinha", "text": "O mais romântico da serra. Carta de vinhos, pratos autorais, música ao vivo aos sábados. Reserva indispensável.", "icon": "solar:chef-hat-minimalistic-linear", "meta": [{ "icon": "solar:star-shine-linear", "text": "Casais" }, { "icon": "solar:tag-price-linear", "text": "$$$" }, { "icon": "solar:running-linear", "text": "5 min" }] },
+      { "title": "A Forneria Lapinha", "text": "A primeira pizzaria da vila — italianas autênticas com sotaque mineiro, no forno a lenha. Ambiente rústico e charmoso.", "icon": "solar:flame-linear", "meta": [{ "icon": "solar:flame-linear", "text": "Forno a lenha" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:running-linear", "text": "4 min" }] }
+    ],
+    "restaurantesSelfService": [
+      { "title": "Restaurante Moendas", "text": "Self-service de fogão a lenha à beira da lagoa. Sobremesas regionais e cara de casa de avó. Fins de semana, 12h30 às 16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:calendar-linear", "text": "Sáb · Dom" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:bus-linear", "text": "5 min" }] },
+      { "title": "Cantinho da Luci", "text": "Comida caseira no fogão a lenha. Ter–Sex pratos montados; Sáb–Dom self-service.", "icon": "solar:fire-linear", "meta": [{ "icon": "solar:tag-price-linear", "text": "$" }, { "icon": "solar:phone-calling-linear", "text": "(31) 99715-4652" }] },
+      { "title": "Restaurante Gruta da Lapinha", "text": "Trivial mineiro · prato do dia durante a semana, self-service nos finais de semana. Todos os dias 9h–16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "9h — 16h" }, { "icon": "solar:tag-price-linear", "text": "$" }] }
+    ],
+    "restaurantesLeve": [
+      { "title": "Rancho do Zé", "text": "Hambúrgueres, porções, açaí. Aceita delivery — perfeito para uma noite de Netflix no chalé. Qua–Dom, 18h–22h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:bag-3-linear", "text": "Delivery" }, { "icon": "solar:phone-calling-linear", "text": "(31) 97217-3762" }] }
+    ],
+    "comprasVilarejo": [
+      { "title": "Mercearia da Lapinha", "text": "O mercadinho do vilarejo. Tem o essencial — pães, frios, frutas, bebidas, doces. Aceita Pix e cartão.", "icon": "solar:cart-3-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 20h" }, { "icon": "solar:running-linear", "text": "4 min a pé" }] },
+      { "title": "Padaria da Vila", "text": "Pão de queijo fresco a partir das 6h. Bolos de fubá, broa de milho e biscoitos caseiros. Café coado no balcão.", "icon": "solar:donut-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h — 18h" }, { "icon": "solar:running-linear", "text": "3 min a pé" }] },
+      { "title": "Farmácia da Lapinha", "text": "Aberta de seg a sáb. Medicamentos básicos, repelente, protetor solar, kit primeiros socorros.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h — 19h" }, { "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ],
+    "comprasSantana": [
+      { "title": "Caixa Eletrônico", "text": "Banco do Brasil & Bradesco · 24h · ao lado da rodoviária.", "icon": "solar:card-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Posto de combustível", "text": "Único posto da região, com loja de conveniência. Encha o tanque na ida — não há postos depois.", "icon": "solar:gas-station-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "24h" }, { "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Supermercado Santana", "text": "Para compras maiores · carnes, produtos de limpeza, bebidas, hortifruti completo.", "icon": "solar:bag-4-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 21h" }] }
+    ],
+    "saude": [
+      { "title": "UPA Santana do Riacho", "text": "Unidade de Pronto Atendimento mais próxima · 24h.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min · 12 km" }, { "icon": "solar:phone-calling-linear", "text": "(31) 3718-6000" }] },
+      { "title": "Hospital Regional · Lagoa Santa", "text": "Para casos mais graves · trauma, internação.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "1h30" }] },
+      { "title": "Farmácia da Lapinha", "text": "Seg–sáb 8h–19h. Tem kit primeiros socorros no chalé · me avise se faltar algo.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ]
+  }
+}

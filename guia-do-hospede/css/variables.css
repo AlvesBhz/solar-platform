@@ -1,0 +1,45 @@
+/* ══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   Idênticos ao Design System do site (index.html) — mesma
+   paleta, tipografia e curvas de easing, para que o Guia do
+   Hóspede seja percebido como parte do mesmo produto.
+═══════════════════════════════════════════════════════════ */
+:root {
+  --c-cream:      #FAFAF9;
+  --c-bone:       #EAE5D9;
+  --c-paper:      #F1ECDF;
+  --c-s50:        #FAFAF9;
+  --c-s100:       #F5F5F4;
+  --c-s200:       #E7E5E4;
+  --c-s300:       #D6D3D1;
+  --c-s400:       #A8A29E;
+  --c-s500:       #78716C;
+  --c-s600:       #57534E;
+  --c-s700:       #44403C;
+  --c-s800:       #292423;
+  --c-s900:       #1C1917;
+  --c-pine:       #2C3E35;
+  --c-pine-deep:  #1C2922;
+  --c-pine-mid:   #3D5547;
+  --c-gold:       #C9A96E;
+  --c-gold-lt:    #E8D5A3;
+  --c-gold-dk:    #A87D4A;
+  --c-available:  #4F7A4A;
+  --c-warning:    #B45309;
+  --c-error:      #B91C1C;
+
+  --font-serif:   'Cormorant Garamond', Georgia, serif;
+  --font-italic:  'Instrument Serif', Georgia, serif;
+  --font-sans:    'Inter', system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --ease-out:     cubic-bezier(0.2, 1, 0.2, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Área de toque mínima recomendada (WCAG 2.5.5 / Apple HIG) */
+  --tap-min: 44px;
+
+  /* Altura do bottom navigation, usada para reservar espaço no
+     final de cada tela e evitar que o conteúdo fique escondido */
+  --bottom-nav-h: calc(64px + env(safe-area-inset-bottom, 0px));
+}

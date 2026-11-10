@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#1C2922" />
+<meta name="description" content="Guia do hóspede do Solar do Espinhaço — Wi-Fi, check-in, trilhas, restaurantes e contatos de emergência de Lapinha da Serra, MG, tudo no seu bolso." />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Solar Espinhaço" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="assets/icons/icon.svg" />
+<title>Guia do Hóspede · Solar do Espinhaço</title>
+
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<!-- Arquivos carregados diretamente (em vez de @import em cascata em
+     css/app.css) para evitar o efeito de "flash" em que o layout
+     aparece sem estilo por um instante e só depois salta para a
+     posição final — visível sobretudo abrindo o arquivo direto do
+     disco (file://), onde cada @import é uma requisição extra em série. -->
+<link rel="stylesheet" href="css/variables.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body class="bg-stone-900 text-stone-100">
+
+<!-- ══════════════════════════════════════════════════════════
+     BASE DE DADOS (fallback local)
+     Cópia idêntica de database/guide.json. É usada apenas se o
+     fetch() do arquivo real falhar — o que acontece quando o
+     guia é aberto direto do disco (file://), sem servidor.
+     A fonte de verdade para edições é sempre database/guide.json.
+═══════════════════════════════════════════════════════════ -->
+<script type="application/json" id="guide-data">
+{
+  "property": {
+    "name": "Solar do Espinhaço",
+    "tagline": "Guia do hóspede · Lapinha da Serra · Minas Gerais",
+    "address": "Rua Olhos D'água, nº 22 · Lapinha da Serra · Santana do Riacho · MG",
+    "mapsUrl": "https://maps.app.goo.gl/XfvBXTmR62YSmWRt5",
+    "phone": "+5531997555245",
+    "phoneDisplay": "+55 31 9 9755-5245",
+    "whatsapp": "5531997555245",
+    "email": "reservas@solardoespinhaco.com.br",
+    "instagram": "solardoespinhaco",
+    "checkin": "14h00",
+    "checkout": "12h00"
+  },
+  "wifi": { "network": "SolarEspinhaço", "password": "lapinha2024", "band": "200 Mbps · Fibra" },
+  "emergencyNational": [
+    { "label": "SAMU · ambulância", "tel": "192", "icon": "solar:medical-kit-linear" },
+    { "label": "Bombeiros", "tel": "193", "icon": "solar:flame-linear" },
+    { "label": "Polícia Militar", "tel": "190", "icon": "solar:shield-keyhole-linear" },
+    { "label": "Defesa Civil", "tel": "199", "icon": "solar:cloud-storm-linear" }
+  ],
+  "menu": [
+    { "id": "wifi", "group": "01", "kind": "pinned", "icon": "solar:wi-fi-router-linear", "label": "Wi-Fi", "value": "Conectar", "foot": "Rede & senha →" },
+    { "id": "checkin", "group": "01", "kind": "pinned", "icon": "solar:clock-circle-linear", "label": "Estadia", "value": "14h — 12h", "foot": "Check-in / out →" },
+    { "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear", "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/Suite.jpeg" },
+    { "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear", "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.png" },
+    { "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear", "num": "B · 01 — 1.686 metros", "title": "A serra <em>à porta</em>", "image": "assets/images/trilha.avif" },
+    { "id": "restaurantes", "group": "02", "kind": "tile", "icon": "solar:chef-hat-minimalistic-linear", "num": "B · 02 — no vilarejo", "title": "Onde <em>comer</em>", "solid": true },
+    { "id": "compras", "group": "02", "kind": "tile", "icon": "solar:cart-3-linear", "num": "B · 03 — mercado & farmácia", "title": "Compras", "solid": true },
+    { "id": "lapinha", "group": "02", "kind": "tile", "wide": true, "icon": "solar:map-point-linear", "num": "B · 04 — o lugarejo · 500 hab · 140km de BH", "title": "Lapinha", "image": "assets/images/serra-hero.avif" },
+    { "id": "regras", "group": "03", "kind": "util", "icon": "solar:documents-linear", "label": "Combinações" },
+    { "id": "transporte", "group": "03", "kind": "util", "icon": "solar:bus-linear", "label": "Como chegar" },
+    { "id": "servicos", "group": "03", "kind": "util", "icon": "solar:bell-linear", "label": "Serviços" },
+    { "id": "emergencia", "group": "03", "kind": "util", "icon": "solar:shield-warning-linear", "label": "Emergência" },
+    { "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear", "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/Piscina.jpeg" }
+  ],
+  "groups": {
+    "01": { "title": "Sua estadia", "tag": "essenciais" },
+    "02": { "title": "A região", "tag": "Espinhaço · cipó" },
+    "03": { "title": "Prático", "tag": "o feijão com arroz" },
+    "04": { "title": "Antes de partir", "tag": "um último gesto" }
+  },
+  "places": {
+    "serraPerto": [
+      { "title": "Cachoeira do Boqueirão", "text": "O poço mais visitado, com 20m de profundidade e salva-vidas. Caminhada quase plana, ideal para crianças.", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:running-linear", "text": "500 m a pé" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Cachoeira do Rapel", "text": "40 m de paredão para rapel, num dos pontos mais altos da Lapinha. Queda forte só fora da seca.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:running-linear", "text": "1,8 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Poço Verde & Ducha Natural", "text": "Águas notavelmente cristalinas no caminho do Boqueirão. Boa parada antes ou depois do banho principal.", "icon": "solar:waterdrop-linear", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:clock-circle-linear", "text": "30 min" }] }
+    ],
+    "serraLonge": [
+      { "title": "Cachoeira do Lajeado", "text": "Queda de 40m em paredão rochoso, com poço cristalino e fundo. Trilha quase plana ao redor do lago.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h" }, { "icon": "solar:running-linear", "text": "12 km" }] },
+      { "title": "Cachoeira do Bicame", "text": "Uma das mais bonitas da Serra do Cipó. Limite de 30 visitantes/dia — saia cedo e leve voucher.", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h" }, { "icon": "solar:running-linear", "text": "18 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 30" }] },
+      { "title": "Poço do Soberbo", "text": "O maior poço natural da Serra do Cipó — 18m de profundidade, 30m de diâmetro, três cursos d'água.", "icon": "solar:waterdrop-linear", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:running-linear", "text": "18 km" }] }
+    ],
+    "restaurantesEspeciais": [
+      { "title": "Bistrô Lapinha", "text": "O mais romântico da serra. Carta de vinhos, pratos autorais, música ao vivo aos sábados. Reserva indispensável.", "icon": "solar:chef-hat-minimalistic-linear", "meta": [{ "icon": "solar:star-shine-linear", "text": "Casais" }, { "icon": "solar:tag-price-linear", "text": "$$$" }, { "icon": "solar:running-linear", "text": "5 min" }] },
+      { "title": "A Forneria Lapinha", "text": "A primeira pizzaria da vila — italianas autênticas com sotaque mineiro, no forno a lenha. Ambiente rústico e charmoso.", "icon": "solar:flame-linear", "meta": [{ "icon": "solar:flame-linear", "text": "Forno a lenha" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:running-linear", "text": "4 min" }] }
+    ],
+    "restaurantesSelfService": [
+      { "title": "Restaurante Moendas", "text": "Self-service de fogão a lenha à beira da lagoa. Sobremesas regionais e cara de casa de avó. Fins de semana, 12h30 às 16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:calendar-linear", "text": "Sáb · Dom" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:bus-linear", "text": "5 min" }] },
+      { "title": "Cantinho da Luci", "text": "Comida caseira no fogão a lenha. Ter–Sex pratos montados; Sáb–Dom self-service.", "icon": "solar:fire-linear", "meta": [{ "icon": "solar:tag-price-linear", "text": "$" }, { "icon": "solar:phone-calling-linear", "text": "(31) 99715-4652" }] },
+      { "title": "Restaurante Gruta da Lapinha", "text": "Trivial mineiro · prato do dia durante a semana, self-service nos finais de semana. Todos os dias 9h–16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "9h — 16h" }, { "icon": "solar:tag-price-linear", "text": "$" }] }
+    ],
+    "restaurantesLeve": [
+      { "title": "Rancho do Zé", "text": "Hambúrgueres, porções, açaí. Aceita delivery — perfeito para uma noite de Netflix no chalé. Qua–Dom, 18h–22h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:bag-3-linear", "text": "Delivery" }, { "icon": "solar:phone-calling-linear", "text": "(31) 97217-3762" }] }
+    ],
+    "comprasVilarejo": [
+      { "title": "Mercearia da Lapinha", "text": "O mercadinho do vilarejo. Tem o essencial — pães, frios, frutas, bebidas, doces. Aceita Pix e cartão.", "icon": "solar:cart-3-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 20h" }, { "icon": "solar:running-linear", "text": "4 min a pé" }] },
+      { "title": "Padaria da Vila", "text": "Pão de queijo fresco a partir das 6h. Bolos de fubá, broa de milho e biscoitos caseiros. Café coado no balcão.", "icon": "solar:donut-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h — 18h" }, { "icon": "solar:running-linear", "text": "3 min a pé" }] },
+      { "title": "Farmácia da Lapinha", "text": "Aberta de seg a sáb. Medicamentos básicos, repelente, protetor solar, kit primeiros socorros.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h — 19h" }, { "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ],
+    "comprasSantana": [
+      { "title": "Caixa Eletrônico", "text": "Banco do Brasil & Bradesco · 24h · ao lado da rodoviária.", "icon": "solar:card-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Posto de combustível", "text": "Único posto da região, com loja de conveniência. Encha o tanque na ida — não há postos depois.", "icon": "solar:gas-station-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "24h" }, { "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Supermercado Santana", "text": "Para compras maiores · carnes, produtos de limpeza, bebidas, hortifruti completo.", "icon": "solar:bag-4-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 21h" }] }
+    ],
+    "saude": [
+      { "title": "UPA Santana do Riacho", "text": "Unidade de Pronto Atendimento mais próxima · 24h.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min · 12 km" }, { "icon": "solar:phone-calling-linear", "text": "(31) 3718-6000" }] },
+      { "title": "Hospital Regional · Lagoa Santa", "text": "Para casos mais graves · trauma, internação.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "1h30" }] },
+      { "title": "Farmácia da Lapinha", "text": "Seg–sáb 8h–19h. Tem kit primeiros socorros no chalé · me avise se faltar algo.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ]
+  }
+}
+</script>
+
+<div class="app-shell">
+
+<!-- ══════════════════════════════════════════════════════════
+     TELA · COVER (abertura)
+═══════════════════════════════════════════════════════════ -->
+<section class="screen active cover-screen relative w-full overflow-hidden" id="cover" data-screen-label="00 Cover" aria-label="Boas-vindas">
+
+  <div class="absolute inset-0 z-0">
+    <div class="cover-bg"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/85"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-black/35 via-transparent to-transparent"></div>
+  </div>
+
+  <div class="hero-orb" style="width:420px;height:420px;top:-100px;right:-80px;background:radial-gradient(circle,rgba(44,62,53,0.4) 0%,transparent 70%);animation:orb1 22s ease-in-out infinite;z-index:1;"></div>
+  <div class="hero-orb" style="width:340px;height:340px;bottom:20px;left:-100px;background:radial-gradient(circle,rgba(201,169,110,0.18) 0%,transparent 70%);animation:orb2 26s ease-in-out infinite;z-index:1;"></div>
+
+  <div class="wm-watermark">Solar do Espinhaço</div>
+
+  <!-- ── NAV · réplica exata do nav-top do index.html ── -->
+  <nav class="nav-top" id="siteNav">
+    <div class="nav-top-inner">
+      <div class="nav-menu-zone" id="menuZone">
+        <button class="nav-burger" id="menuBurger" aria-label="Abrir menu" aria-expanded="false" aria-controls="siteMenu">
+          <span></span><span></span><span></span>
+        </button>
+        <nav class="site-menu" id="siteMenu" aria-label="Menu">
+          <ul class="site-menu-list">
+            <li class="site-menu-item"><a href="#" onclick="event.preventDefault(); openScreen('chale');">O Chalé</a></li>
+            <li class="site-menu-item"><a href="#" onclick="event.preventDefault(); openScreen('serra');">A Serra</a></li>
+            <li class="site-menu-item"><a href="#" data-bind-wa target="_blank" rel="noopener">Contato</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <a href="#" id="navLogoGroup" aria-label="Ir para o início" onclick="event.preventDefault();" style="display:flex; align-items:center; justify-content:center; white-space:nowrap; text-decoration:none; cursor:pointer; transition:opacity 0.3s ease;" onmouseenter="this.style.opacity='0.75'" onmouseleave="this.style.opacity='1'">
+        <div id="navLogoDisc" style="position:relative; width:28px; height:28px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,255,255,0.48);"></div>
+          <iconify-icon icon="solar:leaf-linear" width="16" style="color:rgba(255,255,255,0.88);"></iconify-icon>
+        </div>
+        <div id="navLogoExpand" style="display:flex; align-items:center; max-width:0; overflow:hidden; opacity:0;">
+          <div style="width:1px; height:28px; background:rgba(255,255,255,0.18); flex-shrink:0; margin-left:11px;"></div>
+          <div id="navLogoWordmark" style="margin-left:11px; transform:translateX(-10px);">
+            <div style="font-family:'Inter',sans-serif; font-weight:400; font-size:7.5px; letter-spacing:0.34em; text-transform:uppercase; color:rgba(255,255,255,0.60); line-height:1; text-shadow:0 1px 8px rgba(0,0,0,0.55);">Solar do</div>
+            <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:18px; letter-spacing:0.06em; text-transform:uppercase; line-height:1; color:rgba(255,255,255,0.93); margin-top:3px; text-shadow:0 2px 12px rgba(0,0,0,0.40);">Espinhaço</div>
+          </div>
+        </div>
+      </a>
+
+      <div id="navRight" style="display:flex; align-items:center; justify-content:flex-end; gap:1.5rem;">
+        <div class="lang-inline">
+          <button class="lang-inline-btn active" data-lang="pt" onclick="setLang('pt')">PT</button>
+          <button class="lang-inline-btn" data-lang="en" onclick="setLang('en')">EN</button>
+          <button class="lang-inline-btn" data-lang="es" onclick="setLang('es')">ES</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="relative z-10 min-h-[100vh] min-h-[100dvh] mx-auto px-5 flex flex-col justify-between" style="padding-top:calc(3.5rem + max(8px, env(safe-area-inset-top)) + 1.25rem); padding-bottom:max(28px, env(safe-area-inset-bottom));">
+
+    <div class="mt-6">
+      <div style="animation: fadeUp 1s 0.35s ease both; opacity:0; animation-fill-mode:both;">
+        <span class="block text-stone-400 text-[10px] tracking-[0.3em] uppercase mb-4 pl-1">Guia do hóspede · Lapinha da Serra</span>
+      </div>
+      <div style="animation: fadeUp 1s 0.50s ease both; opacity:0; animation-fill-mode:both;">
+        <h1 class="cover-title">
+          <span class="l1">BEM-VINDO</span>
+          <span class="l2">à sua estadia</span>
+        </h1>
+      </div>
+      <div style="animation: fadeUp 1s 0.78s ease both; opacity:0; animation-fill-mode:both;">
+        <p class="text-stone-300 text-[15px] font-light leading-relaxed mt-6 max-w-md">
+          Seu refúgio aos pés do Pico da Lapinha. Tudo o que você precisa para uma estadia tranquila — no seu bolso.
+        </p>
+      </div>
+    </div>
+
+    <button onclick="openScreen('menu')" class="cover-explore" style="animation: fadeIn 2s 1.6s ease both; opacity:0; animation-fill-mode:both;" aria-label="Abrir o guia do hóspede">
+      <span class="text-[9px] uppercase tracking-[0.28em]" style="color:rgba(255,255,255,0.65); text-shadow:0 1px 6px rgba(0,0,0,0.5);">Abrir o guia</span>
+      <span class="flex flex-col items-center gap-1" style="animation: bounce 2s infinite;">
+        <span class="h-8 w-[1px]" style="background:linear-gradient(to bottom, rgba(255,255,255,0.55), transparent);"></span>
+        <iconify-icon icon="solar:alt-arrow-down-linear" width="12" style="color:rgba(255,255,255,0.55);"></iconify-icon>
+      </span>
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     TELA · MENU (Home / hub principal)
+═══════════════════════════════════════════════════════════ -->
+<section class="screen relative w-full overflow-hidden min-h-screen" id="menu" data-screen-label="01 Menu" style="background: linear-gradient(180deg, #1C2922 0%, #14201A 60%, #0F1A14 100%);" aria-label="Menu principal">
+
+  <div class="hero-orb" style="width:380px;height:380px;top:-90px;left:-70px;background:radial-gradient(circle,rgba(61,85,71,0.45) 0%,transparent 70%);animation:orb1 24s ease-in-out infinite;z-index:0;"></div>
+
+  <header class="home-header">
+    <button onclick="openScreen('cover')" class="glass-badge w-10 h-10 rounded-full flex items-center justify-center" aria-label="Voltar à tela inicial">
+      <iconify-icon icon="solar:arrow-left-linear" width="16" class="text-white"></iconify-icon>
+    </button>
+    <div class="flex items-center gap-2">
+      <iconify-icon icon="solar:leaf-linear" width="14" style="color:#C9A96E;"></iconify-icon>
+      <span class="text-[10px] tracking-[0.2em] uppercase text-stone-300 font-medium">Solar do Espinhaço</span>
+    </div>
+    <div class="text-[9px] font-mono tracking-[0.18em] uppercase text-stone-500 text-right">GUIA</div>
+  </header>
+
+  <div class="relative z-10 px-5 pt-4 pb-4">
+    <span class="eyebrow light reveal">Guia do hóspede</span>
+    <h1 class="mt-3 font-medium leading-[0.92] tracking-[-0.03em] text-stone-50 reveal" style="font-family:var(--font-serif); font-size:clamp(2.4rem, 11vw, 3.4rem);">
+      Tudo o que<br>
+      <span class="font-italic-serif text-stone-300">você precisa saber</span>
+    </h1>
+    <p class="mt-4 text-stone-400 text-[13.5px] font-light leading-relaxed max-w-md reveal">
+      Toque em qualquer cartão. Casa, vizinhança e serra estão organizadas em quatro seções.
+    </p>
+
+    <div class="search-bar reveal" id="guideSearchBar">
+      <iconify-icon icon="solar:magnifer-linear"></iconify-icon>
+      <input type="search" id="guideSearchInput" placeholder="Buscar no guia — ex.: wifi, trilha, pizza…" aria-label="Buscar no guia" autocomplete="off" />
+      <button class="search-clear" id="guideSearchClear" aria-label="Limpar busca" type="button">
+        <iconify-icon icon="solar:close-circle-bold"></iconify-icon>
+      </button>
+    </div>
+    <p class="search-empty" id="guideSearchEmpty">Nada encontrado. Tente outra palavra.</p>
+  </div>
+
+  <div class="relative z-10 px-5 pb-10">
+
+    <!-- Estado de carregamento -->
+    <div id="homeSkeleton" aria-hidden="true">
+      <div class="grid grid-cols-2 gap-2.5 mb-3"><div class="tile-skeleton pinned-skeleton"></div><div class="tile-skeleton pinned-skeleton"></div></div>
+      <div class="grid grid-cols-2 gap-2.5"><div class="tile-skeleton"></div><div class="tile-skeleton"></div></div>
+    </div>
+
+    <!-- Estado de erro (base de dados indisponível) -->
+    <div id="homeError" class="empty-state" style="display:none;" role="alert">
+      <iconify-icon icon="solar:cloud-cross-linear"></iconify-icon>
+      <p>Não consegui carregar o conteúdo do guia agora.<br>Verifique sua conexão e tente novamente.</p>
+      <button type="button"><iconify-icon icon="solar:restart-linear" width="14"></iconify-icon> Tentar de novo</button>
+    </div>
+
+    <!-- Conteúdo (preenchido por js/data.js a partir de database/guide.json) -->
+    <div id="homeMenuGroups"></div>
+
+    <!-- Selo de encerramento -->
+    <div class="text-center mt-14 mb-4 reveal">
+      <div class="inline-flex flex-col items-center gap-3">
+        <div class="relative w-[104px] h-[104px] rounded-full border border-white/15 flex flex-col items-center justify-center gap-2" style="color:#C9A96E;">
+          <div class="absolute inset-[6px] rounded-full border border-white/8 opacity-60"></div>
+          <iconify-icon icon="solar:leaf-linear" width="24" style="color:#C9A96E;"></iconify-icon>
+          <span class="font-serif text-stone-100 text-[15px] tracking-[0.2em] uppercase font-medium" style="font-family:var(--font-serif);">SE</span>
+        </div>
+        <span class="font-italic-serif text-stone-400 text-[12px]">est · 2024 · Lapinha</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     TELAS INTERNAS
+═══════════════════════════════════════════════════════════ -->
+
+<!-- ── WI-FI ────────────────────────────────────────── -->
+<section class="screen" id="wifi" data-screen-label="02 Wi-Fi">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Sua estadia · 01</div><h2 class="topbar-h2">Wi-Fi</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:wi-fi-router-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/chale-interior.avif');">
+      <div class="s-hero-content">
+        <div class="stamp">Conexão · Fibra</div>
+        <h1>Internet em todo o <span class="it">chalé</span></h1>
+        <p>A senha é a mesma em todos os ambientes — varanda, sala, quartos e área externa. Toque no botão dourado para copiar.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card d-card mt-4 reveal">
+        <div class="info-row"><div class="col"><span class="lbl">Rede</span><span class="val code" id="wifiNetwork">—</span></div><button class="btn-copy" id="wifiNetworkCopy" data-copy="" aria-label="Copiar nome da rede"><iconify-icon icon="solar:copy-linear"></iconify-icon></button></div>
+        <div class="info-row"><div class="col"><span class="lbl">Senha</span><span class="val code" id="wifiPassword">—</span></div><button class="btn-copy" id="wifiPasswordCopy" data-copy="" aria-label="Copiar senha"><iconify-icon icon="solar:copy-linear"></iconify-icon></button></div>
+        <div class="info-row"><div class="col"><span class="lbl">Banda</span><span class="val" id="wifiBand">—</span></div></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Cobertura</div>
+        <h3 class="l-card-title sm">Onde funciona</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><strong>Sala &amp; cozinha</strong><span>Sinal forte — o roteador fica próximo ao fogão a lenha.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><strong>Quartos &amp; banheiro</strong><span>Sinal bom para streaming e chamadas de vídeo.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><strong>Varanda</strong><span>Funciona — leve o celular e aproveite a vista para a serra.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Importante</div>
+        <h3 class="l-card-title sm">Sinal de celular</h3>
+        <p>Em Lapinha da Serra, a cobertura de operadoras é <strong>limitada</strong>. Vivo e Claro funcionam parcialmente; TIM e Oi raramente pegam. Para ligações e mensagens, use o Wi-Fi do chalé com chamadas via WhatsApp.</p>
+      </div>
+      <div class="pull reveal"><q>Aqui é serra. A internet às vezes oscila com a energia. Faz parte do encanto — e o roteador volta sozinho em minutos.</q><cite>— Anfitrião</cite></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CHECK-IN / OUT ─────────────────────────────────── -->
+<section class="screen" id="checkin" data-screen-label="03 Check-in &amp; out">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Sua estadia · 02</div><h2 class="topbar-h2">Check-in &amp; out</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:key-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/Sala.jpeg');">
+      <div class="s-hero-content">
+        <div class="stamp">Chegada · Partida</div>
+        <h1>Horários da <span class="it">casa</span></h1>
+        <p>Avise sua hora de chegada com antecedência — assim eu deixo a lareira preparada e a casa quentinha à sua espera.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card d-card mt-4 reveal">
+        <div class="info-row"><div class="col"><span class="lbl">Check-in a partir de</span><span class="val" data-bind-checkin>—</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Check-out até</span><span class="val" data-bind-checkout>—</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Late check-out</span><span class="val">Sob consulta</span></div></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Antes da sua chegada</div>
+        <h3 class="l-card-title sm">Avise pelo WhatsApp</h3>
+        <p>Mande mensagem com sua <strong>previsão de chegada</strong> e quantidade de pessoas. Se vier <strong>antes das 14h</strong>, posso guardar suas malas enquanto o chalé fica pronto.</p>
+        <a href="#" data-bind-wa target="_blank" rel="noopener" class="btn btn-primary btn-block btn-glow mt-4"><iconify-icon icon="solar:chat-round-call-linear"></iconify-icon><span>Falar no WhatsApp</span></a>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Como funciona</div>
+        <h3 class="l-card-title sm">Sua chegada, passo a passo</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>1 · Avise quando estiver próximo</strong><span>Mande mensagem ao passar por Santana do Riacho — saio para te receber.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:key-linear"></iconify-icon></div><div class="li-body"><strong>2 · Receba as chaves &amp; um café</strong><span>Tour pelo chalé, dicas da região e um café fresquinho na varanda.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:home-2-linear"></iconify-icon></div><div class="li-body"><strong>3 · Aproveite a casa</strong><span>Tudo já está pronto. Esta agora é a sua casa.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Saída</div>
+        <h3 class="l-card-title sm">Antes de fechar a porta</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Deixe a louça na pia — eu cuido da arrumação</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Confira o forno e o fogão — apagados</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>As chaves ficam no porta-chaves da entrada</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── O CHALÉ ──────────────────────────────────────── -->
+<section class="screen" id="chale" data-screen-label="04 O Chalé">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · A · 01</div><h2 class="topbar-h2">O Chalé</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:bed-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/Suite.jpeg');">
+      <div class="s-hero-content">
+        <div class="stamp">Seu refúgio · até 4 pessoas</div>
+        <h1>A casa de pedra<br><span class="it">e madeira</span></h1>
+        <p>Construído com pedra da serra e madeira de demolição. Um chalé único com vista para o Pico da Lapinha. Pensado para casais e pequenas famílias.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">Acomodações</div>
+        <h3 class="l-card-title sm">Os ambientes</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:bed-linear"></iconify-icon></div><div class="li-body"><strong>Suíte principal</strong><span>Cama king · lençóis de algodão egípcio · vista para a serra.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:bed-linear"></iconify-icon></div><div class="li-body"><strong>Quarto secundário</strong><span>Duas camas de solteiro · ideal para crianças ou amigos.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:bath-linear"></iconify-icon></div><div class="li-body"><strong>Banheiro com ducha de pedra</strong><span>Água a gás · amenities artesanais da serra.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:fire-linear"></iconify-icon></div><div class="li-body"><strong>Sala com lareira</strong><span>Lenha à disposição na varanda lateral. Eu acendo no dia da chegada.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:home-2-linear"></iconify-icon></div><div class="li-body"><strong>Varanda com rede</strong><span>O melhor lugar do mundo para o café da tarde.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">O que está incluído</div>
+        <h3 class="l-card-title sm">Sua casa, pronta</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Roupa de cama, banho e cozinha</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Cozinha equipada · fogão a gás, fogão a lenha, geladeira, microondas, cafeteira</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Kit boas-vindas · café mineiro, queijo da canastra, cachaça artesanal</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Lareira com lenha · cobertores extras nos armários</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:check-circle-linear"></iconify-icon></div><div class="li-body"><span>Caixa de som bluetooth · livros de viagem e poesia mineira</span></div></li>
+        </ul>
+      </div>
+      <div class="pull reveal"><q>Cada peça do chalé tem uma história — a porta da sala veio de uma fazenda em São João del Rey, e a mesa da varanda é jacarandá centenário.</q><cite>— A casa</cite></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CAFÉ DA CASA ───────────────────────────────────── -->
+<section class="screen" id="cafe" data-screen-label="05 Café da casa">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · A · 02</div><h2 class="topbar-h2">Café da casa</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:cup-hot-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/Cozinha 2.png');">
+      <div class="s-hero-content">
+        <div class="stamp">Manhã mineira · 7h às 10h</div>
+        <h1>Pão de queijo<br><span class="it">e café coado</span></h1>
+        <p>Sua manhã começa com uma mesa típica mineira — frutas da serra, queijos curados, pão de queijo quentinho e café preparado no coador de pano.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card d-card mt-4 reveal text-center">
+        <div class="l-card-eyebrow">Servimos das</div>
+        <div class="py-2" style="font-family:var(--font-serif); font-size: 52px; font-weight: 400; letter-spacing: -0.04em; line-height: 1; color: var(--c-gold);">7 — 10h</div>
+        <p style="text-align:center;">Todos os dias · Na mesa da varanda</p>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Da mesa</div>
+        <h3 class="l-card-title sm">O que vai servido</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:donut-linear"></iconify-icon></div><div class="li-body"><strong>Pão de queijo da casa</strong><span>Massa fresca · feita pela Dona Lia, vizinha de cima.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:cup-hot-linear"></iconify-icon></div><div class="li-body"><strong>Café da Serra do Cipó</strong><span>Coado no pano · grãos torrados em Santana do Riacho.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:plate-linear"></iconify-icon></div><div class="li-body"><strong>Tábua de queijos artesanais</strong><span>Canastra meia-cura · queijo coalho · requeijão de raspa.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:leaf-linear"></iconify-icon></div><div class="li-body"><strong>Frutas da estação</strong><span>Mamão, banana-prata, abacaxi pérola, manga rosa quando há.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:donut-bitten-linear"></iconify-icon></div><div class="li-body"><strong>Bolos &amp; biscoitos caseiros</strong><span>Bolo de fubá, biscoito de polvilho, broa de milho.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:jar-of-pills-linear"></iconify-icon></div><div class="li-body"><strong>Compotas &amp; doces</strong><span>Goiabada cascão, doce de leite, geleia de cagaita.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:bottle-linear"></iconify-icon></div><div class="li-body"><strong>Sucos &amp; leite fresco</strong><span>Leite do Sítio do Tonho · sucos batidos com frutas do quintal.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Atenção</div>
+        <h3 class="l-card-title sm">Restrições alimentares?</h3>
+        <p>Avise pelo WhatsApp na véspera. Tenho como adaptar para <strong>vegetarianos, veganos e sem glúten</strong> — compro o que faltar na padaria do vilarejo no dia.</p>
+      </div>
+      <div class="pull reveal"><q>O café da manhã mineiro não é uma refeição — é um costume. Tem hora pra começar e nunca tem hora pra acabar.</q><cite>— Dito popular</cite></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── A SERRA ──────────────────────────────────────── -->
+<section class="screen" id="serra" data-screen-label="06 A Serra">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · B · 01</div><h2 class="topbar-h2">A serra à porta</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:flag-2-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/trilha.avif'); height:320px;">
+      <div class="s-hero-content">
+        <div class="stamp">Trilhas · cachoeiras · 1.686 m</div>
+        <h1>Cada poço,<br><span class="it">uma primeira vez</span></h1>
+        <p>Lapinha da Serra é cercada por trilhas e cachoeiras. As melhores estão aqui — com dificuldade real e tempo médio para um dia tranquilo.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">No vilarejo</div>
+        <h3 class="l-card-title sm">Para um banho rápido</h3>
+        <div id="places-serraPerto"></div>
+      </div>
+
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Para um dia inteiro</div>
+        <h3 class="l-card-title sm">Cachoeiras maiores</h3>
+        <div id="places-serraLonge"></div>
+      </div>
+
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Mirante imperdível</div>
+        <h3 class="l-card-title">Pico da Lapinha · <span class="it">1.686m</span></h3>
+        <p>Segundo ponto mais alto da Serra do Cipó. Trilha sinalizada de 4,5 km só de ida, íngreme e cheia de pedras. Do cume, vista 360° da Lapinha, da lagoa e das montanhas da região.</p>
+        <div class="info-row"><div class="col"><span class="lbl">Distância</span><span class="val">9 km ida e volta</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Tempo médio</span><span class="val">6 — 8 horas</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Dificuldade</span><span class="val">Difícil · subida íngreme</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Melhor hora</span><span class="val">Saída ao amanhecer</span></div></div>
+      </div>
+
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Para os aventureiros</div>
+        <h3 class="l-card-title">Travessia Lapinha — Tabuleiro</h3>
+        <p>Cerca de 40 km de trilha em 3 dias, ligando Lapinha à <strong>Cachoeira do Tabuleiro</strong> — a mais alta de Minas e a terceira maior do Brasil, com 273 m. Uma das travessias mais belas do país.</p>
+        <p>Vai por diferentes ecossistemas, com pontos de apoio para acampar. <strong>Imprescindível guia local.</strong> Indico parceiros — me peça contato.</p>
+        <div class="place-meta" style="margin-top:14px;">
+          <span class="diff dif"><span class="pip"></span>Expedição</span>
+          <span><iconify-icon icon="solar:calendar-linear"></iconify-icon> 3 dias</span>
+          <span><iconify-icon icon="solar:running-linear"></iconify-icon> 40 km</span>
+        </div>
+      </div>
+
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Sem caminhar muito</div>
+        <h3 class="l-card-title sm">Outras experiências</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:waterdrop-linear"></iconify-icon></div><div class="li-body"><strong>Stand Up Paddle na Lagoa</strong><span>Aluguel no vilarejo · ideal no fim da tarde.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:gallery-linear"></iconify-icon></div><div class="li-body"><strong>Sítio arqueológico</strong><span>Pinturas rupestres de ~7.000 anos · trilha ou de barco.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:medal-ribbon-linear"></iconify-icon></div><div class="li-body"><strong>Cavalgadas</strong><span>Saídas guiadas pelas estradas da serra · meio dia ou dia inteiro.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:flag-2-linear"></iconify-icon></div><div class="li-body"><strong>Pico do Breu</strong><span>Ponto mais alto da Serra do Cipó — vista deslumbrante.</span></div></li>
+        </ul>
+      </div>
+
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Avisos sérios</div>
+        <h3 class="l-card-title sm">Antes de pegar a trilha</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:cloud-storm-linear"></iconify-icon></div><div class="li-body"><strong>Em dia de tempestade, não suba</strong><span>As formações rochosas atraem raios. Se trovejar, desça.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:sun-2-linear"></iconify-icon></div><div class="li-body"><strong>Saia cedo, volte com luz</strong><span>Idealmente até as 7h. Para cachoeiras longas, volte até as 15h.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:waterdrop-linear"></iconify-icon></div><div class="li-body"><strong>Leve 2L de água por pessoa</strong><span>Pouca sombra · protetor solar · tênis firme · lanche.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon></div><div class="li-body"><strong>Trilha longa? Vá com guia local</strong><span>Para Bicame, Soberbo e Travessia, guia é segurança.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── RESTAURANTES ──────────────────────────────────── -->
+<section class="screen" id="restaurantes" data-screen-label="07 Restaurantes">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · B · 02</div><h2 class="topbar-h2">Onde comer</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:chef-hat-minimalistic-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain">
+      <iconify-icon class="watermark" icon="solar:chef-hat-minimalistic-bold"></iconify-icon>
+      <div class="stamp">Mesa mineira · 6 escolhas</div>
+      <h1>O sabor<br><span class="it">da serra</span></h1>
+      <p>Lapinha é pequena, mas come-se bem. Os lugares que eu mesmo frequento — comida caseira em fogão a lenha, pizzas no forno a lenha e bistrôs com vista para a montanha.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">No coração do vilarejo</div>
+        <h3 class="l-card-title sm">Para um jantar especial</h3>
+        <div id="places-restaurantesEspeciais"></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Comida de Minas</div>
+        <h3 class="l-card-title sm">Self-service mineiro</h3>
+        <div id="places-restaurantesSelfService"></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Lanches &amp; petiscos</div>
+        <h3 class="l-card-title sm">Para uma noite mais leve</h3>
+        <div id="places-restaurantesLeve"></div>
+      </div>
+      <div class="pull reveal"><q>O bom de Lapinha é que dá pra comer mineiro de verdade — fogão a lenha, comida fresca, conta no fiado. E sempre tem alguém perguntando se você quer mais arroz.</q><cite>— Anfitrião</cite></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPRAS ───────────────────────────────────────── -->
+<section class="screen" id="compras" data-screen-label="08 Compras">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · B · 03</div><h2 class="topbar-h2">Compras</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:cart-3-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain">
+      <iconify-icon class="watermark" icon="solar:cart-3-bold"></iconify-icon>
+      <div class="stamp">Mercado · padaria · farmácia</div>
+      <h1>O básico,<br><span class="it">à mão</span></h1>
+      <p>Lapinha é pequena — o vilarejo tem o essencial. Para compras maiores, banco e combustível, Santana do Riacho fica a 12 km.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">No vilarejo</div>
+        <h3 class="l-card-title sm">A 5 minutos a pé</h3>
+        <div id="places-comprasVilarejo"></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Em Santana do Riacho</div>
+        <h3 class="l-card-title sm">A 12 km · 20 min de carro</h3>
+        <div id="places-comprasSantana"></div>
+      </div>
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Dica do anfitrião</div>
+        <h3 class="l-card-title sm">Antes de subir</h3>
+        <p>Se vai ficar mais que 2 noites e gosta de cozinhar, faça uma <strong>parada em Lagoa Santa ou na Serra do Cipó</strong> no caminho. Lá têm hortifrútis ótimos. Em Lapinha o básico está sempre garantido — mas variedade não.</p>
+        <p>O kit de boas-vindas cobre seu primeiro café e jantar. <strong>Vinho e queijo extras</strong> eu posso comprar para você — me avise pelo WhatsApp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── LAPINHA (sobre o lugar) ─────────────────────────── -->
+<section class="screen" id="lapinha" data-screen-label="09 Lapinha">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">A região · B · 04</div><h2 class="topbar-h2">Lapinha</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:map-point-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/serra-hero.avif');">
+      <div class="s-hero-content">
+        <div class="stamp">O lugarejo · ~500 hab · 140 km de BH</div>
+        <h1>Quinhentos habitantes,<br><span class="it">mil cachoeiras</span></h1>
+        <p>Lapinha da Serra é distrito de Santana do Riacho, na Serra do Cipó. Foi fundada por três famílias e cresceu devagar — exatamente como a serra ensinou.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">O lugar</div>
+        <h3 class="l-card-title sm">Onde você está</h3>
+        <p>Você está num vilarejo de ruas <strong>sem calçamento</strong>, cercado por montanhas, com a Lagoa da Lapinha de um lado e o Pico da Lapinha do outro. <strong>Cerca de 500 habitantes</strong>, uma igrejinha de São Sebastião e algumas dezenas de pousadas e chalés espalhados.</p>
+        <p>Aos pés do <strong>Pico da Lapinha (1.686 m)</strong>, é base para algumas das cachoeiras mais bonitas de Minas e ponto de partida da famosa travessia até o Tabuleiro.</p>
+      </div>
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Em números</div>
+        <div class="info-row"><div class="col"><span class="lbl">Distância de BH</span><span class="val">140 km</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Habitantes</span><span class="val">~500</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Altitude</span><span class="val">1.100 m</span></div></div>
+        <div class="info-row"><div class="col"><span class="lbl">Bioma</span><span class="val">Cerrado de altitude</span></div></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Tradições</div>
+        <h3 class="l-card-title sm">O calendário do vilarejo</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:calendar-mark-linear"></iconify-icon></div><div class="li-body"><strong>Festa de São Sebastião · Janeiro</strong><span>Padroeiro · procissão, novena e mesa farta na igreja.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:calendar-mark-linear"></iconify-icon></div><div class="li-body"><strong>Arraiá da Lapinha · Junho</strong><span>Mais de 20 anos · fogueira, quentão, quadrilha na praça.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:calendar-mark-linear"></iconify-icon></div><div class="li-body"><strong>Festa de Nossa Senhora · Outubro</strong><span>Tradição mineira que reúne a comunidade.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">A serra mais antiga do Brasil</div>
+        <h3 class="l-card-title sm">A Cordilheira do Espinhaço</h3>
+        <p>Lapinha está encravada na <strong>Cordilheira do Espinhaço</strong> — a única cadeia montanhosa do Brasil, com mais de 1,8 bilhão de anos. Atravessa Minas e Bahia e abriga ecossistemas únicos: cerrado de altitude, campos rupestres, veredas.</p>
+        <p>É também <strong>Reserva da Biosfera pela UNESCO</strong> — proteção que se sente no ar, nos pássaros, no silêncio das madrugadas.</p>
+      </div>
+      <div class="pull reveal"><q>Lapinha não é destino de maratona. É vila pequena, cercada por serra, com cara de pousada e conversa boa no fim do dia.</q><cite>— Viajala News</cite></div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Quanto ficar</div>
+        <h3 class="l-card-title sm">Sugestão de roteiro</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:moon-stars-linear"></iconify-icon></div><div class="li-body"><strong>2 noites · fim de semana</strong><span>Boqueirão + Pico (ou Lajeado) + mesa mineira.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:moon-stars-linear"></iconify-icon></div><div class="li-body"><strong>3 noites · ideal</strong><span>Acrescente Bicame, sítio arqueológico e SUP na lagoa.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:moon-stars-linear"></iconify-icon></div><div class="li-body"><strong>5 noites · para os aventureiros</strong><span>Inclui a Travessia até o Tabuleiro · você volta outra pessoa.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMBINAÇÕES ──────────────────────────────────── -->
+<section class="screen" id="regras" data-screen-label="10 Combinações">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Prático · 01</div><h2 class="topbar-h2">Combinações</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:documents-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain">
+      <iconify-icon class="watermark" icon="solar:documents-bold"></iconify-icon>
+      <div class="stamp">Regras da casa</div>
+      <h1>Pequenos <span class="it">combinados</span></h1>
+      <p>Para que sua estadia — e a de quem vier depois de você — seja tranquila. Nada rígido: combinações de convivência, com afeto.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:moon-stars-linear"></iconify-icon></div><div class="li-body"><strong>Silêncio entre 22h e 8h</strong><span>O som da serra é parte do que se vem buscar aqui. Vizinhos próximos.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:close-circle-linear"></iconify-icon></div><div class="li-body"><strong>Não fumar em áreas internas</strong><span>Há um cantinho na varanda lateral, com cinzeiro, para fumantes.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:users-group-rounded-linear"></iconify-icon></div><div class="li-body"><strong>Visitas: avise antes</strong><span>O chalé é seu durante a estadia — só me avise por mensagem.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:paw-linear"></iconify-icon></div><div class="li-body"><strong>Pet friendly · sob consulta</strong><span>Aceito cães bem-comportados — me pergunte antes da reserva.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:hand-heart-linear"></iconify-icon></div><div class="li-body"><strong>Crianças são bem-vindas</strong><span>Com responsável · há berço portátil e cadeirão a pedido.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:fire-linear"></iconify-icon></div><div class="li-body"><strong>Fogueira só na área de fogo</strong><span>O quintal tem um espaço próprio. Nunca na varanda nem no mato.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:trash-bin-trash-linear"></iconify-icon></div><div class="li-body"><strong>Lixo seco vs orgânico</strong><span>Há duas lixeiras na cozinha · a coleta é só às quartas.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:waterdrop-linear"></iconify-icon></div><div class="li-body"><strong>Cuide da água</strong><span>A água vem de uma nascente. Banhos curtos = água boa para todos.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Filosofia da casa</div>
+        <h3 class="l-card-title sm">Aqui, devagar é avançar</h3>
+        <p>Esqueça relógio, pressa e notificação. A serra tem um ritmo próprio — o sol nasce mais tarde, escurece mais cedo, e a noite estrelada é o melhor entretenimento. Confie no ritmo. Você vai voltar diferente.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMO CHEGAR ─────────────────────────────────── -->
+<section class="screen" id="transporte" data-screen-label="11 Como chegar">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Prático · 02</div><h2 class="topbar-h2">Como chegar</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:bus-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain">
+      <iconify-icon class="watermark" icon="solar:bus-bold"></iconify-icon>
+      <div class="stamp">140 km de BH · 3 horas</div>
+      <h1>A estrada já é<br><span class="it">parte do passeio</span></h1>
+      <p>São cerca de 140 km de Belo Horizonte — 3 horas de viagem. Os últimos 12 km, depois de Santana do Riacho, são de estrada de chão. Vá com calma, abra a janela e respire.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card d-card mt-4 reveal">
+        <div class="l-card-eyebrow">Endereço</div>
+        <h3 class="l-card-title sm">Solar do Espinhaço</h3>
+        <p data-bind-address>—</p>
+        <a href="#" data-bind-maps target="_blank" rel="noopener" class="btn btn-gold btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:map-arrow-square-linear"></iconify-icon>
+          <span>Abrir no Google Maps</span>
+        </a>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">De carro · recomendado</div>
+        <h3 class="l-card-title sm">Saindo de Belo Horizonte</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>1 · Pegue a MG-010</strong><span>Sentido Serra do Cipó. Estrada cênica, asfalto bom.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>2 · Passe por Lagoa Santa e Serra do Cipó</strong><span>Vale parar no mirante do Cipó para esticar as pernas.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>3 · Chegou em Santana do Riacho?</strong><span>Mais 12 km de estrada de chão até Lapinha. Carro alto é melhor.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:phone-calling-linear"></iconify-icon></div><div class="li-body"><strong>4 · Me avise quando passar Santana</strong><span>Saio para te receber no chalé com a chave na mão.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">De avião</div>
+        <h3 class="l-card-title sm">Aeroportos próximos</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:plain-2-linear"></iconify-icon></div><div class="li-body"><strong>Confins (CNF)</strong><span>~2h30 de carro · principal opção · todos os voos nacionais.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:plain-2-linear"></iconify-icon></div><div class="li-body"><strong>Pampulha (PLU)</strong><span>~3h de carro · voos regionais.</span></div></li>
+        </ul>
+        <p style="margin-top: 12px;">A partir de qualquer aeroporto, recomendo <strong>alugar um carro</strong> — você vai precisar dele.</p>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">De ônibus</div>
+        <h3 class="l-card-title sm">Transporte público</h3>
+        <p>A <strong>Viação Saritur</strong> opera o trecho BH ↔ Santana do Riacho, mas <strong>não há ônibus diários</strong> de Santana até Lapinha. Posso organizar transfer da rodoviária — <strong>R$ 80 por pessoa</strong>, mediante reserva.</p>
+        <a href="#" data-bind-wa target="_blank" rel="noopener" class="btn btn-primary btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:chat-round-call-linear"></iconify-icon>
+          <span>Solicitar transfer</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SERVIÇOS ─────────────────────────────────────── -->
+<section class="screen" id="servicos" data-screen-label="12 Serviços">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Prático · 03</div><h2 class="topbar-h2">Serviços</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:bell-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain">
+      <iconify-icon class="watermark" icon="solar:bell-bold"></iconify-icon>
+      <div class="stamp">Da casa</div>
+      <h1>O que está <span class="it">incluído</span></h1>
+      <p>Pequenos confortos do chalé — alguns automáticos, outros sob pedido. Para qualquer coisa, me chame.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">Da casa</div>
+        <h3 class="l-card-title sm">Comodidades</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:home-2-linear"></iconify-icon></div><div class="li-body"><strong>Estacionamento privado</strong><span>Vaga coberta dentro do quintal · gratuito.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:fire-linear"></iconify-icon></div><div class="li-body"><strong>Lareira &amp; fogão a lenha</strong><span>Lenha à disposição. Eu acendo no dia da chegada se quiser.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:bath-linear"></iconify-icon></div><div class="li-body"><strong>Lavanderia da casa</strong><span>Máquina de lavar &amp; varal nos fundos. Sabão na pia.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:cup-hot-linear"></iconify-icon></div><div class="li-body"><strong>Cafeteira italiana</strong><span>Moka pot na cozinha · café fresco de Santana do Riacho na lata.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:medical-kit-linear"></iconify-icon></div><div class="li-body"><strong>Kit primeiros socorros</strong><span>No armário do banheiro · curativos, repelente, analgésico.</span></div></li>
+        </ul>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Sob pedido</div>
+        <h3 class="l-card-title sm">Posso providenciar</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:medal-ribbon-linear"></iconify-icon></div><div class="li-body"><strong>Passeio guiado</strong><span>Trilha, cavalgada, SUP, sítio arqueológico — combino o melhor para o seu dia.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:cart-3-linear"></iconify-icon></div><div class="li-body"><strong>Compras antecipadas</strong><span>Me passe a lista e deixo na geladeira para sua chegada.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:chef-hat-minimalistic-linear"></iconify-icon></div><div class="li-body"><strong>Jantar romântico privativo</strong><span>Mesa montada na varanda, vinho, prato mineiro autoral.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:bus-linear"></iconify-icon></div><div class="li-body"><strong>Transfer aeroporto</strong><span>Confins ou Pampulha · 24h de antecedência.</span></div></li>
+        </ul>
+        <a href="#" data-bind-wa target="_blank" rel="noopener" class="btn btn-primary btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:chat-round-call-linear"></iconify-icon>
+          <span>Pedir pelo WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── EMERGÊNCIA ───────────────────────────────────── -->
+<section class="screen" id="emergencia" data-screen-label="13 Emergência">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Prático · 04</div><h2 class="topbar-h2">Emergência</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:shield-warning-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero-plain" style="background:linear-gradient(160deg,#2a1414 0%,#3a1818 100%);">
+      <iconify-icon class="watermark" icon="solar:shield-warning-bold"></iconify-icon>
+      <div class="stamp">Precisa de ajuda?</div>
+      <h1>Estou <span class="it">aqui</span></h1>
+      <p>Para qualquer coisa — desde um sabão que acabou até um remédio às 3 da manhã — me chame primeiro. Para emergências reais, números úteis abaixo.</p>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card d-card mt-4 reveal">
+        <div class="l-card-eyebrow">Primeira opção</div>
+        <h3 class="l-card-title">Fale comigo · <span class="it">24h</span></h3>
+        <p>Resposta em <strong>até 15 minutos</strong> entre 7h e 23h. À noite, deixe mensagem — leio assim que acordo. Em emergência médica, ligue antes de mandar mensagem.</p>
+        <a href="#" data-bind-wa target="_blank" rel="noopener" class="btn btn-gold btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:chat-round-call-linear"></iconify-icon>
+          <span>WhatsApp · <span data-bind-tel-text>—</span></span>
+        </a>
+        <a href="#" data-bind-tel class="btn btn-ghost btn-block mt-3" style="color:#F5EFE0;border-color:rgba(245,239,224,0.3);">
+          <iconify-icon icon="solar:phone-calling-linear"></iconify-icon>
+          <span>Ligar agora</span>
+        </a>
+      </div>
+      <div class="l-card reveal" style="background: linear-gradient(135deg, #2a1414, #3a1818); color: var(--c-cream); border-color: transparent;">
+        <div class="l-card-eyebrow" style="color: rgba(245,239,224,0.6);">Em emergência real</div>
+        <h3 class="l-card-title sm" style="color:#F5EFE0;">Números nacionais</h3>
+        <div id="emergencyNationalList"></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Saúde próxima</div>
+        <h3 class="l-card-title sm">Hospital &amp; farmácia</h3>
+        <div id="places-saude"></div>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Em caso de incêndio</div>
+        <h3 class="l-card-title sm">Plano da casa</h3>
+        <ul class="l-list">
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>1 · Mantenha a calma</strong><span>O extintor está sob a pia da cozinha.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>2 · Saída principal pela varanda</strong><span>O portão dá direto para a rua.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>3 · Ponto de encontro</strong><span>Em frente à igrejinha de São Sebastião, 200m abaixo.</span></div></li>
+          <li><div class="li-ic"><iconify-icon icon="solar:square-double-alt-arrow-right-linear"></iconify-icon></div><div class="li-body"><strong>4 · Chame os bombeiros &amp; me avise</strong><span>193 primeiro, eu depois.</span></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── LIVRO DE VISITAS / AVALIAÇÃO ─────────────────── -->
+<section class="screen" id="avaliacao" data-screen-label="14 Livro de visitas">
+  <div class="screen-light">
+    <header class="topbar">
+      <button class="btn-back" data-back aria-label="Voltar"><iconify-icon icon="solar:arrow-left-linear"></iconify-icon></button>
+      <div class="flex-1 min-w-0"><div class="topbar-cr">Antes de partir · D · 01</div><h2 class="topbar-h2">Livro de visitas</h2></div>
+      <div class="topbar-ic"><iconify-icon icon="solar:stars-linear"></iconify-icon></div>
+    </header>
+    <div class="s-hero" style="background-image:url('assets/images/Piscina.jpeg');">
+      <div class="s-hero-content">
+        <div class="stamp">Sua opinião</div>
+        <h1>Deixe um <span class="it">recado</span></h1>
+        <p>Sua estadia aqui termina, mas ela é parte da história desta casa. Cada hóspede deixa um pedacinho — uma palavra, uma estrela, uma indicação. Obrigado por ter vindo.</p>
+      </div>
+    </div>
+    <div class="max-w-2xl mx-auto px-5 pb-10">
+      <div class="l-card mt-4 reveal">
+        <div class="l-card-eyebrow">Na mesa da sala</div>
+        <h3 class="l-card-title sm">O livro de papel</h3>
+        <p>Sobre a mesa da sala, há um <strong>caderno de capa de couro</strong> — o livro de visitas da casa. Anote o que sentiu, o que viu, uma poesia, um desenho. Ele é lido por todos os hóspedes que vêm depois.</p>
+        <p>Não há regra: alguns escrevem 3 linhas, outros uma página inteira. Tudo é bem-vindo.</p>
+      </div>
+      <div class="l-card d-card reveal">
+        <div class="l-card-eyebrow">Online</div>
+        <h3 class="l-card-title">Sua avaliação <span class="it">importa</span></h3>
+        <p>Se gostou da estadia, uma avaliação no Airbnb ou Booking ajuda muito a manter o chalé na primeira página — e me permite continuar cuidando dele com tanto carinho.</p>
+        <a href="https://www.airbnb.com.br" target="_blank" rel="noopener" class="btn btn-gold btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:stars-bold"></iconify-icon>
+          <span>Avaliar no Airbnb</span>
+        </a>
+        <a href="https://www.booking.com" target="_blank" rel="noopener" class="btn btn-ghost btn-block mt-3" style="color:#F5EFE0;border-color:rgba(245,239,224,0.3);">
+          <iconify-icon icon="solar:stars-linear"></iconify-icon>
+          <span>Avaliar no Booking</span>
+        </a>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Conte por aí</div>
+        <h3 class="l-card-title sm">Compartilhe</h3>
+        <p>Tirou fotos lindas? Marque <strong data-bind-ig-text>—</strong> no Instagram. Adoro repostar os olhares dos hóspedes — fica registrado para sempre.</p>
+        <a href="#" data-bind-ig target="_blank" rel="noopener" class="btn btn-primary btn-block btn-glow mt-4">
+          <iconify-icon icon="solar:gallery-linear"></iconify-icon>
+          <span>Abrir Instagram</span>
+        </a>
+      </div>
+      <div class="l-card reveal">
+        <div class="l-card-eyebrow">Volte sempre</div>
+        <h3 class="l-card-title sm">Indicação para amigos</h3>
+        <p>Indicou um amigo que se hospedou aqui? Sua próxima estadia ganha <strong>15% de desconto</strong>. É só ele falar seu nome ao reservar.</p>
+      </div>
+      <div class="pull reveal"><q>Aqui é uma casa. E a melhor coisa de uma casa é quando alguém volta dizendo que sentiu falta.</q><cite>— A casa</cite></div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.app-shell -->
+
+<!-- ══════════════════════════════════════════════════════════
+     NAVEGAÇÃO INFERIOR — presente em todas as telas
+═══════════════════════════════════════════════════════════ -->
+<nav class="bottom-nav" aria-label="Navegação principal">
+  <button class="bn-item active" data-target="home" data-screen="menu" type="button">
+    <iconify-icon icon="solar:widget-5-linear"></iconify-icon><span>Início</span>
+  </button>
+  <button class="bn-item" data-target="wifi" data-screen="wifi" type="button">
+    <iconify-icon icon="solar:wi-fi-router-linear"></iconify-icon><span>Wi-Fi</span>
+  </button>
+  <button class="bn-item" data-target="trilhas" data-screen="serra" type="button">
+    <iconify-icon icon="solar:flag-2-linear"></iconify-icon><span>Serra</span>
+  </button>
+  <button class="bn-item" data-target="emergencia" data-screen="emergencia" type="button">
+    <iconify-icon icon="solar:shield-warning-linear"></iconify-icon><span>SOS</span>
+  </button>
+</nav>
+
+<!-- Botão flutuante — contato direto, sempre visível -->
+<a href="#" data-bind-wa target="_blank" rel="noopener" class="fab-wa" aria-label="Falar no WhatsApp com o anfitrião">
+  <div class="ic-w"><iconify-icon icon="solar:chat-round-call-bold"></iconify-icon></div>
+  <span class="lbl">Falar com o anfitrião</span>
+</a>
+
+<script src="js/components.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/site-nav.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
