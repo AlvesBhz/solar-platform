@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1440, initial-scale=1.0">
+  <title>Solar do Espinhaço · Logo</title>
+
+  <!-- Google Fonts / Fontes do Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com/">
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+  <link rel="stylesheet" href="./Solar do Espinhaço · Logo_files/css2">
+
+  <!-- Design system tokens / Tokens do design system -->
+  <link rel="stylesheet" href="./colors_and_type.css">
+
+  <!-- Iconify: renders solar:leaf-* icons / renderiza os ícones solar:leaf-* -->
+  <script src="./Solar do Espinhaço · Logo_files/iconify-icon.min.js.download"></script>
+
+  <style>
+    /* ── Page shell / Estrutura da página ─────────────────── */
+    html, body { margin: 0; padding: 0; background: #F1ECDF; color: #1C1917; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 72px 64px 120px;
+    }
+
+    /* ── Typography / Tipografia ──────────────────────────── */
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: #78716C;
+    }
+    .mono {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: #A8A29E;
+    }
+    h1.title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: 64px;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin: 12px 0 16px;
+      color: #1C2922;
+    }
+    h1.title .it {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+    .lede {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.6;
+      color: #44403C;
+      max-width: 580px;
+    }
+
+    /* ── Section heading / Cabeçalho de seção ─────────────── */
+    .sec {
+      margin-top: 96px;
+      border-top: 1px solid rgba(28,25,23,0.08);
+      padding-top: 24px;
+    }
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .sec-head .l { display: flex; align-items: baseline; gap: 18px; }
+    .sec-head h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 28px;
+      letter-spacing: -0.01em;
+      margin: 0;
+      color: #1C2922;
+    }
+    .sec-head .num {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #2C3E35;
+      opacity: 0.5;
+    }
+
+    /* ── Wordmark / Marca tipográfica ─────────────────────── */
+    /* Cormorant Garamond 400, per brand reference / conforme referência da marca */
+    .wm     { font-family: 'Cormorant Garamond', serif; font-weight: 400; letter-spacing: 0.02em; line-height: 1; }
+    .wm .it { font-style: italic; font-weight: 400; }
+
+    /* ── Card grid / Grade de cartões ────────────────────── */
+    .grid { display: grid; gap: 20px; }
+    .g-2  { grid-template-columns: repeat(2, 1fr); }
+    .g-4  { grid-template-columns: repeat(4, 1fr); }
+    .g-6  { grid-template-columns: repeat(6, 1fr); }
+
+    .card {
+      position: relative;
+      background: #FAFAF9;
+      border-radius: 14px;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 0 rgba(28,25,23,0.04), 0 18px 48px -28px rgba(28,25,23,0.18);
+    }
+
+    /* Card color variants / Variações de cor dos cartões */
+    .card.pine     { background: #1C2922; color: #FAFAF9; }
+    .card.pine-mid { background: #2C3E35; color: #FAFAF9; }
+    .card.bone     { background: #EAE5D9; color: #1C2922; }
+    .card.cream    { background: #FAFAF9; color: #2C3E35; }
+    .card.stone    { background: #292423; color: #FAFAF9; }
+
+    /* Card aspect-ratio variants / Variações de proporção dos cartões */
+    .card.wide   { aspect-ratio: 2 / 1; }
+    .card.wide-3 { aspect-ratio: 2.4 / 1; }
+    .card.tall   { aspect-ratio: 3 / 4; }
+
+    /* Card annotation tags / Etiquetas de anotação dos cartões */
+    .card .tag-l,
+    .card .tag-r {
+      position: absolute;
+      bottom: 14px;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 8.5px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      opacity: 0.45;
+    }
+    .card .tag-l { left: 16px; }
+    .card .tag-r { right: 16px; }
+
+    /* Note below grid / Nota abaixo da grade */
+    .caption {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: #78716C;
+      line-height: 1.5;
+      margin-top: 14px;
+      max-width: 720px;
+    }
+
+    /* ── Layout helpers / Auxiliares de layout ───────────── */
+    .stack   { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .row     { display: flex; align-items: center; gap: 16px; }
+    .row.g-20 { gap: 20px; }
+    .row.g-28 { gap: 28px; }
+
+    /* ── Leaf icon host / Contêiner do ícone folha ─────────── */
+    /* Passes currentColor to the SVG stroke / Repassa currentColor ao traço do SVG */
+    .leaf-host { display: inline-block; line-height: 0; }
+    .leaf-host iconify-icon { display: block; }
+
+    /* ── Disc variant / Variante em disco ─────────────────── */
+    /* Leaf inside a circular border / Folha dentro de borda circular */
+    .leaf-disc {
+      position: relative;
+      width: 1em; height: 1em; /* sized by font-size on host / dimensionado pelo font-size do host */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .leaf-disc::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+    }
+    .leaf-disc iconify-icon { transform: scale(0.62); }
+
+    /* ── Favicon tiles / Blocos de favicon ──────────────────── */
+    .fav-tile {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #2C3E35;
+      color: #FAFAF9;
+    }
+    .fav-tile.lite { background: #FAFAF9; color: #2C3E35; border: 1px solid #E7E5E4; }
+    .fav-cap {
+      font-family: ui-monospace, monospace;
+      font-size: 9px;
+      color: #A8A29E;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* ── Browser mockup / Mockup de navegador ─────────────── */
+    .browser {
+      width: 92%;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 18px 48px -24px rgba(28,25,23,0.22);
+      overflow: hidden;
+    }
+    .browser .bar {
+      display: flex;
+      gap: 6px;
+      background: #F5F2EC;
+      padding: 9px 12px;
+      border-bottom: 1px solid #EFEBE2;
+    }
+    .browser .bar i {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #DDD7CB;
+      display: inline-block;
+    }
+    .browser .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+    }
+    .browser .links {
+      display: flex;
+      gap: 22px;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.20em;
+      text-transform: uppercase;
+      color: #57534E;
+    }
+
+    /* Dark browser variant / Variante escura do navegador */
+    .browser--dark { background: #1C2922; border: 1px solid rgba(255,255,255,0.05); }
+    .browser--dark .bar { background: #141F19; border-bottom-color: rgba(255,255,255,0.04); }
+    .browser--dark .bar i { background: #2A3B31; }
+    .browser--dark .links { color: #A8A29E; }
+
+    /* ── Stamp / Selo ────────────────────────────────────────── */
+    .stamp {
+      position: relative;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      border: 1.2px solid currentColor;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .stamp::before {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      opacity: 0.32;
+    }
+    .stamp .est {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      opacity: 0.7;
+    }
+    .stamp .sname {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    /* ── Phone splash / Tela de abertura do app ───────────── */
+    .phone {
+      width: 200px; height: 380px;
+      background: #1C2922;
+      border-radius: 28px;
+      padding: 20px 18px;
+      box-shadow: 0 30px 50px -18px rgba(28,25,23,0.45);
+      position: relative;
+      color: #FAFAF9;
+    }
+    .phone .stat {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      opacity: 0.5;
+    }
+
+    /* ── SE monogram / Monograma SE ──────────────────────── */
+    /* Typographic: leaf icon replaces the separator dot */
+    /* Tipográfico: ícone folha substitui o ponto separador */
+    .se-mono {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0.04em;
+      display: inline-flex;
+      align-items: baseline;
+    }
+    .se-mono .dot {
+      margin: 0 6px;
+      transform: translateY(-0.15em);
+    }
+
+    /* ── Hero band / Faixa de destaque ───────────────────── */
+    .hero {
+      background: #1C2922;
+      color: #FAFAF9;
+      border-radius: 16px;
+      padding: 60px 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+      box-shadow: 0 30px 80px -30px rgba(28,41,34,0.5);
+      margin-top: 32px;
+    }
+    .hero .meta-col { max-width: 280px; }
+    .hero .meta-col .eyebrow { color: rgba(250,250,249,0.5); }
+    .hero .meta-col .label {
+      margin-top: 6px;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      letter-spacing: 0.02em;
+    }
+    .hero .meta-col .desc {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgba(250,250,249,0.7);
+      margin-top: 12px;
+    }
+    .hero .wm-col {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .hero .wm-col .eyebrow { color: rgba(250,250,249,0.45); }
+    .hero .meta-col--right { text-align: right; }
+    .hero .meta-col--right .mono { color: rgba(250,250,249,0.4); }
+
+    /* ── Instagram profile / Perfil do Instagram ───────────── */
+    .ig-circle {
+      position: relative;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ig-circle.pine-deep { background: #1C2922; color: #FAFAF9; }
+    .ig-circle.pine-mid  { background: #2C3E35; color: #FAFAF9; }
+    .ig-circle.cream     { background: #FAFAF9; color: #2C3E35; box-shadow: inset 0 0 0 1.5px #E0DDD5; }
+    .ig-circle.bone      { background: #EAE5D9; color: #1C2922; }
+
+    /* Stamp/seal adapted for Instagram circle / Selo adaptado para o círculo do Instagram */
+    /* Inner ring scales proportionally via inset percentage / Anel interno escala via porcentagem */
+    .ig-circle.ig-seal { flex-direction: column; gap: 5px; }
+    .ig-circle.ig-seal::before {
+      content: "";
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      opacity: 0.28;
+      pointer-events: none;
+    }
+
+    .ig-sizes { display: flex; align-items: flex-end; gap: 32px; }
+    .ig-item  { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+    /* Instagram profile mock / Mock do perfil do Instagram */
+    .ig-mock {
+      width: 236px;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+      box-shadow: 0 18px 48px -24px rgba(28,25,23,0.22);
+    }
+    .ig-mock .ig-bar   { padding: 10px 14px 4px; font-size: 12px; font-weight: 700; color: #000; text-align: center; }
+    .ig-mock .ig-body  { padding: 12px 14px; }
+    .ig-mock .ig-head  { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+    .ig-mock .ig-stats { display: flex; gap: 12px; }
+    .ig-mock .ig-stat  { display: flex; flex-direction: column; align-items: center; font-size: 9px; color: #57534E; line-height: 1.4; }
+    .ig-mock .ig-stat strong { font-size: 11px; font-weight: 600; color: #000; }
+    .ig-mock .ig-name  { font-size: 10.5px; font-weight: 600; color: #000; margin-bottom: 3px; }
+    .ig-mock .ig-bio   { font-size: 9.5px; color: #44403C; line-height: 1.55; margin-bottom: 8px; }
+    .ig-mock .ig-follow {
+      padding: 5px 8px; border: 1px solid #D4D0C8; border-radius: 6px;
+      font-size: 10px; font-weight: 600; color: #000; text-align: center; margin-bottom: 12px;
+    }
+    .ig-mock .ig-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5px; }
+    .ig-mock .ig-grid div { aspect-ratio: 1; background: #EAE5D9; }
+    .ig-mock .ig-grid div:nth-child(1) { background: #2C3E35; }
+    .ig-mock .ig-grid div:nth-child(2) { background: #C8BFA8; }
+    .ig-mock .ig-grid div:nth-child(4) { background: #1C2922; }
+    .ig-mock .ig-grid div:nth-child(5) { background: #D4C9B0; }
+    .ig-mock .ig-grid div:nth-child(6) { background: #2C3E35; opacity: 0.7; }
+
+    /* ── Footer / Rodapé ─────────────────────────────────── */
+    .footer {
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(28,25,23,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Vein stroke weight is controlled at runtime via SVG attribute overrides;
+       iconify's shadow DOM cannot be styled with ::part() reliably.
+       / O peso do traço das nervuras é controlado em tempo de execução via atributos SVG;
+       o shadow DOM do iconify não pode ser estilizado com ::part() de forma confiável. */
+
+    /* ── Download / Copy buttons / Botões de download e cópia ── */
+    .card[data-logo] { cursor: pointer; }
+    .dl-btn, .cp-btn {
+      position: absolute;
+      top: 10px;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(250, 250, 249, 0.92);
+      color: #1C2922;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(28, 25, 23, 0.22);
+    }
+    .dl-btn { right: 10px; }
+    .cp-btn { right: 46px; }
+    .card[data-logo]:hover .dl-btn,
+    .card[data-logo]:hover .cp-btn { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ══════════════ HEADER / CABEÇALHO ══════════════════════ -->
+  <header>
+    <div class="eyebrow">Identidade · Marca · v0.1</div>
+    <h1 class="title">A folha que vira <span class="it">marca</span>.</h1>
+    <p class="lede">
+      Tomei o ícone <em>solar:leaf-linear</em> — a folha do design system, marcada como
+      "eco" no painel de iconografia — e elevei ele a símbolo principal.
+      Mesma silhueta, mesma nervura, agora em escala de logo. Abaixo, o sistema completo:
+      símbolo, lockups, monograma <strong>SE</strong>, tipografia alternativa e aplicações.
+    </p>
+
+    <!-- Hero band — recommended version / versão recomendada -->
+    <div class="hero">
+      <div class="meta-col">
+        <div class="eyebrow">Recomendado · v0</div>
+        <div class="label">Folha + wordmark<br>Cormorant 500</div>
+        <div class="desc">
+          Mark = ícone Solar leaf em traço 1.4. Wordmark em Cormorant Garamond 500,
+          alinhado verticalmente ao centro da folha.
+        </div>
+      </div>
+      <div class="wm-col">
+        <span class="leaf-host">
+          <iconify-icon icon="solar:leaf-linear" width="180"></iconify-icon>
+        </span>
+        <span class="wm" style="font-size:44px;">Solar do Espinhaço</span>
+        <span class="eyebrow">Lapinha · Minas Gerais · Brasil</span>
+      </div>
+      <div class="meta-col meta-col--right">
+        <div class="mono">SDE-LOGO · 01</div>
+        <div class="mono">solar:leaf-linear</div>
+        <div class="mono">cormorant-500</div>
+        <div class="mono">pine-deep #1C2922</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════ 01 · O SÍMBOLO / THE SYMBOL ═════════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">01</span>
+        <h2>O símbolo — a folha</h2>
+      </div>
+      <span class="eyebrow">solar:leaf · família</span>
+    </div>
+
+    <!-- Icon style variants A–H / Variantes de estilo A–H -->
+    <div class="grid g-4">
+      <div class="card cream" data-logo="sym-lin-lt">
+        <span class="leaf-host">
+          <iconify-icon icon="solar:leaf-linear" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">A · linear</span>
+        <span class="tag-r">principal</span>
+      </div>
+      <div class="card pine" data-logo="sym-lin-dk">
+        <span class="leaf-host">
+          <iconify-icon icon="solar:leaf-linear" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">B · linear</span>
+        <span class="tag-r">inverso</span>
+      </div>
+      <div class="card cream" data-logo="sym-bld-lt">
+        <span class="leaf-host" style="color:#2C3E35;">
+          <iconify-icon icon="solar:leaf-bold" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">C · bold</span>
+        <span class="tag-r">sólida</span>
+      </div>
+      <div class="card cream" data-logo="auto">
+        <span class="leaf-host" style="color:#1C2922;">
+          <iconify-icon icon="solar:leaf-broken" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">D · broken</span>
+        <span class="tag-r">traços</span>
+      </div>
+      <div class="card cream" data-logo="auto">
+        <span class="leaf-host" style="color:#2C3E35;">
+          <iconify-icon icon="solar:leaf-bold-duotone" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">E · duotone</span>
+        <span class="tag-r">gradiente de opacidade</span>
+      </div>
+      <div class="card cream" data-logo="auto">
+        <span class="leaf-host" style="color:#1C2922;">
+          <iconify-icon icon="solar:leaf-line-duotone" width="140"></iconify-icon>
+        </span>
+        <span class="tag-l">F · line-duotone</span>
+        <span class="tag-r">veias suaves</span>
+      </div>
+      <!-- Disc variants / Variantes em disco -->
+      <div class="card pine-mid" data-logo="disc-dk">
+        <div class="leaf-disc" style="font-size:140px;">
+          <iconify-icon icon="solar:leaf-linear" width="140"></iconify-icon>
+        </div>
+        <span class="tag-l">G · em disco</span>
+        <span class="tag-r">selo</span>
+      </div>
+      <div class="card cream" data-logo="disc-lt">
+        <div class="leaf-disc" style="font-size:140px;">
+          <iconify-icon icon="solar:leaf-linear" width="140"></iconify-icon>
+        </div>
+        <span class="tag-l">H · em disco</span>
+        <span class="tag-r">selo · claro</span>
+      </div>
+    </div>
+
+    <p class="caption">
+      A versão <strong>A (linear)</strong> é o ícone "eco" que você apontou — silhueta-gota com nervura central vertical e três
+      veias diagonais. <strong>C (bold)</strong> dá peso para uso pequeno (favicon, redes sociais).
+      <strong>G/H (disco)</strong> propõem encerrar a folha dentro de um círculo fino — vira selo, ganha presença
+      em superfícies grandes e em embalagem.
+    </p>
+  </section>
+
+  <!-- ══════════════ 02 · LOCKUP HORIZONTAL ══════════════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">02</span>
+        <h2>Lockup horizontal — folha + nome</h2>
+      </div>
+      <span class="eyebrow">navbar · cartão · assinatura</span>
+    </div>
+
+    <div class="grid g-2">
+      <!-- A: canonical light / canônico claro -->
+      <div class="card wide cream" data-logo="lkp-lin-lt">
+        <div class="row g-20" style="color:#1C2922;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="60"></iconify-icon></span>
+          <span class="wm" style="font-size:38px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">A · linear + Cormorant 500</span>
+        <span class="tag-r">canônico</span>
+      </div>
+
+      <!-- B: inverted on pine-deep / invertido sobre pine-deep -->
+      <div class="card wide pine" data-logo="lkp-lin-dk">
+        <div class="row g-20">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="60"></iconify-icon></span>
+          <span class="wm" style="font-size:38px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">B · inverso</span>
+        <span class="tag-r">pine-deep</span>
+      </div>
+
+      <!-- C: italic mix on bone / mix itálico sobre bone -->
+      <div class="card wide bone" data-logo="lkp-lin-bone">
+        <div class="row g-20">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="50"></iconify-icon></span>
+          <span class="wm" style="font-size:32px;">Solar do <span class="it">Espinhaço</span></span>
+        </div>
+        <span class="tag-l">C · italic-mix</span>
+        <span class="tag-r">editorial</span>
+      </div>
+
+      <!-- D: bold leaf for visual weight / folha bold para peso visual -->
+      <div class="card wide cream" data-logo="lkp-bld-lt">
+        <div class="row g-20">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-bold" width="58"></iconify-icon></span>
+          <span class="wm" style="font-size:36px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">D · bold leaf</span>
+        <span class="tag-r">peso visual</span>
+      </div>
+
+      <!-- E: duotone on pine-mid / duotone sobre pine-mid -->
+      <div class="card wide pine-mid" data-logo="auto">
+        <div class="row g-20">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-bold-duotone" width="54"></iconify-icon></span>
+          <span class="wm" style="font-size:36px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">E · duotone</span>
+        <span class="tag-r">pine</span>
+      </div>
+
+      <!-- F: broken leaf on bone / broken leaf sobre bone -->
+      <div class="card wide bone" data-logo="auto">
+        <div class="row g-20">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-broken" width="58"></iconify-icon></span>
+          <span class="wm" style="font-size:36px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">F · broken leaf</span>
+        <span class="tag-r">bone</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 03 · LOCKUP CENTRADO / STACKED ══════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">03</span>
+        <h2>Lockup centrado — para hero e embalagem</h2>
+      </div>
+      <span class="eyebrow">stacked · hero</span>
+    </div>
+
+    <div class="grid g-4">
+      <div class="card cream" data-logo="stk-lin-lt">
+        <div class="stack" style="color:#1C2922;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="76"></iconify-icon></span>
+          <span class="wm" style="font-size:24px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">A · clássico</span>
+        <span class="tag-r">cream</span>
+      </div>
+
+      <div class="card pine" data-logo="stk-lin-dk">
+        <div class="stack">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="76"></iconify-icon></span>
+          <span class="wm" style="font-size:24px;">Solar do Espinhaço</span>
+          <span class="eyebrow" style="color:rgba(250,250,249,0.5);">Lapinha · Minas Gerais</span>
+        </div>
+        <span class="tag-l">B · com eyebrow</span>
+        <span class="tag-r">pine</span>
+      </div>
+
+      <div class="card bone" data-logo="stk-lin-bone">
+        <div class="stack">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="76"></iconify-icon></span>
+          <span class="eyebrow">est · 2024</span>
+          <span class="wm" style="font-size:22px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">C · com data</span>
+        <span class="tag-r">papelaria</span>
+      </div>
+
+      <div class="card pine-mid" data-logo="auto">
+        <div class="stack">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-bold-duotone" width="80"></iconify-icon></span>
+          <span class="wm" style="font-size:24px;">Solar do <span class="it">Espinhaço</span></span>
+        </div>
+        <span class="tag-l">D · duotone + italic</span>
+        <span class="tag-r">editorial</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 04 · MONOGRAMA SE / SE MONOGRAM ════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">04</span>
+        <h2>Monograma SE — versão curta</h2>
+      </div>
+      <span class="eyebrow">favicon · social · selo</span>
+    </div>
+
+    <div class="grid g-4">
+      <!-- A: leaf + SE horizontal -->
+      <div class="card cream" data-logo="mono-h-lt">
+        <div class="row g-20" style="color:#1C2922;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="84"></iconify-icon></span>
+          <span class="wm" style="font-size:64px;">SE</span>
+        </div>
+        <span class="tag-l">A · folha + SE</span>
+        <span class="tag-r">horizontal</span>
+      </div>
+
+      <!-- B: stacked seal / selo empilhado -->
+      <div class="card pine" data-logo="mono-v-dk">
+        <div class="stack">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="76"></iconify-icon></span>
+          <span class="wm" style="font-size:38px; letter-spacing:0.18em;">SE</span>
+        </div>
+        <span class="tag-l">B · empilhado</span>
+        <span class="tag-r">selo</span>
+      </div>
+
+      <!-- C: leaf as typographic separator dot / folha como ponto tipográfico -->
+      <div class="card cream">
+        <div class="se-mono" style="font-size:80px;">
+          S
+          <span class="dot">
+            <iconify-icon icon="solar:leaf-bold" width="34"></iconify-icon>
+          </span>
+          E
+        </div>
+        <span class="tag-l">C · S<i>·</i>E (folha = ponto)</span>
+        <span class="tag-r">tipográfico</span>
+      </div>
+
+      <!-- D: SE inside disc with leaf accent / SE no disco com folha-acento -->
+      <div class="card pine-mid" data-logo="auto">
+        <div class="leaf-disc" style="width:160px; height:160px;">
+          <span class="wm" style="position:absolute; font-size:54px; letter-spacing:0.06em;">SE</span>
+          <iconify-icon icon="solar:leaf-linear" width="32"
+            style="position:absolute; top:18px; left:50%; transform:translateX(-50%);"></iconify-icon>
+        </div>
+        <span class="tag-l">D · SE no disco + folha-acento</span>
+        <span class="tag-r">brasão</span>
+      </div>
+    </div>
+
+    <p class="caption">
+      Quando o nome inteiro não cabe — perfil do Instagram, favicon, marca-d'água no canto da foto —
+      o <strong>SE</strong> com a folha é a versão curta. <strong>A</strong> é a forma mais legível em
+      contextos de UI; <strong>D</strong> é o "brasão" formal para selo, papelaria e embalagem.
+    </p>
+  </section>
+
+  <!-- ══════════════ 05 · TIPOGRAFIA / TYPOGRAPHY ════════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">05</span>
+        <h2>Tipografia — Cormorant Garamond 400</h2>
+      </div>
+      <span class="eyebrow">conforme referência</span>
+    </div>
+
+    <div class="grid g-2">
+      <div class="card wide cream" data-logo="auto">
+        <div class="stack" style="color:#1C2922; gap:14px;">
+          <span class="wm" style="font-size:52px;">Solar do Espinhaço</span>
+          <span class="mono">Cormorant Garamond · 400 · letter-spacing 0.02em</span>
+        </div>
+        <span class="tag-l">A · principal</span>
+        <span class="tag-r">wordmark</span>
+      </div>
+      <div class="card wide pine" data-logo="auto">
+        <div class="stack" style="gap:14px;">
+          <span class="wm" style="font-size:52px;">Solar do Espinhaço</span>
+          <span class="mono" style="color:rgba(250,250,249,0.5);">inverso · cream sobre pine-deep</span>
+        </div>
+        <span class="tag-l">B · inverso</span>
+        <span class="tag-r">noturno</span>
+      </div>
+    </div>
+
+    <!-- Type scale ramp / Escala tipográfica -->
+    <div class="grid g-2" style="margin-top:20px;">
+      <div class="card wide cream" style="aspect-ratio:2.4/1;">
+        <div style="display:flex; flex-direction:column; gap:14px; align-items:flex-start; padding:8px 28px; color:#1C2922;">
+          <span class="wm" style="font-size:64px;">Solar do Espinhaço</span>
+          <span class="wm" style="font-size:40px;">Solar do Espinhaço</span>
+          <span class="wm" style="font-size:24px;">Solar do Espinhaço</span>
+          <span class="wm" style="font-size:14px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">C · escala 14 → 64 px</span>
+        <span class="tag-r">hierarquia</span>
+      </div>
+      <div class="card wide cream" style="aspect-ratio:2.4/1;">
+        <div style="display:flex; flex-direction:column; gap:16px; align-items:flex-start; padding:8px 28px; color:#1C2922;">
+          <div>
+            <span class="wm" style="font-size:36px;">Solar do Espinhaço</span>
+            <div class="mono">roman · canônico</div>
+          </div>
+          <div>
+            <span class="wm" style="font-size:36px;"><span class="it">Solar do Espinhaço</span></span>
+            <div class="mono">italic · usos editoriais e assinaturas</div>
+          </div>
+        </div>
+        <span class="tag-l">D · roman + italic</span>
+        <span class="tag-r">cortes oficiais</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 06 · COR / COLOR ════════════════════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">06</span>
+        <h2>Paleta — fundos da marca</h2>
+      </div>
+      <span class="eyebrow">pine · cream · bone · stone</span>
+    </div>
+
+    <!-- Brand background swatches / Amostras de fundo da marca -->
+    <div class="grid g-4">
+      <div class="card cream" style="aspect-ratio:1.6/1;" data-logo="auto">
+        <div class="row" style="color:#1C2922; gap:10px; white-space:nowrap;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon></span>
+          <span class="wm" style="font-size:18px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">#FAFAF9 · cream</span>
+        <span class="tag-r">A</span>
+      </div>
+      <div class="card bone" style="aspect-ratio:1.6/1;" data-logo="auto">
+        <div class="row" style="gap:10px; white-space:nowrap;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon></span>
+          <span class="wm" style="font-size:18px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">#EAE5D9 · bone</span>
+        <span class="tag-r">B</span>
+      </div>
+      <div class="card pine-mid" style="aspect-ratio:1.6/1;" data-logo="auto">
+        <div class="row" style="gap:10px; white-space:nowrap;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon></span>
+          <span class="wm" style="font-size:18px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">#2C3E35 · pine</span>
+        <span class="tag-r">C</span>
+      </div>
+      <div class="card pine" style="aspect-ratio:1.6/1;" data-logo="auto">
+        <div class="row" style="gap:10px; white-space:nowrap;">
+          <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon></span>
+          <span class="wm" style="font-size:18px;">Solar do Espinhaço</span>
+        </div>
+        <span class="tag-l">#1C2922 · pine-deep</span>
+        <span class="tag-r">D</span>
+      </div>
+    </div>
+
+    <!-- ── Variantes tipográficas · imagem 1 (light) + imagem 2 (dark) ── -->
+    <div class="eyebrow" style="margin-top:32px; margin-bottom:16px;">Variantes tipográficas — item 1 &amp; 2 · nas duas paletas</div>
+
+    <div class="grid g-2">
+
+      <!-- 1A · Light · "SOLAR" grande + "DO ESPINHAÇO" subtítulo -->
+      <div class="card bone" style="aspect-ratio:2/1;">
+        <div style="display:flex; align-items:center; gap:13px; white-space:nowrap; color:#1C2922;">
+          <div style="position:relative; width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(28,25,23,0.42);"></div>
+            <iconify-icon icon="solar:leaf-linear" width="19"></iconify-icon>
+          </div>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.10em; text-transform:uppercase; line-height:1; color:#1C2922;">Solar</div>
+            <div style="font-family:'Inter',sans-serif; font-weight:300; font-size:8.5px; letter-spacing:0.34em; text-transform:uppercase; color:#78716C; line-height:1; margin-top:4px;">Do Espinhaço</div>
+          </div>
+        </div>
+        <span class="tag-l">1A · light · Solar / do Espinhaço</span>
+        <span class="tag-r">item 1</span>
+      </div>
+
+      <!-- 1B · Light · "SOLAR DO" subtítulo + "ESPINHAÇO" grande (invertido) -->
+      <div class="card bone" style="aspect-ratio:2/1;">
+        <div style="display:flex; align-items:center; gap:13px; white-space:nowrap; color:#1C2922;">
+          <div style="position:relative; width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(28,25,23,0.42);"></div>
+            <iconify-icon icon="solar:leaf-linear" width="19"></iconify-icon>
+          </div>
+          <div>
+            <div style="font-family:'Inter',sans-serif; font-weight:300; font-size:8.5px; letter-spacing:0.34em; text-transform:uppercase; color:#78716C; line-height:1;">Solar do</div>
+            <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.06em; text-transform:uppercase; line-height:1; color:#1C2922; margin-top:3px;">Espinhaço</div>
+          </div>
+        </div>
+        <span class="tag-l">1B · light · solar do / ESPINHAÇO</span>
+        <span class="tag-r">item 2 · invertido</span>
+      </div>
+
+      <!-- 2A · Dark · "SOLAR" grande + "DO ESPINHAÇO" subtítulo + régua -->
+      <div class="card pine" style="aspect-ratio:2/1;">
+        <div style="display:flex; align-items:center; gap:12px; white-space:nowrap; color:#FAFAF9;">
+          <div style="position:relative; width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(250,250,249,0.55);"></div>
+            <iconify-icon icon="solar:leaf-linear" width="19"></iconify-icon>
+          </div>
+          <div style="width:1px; height:30px; background:#FAFAF9; opacity:0.18; flex-shrink:0;"></div>
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.10em; text-transform:uppercase; line-height:1; color:#FAFAF9;">Solar</div>
+            <div style="font-family:'Inter',sans-serif; font-weight:300; font-size:8.5px; letter-spacing:0.34em; text-transform:uppercase; color:rgba(250,250,249,0.52); line-height:1; margin-top:4px;">Do Espinhaço</div>
+          </div>
+        </div>
+        <span class="tag-l">2A · dark · Solar / do Espinhaço</span>
+        <span class="tag-r">item 1</span>
+      </div>
+
+      <!-- 2B · Dark · "SOLAR DO" subtítulo + "ESPINHAÇO" grande (invertido) + régua -->
+      <div class="card pine" style="aspect-ratio:2/1;">
+        <div style="display:flex; align-items:center; gap:12px; white-space:nowrap; color:#FAFAF9;">
+          <div style="position:relative; width:30px; height:30px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <div style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(250,250,249,0.55);"></div>
+            <iconify-icon icon="solar:leaf-linear" width="19"></iconify-icon>
+          </div>
+          <div style="width:1px; height:30px; background:#FAFAF9; opacity:0.18; flex-shrink:0;"></div>
+          <div>
+            <div style="font-family:'Inter',sans-serif; font-weight:300; font-size:8.5px; letter-spacing:0.34em; text-transform:uppercase; color:rgba(250,250,249,0.52); line-height:1;">Solar do</div>
+            <div style="font-family:'Cormorant Garamond',serif; font-weight:500; font-size:22px; letter-spacing:0.06em; text-transform:uppercase; line-height:1; color:#FAFAF9; margin-top:3px;">Espinhaço</div>
+          </div>
+        </div>
+        <span class="tag-l">2B · dark · solar do / ESPINHAÇO</span>
+        <span class="tag-r">item 2 · invertido</span>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ══════════════ 07 · APLICAÇÕES / APPLICATIONS ══════════ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">07</span>
+        <h2>Aplicações</h2>
+      </div>
+      <span class="eyebrow">favicon · navbar · selo · splash</span>
+    </div>
+
+    <!-- Favicon sizes / Tamanhos do favicon -->
+    <div class="grid g-4">
+      <div class="card cream">
+        <div style="display:flex; gap:24px; align-items:flex-end;">
+          <div>
+            <div class="fav-tile" style="width:16px; height:16px; border-radius:3px;">
+              <iconify-icon icon="solar:leaf-bold" width="11"></iconify-icon>
+            </div>
+            <div class="fav-cap">16</div>
+          </div>
+          <div>
+            <div class="fav-tile" style="width:32px; height:32px; border-radius:6px;">
+              <iconify-icon icon="solar:leaf-bold" width="22"></iconify-icon>
+            </div>
+            <div class="fav-cap">32</div>
+          </div>
+          <div>
+            <div class="fav-tile" style="width:64px; height:64px; border-radius:12px;">
+              <iconify-icon icon="solar:leaf-bold" width="42"></iconify-icon>
+            </div>
+            <div class="fav-cap">64</div>
+          </div>
+          <div>
+            <div class="fav-tile lite" style="width:64px; height:64px; border-radius:12px;">
+              <iconify-icon icon="solar:leaf-linear" width="42"></iconify-icon>
+            </div>
+            <div class="fav-cap">64 light</div>
+          </div>
+        </div>
+        <span class="tag-l">Favicon · iOS · macOS</span>
+        <span class="tag-r">A</span>
+      </div>
+
+      <!-- Stamp light / Selo claro -->
+      <div class="card cream" data-logo="seal-lt">
+        <div class="stamp">
+          <iconify-icon icon="solar:leaf-linear" width="40"></iconify-icon>
+          <span class="sname">SE</span>
+        </div>
+        <span class="tag-l">Selo · papelaria</span>
+        <span class="tag-r">B</span>
+      </div>
+
+      <!-- Stamp dark / Selo escuro -->
+      <div class="card pine" data-logo="seal-dk">
+        <div class="stamp">
+          <iconify-icon icon="solar:leaf-linear" width="40"></iconify-icon>
+          <span class="sname">SE</span>
+        </div>
+        <span class="tag-l">Selo · escuro</span>
+        <span class="tag-r">C</span>
+      </div>
+
+      <!-- Phone app splash / Tela de abertura do app -->
+      <div class="card cream">
+        <div class="phone">
+          <div class="stat"><span>9:41</span><span>● ● ●</span></div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:14px; margin-top:90px;">
+            <iconify-icon icon="solar:leaf-linear" width="72"></iconify-icon>
+            <span class="wm" style="font-size:18px;">Solar do Espinhaço</span>
+            <span class="eyebrow" style="color:rgba(250,250,249,0.5);">Lapinha · MG</span>
+          </div>
+        </div>
+        <span class="tag-l">App splash</span>
+        <span class="tag-r">D</span>
+      </div>
+    </div>
+
+    <!-- Browser navbar mockups / Mockups de navbar do navegador -->
+    <div class="grid g-2" style="margin-top:20px;">
+      <!-- Light navbar / Navbar clara -->
+      <div class="card wide-3 bone">
+        <div class="browser">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <div class="nav-row">
+            <div class="row" style="color:#1C2922;">
+              <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="22"></iconify-icon></span>
+              <span class="wm" style="font-size:16px;">Solar do Espinhaço</span>
+            </div>
+            <div class="links"><span>O Chalé</span><span>Lapinha</span><span>Reservar</span></div>
+          </div>
+        </div>
+        <span class="tag-l">Navbar · site (claro)</span>
+        <span class="tag-r">E</span>
+      </div>
+
+      <!-- Dark navbar / Navbar escura -->
+      <div class="card wide-3 cream">
+        <div class="browser browser--dark">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <div class="nav-row">
+            <div class="row" style="color:#FAFAF9;">
+              <span class="leaf-host"><iconify-icon icon="solar:leaf-linear" width="22"></iconify-icon></span>
+              <span class="wm" style="font-size:16px;">Solar do Espinhaço</span>
+            </div>
+            <div class="links"><span>O Chalé</span><span>Lapinha</span><span>Reservar</span></div>
+          </div>
+        </div>
+        <span class="tag-l">Navbar · site (escuro)</span>
+        <span class="tag-r">F</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 08 · PERFIL DO INSTAGRAM / INSTAGRAM PROFILE ══ -->
+  <section class="sec">
+    <div class="sec-head">
+      <div class="l">
+        <span class="num">08</span>
+        <h2>Perfil do Instagram</h2>
+      </div>
+      <span class="eyebrow">circular · 320 × 320 px</span>
+    </div>
+
+    <!-- All options in one unified g-4 grid / Todas as opções em g-4 unificado -->
+    <div class="grid g-4">
+
+      <!-- E: Seal dark ★ / Selo escuro ★ -->
+      <div class="card cream" data-logo="ig-seal-dk">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:14px;">
+          <div class="ig-circle ig-seal pine-deep" style="width:110px; height:110px;">
+            <iconify-icon icon="solar:leaf-linear" width="36"></iconify-icon>
+            <span class="wm" style="font-size:20px; letter-spacing:0.18em;">SE</span>
+          </div>
+          <span class="eyebrow">selo · escuro</span>
+        </div>
+        <span class="tag-l">E · selo · pine-deep</span>
+        <span class="tag-r">★</span>
+      </div>
+
+      <!-- F: Seal light ★ / Selo claro ★ -->
+      <div class="card pine" data-logo="ig-seal-lt">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:14px;">
+          <div class="ig-circle ig-seal bone" style="width:110px; height:110px;">
+            <iconify-icon icon="solar:leaf-linear" width="36"></iconify-icon>
+            <span class="wm" style="font-size:20px; letter-spacing:0.18em; color:#1C2922;">SE</span>
+          </div>
+          <span class="eyebrow" style="color:rgba(250,250,249,0.5);">selo · claro</span>
+        </div>
+        <span class="tag-l">F · selo · bone</span>
+        <span class="tag-r">★</span>
+      </div>
+
+      <!-- A: Leaf bold dark / Folha bold escura -->
+      <div class="card bone" data-logo="ig-bld-dk">
+        <div class="ig-circle pine-deep" style="width:110px; height:110px;">
+          <iconify-icon icon="solar:leaf-bold" width="62"></iconify-icon>
+        </div>
+        <span class="tag-l">A · leaf-bold · pine-deep</span>
+        <span class="tag-r">limpo</span>
+      </div>
+
+      <!-- B: Leaf linear pine-mid -->
+      <div class="card cream" data-logo="ig-lin-pine">
+        <div class="ig-circle pine-mid" style="width:110px; height:110px;">
+          <iconify-icon icon="solar:leaf-linear" width="62"></iconify-icon>
+        </div>
+        <span class="tag-l">B · leaf-linear · pine</span>
+        <span class="tag-r">elegante</span>
+      </div>
+
+      <!-- C: SE monogram / Monograma SE -->
+      <div class="card cream" data-logo="ig-mono">
+        <div class="ig-circle pine-deep" style="width:110px; height:110px;">
+          <span class="wm" style="font-size:42px; letter-spacing:0.12em; color:#FAFAF9;">SE</span>
+        </div>
+        <span class="tag-l">C · SE · monograma</span>
+        <span class="tag-r">curto</span>
+      </div>
+
+      <!-- D: Leaf bold light / Folha bold clara -->
+      <div class="card pine" data-logo="ig-bld-lt">
+        <div class="ig-circle cream" style="width:110px; height:110px;">
+          <iconify-icon icon="solar:leaf-bold" width="62"></iconify-icon>
+        </div>
+        <span class="tag-l">D · leaf-bold · claro</span>
+        <span class="tag-r">versão clara</span>
+      </div>
+
+      <!-- Size readability check — option E / Escala de legibilidade — opção E -->
+      <!-- At 40px: drop seal, use leaf-bold only / A 40px: simplificar para leaf-bold -->
+      <div class="card cream">
+        <div class="ig-sizes" style="gap:16px;">
+          <div class="ig-item">
+            <div class="ig-circle ig-seal pine-deep" style="width:80px; height:80px;">
+              <iconify-icon icon="solar:leaf-linear" width="26"></iconify-icon>
+              <span class="wm" style="font-size:16px; letter-spacing:0.18em;">SE</span>
+            </div>
+            <span class="fav-cap">320 px</span>
+          </div>
+          <div class="ig-item">
+            <div class="ig-circle ig-seal pine-deep" style="width:52px; height:52px;">
+              <iconify-icon icon="solar:leaf-linear" width="17"></iconify-icon>
+              <span class="wm" style="font-size:10px; letter-spacing:0.14em;">SE</span>
+            </div>
+            <span class="fav-cap">110 px</span>
+          </div>
+          <div class="ig-item">
+            <div class="ig-circle pine-deep" style="width:32px; height:32px;">
+              <iconify-icon icon="solar:leaf-bold" width="20"></iconify-icon>
+            </div>
+            <span class="fav-cap">40 px</span>
+          </div>
+        </div>
+        <span class="tag-l">Escala · opção E</span>
+        <span class="tag-r">leaf-bold a 40 px</span>
+      </div>
+
+      <!-- Instagram profile mock / Mock do perfil do Instagram -->
+      <div class="card cream">
+        <div class="ig-mock">
+          <div class="ig-bar">solarespinhaco</div>
+          <div class="ig-body">
+            <div class="ig-head">
+              <div class="ig-circle ig-seal pine-deep" style="width:54px; height:54px;">
+                <iconify-icon icon="solar:leaf-linear" width="18"></iconify-icon>
+                <span class="wm" style="font-size:10px; letter-spacing:0.16em;">SE</span>
+              </div>
+              <div class="ig-stats">
+                <div class="ig-stat"><strong>12</strong>posts</div>
+                <div class="ig-stat"><strong>840</strong>seguidores</div>
+                <div class="ig-stat"><strong>96</strong>seguindo</div>
+              </div>
+            </div>
+            <div class="ig-name">Solar do Espinhaço</div>
+            <div class="ig-bio">Chalé em Lapinha da Serra · MG<br>Serra do Espinhaço · natureza &amp; silêncio</div>
+            <div class="ig-follow">Seguir</div>
+            <div class="ig-grid">
+              <div></div><div></div><div></div>
+              <div></div><div></div><div></div>
+            </div>
+          </div>
+        </div>
+        <span class="tag-l">Mock · @solarespinhaco</span>
+        <span class="tag-r">contexto real</span>
+      </div>
+    </div>
+
+    <p class="caption">
+      As opções <strong>E</strong> e <strong>F</strong> (selos) transpõem o design da papelaria direto para o perfil —
+      o anel interno e o monograma SE criam identidade reconhecível mesmo a 110 px.
+      A partir de 40 px (notificações), substituir pelo <strong>leaf-bold</strong> sólido: o traço fino e o texto ficam ilegíveis.
+      Exportar como PNG 320 × 320 px com fundo opaco — o Instagram não aceita transparência em avatares.
+    </p>
+  </section>
+
+  <!-- ══════════════ FOOTER / RODAPÉ ══════════════════════════ -->
+  <footer class="footer">
+    <div class="row" style="color:#1C2922;">
+      <iconify-icon icon="solar:leaf-linear" width="18"></iconify-icon>
+      <span class="wm" style="font-size:14px;">Solar do Espinhaço</span>
+      <span class="mono" style="opacity:0.5;">· logo · v0.1 · 2026</span>
+    </div>
+    <span class="mono" style="opacity:0.5;">apontar a preferida · refino e exporto SVG / favicon / PDF</span>
+  </footer>
+
+</div>
+
+<!-- ══ Logo download system / Sistema de download de logos ══════ -->
+<script>
+(function () {
+
+  /* Iconify solar:leaf path data / dados de caminho do ícone folha */
+  var PATH_LIN = 'm12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2';
+  var PATH_BLD = 'M11.25 2.083a3.5 3.5 0 0 0-.713.243C6.553 4.188 4 9.395 4 13.856c0 4.24 3.183 7.724 7.25 8.109zm1.5 19.882c4.067-.385 7.25-3.868 7.25-8.108q0-.61-.063-1.234l-7.187 7.188zM18.26 7.18a13.4 13.4 0 0 0-1.34-2.04l-4.17 4.17v3.38zm-2.352-3.15a9.2 9.2 0 0 0-2.445-1.704a3.5 3.5 0 0 0-.713-.243v5.106zm3.028 4.594l-6.186 6.187v2.878l6.75-6.75l.132-.132a15 15 0 0 0-.696-2.183';
+
+  var FONT = "'Cormorant Garamond', Georgia, serif";
+  var NS   = 'xmlns="http://www.w3.org/2000/svg"';
+
+  /* ── SVG fragment builders ───────────────────────────────────── */
+  function linIcon(x, y, size, color) {
+    return '<svg x="'+x+'" y="'+y+'" width="'+size+'" height="'+size+'" viewBox="0 0 24 24">' +
+      '<path d="'+PATH_LIN+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+  function bldIcon(x, y, size, color) {
+    return '<svg x="'+x+'" y="'+y+'" width="'+size+'" height="'+size+'" viewBox="0 0 24 24">' +
+      '<path d="'+PATH_BLD+'" fill="'+color+'"/>' +
+      '</svg>';
+  }
+  function seText(x, y, size, ls, weight, color) {
+    return '<text x="'+x+'" y="'+y+'" text-anchor="middle"' +
+      ' font-family="'+FONT+'" font-weight="'+weight+'" font-size="'+size+'"' +
+      ' letter-spacing="'+ls+'" fill="'+color+'">SE</text>';
+  }
+
+  /* ── Logo builders ───────────────────────────────────────────── */
+
+  /* Symbol: 400×400, icon centered / Símbolo: 400×400, ícone centralizado */
+  function buildSymbol(isLinear, bg, fg) {
+    var sz = 160, ix = 120, iy = 120;
+    var icon = isLinear ? linIcon(ix, iy, sz, fg) : bldIcon(ix, iy, sz, fg);
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' + icon + '</svg>';
+  }
+
+  /* Stamp: 400×400 with circular stamp / Selo: 400×400 com selo circular */
+  function buildStamp(bg, fg) {
+    var cx = 200, cy = 200, r = 130, innerR = 120;
+    var sz = 58, gap = 12, fsz = 20;
+    var startY = cy - (sz + gap + fsz) / 2;          /* = 155 */
+    var ix     = cx - sz / 2;                          /* = 171 */
+    var textY  = Math.round(startY + sz + gap + fsz * 0.72); /* ≈ 239 */
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+fg+'" stroke-width="1.2"/>' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+innerR+'" fill="none" stroke="'+fg+'" stroke-width="1" opacity="0.32"/>' +
+      linIcon(ix, startY, sz, fg) +
+      seText(cx, textY, fsz, (0.18 * fsz).toFixed(1), 500, fg) +
+      '</svg>';
+  }
+
+  /* Disc 400×400 — leaf inside circle border / folha dentro de borda circular */
+  function buildDisc(bg, fg) {
+    var sz = Math.round(310 * 0.62); /* scale(0.62) matches CSS .leaf-disc iconify-icon */
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' +
+      '<circle cx="200" cy="200" r="155" fill="none" stroke="'+fg+'" stroke-width="1"/>' +
+      linIcon(Math.round(200-sz/2), Math.round(200-sz/2), sz, fg) + '</svg>';
+  }
+
+  /* Lockup horizontal 760×280 — icon + full name / ícone + nome completo */
+  function buildLockupH(isLinear, bg, fg, italic) {
+    var iconSz=80, fsz=46, gap=24, ix=60, cy=140;
+    var tx = ix+iconSz+gap;
+    var ty = Math.round(cy + fsz*0.36);
+    var icon = isLinear ? linIcon(ix, Math.round(cy-iconSz/2), iconSz, fg)
+                        : bldIcon(ix, Math.round(cy-iconSz/2), iconSz, fg);
+    var ls = (0.02*fsz).toFixed(2);
+    var wordmark = italic
+      ? '<text x="'+tx+'" y="'+ty+'" text-anchor="start" font-family="'+FONT+'"' +
+        ' font-weight="400" font-size="'+fsz+'" letter-spacing="'+ls+'" fill="'+fg+'">' +
+        'Solar do <tspan font-style="italic">Espinhaço</tspan></text>'
+      : '<text x="'+tx+'" y="'+ty+'" text-anchor="start" font-family="'+FONT+'"' +
+        ' font-weight="400" font-size="'+fsz+'" letter-spacing="'+ls+'" fill="'+fg+'">Solar do Espinhaço</text>';
+    return '<svg '+NS+' width="760" height="280" viewBox="0 0 760 280">' +
+      '<rect width="760" height="280" fill="'+bg+'"/>' + icon + wordmark + '</svg>';
+  }
+
+  /* Stacked 400×400 — icon centered above wordmark / ícone centralizado acima do wordmark */
+  function buildStacked(bg, fg) {
+    var cx=200, iconSz=100, fsz=28, gap=20;
+    var sy = Math.round((400-(iconSz+gap+fsz))/2);
+    var ty = Math.round(sy+iconSz+gap+fsz*0.72);
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' +
+      linIcon(Math.round(cx-iconSz/2), sy, iconSz, fg) +
+      '<text x="'+cx+'" y="'+ty+'" text-anchor="middle" font-family="'+FONT+'"' +
+      ' font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.02*fsz).toFixed(2)+'" fill="'+fg+'">Solar do Espinhaço</text>' +
+      '</svg>';
+  }
+
+  /* Monogram H 400×400 — leaf + SE side by side / folha + SE lado a lado */
+  function buildMonoH(bg, fg) {
+    var iconSz=100, fsz=80, gap=20;
+    var sx = Math.round((400-(iconSz+gap+55))/2); /* 55 ≈ SE visual width */
+    var tx = sx+iconSz+gap;
+    var ty = Math.round(200 + fsz*0.36);
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' +
+      linIcon(sx, Math.round(200-iconSz/2), iconSz, fg) +
+      '<text x="'+tx+'" y="'+ty+'" text-anchor="start" font-family="'+FONT+'"' +
+      ' font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.04*fsz).toFixed(1)+'" fill="'+fg+'">SE</text>' +
+      '</svg>';
+  }
+
+  /* Monogram V 400×400 — icon above SE / ícone acima do SE */
+  function buildMonoV(bg, fg) {
+    var cx=200, iconSz=100, fsz=52, gap=16;
+    var sy = Math.round((400-(iconSz+gap+fsz))/2);
+    var ty = Math.round(sy+iconSz+gap+fsz*0.72);
+    return '<svg '+NS+' width="400" height="400" viewBox="0 0 400 400">' +
+      '<rect width="400" height="400" fill="'+bg+'"/>' +
+      linIcon(Math.round(cx-iconSz/2), sy, iconSz, fg) +
+      '<text x="'+cx+'" y="'+ty+'" text-anchor="middle" font-family="'+FONT+'"' +
+      ' font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.18*fsz).toFixed(1)+'" fill="'+fg+'">SE</text>' +
+      '</svg>';
+  }
+
+  /* Instagram 320×320 circular — all ig-* variants / variantes do perfil do Instagram */
+  function buildIg(key) {
+    var S = 320, r = 160, cx = 160, cy = 160;
+    var bg, fg, type, bold, ring;
+    switch (key) {
+      case 'ig-seal-dk': bg='#1C2922'; fg='#FAFAF9'; type='seal';   bold=false; ring=false; break;
+      case 'ig-seal-lt': bg='#EAE5D9'; fg='#1C2922'; type='seal';   bold=false; ring=false; break;
+      case 'ig-bld-dk':  bg='#1C2922'; fg='#FAFAF9'; type='simple'; bold=true;  ring=false; break;
+      case 'ig-lin-pine':bg='#2C3E35'; fg='#FAFAF9'; type='simple'; bold=false; ring=false; break;
+      case 'ig-mono':    bg='#1C2922'; fg='#FAFAF9'; type='mono';   bold=false; ring=false; break;
+      case 'ig-bld-lt':  bg='#FAFAF9'; fg='#2C3E35'; type='simple'; bold=true;  ring=true;  break;
+      default: return '';
+    }
+    var inner = '', sz, ix, iy, fsz, startY, textY, ls;
+
+    if (type === 'seal') {
+      /* inner ring: inset 8% each side = 16% of radius / anel: 8% em cada lado = 16% do raio */
+      inner += '<circle cx="'+cx+'" cy="'+cy+'" r="'+Math.round(r*0.84)+'" fill="none" stroke="'+fg+'" stroke-width="1" opacity="0.28"/>';
+      sz     = Math.round(36/110*S);   /* ≈ 105 */
+      var gp = Math.round(5/110*S);    /* ≈ 15  */
+      fsz    = Math.round(20/110*S);   /* ≈ 58  */
+      startY = Math.round(cy - (sz + gp + fsz) / 2);
+      ix     = Math.round(cx - sz / 2);
+      textY  = Math.round(startY + sz + gp + fsz * 0.72);
+      ls     = (0.18 * fsz).toFixed(1);
+      inner += linIcon(ix, startY, sz, fg);
+      inner += seText(cx, textY, fsz, ls, 400, fg);
+
+    } else if (type === 'simple') {
+      sz = Math.round(62/110*S);       /* ≈ 180 */
+      ix = Math.round(cx - sz/2);
+      iy = Math.round(cy - sz/2);
+      inner += bold ? bldIcon(ix, iy, sz, fg) : linIcon(ix, iy, sz, fg);
+      if (ring) /* cream variant: simulate box-shadow ring */
+        inner += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-0.75)+'" fill="none" stroke="#E0DDD5" stroke-width="1.5"/>';
+
+    } else { /* mono */
+      fsz   = Math.round(42/110*S);    /* ≈ 122 */
+      textY = Math.round(cy + fsz * 0.36);
+      ls    = (0.12 * fsz).toFixed(1);
+      inner += seText(cx, textY, fsz, ls, 400, fg);
+    }
+
+    return '<svg '+NS+' width="'+S+'" height="'+S+'" viewBox="0 0 '+S+' '+S+'">' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+bg+'"/>' + inner + '</svg>';
+  }
+
+  /* ── Auto-build helpers: extract live Iconify SVG from shadow DOM ── */
+  function extractIcon(iconEl) {
+    if (!iconEl || !iconEl.shadowRoot) return null;
+    var svgEl = iconEl.shadowRoot.querySelector('svg');
+    if (!svgEl) return null;
+    var fg = window.getComputedStyle(iconEl).color;
+    return { vb: svgEl.getAttribute('viewBox') || '0 0 24 24', html: svgEl.innerHTML.replace(/currentColor/g, fg) };
+  }
+  function cardBg(card) {
+    if (card.classList.contains('pine'))     return '#1C2922';
+    if (card.classList.contains('pine-mid')) return '#2C3E35';
+    if (card.classList.contains('bone'))     return '#EAE5D9';
+    if (card.classList.contains('stone'))    return '#292423';
+    return '#FAFAF9';
+  }
+  function cardFg(card) {
+    return (card.classList.contains('pine') || card.classList.contains('pine-mid') || card.classList.contains('stone'))
+      ? '#FAFAF9' : '#1C2922';
+  }
+  function buildAuto(card) {
+    var bg  = cardBg(card);
+    var fg  = cardFg(card);
+    var cs  = card.getAttribute('style') || '';
+    var isW = card.classList.contains('wide') || card.classList.contains('wide-3');
+    var is16 = !isW && cs.indexOf('1.6') !== -1;
+    var W = isW ? 760 : (is16 ? 640 : 400);
+    var H = isW ? 280 : 400;
+    var iconInfo = extractIcon(card.querySelector('iconify-icon'));
+    var wmEl = card.querySelector('.wm');
+    var hasWm = !!(wmEl && wmEl.textContent.trim());
+    var body = '', fsz, iconSz, gap, ix, ty, sy;
+
+    if (iconInfo && hasWm && (isW || is16)) {
+      /* horizontal lockup */
+      iconSz = isW ? Math.round(H * 0.30) : Math.round(H * 0.25);
+      gap    = Math.round(iconSz * 0.20);
+      ix     = Math.round(W * 0.08);
+      fsz    = isW ? 46 : 40;
+      var tx = ix + iconSz + gap;
+      ty     = Math.round(H / 2 + fsz * 0.36);
+      body  += '<svg x="'+ix+'" y="'+Math.round(H/2-iconSz/2)+'" width="'+iconSz+'" height="'+iconSz+'" viewBox="'+iconInfo.vb+'">'+iconInfo.html+'</svg>';
+      body  += '<text x="'+tx+'" y="'+ty+'" text-anchor="start" font-family="\'Cormorant Garamond\',Georgia,serif" font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.02*fsz).toFixed(2)+'" fill="'+fg+'">'+wmEl.textContent.trim()+'</text>';
+    } else if (iconInfo && hasWm) {
+      /* stacked lockup (square) */
+      iconSz = Math.round(W * 0.25);
+      gap    = 20;
+      fsz    = Math.round(W * 0.07);
+      sy     = Math.round((H - iconSz - gap - fsz) / 2);
+      ty     = Math.round(sy + iconSz + gap + fsz * 0.72);
+      body  += '<svg x="'+Math.round(W/2-iconSz/2)+'" y="'+sy+'" width="'+iconSz+'" height="'+iconSz+'" viewBox="'+iconInfo.vb+'">'+iconInfo.html+'</svg>';
+      body  += '<text x="'+(W/2)+'" y="'+ty+'" text-anchor="middle" font-family="\'Cormorant Garamond\',Georgia,serif" font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.02*fsz).toFixed(2)+'" fill="'+fg+'">'+wmEl.textContent.trim()+'</text>';
+    } else if (iconInfo) {
+      /* symbol only: centered icon */
+      iconSz = Math.round(Math.min(W, H) * 0.40);
+      body  += '<svg x="'+Math.round((W-iconSz)/2)+'" y="'+Math.round((H-iconSz)/2)+'" width="'+iconSz+'" height="'+iconSz+'" viewBox="'+iconInfo.vb+'">'+iconInfo.html+'</svg>';
+    } else if (hasWm) {
+      /* text only */
+      var tlen = wmEl.textContent.trim().length;
+      fsz = Math.min(Math.round(W * 0.82 / (tlen * 0.55)), isW ? Math.round(H * 0.20) : Math.round(H * 0.15));
+      body += '<text x="'+(W/2)+'" y="'+Math.round(H/2+fsz*0.36)+'" text-anchor="middle" font-family="\'Cormorant Garamond\',Georgia,serif" font-weight="400" font-size="'+fsz+'" letter-spacing="'+(0.02*fsz).toFixed(2)+'" fill="'+fg+'">'+wmEl.textContent.trim()+'</text>';
+    } else { return null; }
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"><rect width="'+W+'" height="'+H+'" fill="'+bg+'"/>'+body+'</svg>';
+  }
+
+  /* ── Catalog: key → { file, W, H } ────────────────────────── */
+  /* W/H = PNG canvas size for copy/download / tamanho PNG para cópia e download */
+  var CATALOG = {
+    'sym-lin-lt':  { file:'SE-simbolo-linear-claro',   W:400, H:400 },
+    'sym-lin-dk':  { file:'SE-simbolo-linear-escuro',  W:400, H:400 },
+    'sym-bld-lt':  { file:'SE-simbolo-bold-claro',     W:400, H:400 },
+    'disc-dk':     { file:'SE-disco-escuro',            W:400, H:400 },
+    'disc-lt':     { file:'SE-disco-claro',             W:400, H:400 },
+    'seal-lt':     { file:'SE-selo-claro',              W:400, H:400 },
+    'seal-dk':     { file:'SE-selo-escuro',             W:400, H:400 },
+    'lkp-lin-lt':  { file:'SE-lockup-linear-claro',    W:760, H:280 },
+    'lkp-lin-dk':  { file:'SE-lockup-linear-escuro',   W:760, H:280 },
+    'lkp-lin-bone':{ file:'SE-lockup-italic-bone',     W:760, H:280 },
+    'lkp-bld-lt':  { file:'SE-lockup-bold-claro',      W:760, H:280 },
+    'stk-lin-lt':  { file:'SE-stacked-claro',          W:400, H:400 },
+    'stk-lin-dk':  { file:'SE-stacked-escuro',         W:400, H:400 },
+    'stk-lin-bone':{ file:'SE-stacked-bone',           W:400, H:400 },
+    'mono-h-lt':   { file:'SE-monograma-horizontal',   W:400, H:400 },
+    'mono-v-dk':   { file:'SE-monograma-stacked',      W:400, H:400 },
+    'ig-seal-dk':  { file:'SE-instagram-selo-escuro',  W:320, H:320 },
+    'ig-seal-lt':  { file:'SE-instagram-selo-claro',   W:320, H:320 },
+    'ig-bld-dk':   { file:'SE-instagram-bold-escuro',  W:320, H:320 },
+    'ig-lin-pine': { file:'SE-instagram-linear-pine',  W:320, H:320 },
+    'ig-mono':     { file:'SE-instagram-monograma',    W:320, H:320 },
+    'ig-bld-lt':   { file:'SE-instagram-bold-claro',   W:320, H:320 },
+  };
+
+  function buildSvg(key) {
+    if (key==='sym-lin-lt')    return buildSymbol(true,  '#FAFAF9','#2C3E35');
+    if (key==='sym-lin-dk')    return buildSymbol(true,  '#1C2922','#FAFAF9');
+    if (key==='sym-bld-lt')    return buildSymbol(false, '#FAFAF9','#2C3E35');
+    if (key==='disc-dk')       return buildDisc('#2C3E35','#FAFAF9');
+    if (key==='disc-lt')       return buildDisc('#FAFAF9','#2C3E35');
+    if (key==='seal-lt')       return buildStamp('#FAFAF9','#2C3E35');
+    if (key==='seal-dk')       return buildStamp('#1C2922','#FAFAF9');
+    if (key==='lkp-lin-lt')    return buildLockupH(true,  '#FAFAF9','#1C2922',false);
+    if (key==='lkp-lin-dk')    return buildLockupH(true,  '#1C2922','#FAFAF9',false);
+    if (key==='lkp-lin-bone')  return buildLockupH(true,  '#EAE5D9','#1C2922',true);
+    if (key==='lkp-bld-lt')    return buildLockupH(false, '#FAFAF9','#2C3E35',false);
+    if (key==='stk-lin-lt')    return buildStacked('#FAFAF9','#1C2922');
+    if (key==='stk-lin-dk')    return buildStacked('#1C2922','#FAFAF9');
+    if (key==='stk-lin-bone')  return buildStacked('#EAE5D9','#1C2922');
+    if (key==='mono-h-lt')     return buildMonoH('#FAFAF9','#1C2922');
+    if (key==='mono-v-dk')     return buildMonoV('#1C2922','#FAFAF9');
+    return buildIg(key);
+  }
+
+  /* ── I/O helpers ─────────────────────────────────────────────── */
+  function svgToCanvas(svg, W, H, cb) {
+    var url = URL.createObjectURL(new Blob([svg], { type:'image/svg+xml;charset=utf-8' }));
+    var img = new Image();
+    img.onload = function () {
+      var c = document.createElement('canvas'); c.width=W; c.height=H;
+      c.getContext('2d').drawImage(img, 0, 0, W, H);
+      URL.revokeObjectURL(url); cb(c);
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+
+  function triggerDownload(url, filename) {
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+  }
+  function downloadSvg(svg, name) {
+    triggerDownload(URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' })), name + '.svg');
+  }
+  function downloadPng(svg, name, W, H) {
+    svgToCanvas(svg, W, H, function (c) {
+      c.toBlob(function (b) { triggerDownload(URL.createObjectURL(b), name + '.png'); }, 'image/png');
+    });
+  }
+  function copyPng(svg, W, H, btn) {
+    var orig = btn.textContent;
+    if (!navigator.clipboard || !window.ClipboardItem) {
+      btn.textContent = '✗'; setTimeout(function () { btn.textContent = orig; }, 1400); return;
+    }
+    svgToCanvas(svg, W, H, function (c) {
+      c.toBlob(function (b) {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': b })])
+          .then(function ()  { btn.textContent = '✓'; setTimeout(function () { btn.textContent = orig; }, 1400); })
+          .catch(function () { btn.textContent = '✗'; setTimeout(function () { btn.textContent = orig; }, 1400); });
+      }, 'image/png');
+    });
+  }
+
+  /* ── Wire ↓ download + ⎘ copy buttons on every [data-logo] card ── */
+  /* Injeta botões de download e cópia em cada cartão [data-logo] */
+  document.querySelectorAll('[data-logo]').forEach(function (card) {
+    var key    = card.getAttribute('data-logo');
+    var isAuto = (key === 'auto');
+    var meta;
+
+    if (isAuto) {
+      var cs   = card.getAttribute('style') || '';
+      var isW  = card.classList.contains('wide') || card.classList.contains('wide-3');
+      var is16 = !isW && cs.indexOf('1.6') !== -1;
+      var tag  = card.querySelector('.tag-l');
+      var label = tag ? tag.textContent.trim().replace(/[^a-zA-Z0-9]+/g, '-').replace(/-+$/, '') : 'logo';
+      meta = { file: 'SE-' + label, W: isW ? 760 : (is16 ? 640 : 400), H: isW ? 280 : 400 };
+    } else {
+      meta = CATALOG[key];
+    }
+    if (!meta) return;
+
+    function getSvg() { return isAuto ? buildAuto(card) : buildSvg(key); }
+
+    var dlBtn = document.createElement('button');
+    dlBtn.className = 'dl-btn'; dlBtn.title = 'Baixar logo'; dlBtn.textContent = '↓';
+    dlBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var svg = getSvg(); if (!svg) return;
+      (isAuto || key.indexOf('ig-') === 0)
+        ? downloadPng(svg, meta.file, meta.W, meta.H)
+        : downloadSvg(svg, meta.file);
+    });
+
+    var cpBtn = document.createElement('button');
+    cpBtn.className = 'cp-btn'; cpBtn.title = 'Copiar imagem'; cpBtn.textContent = '⎘';
+    cpBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var svg = getSvg(); if (!svg) return;
+      copyPng(svg, meta.W, meta.H, cpBtn);
+    });
+
+    card.appendChild(dlBtn);
+    card.appendChild(cpBtn);
+  });
+
+}());
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lapinha — Ícones de Hotelaria · Design System v1</title>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ───────────────────────────────────────── */
+:root {
+  --deep:      #060d09;
+  --forest-dk: #0d1a12;
+  --forest:    #2C3E35;
+  --forest-lt: #3d5447;
+  --gold:      #C9A96E;
+  --gold-lt:   #E8D5A3;
+  --gold-dk:   #a87d4a;
+  /* theme vars - dark (default) */
+  --bg:        #060d09;
+  --bg-alt:    rgba(44,62,53,.07);
+  --fg:        rgba(255,255,255,.78);
+  --fg-sub:    rgba(255,255,255,.5);
+  --fg-muted:  rgba(255,255,255,.28);
+  --fg-dim:    rgba(255,255,255,.42);
+  --heading:   rgba(255,255,255,.92);
+  --desc:      rgba(255,255,255,.38);
+  --glass-bg:  rgba(255,255,255,.04);
+  --glass-bd:  rgba(255,255,255,.09);
+  --ic-clr:    rgba(255,255,255,.9);
+  --nav-bg:    rgba(6,13,9,.85);
+  --sep:       rgba(255,255,255,.06);
+  --sep-inner: rgba(255,255,255,.05);
+  --badge-bg:  rgba(255,255,255,.05);
+  --badge-bd:  rgba(255,255,255,.1);
+  --badge-fg:  rgba(255,255,255,.45);
+  --sz-bd:     rgba(255,255,255,.05);
+  --sz-hover:  rgba(255,255,255,.025);
+  --code-bg:   rgba(0,0,0,.35);
+  --code-fg:   rgba(255,255,255,.55);
+  --nm-color:  rgba(255,255,255,.5);
+  --cd-color:  rgba(255,255,255,.25);
+  --note-bd:   rgba(255,255,255,.07);
+  --toggle-icon: solar:sun-bold;
+}
+
+/* ─── LIGHT MODE ───────────────────────────────────── */
+body.light {
+  --bg:        #f4f1ec;
+  --bg-alt:    rgba(44,62,53,.04);
+  --fg:        rgba(20,35,25,.82);
+  --fg-sub:    rgba(20,35,25,.6);
+  --fg-muted:  rgba(20,35,25,.32);
+  --fg-dim:    rgba(20,35,25,.45);
+  --heading:   rgba(20,35,25,.9);
+  --desc:      rgba(20,35,25,.48);
+  --glass-bg:  rgba(255,255,255,.72);
+  --glass-bd:  rgba(44,62,53,.12);
+  --ic-clr:    #2C3E35;
+  --nav-bg:    rgba(244,241,236,.95);
+  --sep:       rgba(44,62,53,.1);
+  --sep-inner: rgba(44,62,53,.07);
+  --badge-bg:  rgba(44,62,53,.06);
+  --badge-bd:  rgba(44,62,53,.14);
+  --badge-fg:  rgba(44,62,53,.7);
+  --sz-bd:     rgba(44,62,53,.07);
+  --sz-hover:  rgba(44,62,53,.035);
+  --code-bg:   rgba(44,62,53,.07);
+  --code-fg:   rgba(20,35,25,.72);
+  --nm-color:  rgba(44,62,53,.68);
+  --cd-color:  rgba(44,62,53,.42);
+  --note-bd:   rgba(44,62,53,.08);
+}
+
+/* ─── RESET ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  overflow-x:hidden;
+  margin:0;
+  transition:background .45s ease, color .45s ease;
+}
+h1,h2,h3,h4,.serif{font-family:'Cormorant Garamond',serif}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--forest);border-radius:2px}
+
+/* ─── GLASS ─────────────────────────────────────────── */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid var(--glass-bd);
+  transition:background .45s ease, border-color .45s ease;
+}
+
+/* ─── ORBS ───────────────────────────────────────────── */
+.orb{
+  position:absolute;border-radius:50%;filter:blur(90px);
+  pointer-events:none;
+  animation:orbFloat var(--dur,14s) ease-in-out infinite alternate;
+  transition:opacity .6s ease;
+}
+body.light .orb{--o1:.04!important;--o2:.1!important}
+@keyframes orbFloat{
+  from{transform:translate(0,0) scale(1);opacity:var(--o1,.15)}
+  to{transform:translate(var(--tx,30px),var(--ty,-20px)) scale(1.12);opacity:var(--o2,.3)}
+}
+
+/* ─── MARQUEE ────────────────────────────────────────── */
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-inner{animation:marquee 40s linear infinite;display:flex;white-space:nowrap;gap:3rem}
+
+/* ─── REVEAL ─────────────────────────────────────────── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ─── ICON CARD ──────────────────────────────────────── */
+.ic{
+  position:relative;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-bd);
+  border-radius:16px;
+  padding:1.4rem .9rem 1.1rem;
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  text-align:center;cursor:pointer;
+  transition:all .38s cubic-bezier(.34,1.56,.64,1), background .45s ease, border-color .45s ease;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  overflow:hidden;
+}
+body.light .ic{
+  background:rgba(255,255,255,.78);
+  border-color:rgba(44,62,53,.12);
+  box-shadow:0 2px 14px rgba(0,0,0,.055);
+}
+.ic::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% -10%,rgba(255,255,255,.07) 0%,transparent 65%);
+  border-radius:inherit;opacity:0;transition:opacity .35s;
+}
+.ic:hover{
+  border-color:rgba(201,169,110,.38);
+  transform:translateY(-7px) scale(1.03);
+  box-shadow:0 24px 60px rgba(0,0,0,.45),0 0 32px rgba(201,169,110,.12),inset 0 1px 0 rgba(255,255,255,.1);
+}
+body.light .ic:hover{
+  border-color:rgba(201,169,110,.55);
+  box-shadow:0 16px 44px rgba(0,0,0,.1),0 0 28px rgba(201,169,110,.1);
+}
+.ic:hover::after{opacity:1}
+
+/* icon color via CSS – todos os ícones com a mesma cor */
+.ic iconify-icon{color:var(--ic-clr)!important;transition:color .35s, filter .35s}
+.ic:hover iconify-icon{filter:drop-shadow(0 0 14px rgba(201,169,110,.65))!important;color:var(--gold-lt)!important}
+body.light .ic:hover iconify-icon{color:var(--gold-dk)!important}
+/* SVG customizados seguem o mesmo padrão de cor */
+.ic svg{color:var(--ic-clr);stroke:currentColor;transition:color .35s, filter .35s;flex-shrink:0}
+.ic:hover svg{filter:drop-shadow(0 0 14px rgba(201,169,110,.65))!important;color:var(--gold-lt)!important}
+body.light .ic:hover svg{color:var(--gold-dk)!important}
+
+.ic .nm{font-size:.6rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--nm-color);line-height:1.3;transition:color .3s}
+.ic:hover .nm{color:rgba(232,213,163,.85)}
+body.light .ic:hover .nm{color:var(--gold-dk)}
+.ic .cd{font-family:'Courier New',monospace;font-size:.49rem;color:var(--cd-color);transition:color .3s;margin-top:-.2rem}
+.ic:hover .cd{color:rgba(201,169,110,.5)}
+
+/* ─── TOOLTIP ────────────────────────────────────────── */
+.tip{
+  position:absolute;bottom:calc(100% + 8px);left:50%;
+  transform:translateX(-50%) translateY(5px);
+  background:rgba(0,0,0,.92);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:.35rem .65rem;font-size:.58rem;white-space:nowrap;
+  color:rgba(255,255,255,.7);opacity:0;pointer-events:none;
+  transition:all .2s;backdrop-filter:blur(8px);z-index:30;
+}
+.ic:hover .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── LAYOUT ─────────────────────────────────────────── */
+.divider{width:44px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1.25rem auto 0}
+.badge-cat{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.24rem .85rem;
+  background:var(--badge-bg);border:1px solid var(--badge-bd);
+  border-radius:100px;font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--badge-fg);backdrop-filter:blur(8px);
+  transition:background .45s, border-color .45s, color .45s;
+}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:.9rem}
+.icon-grid-sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:.65rem}
+.sec-alt{background:var(--bg-alt);transition:background .45s}
+.sec-sep{border-top:1px solid var(--sep);border-bottom:1px solid var(--sep);transition:border-color .45s}
+
+/* ─── HERO TITLE ─────────────────────────────────────── */
+.hero-t{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,11vw,10rem);line-height:.85;font-weight:400;
+  color:#fff;mix-blend-mode:overlay;letter-spacing:-.02em;text-transform:uppercase;user-select:none;
+}
+body.light .hero-t{color:var(--forest);mix-blend-mode:normal;opacity:.9}
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn-g{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.7rem 1.5rem;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);border-radius:100px;
+  font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.78);cursor:pointer;transition:all .3s;
+  backdrop-filter:blur(8px);text-decoration:none;
+}
+.btn-g:hover{background:rgba(255,255,255,.1);border-color:rgba(201,169,110,.3);color:var(--gold-lt);transform:translateY(-2px)}
+body.light .btn-g{background:rgba(44,62,53,.07);border-color:rgba(44,62,53,.16);color:rgba(44,62,53,.75)}
+body.light .btn-g:hover{background:rgba(44,62,53,.12);color:var(--forest)}
+.btn-gold{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.7rem 1.75rem;background:linear-gradient(135deg,var(--gold) 0%,var(--gold-dk) 100%);
+  border:none;border-radius:100px;font-size:.65rem;letter-spacing:.12em;
+  text-transform:uppercase;color:#1a0f00;font-weight:600;cursor:pointer;
+  transition:all .3s;box-shadow:0 4px 20px rgba(201,169,110,.28);text-decoration:none;
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(201,169,110,.42)}
+
+/* ─── SIZE ROWS ───────────────────────────────────────── */
+.sz-row{display:flex;align-items:center;gap:1.25rem;padding:1rem 1.5rem;border-bottom:1px solid var(--sz-bd);transition:background .2s, border-color .45s}
+.sz-row:hover{background:var(--sz-hover)}
+.sz-row:last-child{border-bottom:none}
+.sz-label{font-size:.68rem;color:var(--fg-sub);transition:color .45s}
+.sz-code{font-size:.55rem;color:var(--fg-muted);font-family:monospace;transition:color .45s}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+.nav-top{
+  position:sticky;top:0;z-index:50;
+  background:var(--nav-bg);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--sep);
+  transition:background .45s, border-color .45s;
+}
+.nav-top a{
+  font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fg-dim);text-decoration:none;white-space:nowrap;
+  padding:.35rem .75rem;border-radius:100px;transition:all .22s;
+}
+.nav-top a:hover{color:var(--fg);background:var(--badge-bg)}
+.nav-top a.active{color:var(--fg);background:var(--badge-bg)}
+
+/* ─── CODE BLOCK ──────────────────────────────────────── */
+.code-block{
+  background:var(--code-bg);border-radius:12px;
+  padding:1rem 1.25rem;font-family:'Courier New',monospace;
+  font-size:.68rem;color:var(--code-fg);line-height:1.75;overflow-x:auto;
+  transition:background .45s, color .45s;
+}
+
+/* ─── SECTION HEADER ─────────────────────────────────── */
+.sec-head{text-align:center;margin-bottom:3.5rem}
+.sec-head h2{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,5vw,3.5rem);
+  color:var(--heading);font-weight:400;margin:.6rem 0 .75rem;
+  letter-spacing:-.01em;transition:color .45s;
+}
+.sec-head p{font-size:.82rem;color:var(--desc);max-width:420px;margin:0 auto;line-height:1.7;font-weight:300;transition:color .45s}
+
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(201,169,110,.08)}50%{box-shadow:0 0 50px rgba(201,169,110,.22),0 0 90px rgba(201,169,110,.08)}}
+@keyframes bounce{0%,100%{transform:translateY(-20%)}50%{transform:none}}
+.anim-1{animation:fadeUp .8s ease-out .15s both}
+.anim-2{animation:fadeUp .8s ease-out .35s both}
+.anim-3{animation:fadeUp .8s ease-out .55s both}
+.anim-4{animation:fadeUp .8s ease-out .75s both}
+.glow-pulse{animation:glow 5s ease-in-out infinite}
+.bounce{animation:bounce 1.2s ease-in-out infinite}
+
+/* ─── CANVAS ──────────────────────────────────────────── */
+#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.5;transition:opacity .6s ease}
+body.light #stars{opacity:0}
+
+/* ─── THEME TOGGLE ────────────────────────────────────── */
+.theme-btn{
+  position:fixed;bottom:2rem;right:2rem;z-index:200;
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-dk) 100%);
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(201,169,110,.4),0 8px 40px rgba(0,0,0,.28);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s;
+  outline:none;
+}
+.theme-btn:hover{transform:scale(1.12) rotate(12deg);box-shadow:0 8px 32px rgba(201,169,110,.55),0 14px 52px rgba(0,0,0,.32)}
+.theme-btn iconify-icon{color:#1a0f00;pointer-events:none}
+
+/* ─── HERO SECTION LIGHT ─────────────────────────────── */
+body.light #hero{
+  background:
+    radial-gradient(ellipse 70% 60% at 15% 30%,rgba(44,62,53,.18) 0%,transparent 65%),
+    radial-gradient(ellipse 55% 65% at 85% 75%,rgba(44,62,53,.1) 0%,transparent 65%),
+    linear-gradient(155deg,#f4f1ec 0%,#eeeae3 50%,#e8e4da 100%);
+}
+body.light .note-box{background:rgba(255,255,255,.65);border-color:rgba(44,62,53,.12)}
+body.light .note-text{color:var(--fg-sub)}
+body.light .note-text strong{color:var(--fg)}
+
+/* ─── STATS / HERO BOTTOM ────────────────────────────── */
+body.light .stat-num{color:rgba(20,35,25,.88)}
+body.light .stat-lbl{color:rgba(20,35,25,.38)}
+
+/* ─── PALETTE SWATCHES ───────────────────────────────── */
+.swatch{border-radius:14px;overflow:hidden;background:var(--glass-bg);border:1px solid var(--glass-bd);transition:background .45s,border-color .45s}
+.swatch-label{font-size:.6rem;color:var(--fg-sub);font-weight:500;transition:color .45s}
+.swatch-code{font-size:.5rem;color:var(--fg-muted);font-family:monospace;transition:color .45s}
+
+/* ─── LIGHT HERO SCROLL INDICATOR ───────────────────── */
+body.light .scroll-line{background:linear-gradient(to bottom,rgba(44,62,53,.4),transparent)}
+body.light .scroll-label{color:rgba(44,62,53,.32)}
+
+/* ─── COLOR DEMO SECTION ─────────────────────────────── */
+body.light .demo-light-box{background:#fff;border-radius:18px;padding:1.25rem 1.5rem}
+</style>
+</head>
+<body class="antialiased">
+
+<canvas id="stars"></canvas>
+
+<!-- ── THEME TOGGLE BUTTON ─────────────────────────────── -->
+<button class="theme-btn" id="themeBtn" title="Alternar tema claro/escuro" aria-label="Alternar tema">
+  <iconify-icon icon="solar:sun-bold" width="22" id="themeIcon"></iconify-icon>
+</button>
+
+<!-- ── MARQUEE ───────────────────────────────────────────── -->
+<div style="background:var(--forest);overflow:hidden;height:28px;display:flex;align-items:center;position:relative;z-index:2">
+  <div class="marquee-inner">
+    <span style="font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)">★ Hotelaria &nbsp;·&nbsp; ★ Iconografia &nbsp;·&nbsp; ★ Glassmorphism &nbsp;·&nbsp; ★ Lapinha &nbsp;·&nbsp; ★ Spa &amp; Wellness &nbsp;·&nbsp; ★ Gastronomia &nbsp;·&nbsp; ★ Amenidades &nbsp;·&nbsp; ★ Serviços &nbsp;·&nbsp; ★ Solar Icons &nbsp;·&nbsp;</span>
+    <span style="font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.5)">★ Hotelaria &nbsp;·&nbsp; ★ Iconografia &nbsp;·&nbsp; ★ Glassmorphism &nbsp;·&nbsp; ★ Lapinha &nbsp;·&nbsp; ★ Spa &amp; Wellness &nbsp;·&nbsp; ★ Gastronomia &nbsp;·&nbsp; ★ Amenidades &nbsp;·&nbsp; ★ Serviços &nbsp;·&nbsp; ★ Solar Icons &nbsp;·&nbsp;</span>
+  </div>
+</div>
+
+<!-- ── NAV ───────────────────────────────────────────────── -->
+<nav class="nav-top" style="position:relative;z-index:40">
+  <div style="max-width:1280px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;height:52px;gap:.5rem;overflow-x:auto">
+    <span class="serif" style="font-size:1.05rem;color:var(--fg);white-space:nowrap;margin-right:1rem;letter-spacing:.04em;transition:color .45s">Lapinha</span>
+    <a href="#quartos">Quartos</a>
+    <a href="#entretenimento">Entretenimento</a>
+    <a href="#gastronomia">Gastronomia</a>
+    <a href="#bemestar">Bem-estar</a>
+    <a href="#servicos">Serviços</a>
+    <a href="#lazer">Lazer</a>
+    <a href="#infra">Políticas</a>
+    <a href="#specs">Specs</a>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     HERO
+══════════════════════════════════════════════════════ -->
+<section id="hero" style="position:relative;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(ellipse 70% 60% at 15% 30%,rgba(44,62,53,.55) 0%,transparent 65%),radial-gradient(ellipse 55% 65% at 85% 75%,rgba(44,62,53,.3) 0%,transparent 65%),linear-gradient(155deg,#060d09 0%,#0d1a12 45%,#111d17 100%);transition:background .45s">
+  <div class="orb" style="width:700px;height:700px;background:var(--forest);top:-12%;left:-12%;--dur:17s;--tx:50px;--ty:25px;--o1:.18;--o2:.38"></div>
+  <div class="orb" style="width:450px;height:450px;background:rgba(201,169,110,.12);top:58%;right:-6%;--dur:20s;--tx:-35px;--ty:-30px;--o1:.08;--o2:.22"></div>
+  <div class="orb" style="width:320px;height:320px;background:var(--forest);top:28%;right:18%;--dur:11s;--tx:22px;--ty:38px;--o1:.12;--o2:.26"></div>
+
+  <div style="position:relative;z-index:10;max-width:1280px;margin:0 auto;padding:5rem 1.5rem 3rem;width:100%">
+    <div class="anim-1" style="margin-bottom:2.25rem">
+      <span class="badge-cat">
+        <iconify-icon icon="solar:star-bold" width="10" style="color:var(--gold)"></iconify-icon>
+        Sistema de Ícones · Design System v1
+      </span>
+    </div>
+
+    <div style="position:relative;margin-bottom:1.5rem;overflow:visible" class="anim-2">
+      <h1 class="hero-t">ÍCONES<br>
+        <span style="margin-left:clamp(3rem,8vw,8rem);font-style:italic;font-weight:300;opacity:.9">de Hotelaria</span>
+      </h1>
+      <h1 class="hero-t" aria-hidden="true" style="position:absolute;inset:0;opacity:.06;filter:blur(2px);transform:translate(3px,3px)">ÍCONES<br><span style="margin-left:clamp(3rem,8vw,8rem);font-style:italic;font-weight:300">de Hotelaria</span></h1>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-end;margin-top:2.5rem" class="anim-3">
+      <div class="glass glow-pulse" style="padding:1.25rem 1.5rem;border-radius:18px;max-width:340px">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;padding-bottom:.75rem;border-bottom:1px solid var(--note-bd)">
+          <iconify-icon icon="solar:leaf-linear" width="14" style="color:var(--gold)"></iconify-icon>
+          <span style="font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-dim)">Lapinha · Solar Icon Set</span>
+        </div>
+        <p style="font-size:.78rem;color:var(--fg-sub);line-height:1.65;font-weight:300;margin:0">Mais de 100 ícones curados para hospitalidade em 8 categorias. Baseado no Solar Icon Set via Iconify.</p>
+        <div style="margin-top:1rem;display:flex;gap:.75rem">
+          <a href="#quartos" class="btn-gold">Explorar <iconify-icon icon="solar:arrow-right-linear" width="12"></iconify-icon></a>
+          <a href="#specs" class="btn-g">Specs <iconify-icon icon="solar:alt-arrow-down-linear" width="11"></iconify-icon></a>
+        </div>
+      </div>
+      <div style="display:flex;gap:2.5rem" class="anim-4">
+        <div style="text-align:center"><div class="serif stat-num" style="font-size:2.8rem;color:var(--heading);line-height:1;transition:color .45s">100+</div><div class="stat-lbl" style="font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-muted);margin-top:.2rem;transition:color .45s">Ícones</div></div>
+        <div style="text-align:center"><div class="serif stat-num" style="font-size:2.8rem;color:var(--heading);line-height:1;transition:color .45s">8</div><div class="stat-lbl" style="font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-muted);margin-top:.2rem;transition:color .45s">Categorias</div></div>
+        <div style="text-align:center"><div class="serif stat-num" style="font-size:2.8rem;color:var(--heading);line-height:1;transition:color .45s">7</div><div class="stat-lbl" style="font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-muted);margin-top:.2rem;transition:color .45s">Tamanhos</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;z-index:10" class="bounce">
+    <div class="scroll-line" style="height:40px;width:1px;background:linear-gradient(to bottom,rgba(255,255,255,.4),transparent)"></div>
+    <span class="scroll-label" style="font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.28)">Explorar</span>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     1. QUARTOS & CONFORTO
+══════════════════════════════════════════════════════ -->
+<section id="quartos" style="padding:6rem 1.5rem;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(44,62,53,.05) 50%,transparent 100%);pointer-events:none"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:bed-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 01</span>
+      <h2>Quartos &amp; Conforto</h2>
+      <p>Comodidades essenciais para uma estadia confortável e memorável.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:bed-linear</div>
+        <iconify-icon icon="solar:bed-linear" width="34"></iconify-icon>
+        <span class="nm">Cama King</span><span class="cd">bed-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">banheira-de-imersao</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 10 Q3.5 7.5 7 7 L17 7 Q20.5 7.5 20.5 10 L20.5 17 Q20.5 19.5 12 19.5 Q3.5 19.5 3.5 17 Z"/>
+          <path d="M3.5 10 Q3.5 8.5 7 8.5 L17 8.5 Q20.5 8.5 20.5 10"/>
+          <line x1="10" y1="7" x2="10" y2="5"/>
+          <path d="M10 5 Q10 4 11.5 4 L13 4"/>
+          <path d="M13 4 Q14.5 4 14.5 5 L14.5 7"/>
+          <line x1="7" y1="19.5" x2="6" y2="22"/>
+          <line x1="17" y1="19.5" x2="18" y2="22"/>
+        </svg>
+        <span class="nm">Banheira de Imersão</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:snowflake-linear</div>
+        <iconify-icon icon="solar:snowflake-linear" width="34"></iconify-icon>
+        <span class="nm">Quente &amp; Frio</span><span class="cd">snowflake-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">wifi-gratis</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1.5 8 Q12 0.5 22.5 8"/>
+          <path d="M4.5 11.5 Q12 6 19.5 11.5"/>
+          <path d="M7.5 15 Q12 12 16.5 15"/>
+          <circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="nm">Wi-Fi</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:tv-linear</div>
+        <iconify-icon icon="solar:tv-linear" width="34"></iconify-icon>
+        <span class="nm">TV Smart</span><span class="cd">tv-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:home-2-linear</div>
+        <iconify-icon icon="solar:home-2-linear" width="34"></iconify-icon>
+        <span class="nm">Varanda</span><span class="cd">home-2-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:safe-square-linear</div>
+        <iconify-icon icon="solar:safe-square-linear" width="34"></iconify-icon>
+        <span class="nm">Cofre Digital</span><span class="cd">safe-square</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:fridge-linear</div>
+        <iconify-icon icon="solar:fridge-linear" width="34"></iconify-icon>
+        <span class="nm">Frigobar</span><span class="cd">fridge-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:lock-linear</div>
+        <iconify-icon icon="solar:lock-linear" width="34"></iconify-icon>
+        <span class="nm">Fechadura Digital</span><span class="cd">lock-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:key-minimalistic-linear</div>
+        <iconify-icon icon="solar:key-minimalistic-linear" width="34"></iconify-icon>
+        <span class="nm">Chave-Cartão</span><span class="cd">key-minimalistic</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:plug-circle-linear</div>
+        <iconify-icon icon="solar:plug-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Tomadas 110/220</span><span class="cd">plug-circle</span>
+      </div>
+      <div class="ic">
+        <div class="tip">vista-panoramica</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20.5 L8.5 9 L13 16 L16.5 11 L22 20.5Z"/><circle cx="19.5" cy="6" r="2"/><line x1="17.5" y1="7.4" x2="15" y2="10.5"/></svg>
+        <span class="nm">Vista Panorâmica</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:sofa-linear</div>
+        <iconify-icon icon="solar:sofa-linear" width="34"></iconify-icon>
+        <span class="nm">Sofá-cama</span><span class="cd">sofa-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:mirror-left-linear</div>
+        <iconify-icon icon="solar:mirror-left-linear" width="34"></iconify-icon>
+        <span class="nm">Closet &amp; Espelhos</span><span class="cd">mirror-left</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:moon-stars-linear</div>
+        <iconify-icon icon="solar:moon-stars-linear" width="34"></iconify-icon>
+        <span class="nm">Black-out</span><span class="cd">moon-stars</span>
+      </div>
+      <div class="ic">
+        <div class="tip">box-ate-o-teto</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="2" x2="21" y2="2"/><line x1="3" y1="22" x2="21" y2="22"/><line x1="3" y1="2" x2="3" y2="22"/><line x1="21" y1="2" x2="21" y2="22"/><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="3 2"/><line x1="7" y1="2" x2="7" y2="7"/><rect x="4.5" y="7" width="7" height="2.5" rx="1"/><line x1="6" y1="12" x2="6" y2="14.5"/><line x1="8" y1="11" x2="8" y2="13.5"/><line x1="10" y1="12" x2="10" y2="14.5"/></svg>
+        <span class="nm">Box até o Teto</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">ducha-dupla</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="2" x2="6" y2="5.5"/><line x1="18" y1="2" x2="18" y2="5.5"/><rect x="3" y="5.5" width="6" height="2.5" rx="1"/><rect x="15" y="5.5" width="6" height="2.5" rx="1"/><line x1="4.5" y1="10.5" x2="4.5" y2="13"/><line x1="6" y1="11.5" x2="6" y2="14"/><line x1="7.5" y1="10.5" x2="7.5" y2="13"/><line x1="16.5" y1="10.5" x2="16.5" y2="13"/><line x1="18" y1="11.5" x2="18" y2="14"/><line x1="19.5" y1="10.5" x2="19.5" y2="13"/></svg>
+        <span class="nm">Ducha Dupla</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:hanger-linear</div>
+        <iconify-icon icon="solar:hanger-linear" width="34"></iconify-icon>
+        <span class="nm">Roupão &amp; Cabides</span><span class="cd">hanger-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">piscina-swimming</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="7" r="2"/><path d="M15 9 L10 11.5 L6 9.5"/><line x1="17" y1="9" x2="16" y2="14"/><path d="M2 17.5 Q5.5 15 9 17.5 Q12.5 20 16 17.5 Q19.5 15 22 17.5"/><path d="M2 21 Q5.5 19 9 21 Q12.5 23 16 21 Q19.5 19 22 21"/></svg>
+        <span class="nm">Piscina</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">toalhas-algodao</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="4" x2="21" y2="4"/><path d="M7 4 L7 7 L17 7 L17 4"/><rect x="7" y="7" width="10" height="14" rx="1.5"/><line x1="9.5" y1="12" x2="14.5" y2="12"/><line x1="9.5" y1="15" x2="14.5" y2="15"/></svg>
+        <span class="nm">Toalhas Algodão Egípcio</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:layers-minimalistic-linear</div>
+        <iconify-icon icon="solar:layers-minimalistic-linear" width="34"></iconify-icon>
+        <span class="nm">Roupa de Cama 600 Fios</span><span class="cd">layers-minimalistic</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:cup-hot-bold</div>
+        <iconify-icon icon="solar:cup-hot-bold" width="34"></iconify-icon>
+        <span class="nm">Cafeteira</span><span class="cd">cup-hot-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">churrasqueira</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 11 Q8 8.5 10 7 Q10 9.5 8.5 11"/>
+          <path d="M12 11 Q11.5 8.5 13.5 7 Q13.5 9.5 12 11"/>
+          <path d="M15.5 11 Q15 8.5 17 7 Q17 9.5 15.5 11"/>
+          <rect x="3" y="11" width="18" height="5.5" rx="1.5"/>
+          <line x1="3" y1="13.75" x2="21" y2="13.75"/>
+          <line x1="7.5" y1="11" x2="7.5" y2="16.5"/>
+          <line x1="12" y1="11" x2="12" y2="16.5"/>
+          <line x1="16.5" y1="11" x2="16.5" y2="16.5"/>
+          <line x1="6.5" y1="16.5" x2="5" y2="22"/>
+          <line x1="17.5" y1="16.5" x2="19" y2="22"/>
+          <line x1="6" y1="20" x2="18" y2="20"/>
+        </svg>
+        <span class="nm">Churrasqueira</span><span class="cd">custom-svg</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     3. ENTRETENIMENTO
+══════════════════════════════════════════════════════ -->
+<section id="entretenimento" style="padding:6rem 1.5rem;position:relative;overflow:hidden">
+  <div class="orb" style="width:400px;height:400px;background:rgba(44,62,53,.4);top:20%;left:-5%;--dur:16s;--tx:25px;--ty:15px;--o1:.08;--o2:.2"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:tv-bold" width="10" style="color:var(--gold)"></iconify-icon> Categoria 02</span>
+      <h2>Entretenimento</h2>
+      <p>Streaming, home theater e experiências audiovisuais de alto nível.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:play-stream-linear</div>
+        <iconify-icon icon="solar:play-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Netflix &amp; Streaming</span><span class="cd">play-circle-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:speaker-minimalistic-linear</div>
+        <iconify-icon icon="solar:speaker-minimalistic-linear" width="34"></iconify-icon>
+        <span class="nm">Home Theater</span><span class="cd">speaker-minimalistic</span>
+      </div>
+      <div class="ic">
+        <div class="tip">soundbar</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1.5" y="9.5" width="21" height="5" rx="2.5"/>
+          <circle cx="4" cy="12" r="0.5" fill="currentColor" stroke="none"/>
+          <circle cx="8" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+          <circle cx="10.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+          <circle cx="13" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+          <circle cx="15.5" cy="12" r="0.65" fill="currentColor" stroke="none"/>
+          <circle cx="20" cy="12" r="1.5"/>
+        </svg>
+        <span class="nm">Soundbar</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:tv-linear</div>
+        <iconify-icon icon="solar:tv-linear" width="34"></iconify-icon>
+        <span class="nm">Smart TV 4K</span><span class="cd">tv-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:gamepad-linear</div>
+        <iconify-icon icon="solar:gamepad-bold" width="34"></iconify-icon>
+        <span class="nm">Videogame</span><span class="cd">gamepad-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:music-note-linear</div>
+        <iconify-icon icon="solar:music-note-linear" width="34"></iconify-icon>
+        <span class="nm">Sistema de Som</span><span class="cd">music-note</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:monitor-linear</div>
+        <iconify-icon icon="solar:monitor-linear" width="34"></iconify-icon>
+        <span class="nm">Projetor</span><span class="cd">monitor-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:camera-linear</div>
+        <iconify-icon icon="solar:camera-linear" width="34"></iconify-icon>
+        <span class="nm">Transmissão ao Vivo</span><span class="cd">camera-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:clapperboard-open-linear</div>
+        <iconify-icon icon="solar:clapperboard-open-linear" width="34"></iconify-icon>
+        <span class="nm">Cinema</span><span class="cd">clapperboard</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:headphones-round-linear</div>
+        <iconify-icon icon="solar:headphones-round-linear" width="34"></iconify-icon>
+        <span class="nm">Headphones</span><span class="cd">headphones-round</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:videocamera-add-linear</div>
+        <iconify-icon icon="solar:videocamera-add-linear" width="34"></iconify-icon>
+        <span class="nm">Video Call</span><span class="cd">videocamera-add</span>
+      </div>
+      <div class="ic">
+        <div class="tip">echo-show</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- screen bezel -->
+          <rect x="2" y="3" width="20" height="14" rx="1.5"/>
+          <!-- camera dot -->
+          <circle cx="12" cy="5" r="0.75" fill="currentColor" stroke="none"/>
+          <!-- Alexa ring on screen -->
+          <circle cx="12" cy="11" r="3.5"/>
+          <!-- inner arc (half ring) -->
+          <path d="M9.5 11 Q9.5 8.5 12 8.5 Q14.5 8.5 14.5 11"/>
+          <!-- wedge stand -->
+          <path d="M7 17 L5.5 22 L18.5 22 L17 17"/>
+        </svg>
+        <span class="nm">Echo Show</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">home-smart</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- roof -->
+          <path d="M3 11 L12 3 L21 11"/>
+          <!-- walls -->
+          <path d="M5 10.5 L5 21 L19 21 L19 10.5"/>
+          <!-- door -->
+          <path d="M10 21 L10 16 Q10 15 11 15 L13 15 Q14 15 14 16 L14 21"/>
+          <!-- wifi dot -->
+          <circle cx="12" cy="13.5" r="0.9" fill="currentColor" stroke="none"/>
+          <!-- wifi arc 1 -->
+          <path d="M10.5 12.5 Q12 11 13.5 12.5"/>
+          <!-- wifi arc 2 -->
+          <path d="M8.5 10.5 Q12 8 15.5 10.5"/>
+        </svg>
+        <span class="nm">Home Smart</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">robot-vacuum</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- main body -->
+          <circle cx="12" cy="13" r="9"/>
+          <!-- flat front edge -->
+          <path d="M5.5 7.5 Q12 4.5 18.5 7.5"/>
+          <!-- sensor bar -->
+          <line x1="7.5" y1="8.2" x2="16.5" y2="8.2"/>
+          <!-- center button -->
+          <circle cx="12" cy="14" r="2.5"/>
+          <!-- left side brush (3 spokes) -->
+          <line x1="3.5" y1="18" x2="2" y2="16"/>
+          <line x1="3.5" y1="18" x2="2.5" y2="20"/>
+          <line x1="3.5" y1="18" x2="5.5" y2="19.5"/>
+          <!-- right side brush (3 spokes) -->
+          <line x1="20.5" y1="18" x2="22" y2="16"/>
+          <line x1="20.5" y1="18" x2="21.5" y2="20"/>
+          <line x1="20.5" y1="18" x2="18.5" y2="19.5"/>
+        </svg>
+        <span class="nm">Robot Vacuum</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:star-bold</div>
+        <iconify-icon icon="solar:star-bold" width="34"></iconify-icon>
+        <span class="nm">Conteúdo Premium</span><span class="cd">star-bold</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     4. GASTRONOMIA
+══════════════════════════════════════════════════════ -->
+<section id="gastronomia" class="sec-alt sec-sep" style="padding:6rem 1.5rem;position:relative">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 50%,rgba(201,169,110,.02) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:cup-hot-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 03</span>
+      <h2>Gastronomia</h2>
+      <p>Da cozinha à mesa — experiências que encantam os sentidos.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:cup-hot-linear</div>
+        <iconify-icon icon="solar:cup-hot-linear" width="34"></iconify-icon>
+        <span class="nm">Café da Manhã</span><span class="cd">cup-hot-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:chef-hat-minimalistic-linear</div>
+        <iconify-icon icon="solar:chef-hat-minimalistic-linear" width="34"></iconify-icon>
+        <span class="nm">Restaurante</span><span class="cd">chef-hat</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:wineglass-linear</div>
+        <iconify-icon icon="solar:wineglass-linear" width="34"></iconify-icon>
+        <span class="nm">Bar &amp; Vinhos</span><span class="cd">wineglass-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:leaf-linear</div>
+        <iconify-icon icon="solar:leaf-linear" width="34"></iconify-icon>
+        <span class="nm">Menu Vegano</span><span class="cd">leaf-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:delivery-linear</div>
+        <iconify-icon icon="solar:delivery-linear" width="34"></iconify-icon>
+        <span class="nm">Entrega no Quarto</span><span class="cd">delivery-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:calendar-linear</div>
+        <iconify-icon icon="solar:calendar-linear" width="34"></iconify-icon>
+        <span class="nm">Reserva de Mesa</span><span class="cd">calendar-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:tag-price-linear</div>
+        <iconify-icon icon="solar:tag-price-linear" width="34"></iconify-icon>
+        <span class="nm">Tarifas &amp; Menus</span><span class="cd">tag-price</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:bottle-linear</div>
+        <iconify-icon icon="solar:bottle-linear" width="34"></iconify-icon>
+        <span class="nm">Adega</span><span class="cd">bottle-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:fire-linear</div>
+        <iconify-icon icon="solar:fire-linear" width="34"></iconify-icon>
+        <span class="nm">Churrasco</span><span class="cd">fire-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:cup-hot-bold</div>
+        <iconify-icon icon="solar:cup-hot-bold" width="34"></iconify-icon>
+        <span class="nm">Cafeteira Premium</span><span class="cd">cup-hot-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:dish-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14" rx="9" ry="2"/><path d="M3 14 Q3 20 12 20 Q21 20 21 14"/><line x1="12" y1="5" x2="12" y2="12"/><path d="M9 8 Q12 5 15 8"/></svg>
+        <span class="nm">Prato Principal</span><span class="cd">custom-svg</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     5. BEM-ESTAR & SPA
+══════════════════════════════════════════════════════ -->
+<section id="bemestar" style="padding:6rem 1.5rem;position:relative;overflow:hidden">
+  <div class="orb" style="width:500px;height:500px;background:rgba(44,62,53,.38);top:40%;left:50%;transform:translateX(-50%);--dur:22s;--o1:.08;--o2:.18"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:heart-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 04</span>
+      <h2>Bem-estar &amp; Spa</h2>
+      <p>Espaços dedicados ao equilíbrio do corpo, mente e espírito.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:heart-linear</div>
+        <iconify-icon icon="solar:heart-linear" width="34"></iconify-icon>
+        <span class="nm">Spa &amp; Massagem</span><span class="cd">heart-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:dumbbell-linear</div>
+        <iconify-icon icon="solar:dumbbell-linear" width="34"></iconify-icon>
+        <span class="nm">Academia</span><span class="cd">dumbbell-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:fire-linear</div>
+        <iconify-icon icon="solar:fire-linear" width="34"></iconify-icon>
+        <span class="nm">Sauna</span><span class="cd">fire-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:sun-2-linear</div>
+        <iconify-icon icon="solar:sun-2-linear" width="34"></iconify-icon>
+        <span class="nm">Yoga &amp; Meditação</span><span class="cd">sun-2-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">water-drops</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- left drop -->
+          <path d="M7.5 4.5 Q5 8.5 5 11 Q5 14.5 7.5 14.5 Q10 14.5 10 11 Q10 8.5 7.5 4.5Z"/>
+          <!-- right drop -->
+          <path d="M16.5 4.5 Q14 8.5 14 11 Q14 14.5 16.5 14.5 Q19 14.5 19 11 Q19 8.5 16.5 4.5Z"/>
+          <!-- center bottom drop -->
+          <path d="M12 9 Q9.5 13 9.5 16 Q9.5 20 12 20 Q14.5 20 14.5 16 Q14.5 13 12 9Z"/>
+        </svg>
+        <span class="nm">Piscina</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:shield-check-linear</div>
+        <iconify-icon icon="solar:shield-check-linear" width="34"></iconify-icon>
+        <span class="nm">Saúde &amp; Proteção</span><span class="cd">shield-check</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:leaf-linear</div>
+        <iconify-icon icon="solar:leaf-linear" width="34"></iconify-icon>
+        <span class="nm">Aromaterapia</span><span class="cd">leaf-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:clock-circle-linear</div>
+        <iconify-icon icon="solar:clock-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Agendamento</span><span class="cd">clock-circle</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:moon-stars-linear</div>
+        <iconify-icon icon="solar:moon-stars-linear" width="34"></iconify-icon>
+        <span class="nm">Relaxamento</span><span class="cd">moon-stars</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:running-round-linear</div>
+        <iconify-icon icon="solar:running-2-linear" width="34"></iconify-icon>
+        <span class="nm">Pilates</span><span class="cd">running-2-linear</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     6. SERVIÇOS DE EXCELÊNCIA
+══════════════════════════════════════════════════════ -->
+<section id="servicos" class="sec-alt sec-sep" style="padding:6rem 1.5rem;position:relative">
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:bell-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 05</span>
+      <h2>Serviços de Excelência</h2>
+      <p>Atendimento personalizado disponível a qualquer hora do dia.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:bell-linear</div>
+        <iconify-icon icon="solar:bell-linear" width="34"></iconify-icon>
+        <span class="nm">Concierge 24h</span><span class="cd">bell-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:phone-calling-linear</div>
+        <iconify-icon icon="solar:phone-calling-linear" width="34"></iconify-icon>
+        <span class="nm">Atendimento 24h</span><span class="cd">phone-calling</span>
+      </div>
+      <div class="ic">
+        <div class="tip">van-transfer</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- high-roof van body (stepped silhouette) -->
+          <path d="M1.5 17 L1.5 5.5 L17 5.5 L17 8 L22.5 8 L22.5 17 Z"/>
+          <!-- rear wheel -->
+          <circle cx="6.5" cy="20" r="3"/>
+          <circle cx="6.5" cy="20" r="1.2" fill="currentColor" stroke="none"/>
+          <!-- front wheel -->
+          <circle cx="19" cy="20" r="3"/>
+          <circle cx="19" cy="20" r="1.2" fill="currentColor" stroke="none"/>
+          <!-- cargo window 1 -->
+          <rect x="3" y="7" width="4.5" height="6" rx="0.5"/>
+          <!-- cargo window 2 -->
+          <rect x="9" y="7" width="4.5" height="6" rx="0.5"/>
+          <!-- cab windshield -->
+          <rect x="17.5" y="9" width="4" height="5.5" rx="0.5"/>
+          <!-- sliding door divider -->
+          <line x1="8.5" y1="5.5" x2="8.5" y2="17"/>
+        </svg>
+        <span class="nm">Transfer VIP</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">airplane</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- airplane top-down silhouette -->
+          <path d="M12 1.5 L13 10 Q18.5 12 22 15 L21 16.5 Q16.5 14.5 13 14 L12.5 20 L15 21 L15 22.5 L12 21.5 L9 22.5 L9 21 L11.5 20 L11 14 Q7.5 14.5 3 16.5 L2 15 Q5.5 12 11 10 Z"/>
+        </svg>
+        <span class="nm">Aeroporto</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:suitcase-linear</div>
+        <iconify-icon icon="solar:suitcase-linear" width="34"></iconify-icon>
+        <span class="nm">Bagageiro</span><span class="cd">suitcase-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:washing-machine-linear</div>
+        <iconify-icon icon="solar:washing-machine-linear" width="34"></iconify-icon>
+        <span class="nm">Lavanderia</span><span class="cd">washing-machine</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:global-linear</div>
+        <iconify-icon icon="solar:global-linear" width="34"></iconify-icon>
+        <span class="nm">Idiomas</span><span class="cd">global-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:laptop-minimalistic-linear</div>
+        <iconify-icon icon="solar:laptop-minimalistic-linear" width="34"></iconify-icon>
+        <span class="nm">Business Center</span><span class="cd">laptop-minimalistic</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:shield-check-linear</div>
+        <iconify-icon icon="solar:shield-check-linear" width="34"></iconify-icon>
+        <span class="nm">Segurança 24h</span><span class="cd">shield-check</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:ticket-linear</div>
+        <iconify-icon icon="solar:ticket-linear" width="34"></iconify-icon>
+        <span class="nm">Ingressos &amp; Tours</span><span class="cd">ticket-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:map-point-linear</div>
+        <iconify-icon icon="solar:map-point-linear" width="34"></iconify-icon>
+        <span class="nm">Guia Local</span><span class="cd">map-point</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:calendar-mark-linear</div>
+        <iconify-icon icon="solar:calendar-mark-bold" width="34"></iconify-icon>
+        <span class="nm">Reservas</span><span class="cd">calendar-mark-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">mdi:whatsapp</div>
+        <iconify-icon icon="mdi:whatsapp" width="34"></iconify-icon>
+        <span class="nm">WhatsApp</span><span class="cd">mdi:whatsapp</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     7. LAZER
+══════════════════════════════════════════════════════ -->
+<section id="lazer" style="padding:6rem 1.5rem;position:relative;overflow:hidden">
+  <div class="orb" style="width:420px;height:420px;background:rgba(201,169,110,.08);top:15%;right:-5%;--dur:15s;--tx:-25px;--ty:22px;--o1:.06;--o2:.18"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:bicycle-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 06</span>
+      <h2>Lazer &amp; Entretenimento</h2>
+      <p>Aventura, cultura e diversão em meio à natureza da Lapinha.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">ciclismo-bicycle</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5.5" cy="16" r="4"/>
+          <circle cx="18.5" cy="16" r="4"/>
+          <path d="M5.5 16 L10 8 L14 8"/>
+          <path d="M10 8 L14 16 L18.5 16"/>
+          <line x1="10" y1="8" x2="11.5" y2="13"/>
+          <line x1="8.5" y1="8" x2="12" y2="8"/>
+          <line x1="14" y1="8" x2="14" y2="5.5"/>
+          <path d="M12.5 5.5 L15.5 5.5"/>
+        </svg>
+        <span class="nm">Ciclismo</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:map-point-linear</div>
+        <iconify-icon icon="solar:map-point-linear" width="34"></iconify-icon>
+        <span class="nm">Trilhas</span><span class="cd">map-point</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:music-note-linear</div>
+        <iconify-icon icon="solar:music-note-linear" width="34"></iconify-icon>
+        <span class="nm">Shows ao Vivo</span><span class="cd">music-note</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:book-2-linear</div>
+        <iconify-icon icon="solar:book-2-linear" width="34"></iconify-icon>
+        <span class="nm">Biblioteca</span><span class="cd">book-2-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:gallery-linear</div>
+        <iconify-icon icon="solar:gallery-linear" width="34"></iconify-icon>
+        <span class="nm">Arte &amp; Galeria</span><span class="cd">gallery-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:football-linear</div>
+        <iconify-icon icon="solar:football-bold" width="34"></iconify-icon>
+        <span class="nm">Esportes</span><span class="cd">football-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:brush-linear</div>
+        <iconify-icon icon="solar:brush-linear" width="34"></iconify-icon>
+        <span class="nm">Ateliê Criativo</span><span class="cd">brush-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:camera-linear</div>
+        <iconify-icon icon="solar:camera-linear" width="34"></iconify-icon>
+        <span class="nm">Fotografia</span><span class="cd">camera-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:star-bold</div>
+        <iconify-icon icon="solar:star-bold" width="34"></iconify-icon>
+        <span class="nm">Experiências VIP</span><span class="cd">star-bold</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:bus-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="13" rx="2"/><rect x="4.5" y="8" width="3.5" height="3" rx="0.75"/><rect x="10.25" y="8" width="3.5" height="3" rx="0.75"/><rect x="16" y="8" width="3.5" height="3" rx="0.75"/><circle cx="7" cy="20" r="1.75"/><circle cx="17" cy="20" r="1.75"/><line x1="2" y1="13" x2="22" y2="13"/><line x1="9" y1="5" x2="9" y2="13"/></svg>
+        <span class="nm">City Tour</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:fishing-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4 L4 18"/><path d="M4 4 L18 4"/><path d="M18 4 Q18 13 14 17"/><path d="M14 17 Q16 17 16 19 Q16 21 14 21"/><path d="M9 19 Q12 17 14 19 Q12 21 9 19Z"/><path d="M7 19 L9 17 L9 21Z"/></svg>
+        <span class="nm">Pesca</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:mountains-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20.5 L8.5 9 L13 16 L16.5 11 L22 20.5Z"/><circle cx="19.5" cy="6" r="2"/><line x1="17.5" y1="7.4" x2="15" y2="10.5"/></svg>
+        <span class="nm">Ecoturismo</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">kanoagem-kayak</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 14 Q7 10.5 12 10.5 Q17 10.5 22 14 Q17 16 12 16 Q7 16 2 14Z"/>
+          <line x1="12" y1="10.5" x2="12" y2="7"/>
+          <circle cx="12" cy="5.5" r="1.5"/>
+          <line x1="4.5" y1="9" x2="19.5" y2="9"/>
+          <path d="M4.5 9 Q3.5 7.5 2.5 6.5 Q3.5 5.5 4.5 6.5 Q5 7.8 4.5 9Z" fill="currentColor" stroke="none"/>
+          <path d="M19.5 9 Q20.5 7.5 21.5 6.5 Q20.5 5.5 19.5 6.5 Q19 7.8 19.5 9Z" fill="currentColor" stroke="none"/>
+          <path d="M3 17.5 Q7.5 16.5 12 17.5 Q16.5 18.5 21 17.5"/>
+        </svg>
+        <span class="nm">Kanoagem (Kaique)</span><span class="cd">custom-svg</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     8. POLÍTICAS & INFRAESTRUTURA
+══════════════════════════════════════════════════════ -->
+<section id="infra" class="sec-alt sec-sep" style="padding:6rem 1.5rem;position:relative">
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:settings-linear" width="10" style="color:var(--gold)"></iconify-icon> Categoria 07</span>
+      <h2>Políticas &amp; Infraestrutura</h2>
+      <p>Segurança, acessibilidade e informações essenciais do hotel.</p>
+      <div class="divider"></div>
+    </div>
+    <div class="icon-grid reveal">
+      <div class="ic">
+        <div class="tip">solar:baby-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6.5" r="2.5"/><path d="M6.5 21 Q6.5 15.5 12 15.5 Q17.5 15.5 17.5 21"/><line x1="12" y1="9" x2="12" y2="15.5"/><circle cx="7.5" cy="11.5" r="2" /><circle cx="16.5" cy="11.5" r="2"/></svg>
+        <span class="nm">Família</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:dog-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="14.5" rx="5.5" ry="5"/><circle cx="7.5" cy="8.5" r="1.75"/><circle cx="12" cy="7" r="1.75"/><circle cx="16.5" cy="8.5" r="1.75"/><ellipse cx="9.5" cy="17.5" rx="1.4" ry="1.7"/><ellipse cx="12" cy="19" rx="1.4" ry="1.7"/><ellipse cx="14.5" cy="17.5" rx="1.4" ry="1.7"/></svg>
+        <span class="nm">Pet-friendly</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:clock-circle-linear</div>
+        <iconify-icon icon="solar:clock-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Check-in Flex</span><span class="cd">clock-circle</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:documents-linear</div>
+        <iconify-icon icon="solar:documents-linear" width="34"></iconify-icon>
+        <span class="nm">Documentos</span><span class="cd">documents-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:check-circle-linear</div>
+        <iconify-icon icon="solar:check-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Confirmado</span><span class="cd">check-circle</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:info-circle-linear</div>
+        <iconify-icon icon="solar:info-circle-linear" width="34"></iconify-icon>
+        <span class="nm">Informação</span><span class="cd">info-circle</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:share-linear</div>
+        <iconify-icon icon="solar:share-linear" width="34"></iconify-icon>
+        <span class="nm">Compartilhar</span><span class="cd">share-linear</span>
+      </div>
+      <div class="ic">
+        <div class="tip">instagram</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <!-- outer rounded square -->
+          <rect x="2" y="2" width="20" height="20" rx="5.5"/>
+          <!-- camera lens circle -->
+          <circle cx="12" cy="12" r="4.5"/>
+          <!-- flash dot top-right -->
+          <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" stroke="none"/>
+        </svg>
+        <span class="nm">Instagram</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:recycle-linear</div>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 L5 9 L9 9"/><path d="M5 9 Q2.5 14 6 18"/><path d="M15 21 L19 15 L15 15"/><path d="M19 15 Q21.5 10 18 6"/><path d="M9 3 L15 3 Q19.5 3 18 6"/><path d="M6 18 Q4.5 22 9 22 L15 22"/></svg>
+        <span class="nm">Sustentabilidade</span><span class="cd">custom-svg</span>
+      </div>
+      <div class="ic">
+        <div class="tip">solar:star-shine-linear</div>
+        <iconify-icon icon="solar:stars-linear" width="34"></iconify-icon>
+        <span class="nm">Avaliações</span><span class="cd">stars-linear</span>
+      </div>
+    </div>
+
+    <!-- Interface & Navegação -->
+    <div style="margin-top:2.5rem" class="reveal">
+      <div style="margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem">
+        <div style="flex:1;height:1px;background:var(--sep-inner)"></div>
+        <span style="font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted)">Interface &amp; Navegação</span>
+        <div style="flex:1;height:1px;background:var(--sep-inner)"></div>
+      </div>
+      <div class="icon-grid-sm">
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:arrow-right-linear</div><iconify-icon icon="solar:arrow-right-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">arrow-right</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:arrow-right-up-linear</div><iconify-icon icon="solar:arrow-right-up-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">arrow-right-up</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:alt-arrow-right-linear</div><iconify-icon icon="solar:alt-arrow-right-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">alt-arrow-right</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:alt-arrow-down-linear</div><iconify-icon icon="solar:alt-arrow-down-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">alt-arrow-down</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:close-circle-linear</div><iconify-icon icon="solar:close-circle-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">close-circle</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:menu-dots-linear</div><iconify-icon icon="solar:menu-dots-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">menu-dots</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:add-circle-linear</div><iconify-icon icon="solar:add-circle-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">add-circle</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:magnifer-linear</div><iconify-icon icon="solar:magnifer-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">magnifer</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:heart-linear</div><iconify-icon icon="solar:heart-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">heart-linear</span></div>
+        <div class="ic" style="padding:1rem .7rem"><div class="tip">solar:filter-linear</div><iconify-icon icon="solar:filter-linear" width="22"></iconify-icon><span class="nm" style="font-size:.55rem">filter-linear</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SPECS
+══════════════════════════════════════════════════════ -->
+<section id="specs" style="padding:6rem 1.5rem;position:relative;overflow:hidden">
+  <div class="orb" style="width:600px;height:600px;background:rgba(44,62,53,.25);top:50%;left:50%;transform:translate(-50%,-50%);--dur:25s;--o1:.06;--o2:.14"></div>
+  <div style="max-width:1280px;margin:0 auto;position:relative;z-index:1">
+    <div class="sec-head reveal">
+      <span class="badge-cat"><iconify-icon icon="solar:ruler-linear" width="10" style="color:var(--gold)"></iconify-icon> Especificações</span>
+      <h2>Tamanhos &amp; Contextos</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem" class="reveal">
+      <!-- Size scale -->
+      <div class="glass" style="border-radius:20px;overflow:hidden">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--sep-inner)"><span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-dim)">Escala de Tamanhos</span></div>
+        <div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="12" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">12px — Caption / Label</div><div class="sz-code">width="12"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="16" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">16px — Ícone de Texto</div><div class="sz-code">width="16"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="20" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">20px — Botão / Nav</div><div class="sz-code">width="20"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="24" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">24px — Padrão</div><div class="sz-code">width="24"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="32" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">32px — Card / Destaque</div><div class="sz-code">width="32"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="48" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">48px — Hero</div><div class="sz-code">width="48"</div></div></div>
+          <div class="sz-row"><iconify-icon icon="solar:sun-2-linear" width="64" style="color:var(--ic-clr);flex-shrink:0"></iconify-icon><div><div class="sz-label">64px — Display / Capa</div><div class="sz-code">width="64"</div></div></div>
+        </div>
+      </div>
+
+      <!-- Colors + code -->
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="glass" style="border-radius:18px;padding:1.25rem 1.5rem">
+          <span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-dim);display:block;margin-bottom:.75rem">Contexto Escuro (branco)</span>
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+            <iconify-icon icon="solar:bed-linear" width="24" style="color:rgba(255,255,255,.92)"></iconify-icon>
+            <iconify-icon icon="solar:bath-linear" width="24" style="color:rgba(255,255,255,.7)"></iconify-icon>
+            <iconify-icon icon="solar:snowflake-linear" width="24" style="color:rgba(255,255,255,.5)"></iconify-icon>
+            <iconify-icon icon="solar:wifi-square-linear" width="24" style="color:rgba(255,255,255,.3)"></iconify-icon>
+            <span style="font-size:.55rem;color:var(--fg-muted)">100% / 70% / 50% / 30%</span>
+          </div>
+        </div>
+        <div style="background:rgba(201,169,110,.05);border:1px solid rgba(201,169,110,.18);border-radius:18px;padding:1.25rem 1.5rem">
+          <span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(201,169,110,.6);display:block;margin-bottom:.75rem">Dourado (#C9A96E)</span>
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+            <iconify-icon icon="solar:star-bold" width="24" style="color:#C9A96E"></iconify-icon>
+            <iconify-icon icon="solar:tag-price-linear" width="24" style="color:#E8D5A3"></iconify-icon>
+            <iconify-icon icon="solar:cup-hot-linear" width="24" style="color:#a87d4a"></iconify-icon>
+            <span style="font-size:.55rem;color:rgba(201,169,110,.4)">#C9A96E / #E8D5A3 / #a87d4a</span>
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:18px;padding:1.25rem 1.5rem">
+          <span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(44,62,53,.5);display:block;margin-bottom:.75rem">Claro (floresta #2C3E35)</span>
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+            <iconify-icon icon="solar:bed-linear" width="24" style="color:#2C3E35"></iconify-icon>
+            <iconify-icon icon="solar:bath-linear" width="24" style="color:#44403c"></iconify-icon>
+            <iconify-icon icon="solar:snowflake-linear" width="24" style="color:#78716c"></iconify-icon>
+            <iconify-icon icon="solar:tv-linear" width="24" style="color:#a8a29e"></iconify-icon>
+            <span style="font-size:.55rem;color:#a8a29e">#2C3E35 / Stone-700 / 500 / 400</span>
+          </div>
+        </div>
+        <div class="glass" style="border-radius:18px;padding:1.25rem 1.5rem">
+          <span style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-dim);display:block;margin-bottom:.75rem">Implementação HTML</span>
+          <div class="code-block">&lt;script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"&gt;&lt;/script&gt;
+
+&lt;iconify-icon
+  icon="solar:bed-linear"
+  width="24"
+&gt;&lt;/iconify-icon&gt;
+
+&lt;!-- Clique no card para copiar o nome --&gt;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Palette -->
+    <div style="margin-top:2rem" class="reveal">
+      <div style="margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem">
+        <div style="flex:1;height:1px;background:var(--sep-inner)"></div>
+        <span style="font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--fg-muted)">Paleta de Cores</span>
+        <div style="flex:1;height:1px;background:var(--sep-inner)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.8rem">
+        <div class="swatch"><div style="height:52px;background:#2C3E35"></div><div style="padding:.55rem .75rem"><div class="swatch-label">Forest</div><div class="swatch-code">#2C3E35</div></div></div>
+        <div class="swatch"><div style="height:52px;background:#060d09"></div><div style="padding:.55rem .75rem"><div class="swatch-label">Deep</div><div class="swatch-code">#060d09</div></div></div>
+        <div class="swatch"><div style="height:52px;background:#C9A96E"></div><div style="padding:.55rem .75rem"><div class="swatch-label">Gold</div><div class="swatch-code">#C9A96E</div></div></div>
+        <div class="swatch"><div style="height:52px;background:#E8D5A3"></div><div style="padding:.55rem .75rem"><div class="swatch-label">Gold Lt</div><div class="swatch-code">#E8D5A3</div></div></div>
+        <div class="swatch"><div style="height:52px;background:#a87d4a"></div><div style="padding:.55rem .75rem"><div class="swatch-label">Gold Dk</div><div class="swatch-code">#a87d4a</div></div></div>
+        <div class="swatch"><div style="height:52px;background:#fff;border-bottom:1px solid rgba(0,0,0,.07)"></div><div style="padding:.55rem .75rem"><div class="swatch-label">White</div><div class="swatch-code">#ffffff</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────── -->
+<footer style="border-top:1px solid var(--sep);padding:3rem 1.5rem;text-align:center;position:relative;overflow:hidden;background:var(--bg);transition:background .45s, border-color .45s">
+  <div class="orb" style="width:350px;height:350px;background:rgba(44,62,53,.35);top:50%;left:50%;transform:translate(-50%,-50%);--dur:14s;--o1:.12;--o2:.25"></div>
+  <div style="position:relative;z-index:1">
+    <div class="serif" style="font-size:1.6rem;color:var(--fg-sub);margin-bottom:.4rem;font-weight:300;letter-spacing:.06em;transition:color .45s">Lapinha</div>
+    <p style="font-size:.62rem;color:var(--fg-muted);letter-spacing:.12em;text-transform:uppercase;transition:color .45s">Sistema de Ícones de Hotelaria · Design System v1 · 2026</p>
+    <div style="margin-top:1.25rem;display:flex;justify-content:center;gap:.75rem">
+      <iconify-icon icon="solar:leaf-linear" width="14" style="color:var(--fg-muted)"></iconify-icon>
+      <iconify-icon icon="solar:star-bold" width="14" style="color:rgba(201,169,110,.35)"></iconify-icon>
+      <iconify-icon icon="solar:heart-linear" width="14" style="color:var(--fg-muted)"></iconify-icon>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── CANVAS STARFIELD ─────────────────────────────── */
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let S=[],W,H;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}
+  function init(){S=[];for(let i=0;i<160;i++)S.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.2,op:Math.random()*.35+.05,t:Math.random()*Math.PI*2,sp:Math.random()*.4+.06})}
+  function draw(){ctx.clearRect(0,0,W,H);S.forEach(s=>{s.t+=s.sp*.018;const o=s.op*(.55+.45*Math.sin(s.t));ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${o})`;ctx.fill()});requestAnimationFrame(draw)}
+  resize();init();draw();
+  window.addEventListener('resize',()=>{resize();init()});
+})();
+
+/* ── SCROLL REVEAL WITH STAGGER ────────────────────── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('in');
+    e.target.querySelectorAll('.ic').forEach((card,i)=>{
+      card.style.opacity='0';card.style.transform='translateY(22px)';
+      setTimeout(()=>{card.style.transition='all .55s cubic-bezier(.34,1.56,.64,1)';card.style.opacity='1';card.style.transform='translateY(0)'},i*50+80);
+    });
+    obs.unobserve(e.target);
+  });
+},{threshold:.06});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ── CLICK TO COPY ──────────────────────────────────── */
+document.querySelectorAll('.ic').forEach(card=>{
+  card.addEventListener('click',function(){
+    const cd=this.querySelector('.cd');if(!cd)return;
+    const name='solar:'+cd.textContent.trim();
+    navigator.clipboard.writeText(name).then(()=>{
+      const nm=this.querySelector('.nm'),orig=nm.textContent;
+      nm.textContent='✓ Copiado!';nm.style.color='rgba(201,169,110,.95)';
+      setTimeout(()=>{nm.textContent=orig;nm.style.color=''},1800);
+    }).catch(()=>{});
+  });
+});
+
+/* ── NAV ACTIVE ─────────────────────────────────────── */
+const secObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    document.querySelectorAll('.nav-top a').forEach(l=>{
+      l.classList.remove('active');
+      if(l.getAttribute('href')==='#'+e.target.id)l.classList.add('active');
+    });
+  });
+},{threshold:.3});
+document.querySelectorAll('section[id]').forEach(s=>secObs.observe(s));
+
+/* ── THEME TOGGLE ────────────────────────────────────── */
+const btn=document.getElementById('themeBtn');
+const icon=document.getElementById('themeIcon');
+const DARK_ICON='solar:sun-bold';
+const LIGHT_ICON='solar:moon-stars-bold';
+let isLight=false;
+
+// restore preference
+if(localStorage.getItem('lapinha-theme')==='light'){
+  document.body.classList.add('light');
+  icon.setAttribute('icon',LIGHT_ICON);
+  isLight=true;
+}
+
+btn.addEventListener('click',()=>{
+  isLight=!isLight;
+  document.body.classList.toggle('light',isLight);
+  icon.setAttribute('icon',isLight?LIGHT_ICON:DARK_ICON);
+  localStorage.setItem('lapinha-theme',isLight?'light':'dark');
+  btn.style.transform='scale(1.25) rotate(20deg)';
+  setTimeout(()=>{btn.style.transform=''},350);
+});
+</script>
+</body>
+</html>
