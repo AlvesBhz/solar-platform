@@ -27,7 +27,7 @@
   --c-gold-lt:    #E8D5A3;
 }
 
-body { font-family: var(--font-sans); overflow-x: hidden; }
+body { font-family: var(--font-sans); overflow-x: hidden; overflow-x: clip; }
 h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 ::selection { background: var(--c-s900); color: #fff; }
 ::-webkit-scrollbar { width: 5px; }
@@ -935,7 +935,8 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
     align-items: start;
   }
   .d2-img,
-  .d2-slideshow { min-height: 300px; height: 300px; }
+  .d2-slideshow { min-height: 0; height: auto; aspect-ratio: 4 / 3; max-height: 78svh; }
+  .d2-img-wrap { min-height: 0; }
   .dep-grid { grid-template-columns: 1fr; }
 }
 
@@ -1012,7 +1013,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 .cta-bg {
   position: absolute;
   inset: -12%;
-  background: url('assets/images/serra-hero.avif') center / cover no-repeat;
+  background: url('../assets/images/serra-hero.avif') center / cover no-repeat;
   will-change: transform;
   transform: scale(1.12) translateY(0);
   transition: transform 0.05s linear;
@@ -1396,7 +1397,7 @@ img, svg, video, iframe { max-width: 100%; }
   .lang-inline-btn { padding: 0.4rem 0.42rem; }
   #navReserveBtn {
     padding: 0.5rem 0.85rem !important;
-    font-size: 0.6rem !important;
+    font-size: var(--fs-micro) !important;
     letter-spacing: 0.12em !important;
     gap: 0.35rem !important;
   }
@@ -1491,4 +1492,169 @@ img, svg, video, iframe { max-width: 100%; }
 @media (max-width: 767px) and (pointer: coarse) {
   .cal-d { padding: 0.55rem 0.05rem; }
   .gst-btn { width: 34px; height: 34px; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   CAMADA RESPONSIVA UNIVERSAL  (skill-responsividade)
+   Aditiva: nada acima foi reescrito. Cada bloco declara o que
+   resolve. Matriz de alvos: 280px → 5K, DPR 1x–3x, landscape.
+═══════════════════════════════════════════════════════════ */
+
+/* [RESPONSIVO] tokens fluidos — piso de legibilidade e medidas base */
+:root {
+  --fs-micro: clamp(0.625rem, 0.6rem + 0.125vw, 0.6875rem);   /* 10 → 11px: rótulos em caixa-alta */
+  --fs-micro: clamp(0.625rem, 0.6rem + 0.125vi, 0.6875rem);
+  --fs-label: clamp(0.6875rem, 0.66rem + 0.125vw, 0.75rem);   /* 11 → 12px: apoio / rodapé */
+  --fs-label: clamp(0.6875rem, 0.66rem + 0.125vi, 0.75rem);
+  --gutter:   clamp(1.15rem, 0.5rem + 3vw, 2.5rem);
+  --tap:      2.75rem;                                        /* alvo de toque: 44px */
+}
+
+/* [RESPONSIVO] raiz fluida — o site inteiro é em rem; acima de 1440px a
+   raiz cresce com a tela (16px@1440 · 18px@1920 · ~21px@2560 · 26px@4K)
+   em vez de o conteúdo encolher no meio do monitor. Abaixo de 1440px
+   permanece 100% (respeita a preferência de fonte do usuário). */
+html {
+  font-size: clamp(100%, 62.5% + 0.4167vw, 200%);
+  font-size: clamp(100%, 62.5% + 0.4167vi, 200%);
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+body { min-height: 100svh; }
+input, select, textarea { font-size: max(16px, 1rem); }       /* evita zoom automático no iOS */
+h1, h2, h3 { text-wrap: balance; }
+
+/* [RESPONSIVO] tipografia mínima — nenhum texto abaixo de 10px */
+.cal-wd, .cal-hint, .cal-clear,
+.chale-eyebrow, .cta-eyebrow-text, .sx-eyebrow-text,
+.sx-filter-btn, .sx-filter-item,
+.sx-card__subheading, .sx-card__action-link,
+.brand-card .tag-r,
+html [class~="text-[9px]"], html [class~="text-[10px]"] { font-size: var(--fs-micro); }
+
+.lang-inline-btn, .gst-sub, .dep-origin, .cal-nights, .cal-d,
+.cfi-nav-title, .cfi-nav ul li span, .cfi-copy, .cfi-legal a { font-size: var(--fs-label); }
+
+/* [RESPONSIVO] telas cheias — 100vh ignora a barra do navegador móvel */
+#hero        { height: 100svh; }
+.cta-section { min-height: 100svh; }
+@supports not (height: 100svh) {
+  #hero        { height: 100vh; }
+  .cta-section { min-height: 100vh; }
+}
+
+/* [RESPONSIVO] safe areas — notch / barra de gestos (exige viewport-fit=cover) */
+.nav-top { padding-top: env(safe-area-inset-top, 0px); }
+.nav-top-inner {
+  padding-left:  max(2rem, env(safe-area-inset-left, 0px));
+  padding-right: max(2rem, env(safe-area-inset-right, 0px));
+}
+@media (max-width: 1024px) {
+  .nav-top-inner {
+    padding-left:  max(clamp(0.85rem, 3.5vw, 2rem), env(safe-area-inset-left, 0px));
+    padding-right: max(clamp(0.85rem, 3.5vw, 2rem), env(safe-area-inset-right, 0px));
+  }
+}
+.cfi-bottom-inner { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
+
+/* [RESPONSIVO] nav em telas micro (280–359px) — o botão Reservar vira
+   só o ícone e os idiomas compactam: a barra cabe sem vazar */
+@media (max-width: 359px) {
+  .nav-reserve-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .nav-top-inner { gap: 0.35rem; }
+  .lang-inline-btn { padding-left: 0.3rem; padding-right: 0.3rem; }
+}
+
+/* [RESPONSIVO] slideshows dos ambientes — proporção travada no lugar de
+   altura fixa em px (regra-base editada no bloco max-width:900px) */
+.d2-img-wrap, .d2-img, .d2-slideshow { min-height: min(27.5rem, 70svh); }
+@media (max-width: 900px) {
+  .d2-img-wrap, .d2-img, .d2-slideshow { min-height: 0; }
+}
+
+/* [RESPONSIVO] popovers de reserva — largura em rem, nunca maior que a tela */
+.bk-pop-cal    { width: min(13.75rem, 100vw - 2rem); }
+.bk-pop-guests { width: min(13.125rem, 100vw - 2rem); }
+.sx-filter-menu { min-width: min(12.5rem, 100vw - 2.5rem); }
+
+/* [RESPONSIVO] passeios — o respiro lateral de até 9rem só faz sentido
+   em tela larga; em tablet devolve a largura aos cards */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .sx-filter-area  { padding-left: var(--gutter); padding-right: var(--gutter); }
+  .sx-content-list { padding-left: var(--gutter); padding-right: var(--gutter); }
+}
+
+/* [RESPONSIVO] celular deitado / telas baixas — nada de tela cheia vazia */
+@media (max-height: 480px) and (orientation: landscape) {
+  .cta-section { min-height: 0; }
+  #bkPopup { padding-top: 5.5rem; }
+  .site-menu { max-height: calc(100svh - 5rem); overflow-y: auto; }
+}
+
+/* [RESPONSIVO] toque — alvos ≥ 44px só onde o ponteiro é grosso */
+a, button { touch-action: manipulation; }
+@media (pointer: coarse) {
+  #navReserveBtn, .lang-inline-btn,
+  .sx-filter-btn, .cal-arrow, .gst-btn {
+    min-height: var(--tap);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  #navReserveBtn, .gst-btn, .cal-arrow { min-width: var(--tap); }
+  .nav-burger { width: var(--tap); height: var(--tap); }
+  .lang-inline-btn { min-width: 2.25rem; }
+  @media (min-width: 600px) { .lang-inline-btn { min-width: var(--tap); } }
+  #navLogoGroup { min-height: var(--tap); min-width: var(--tap); justify-content: center; }
+  .gst-btn { width: var(--tap); height: var(--tap); }
+  .cal-d { min-height: var(--tap); display: flex; align-items: center; justify-content: center; }
+  .sx-filter-item { min-height: var(--tap); display: flex; align-items: center; }
+  .sx-card__action-link,
+  .cfi-nav ul li a, .cfi-legal a {
+    display: inline-flex; align-items: center; min-height: var(--tap);
+  }
+  .cfi-social-icons a { width: var(--tap); height: var(--tap); }
+  /* pontos do slideshow: o ponto continua pequeno, a área de toque não */
+  .d2-dots { gap: 1.75rem; bottom: 1.6rem; }
+  .d2-dot  { position: relative; }
+  .d2-dot::after { content: ''; position: absolute; inset: -1.25rem -0.85rem; }
+}
+
+/* [RESPONSIVO] hover só onde existe hover — no toque o zoom ficava "grudado" */
+@media (hover: none) {
+  .sx-card:hover .sx-card__image { transform: none; }
+  .nav-logo:hover .nav-logo-seal { transform: none; }
+}
+
+/* [RESPONSIVO] foco visível para teclado */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--c-gold); outline-offset: 3px;
+}
+
+/* [RESPONSIVO] GPU — will-change só no slide ativo (eram camadas permanentes) */
+.d2-slide:not(.is-active) { will-change: auto; }
+
+/* [RESPONSIVO] vidro — fallback opaco quando não há backdrop-filter */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav-top.is-scrolled { background: rgba(44, 62, 53, 0.97); }
+  .site-menu { background: rgba(44, 62, 53, 0.98); }
+  #bkPopup { background: rgba(6, 10, 8, 0.82); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav-top.is-scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(44, 62, 53, 0.97); }
+}
+
+/* [RESPONSIVO] preferência por menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* [RESPONSIVO] impressão */
+@media print {
+  .nav-top, #bkPopup, .d2-dots { display: none; }
+  body { color: #000; background: #fff; }
 }

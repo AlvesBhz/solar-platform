@@ -368,11 +368,25 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
    MOTION DEMO
 ═══════════════════════════════════════ */
 .motion-demo {
-  width: 100%; height: 90px;
+  width: 100%; height: 8.5rem;
   border: 1px solid #E7E5E4; border-radius: 0.5rem;
   margin-bottom: 1rem; background: #F5F5F4;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
+}
+/* peça que recebe a animação de entrada — a caixa cinza fica parada,
+   quem entra é o cartão (antes animava-se a caixa inteira, só com um texto) */
+.demo-chip {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 1.1rem;
+  background: #fff; border: 1px solid #E7E5E4; border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(28,25,23,0.08);
+  font-size: 0.75rem; color: #57534E; letter-spacing: 0.02em;
+  will-change: transform, opacity;
+}
+.demo-chip iconify-icon { color: var(--c-pine); }
+@media (prefers-reduced-motion: reduce) {
+  .demo-chip { animation: none !important; }
 }
 
 /* ═══════════════════════════════════════
@@ -412,13 +426,13 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
     </div>
     <span style="flex:1;"></span>
     <div style="display:flex; align-items:center; gap:1.5rem;">
-      <a href="tel:+5531997552452" class="nav-phone">
+      <a href="tel:+5531997555245" class="nav-phone">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M14 6s1.5.5 2.5 1.5S18 10 18 10M14.5 3S17 3.5 19.5 6S21 11 21 11M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.27-.27.67-.36 1.02-.24c1.12.37 2.33.57 3.58.57c.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C9.39 21 3 14.61 3 7c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1c0 1.25.2 2.45.57 3.57c.11.35.03.74-.24 1.02z"/>
         </svg>
-        <span>+55 (31) 9975-5245</span>
+        <span>+55 (31) 99755-5245</span>
       </a>
-      <a href="icones.html" class="nav-cta">Reserve Agora</a>
+      <a href="../brand/icons/index.html" class="nav-cta">Reserve Agora</a>
     </div>
   </div>
 </nav>
@@ -1035,7 +1049,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
                 <span class="text-[10px]">Banheira</span>
               </div>
               <div class="flex items-center gap-1 text-stone-400">
-                <iconify-icon icon="solar:wifi-square-linear" width="13"></iconify-icon>
+                <iconify-icon icon="solar:wi-fi-router-linear" width="13"></iconify-icon>
                 <span class="text-[10px]">Wi-Fi</span>
               </div>
             </div>
@@ -1055,7 +1069,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
         <div class="reveal-scale border border-stone-200 rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300">
           <div class="flex justify-between items-start mb-5">
             <span class="text-3xl text-stone-200" style="font-family:var(--font-serif);">04</span>
-            <iconify-icon icon="solar:spa-linear" width="22" class="text-stone-400"></iconify-icon>
+            <iconify-icon icon="solar:meditation-round-linear" width="22" class="text-stone-400"></iconify-icon>
           </div>
           <h4 class="text-base text-stone-900 font-medium mb-1.5">Spa &amp; Bem-Estar</h4>
           <p class="text-xs text-stone-500 leading-relaxed mb-5">Massagens, sauna a lenha e meditação guiada com vista para a Serra do Espinhaço.</p>
@@ -1158,7 +1172,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
               <span class="text-[9px] font-medium tracking-widest uppercase text-white">Café da Manhã</span>
             </div>
             <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
-              <iconify-icon icon="solar:spa-linear" width="11" class="text-white"></iconify-icon>
+              <iconify-icon icon="solar:meditation-round-linear" width="11" class="text-white"></iconify-icon>
               <span class="text-[9px] font-medium tracking-widest uppercase text-white">Spa Incluso</span>
             </div>
             <div class="glass-badge px-3 py-1.5 rounded-full flex items-center gap-2">
@@ -1184,7 +1198,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
           </div>
           <div class="tooltip-wrap">
             <button class="bg-stone-100 text-stone-700 px-5 py-3 text-xs uppercase tracking-widest hover:bg-stone-900 hover:text-white transition-all">
-              <iconify-icon icon="solar:spa-linear" width="15"></iconify-icon>
+              <iconify-icon icon="solar:meditation-round-linear" width="15"></iconify-icon>
             </button>
             <div class="tooltip-box">Reservar Spa</div>
           </div>
@@ -1281,13 +1295,13 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
         <div class="icon-item"><iconify-icon icon="solar:calendar-mark-linear" width="24" class="text-stone-600"></iconify-icon><span>check-in</span></div>
         <div class="icon-item"><iconify-icon icon="solar:calendar-linear" width="24" class="text-stone-600"></iconify-icon><span>calendar</span></div>
         <div class="icon-item"><iconify-icon icon="solar:users-group-rounded-linear" width="24" class="text-stone-600"></iconify-icon><span>guests</span></div>
-        <div class="icon-item"><iconify-icon icon="solar:wifi-square-linear" width="24" class="text-stone-600"></iconify-icon><span>wi-fi</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:wi-fi-router-linear" width="24" class="text-stone-600"></iconify-icon><span>wi-fi</span></div>
         <div class="icon-item"><iconify-icon icon="solar:snowflake-linear" width="24" class="text-stone-600"></iconify-icon><span>A/C</span></div>
         <div class="icon-item"><iconify-icon icon="solar:tv-linear" width="24" class="text-stone-600"></iconify-icon><span>TV</span></div>
         <div class="icon-item"><iconify-icon icon="solar:safe-square-linear" width="24" class="text-stone-600"></iconify-icon><span>cofre</span></div>
         <div class="icon-item"><iconify-icon icon="solar:fridge-linear" width="24" class="text-stone-600"></iconify-icon><span>frigobar</span></div>
-        <div class="icon-item"><iconify-icon icon="solar:balcony-linear" width="24" class="text-stone-600"></iconify-icon><span>varanda</span></div>
-        <div class="icon-item"><iconify-icon icon="solar:spa-linear" width="24" class="text-stone-600"></iconify-icon><span>spa</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:window-frame-linear" width="24" class="text-stone-600"></iconify-icon><span>varanda</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:meditation-round-linear" width="24" class="text-stone-600"></iconify-icon><span>spa</span></div>
         <div class="icon-item"><iconify-icon icon="solar:swimming-linear" width="24" class="text-stone-600"></iconify-icon><span>piscina</span></div>
         <div class="icon-item"><iconify-icon icon="solar:cup-hot-linear" width="24" class="text-stone-600"></iconify-icon><span>café</span></div>
         <div class="icon-item"><iconify-icon icon="solar:leaf-linear" width="24" class="text-stone-600"></iconify-icon><span>eco</span></div>
@@ -1295,11 +1309,11 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
         <div class="icon-item"><iconify-icon icon="solar:map-point-linear" width="24" class="text-stone-600"></iconify-icon><span>local</span></div>
         <div class="icon-item"><iconify-icon icon="solar:phone-calling-linear" width="24" class="text-stone-600"></iconify-icon><span>telefone</span></div>
         <div class="icon-item"><iconify-icon icon="solar:sun-2-linear" width="24" class="text-stone-600"></iconify-icon><span>sol</span></div>
-        <div class="icon-item"><iconify-icon icon="solar:water-drops-linear" width="24" class="text-stone-600"></iconify-icon><span>água</span></div>
+        <div class="icon-item"><iconify-icon icon="solar:waterdrops-linear" width="24" class="text-stone-600"></iconify-icon><span>água</span></div>
         <div class="icon-item"><iconify-icon icon="solar:tag-price-linear" width="24" class="text-stone-600"></iconify-icon><span>preço</span></div>
         <div class="icon-item"><iconify-icon icon="solar:arrow-right-linear" width="24" class="text-stone-600"></iconify-icon><span>arrow →</span></div>
         <div class="icon-item"><iconify-icon icon="solar:arrow-right-up-linear" width="24" class="text-stone-600"></iconify-icon><span>arrow ↗</span></div>
-        <div class="icon-item"><iconify-icon icon="solar:instagram-linear" width="24" class="text-stone-600"></iconify-icon><span>instagram</span></div>
+        <div class="icon-item"><iconify-icon icon="mdi:instagram" width="24" class="text-stone-600"></iconify-icon><span>instagram</span></div>
       </div>
     </div>
   </div>
@@ -1323,29 +1337,29 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
         <div class="border border-stone-200 rounded-xl p-6 reveal">
           <div class="spec-label mb-1.5">fadeIn</div>
           <p class="text-xs text-stone-400 font-mono mb-4">opacity: 0→1 · 0.7s ease-out</p>
-          <div class="motion-demo" id="demo-fi"><span class="text-stone-500 text-xs">fade in</span></div>
+          <div class="motion-demo"><div class="demo-chip" id="demo-fi"><iconify-icon icon="solar:eye-linear" width="18"></iconify-icon><span>fade in</span></div></div>
           <button onclick="replayDemo('demo-fi','fadeIn 0.7s ease')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
         </div>
 
         <div class="border border-stone-200 rounded-xl p-6 reveal">
           <div class="spec-label mb-1.5">fadeUp</div>
           <p class="text-xs text-stone-400 font-mono mb-4">opacity+translateY(32px) → visible · 0.72s</p>
-          <div class="motion-demo" id="demo-fu"><span class="text-stone-500 text-xs">fade up</span></div>
+          <div class="motion-demo"><div class="demo-chip" id="demo-fu"><iconify-icon icon="solar:arrow-up-linear" width="18"></iconify-icon><span>fade up</span></div></div>
           <button onclick="replayDemo('demo-fu','fadeUp 0.72s var(--ease-out)')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
         </div>
 
         <div class="border border-stone-200 rounded-xl p-6 reveal">
           <div class="spec-label mb-1.5">scaleIn · Modal / Card</div>
           <p class="text-xs text-stone-400 font-mono mb-4">scale(0.92)+opacity → 1 · 0.65s spring</p>
-          <div class="motion-demo" id="demo-si"><span class="text-stone-500 text-xs">scale in</span></div>
+          <div class="motion-demo"><div class="demo-chip" id="demo-si"><iconify-icon icon="solar:maximize-square-linear" width="18"></iconify-icon><span>scale in</span></div></div>
           <button onclick="replayDemo('demo-si','scaleIn 0.65s cubic-bezier(0.34,1.56,0.64,1)')" class="text-[9px] uppercase tracking-wider text-stone-400 hover:text-stone-900 transition-colors border border-stone-200 px-3 py-1.5 hover:border-stone-700">▶ Replay</button>
         </div>
 
         <div class="border border-stone-200 rounded-xl p-6 reveal">
           <div class="spec-label mb-1.5">shimmer · Botão Glow</div>
           <p class="text-xs text-stone-400 font-mono mb-4">gradient sweep on hover · 0.6s · btn-glow class</p>
-          <div class="motion-demo bg-stone-900 flex items-center justify-center">
-            <button class="btn-glow bg-stone-100 text-stone-900 px-7 py-3 text-xs uppercase tracking-widest font-semibold">Hover aqui</button>
+          <div class="motion-demo flex items-center justify-center" style="background:#1C1917;border-color:#1C1917;">
+            <button class="btn-glow px-7 py-3 text-xs uppercase tracking-widest font-semibold" style="background:var(--c-pine);color:#fff;border:1px solid rgba(255,255,255,0.22);">Hover aqui</button>
           </div>
         </div>
 
@@ -1414,9 +1428,13 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
           <div class="spec-label mb-1.5">glowPulse · Orb Ambiental</div>
           <p class="text-xs text-stone-400 font-mono mb-4">opacity+scale · 10s ease-in-out infinite</p>
           <div class="motion-demo rounded-lg overflow-hidden relative" style="background:#1C2922;">
-            <div style="position:absolute;width:200px;height:200px;top:50%;left:50%;transform:translate(-50%,-50%);
-                        background:radial-gradient(circle,rgba(44,62,53,0.6) 0%,transparent 70%);
-                        filter:blur(30px);border-radius:50%;animation:glowPulse 4s ease-in-out infinite;"></div>
+            <!-- o keyframe glowPulse anima transform: a centralização fica no wrapper,
+                 senão o scale() apagava o translate(-50%,-50%) e o orb saía do centro -->
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <div style="width:12.5rem;height:12.5rem;flex-shrink:0;
+                          background:radial-gradient(circle,rgba(134,176,150,0.85) 0%,rgba(61,85,71,0.35) 45%,transparent 70%);
+                          filter:blur(18px);border-radius:50%;animation:glowPulse 4s ease-in-out infinite;"></div>
+            </div>
           </div>
           <p class="text-xs text-stone-500">Orbs ambientais do hero</p>
         </div>
@@ -1580,14 +1598,19 @@ const demoMap = {
   'demo-fu': 'fadeUp 0.72s cubic-bezier(0.2,1,0.2,1)',
   'demo-si': 'scaleIn 0.65s cubic-bezier(0.34,1.56,0.64,1)'
 };
+/* Toca ao entrar na tela e repete a cada 3s enquanto estiver visível —
+   a animação de entrada dura < 1s e, tocando uma única vez, passava
+   despercebida (a demo parecia estática). Para ao sair da tela. */
+const demoTimers = {};
+const demoReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const demoObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      const anim = demoMap[entry.target.id];
-      if (anim) {
-        setTimeout(() => { entry.target.style.animation = 'none'; entry.target.offsetHeight; entry.target.style.animation = anim; }, 200);
-      }
-      demoObserver.unobserve(entry.target);
+    const id = entry.target.id, anim = demoMap[id];
+    if (!anim) return;
+    clearInterval(demoTimers[id]);
+    if (entry.isIntersecting && !demoReduced) {
+      setTimeout(() => replayDemo(id, anim), 200);
+      demoTimers[id] = setInterval(() => replayDemo(id, anim), 3000);
     }
   });
 }, { threshold: 0.5 });
