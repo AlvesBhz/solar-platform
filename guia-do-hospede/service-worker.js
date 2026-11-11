@@ -4,7 +4,7 @@
    servido por HTTPS (ou localhost); em file:// o navegador não
    registra service workers, e o app funciona normalmente sem ele.
 ═══════════════════════════════════════════════════════════ */
-const CACHE_NAME = 'guia-hospede-v2';
+const CACHE_NAME = 'guia-hospede-v3';
 const APP_SHELL = [
   './',
   './index.html',

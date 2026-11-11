@@ -38,7 +38,7 @@
     },
     {
       "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear",
-      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.png"
+      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.webp"
     },
     {
       "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear",
