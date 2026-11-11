@@ -157,7 +157,7 @@ const Booking = (() => {
 
   /* helpers */
   const same = (a, b) => !!(a && b && a.getTime() === b.getTime());
-  const fmt  = d => d ? `${d.getDate()} ${MONTHS[d.getMonth()]}, ${d.getFullYear()}` : '';
+  const fmt  = d => d ? I18N.date(d) : '';
   const nts  = () => (s.checkin && s.checkout)
     ? Math.round((s.checkout - s.checkin) / 864e5) : 0;
 
@@ -166,12 +166,12 @@ const Booking = (() => {
     const ci = document.getElementById('checkinDisplay');
     const co = document.getElementById('checkoutDisplay');
     if (!ci || !co) return;
-    ci.textContent = fmt(s.checkin)  || 'Selecionar data';
-    co.textContent = fmt(s.checkout) || 'Selecionar data';
+    ci.textContent = fmt(s.checkin)  || I18N.t('Selecionar data');
+    co.textContent = fmt(s.checkout) || I18N.t('Selecionar data');
     const g = document.getElementById('guestsDisplay');
     if (g) {
-      const aw = s.adults   === 1 ? 'Adulto'  : 'Adultos';
-      const cw = s.children === 1 ? 'Criança' : 'Crianças';
+      const aw = I18N.t(s.adults   === 1 ? 'Adulto'  : 'Adultos');
+      const cw = I18N.t(s.children === 1 ? 'Criança' : 'Crianças');
       g.textContent = s.children === 0
         ? `${s.adults} ${aw}`
         : `${s.adults} ${aw}, ${s.children} ${cw}`;
@@ -239,7 +239,7 @@ const Booking = (() => {
       <button class="cal-arrow" id="calPrev" type="button">
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <span class="cal-month">${MONTHS[s.cm]} ${s.cy}</span>
+      <span class="cal-month">${I18N.months()[s.cm]} ${s.cy}</span>
       <button class="cal-arrow" id="calNext" type="button">
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>`;
@@ -247,7 +247,7 @@ const Booking = (() => {
 
     const wdRow = document.createElement('div');
     wdRow.className = 'cal-wdays';
-    WDAYS.forEach(d => {
+    I18N.wdays().forEach(d => {
       const wd = document.createElement('div');
       wd.className = 'cal-wd';
       wd.textContent = d;
@@ -319,10 +319,10 @@ const Booking = (() => {
     if (n > 0 && !s.selecting) {
       const ni = document.createElement('span');
       ni.className = 'cal-nights';
-      ni.textContent = `${n} ${n === 1 ? 'noite' : 'noites'}`;
+      ni.textContent = `${n} ${I18N.t(n === 1 ? 'noite' : 'noites')}`;
       footer.appendChild(ni);
       const cl = document.createElement('button');
-      cl.className = 'cal-clear'; cl.type = 'button'; cl.textContent = 'Limpar';
+      cl.className = 'cal-clear'; cl.type = 'button'; cl.textContent = I18N.t('Limpar');
       cl.addEventListener('click', e => {
         e.stopPropagation();
         s.checkin = null; s.checkout = null;
@@ -333,7 +333,7 @@ const Booking = (() => {
     } else {
       const hint = document.createElement('span');
       hint.className = 'cal-hint';
-      hint.textContent = s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado';
+      hint.textContent = I18N.t(s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado');
       footer.appendChild(hint);
     }
     pop.appendChild(footer);
@@ -387,8 +387,8 @@ const Booking = (() => {
       });
       return r;
     }
-    pop.appendChild(row('Adultos', '13+ anos', 'adults', 1));
-    pop.appendChild(row('Crianças', '2–12 anos', 'children', 0));
+    pop.appendChild(row(I18N.t('Adultos'), I18N.t('13+ anos'), 'adults', 1));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–12 anos'), 'children', 0));
     return pop;
   }
 
@@ -436,7 +436,15 @@ const Booking = (() => {
 window._lang = 'pt'; // padrão: português
 
 function setLang(l) {
+  // traduz todos os textos estáticos da página (js/i18n.js)
+  I18N.apply(l);
+  l = I18N.lang();
   window._lang = l;
+  document.querySelectorAll('.lang-inline-btn').forEach(btn => {
+    const on = btn.dataset.lang === l;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', on);
+  });
   // atualiza label do trigger
   const label = document.getElementById('langComboLabel');
   if (label) label.textContent = l.toUpperCase();
@@ -444,11 +452,15 @@ function setLang(l) {
   document.querySelectorAll('.lang-combo-option').forEach(opt => {
     opt.style.display = opt.dataset.lang === l ? 'none' : 'flex';
   });
+  // textos gerados por script: fecha o calendário aberto (ele é
+  // redesenhado no novo idioma ao reabrir) e refaz barra e filtro
+  Booking.close();
   Booking.updateDisplays();
+  if (window.refreshFilterLabel) window.refreshFilterLabel();
 }
 
-// inicializa PT como padrão após o DOM estar pronto
-document.addEventListener('DOMContentLoaded', () => setLang('pt'));
+// inicializa no idioma escolhido na última visita (padrão: PT)
+document.addEventListener('DOMContentLoaded', () => setLang(I18N.saved()));
 
 /* hover inline do botão Reservar */
 (function () {
@@ -741,12 +753,25 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     btn.setAttribute('aria-expanded', 'false');
   });
 
+  /* rótulo do botão no idioma atual — guarda o nome em português de
+     cada opção para poder traduzi-lo a qualquer momento */
+  wrap.querySelectorAll('.sx-filter-item').forEach(function (item) {
+    item.dataset.pt = item.textContent.trim();
+  });
+  window.refreshFilterLabel = function () {
+    var filter = wrap.dataset.filter || 'todos';
+    var item = wrap.querySelector('.sx-filter-item[data-filter="' + filter + '"]');
+    var pt = (filter === 'todos' || !item) ? 'Filtrar por tipo' : item.dataset.pt;
+    btn.textContent = I18N.t(pt) + ' +';
+  };
+
   wrap.querySelectorAll('.sx-filter-item').forEach(function (item) {
     item.addEventListener('click', function () {
       var filter = item.dataset.filter;
       wrap.querySelectorAll('.sx-filter-item').forEach(function (i) { i.classList.remove('is-active'); });
       item.classList.add('is-active');
-      btn.childNodes[0].textContent = (filter === 'todos' ? 'Filtrar por tipo' : item.textContent) + ' +';
+      wrap.dataset.filter = filter;
+      window.refreshFilterLabel();
       grid.querySelectorAll('.sx-card').forEach(function (card) {
         card.style.display = (filter === 'todos' || card.dataset.type === filter) ? '' : 'none';
       });
