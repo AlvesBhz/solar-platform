@@ -730,6 +730,8 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
   const bg  = document.getElementById('ctaBg');
   const sec = document.getElementById('cta-final');
   if (!bg || !sec || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  // celular / tablet: sem parallax por script (ver style.css · EFEITOS FLUIDOS)
+  if (window.matchMedia('(max-width: 1024px), (hover: none)').matches) return;
   let ticking = false;
   function onScroll() {
     if (ticking) return;

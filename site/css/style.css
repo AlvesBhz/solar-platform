@@ -1016,7 +1016,8 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   background: url('../assets/images/serra-hero.avif') center / cover no-repeat;
   will-change: transform;
   transform: scale(1.12) translateY(0);
-  transition: transform 0.05s linear;
+  /* sem transition: o parallax já é atualizado a cada quadro (rAF);
+     uma transição por cima atrasava o movimento e o fazia tremer */
 }
 .cta-overlay {
   position: absolute;
@@ -1710,4 +1711,23 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 @media (max-width: 560px) {
   #heroTitle .hero-name-1 { font-size: clamp(2.6rem, 15vw, 3.6rem) !important; white-space: nowrap; }
   #heroTitle .hero-eyebrow { letter-spacing: 0.22em; padding-right: 1rem; line-height: 1.7; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   [RESPONSIVO] EFEITOS FLUIDOS NO CELULAR / TABLET
+   Medido num iPhone emulado com CPU 4x mais lenta: o tempo de
+   desenho do compositor caía de 2,7 s para 0,28 s (−90%) sem estes
+   dois efeitos contínuos do hero, que concorriam com todos os
+   fade-ins da página. No desktop nada muda.
+═══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px), (hover: none) {
+  /* Orbs de luz: desfoque de 80px animado sem parar = redesenho da
+     tela inteira a cada quadro. Parados e sem filtro, o degradê radial
+     já dá o mesmo brilho suave. */
+  .hero-orb { filter: none; animation: none !important; }
+  /* "Pulse" da foto de tela cheia: mantém a leve ampliação, sem oscilar */
+  #hero > div:first-child > img { animation: none !important; transform: scale(1.06); }
+  /* Parallax do CTA: no toque a rolagem já é animada pelo sistema;
+     mover o fundo por script a cada quadro causava trepidação */
+  .cta-bg { will-change: auto; }
 }
