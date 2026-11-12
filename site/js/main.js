@@ -668,10 +668,26 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
     var dx = centerOffset();
     opened = true;
     window.removeEventListener('resize', park);
-    disc.style.transform = '';
-    expand.style.opacity = '1';
-    if (wordmark) wordmark.style.transform = 'translateX(0)';
-    if (reduced || !disc.animate) return;
+    function settle() {
+      disc.style.transform = '';
+      expand.style.opacity = '1';
+      if (wordmark) wordmark.style.transform = 'translateX(0)';
+    }
+    if (!disc.animate) { settle(); return; }
+
+    /* "Reduzir Movimento" ligado: sem deslize — a logo some suavemente
+       com o disco no centro e reaparece completa (disco + nome) */
+    if (reduced) {
+      var out = group.animate([{ opacity: 1 }, { opacity: 0 }],
+        { duration: 450, easing: 'ease-in', fill: 'forwards' });
+      out.finished.then(function () {
+        settle();
+        group.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 900, easing: 'ease-out' });
+        out.cancel();
+      });
+      return;
+    }
+    settle();
 
     var ease = 'cubic-bezier(0.65, 0, 0.35, 1)';
     disc.animate(

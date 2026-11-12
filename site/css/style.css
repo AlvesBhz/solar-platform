@@ -1650,13 +1650,36 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 
 /* [RESPONSIVO] preferência por menos movimento */
+/* Para quem ativou "Reduzir Movimento" (iPhone: Ajustes › Acessibilidade ›
+   Movimento). Antes esta regra zerava TODAS as animações e transições,
+   então no celular o nome, a frase e a logo trocavam num único quadro.
+   A recomendação de acessibilidade é outra: fades curtos continuam (eles
+   orientam e não causam desconforto); saem só os deslocamentos amplos —
+   deslizes, zoom, parallax e animações em loop. */
 @media (prefers-reduced-motion: reduce) {
+  html, html.scroll-smooth { scroll-behavior: auto !important; }
+
+  /* loops e movimentos por keyframes (pulse, orbs, Ken Burns, bounce,
+     ticker): parados no estado inicial */
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
+  /* …exceto os fades de opacidade da abertura, que continuam */
+  .intro-run #heroTitle { animation: fadeIn 1.2s 0.3s ease both !important; }
+  .intro-run #heroTitle.fade-out { animation: heroFadeOut 2.5s linear forwards !important; }
+  #heroScroll { animation-duration: 2s !important; }
+
+  /* fades de entrada mantidos, sem o deslocamento vertical */
+  #heroPhrase, #bookingBar, .site-menu,
+  .reveal, .reveal-left, .chale-wrap, .chale-head-reveal,
+  .cta-eyebrow, .cta-headline, .cta-sub,
+  .sx-eyebrow, .sx-heading, .sx-subtext,
+  .sx-card__heading, .sx-card__subheading, .sx-card__excerpt, .sx-card__action-link {
+    transform: none !important;
+  }
+  /* sem zoom no hover das imagens */
+  .sx-card:hover .sx-card__image { transform: none; }
 }
 
 /* [RESPONSIVO] impressão */
