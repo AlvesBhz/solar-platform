@@ -121,6 +121,26 @@ document.addEventListener('click', function (e) {
   updateUI();
 })();
 
+/* ── ABERTURA · espera o que ela precisa para rodar lisa ──
+   A coreografia (nome → frase, logo abrindo) começava no instante em
+   que o script rodava. No celular isso coincide com o download da
+   fonte e a decodificação da foto de tela cheia: o texto trocava de
+   fonte no meio do fade e os primeiros quadros eram perdidos.
+   Agora ela só começa quando fonte e foto estão prontas (ou após
+   2,5 s, para nunca ficar presa numa rede ruim). */
+var introReady = (function () {
+  var img = document.querySelector('#hero img');
+  var fonts = (document.fonts && document.fonts.ready) || Promise.resolve();
+  var photo = (img && img.decode) ? img.decode().catch(function () {}) : Promise.resolve();
+  var cap = new Promise(function (r) { setTimeout(r, 2500); });
+  return Promise.race([Promise.all([fonts, photo]), cap]).then(function () {
+    /* dois quadros de folga: deixa o navegador pintar antes de animar */
+    return new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+  }).then(function () {
+    document.documentElement.classList.add('intro-run');
+  });
+})();
+
 /* ── HERO: título some, frase surge ── */
 (function () {
   const title  = document.getElementById('heroTitle');
@@ -130,7 +150,7 @@ document.addEventListener('click', function (e) {
 
   // fadeIn completa em 1.5 s (delay 0.3 + duração 1.2)
   // fade-out inicia imediatamente após
-  setTimeout(function () {
+  introReady.then(function () { setTimeout(function () {
 
     // 1 · inicia fade-out gradual (9 s, apaga suavemente)
     title.classList.add('fade-out');
@@ -142,7 +162,7 @@ document.addEventListener('click', function (e) {
       phrase.classList.add('is-visible');
     }, 2600);
 
-  }, 1500);
+  }, 1500); });
 })();
 
 /* ── NAV: transparente no topo, pine glass ao rolar ── */
@@ -585,6 +605,10 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
   const navRight = document.getElementById('navRight');
   if (!disc || !expand || !menuZone || !navRight) return;
 
+  var group = disc.parentElement;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var opened = false;
+
   /* Estado inicial: só o disco visível, centrado */
   disc.style.opacity = '0';
   menuZone.style.opacity = '0';
@@ -594,8 +618,15 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
   navRight.style.transition = 'none';
   navRight.style.pointerEvents = 'none';
 
-  /* Fase 1 · 0 → 1.2s: disco + menu + direita surgem juntos */
-  setTimeout(function () {
+  /* Fase 1 · 0 → 1.2s: disco + menu + direita surgem juntos.
+     Espera a fonte do logo (no máx. 1,2 s): com ela a largura do nome é
+     definitiva e o disco já aparece no lugar certo, sem reajuste. */
+  var fontsOrCap = Promise.race([
+    (document.fonts && document.fonts.ready) || Promise.resolve(),
+    new Promise(function (r) { setTimeout(r, 1200); })
+  ]);
+  fontsOrCap.then(function () { setTimeout(function () {
+    park();
     disc.style.transition = 'opacity 1.2s ease';
     disc.style.opacity = '1';
     menuZone.style.transition = 'opacity 1.2s ease';
@@ -604,40 +635,60 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
     navRight.style.transition = 'opacity 1.2s ease';
     navRight.style.opacity = '1';
     navRight.style.pointerEvents = 'auto';
-  }, 80);
+  }, 80); });
 
-  /* Fases 3+4 · 4.1s: logo, menu e direita surgem juntos ao aparecer a frase */
-  setTimeout(function () {
-    /* FLIP — captura posição do disco antes da mudança de layout */
-    var before = disc.getBoundingClientRect();
+  /* Fases 3+4 · 4.1s após o início da abertura: o disco desliza para a
+     esquerda e o nome aparece ao lado.
 
-    /* Expande layout imediatamente (sem transição) */
-    expand.style.transition = 'none';
-    expand.style.maxWidth = '240px';
+     Antes, neste instante o script alargava o logo (mudança de layout),
+     media posições e ligava transições — tudo no mesmo momento em que o
+     título do hero é removido e a frase entra. No celular esses quadros
+     se perdiam e o disco "pulava".
 
-    /* Força reflow e captura nova posição do disco */
-    void expand.offsetWidth;
-    var after = disc.getBoundingClientRect();
-    var dx = before.left - after.left;
+     Agora o logo já nasce na largura final, com o nome invisível, e o
+     disco é só deslocado até o centro por transform. A animação não
+     mexe em layout: são apenas transform e opacity, que rodam fora da
+     thread principal (Web Animations API). */
+  expand.style.maxWidth = '240px';            /* largura final desde o início */
 
-    /* Aplica transformação inversa: disco permanece visualmente no centro */
-    disc.style.transition = 'none';
-    if (dx !== 0) disc.style.transform = 'translateX(' + dx + 'px)';
-    void disc.offsetWidth;
+  /* distância entre onde o disco fica (esquerda do grupo) e o centro do grupo */
+  function centerOffset() {
+    var prev = disc.style.transform;
+    disc.style.transform = 'none';
+    var g = group.getBoundingClientRect(), d = disc.getBoundingClientRect();
+    disc.style.transform = prev;
+    return (g.left + g.width / 2) - (d.left + d.width / 2);
+  }
+  function park() { if (!opened) disc.style.transform = 'translateX(' + centerOffset() + 'px)'; }
+  park();
+  window.addEventListener('resize', park);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(park);
 
-    /* Anima disco deslizando suavemente para a posição final */
-    disc.style.transition = 'transform 1s cubic-bezier(0.65, 0, 0.35, 1)';
-    disc.style.transform = 'translateX(0)';
-
-    /* Revela divider + wordmark: fade in + slide horizontal */
-    expand.style.transition = 'opacity 0.8s ease 0.3s';
+  function openLogo() {
+    var dx = centerOffset();
+    opened = true;
+    window.removeEventListener('resize', park);
+    disc.style.transform = '';
     expand.style.opacity = '1';
-    if (wordmark) {
-      wordmark.style.transition = 'transform 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.3s';
-      wordmark.style.transform = 'translateX(0)';
-    }
+    if (wordmark) wordmark.style.transform = 'translateX(0)';
+    if (reduced || !disc.animate) return;
 
-  }, 4100);
+    var ease = 'cubic-bezier(0.65, 0, 0.35, 1)';
+    disc.animate(
+      [{ transform: 'translateX(' + dx + 'px)' }, { transform: 'translateX(0)' }],
+      { duration: 1000, easing: ease, fill: 'backwards' });
+    expand.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: 800, delay: 300, easing: 'ease', fill: 'backwards' });
+    if (wordmark) wordmark.animate(
+      [{ transform: 'translateX(-10px)' }, { transform: 'translateX(0)' }],
+      { duration: 900, delay: 300, easing: ease, fill: 'backwards' });
+  }
+
+  introReady.then(function () {
+    /* +120 ms: não disputa o mesmo quadro da troca título → frase */
+    setTimeout(function () { requestAnimationFrame(openLogo); }, 4220);
+  });
 
   /* Fase 5 · 6.5s: sincroniza estado de scroll */
   setTimeout(function () {

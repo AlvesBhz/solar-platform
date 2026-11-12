@@ -466,7 +466,14 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   85%  { opacity: 0.08; }
   100% { opacity: 0;    }
 }
-#heroTitle.fade-out {
+/* A entrada e a saída do título são classes (antes a entrada era um
+   style inline, que tem prioridade sobre a folha de estilos: o fade de
+   saída nunca rodava e o nome sumia de uma vez). .intro-run é ligada
+   pelo main.js quando a fonte e a foto do hero estão prontas. */
+.intro-run #heroTitle {
+  animation: fadeIn 1.2s 0.3s ease both;
+}
+.intro-run #heroTitle.fade-out {
   animation: heroFadeOut 2.5s linear forwards;
   pointer-events: none;
 }
