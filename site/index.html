@@ -12,12 +12,16 @@
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 </script>
 <title>Solar do Espinhaço · Design System V3.3</title>
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=block" rel="stylesheet"/>
 
+<!-- Tailwind 3.4.17 já compilado (antes vinha da "Play CDN", que monta o CSS
+     dentro do navegador a cada mudança de classe — pesado no celular e não
+     recomendado para produção). Para regenerar após mudar classes no HTML:
+     npx tailwindcss@3.4.17 --minify -o css/tailwind.css --content "index.html,js/*.js" -->
+<link rel="stylesheet" href="css/tailwind.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-stone-50 text-stone-600 antialiased">
