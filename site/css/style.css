@@ -1392,8 +1392,6 @@ img, svg, video, iframe { max-width: 100%; }
 }
 
 @media (max-width: 560px) {
-  /* wordmark do logo cede espaço; o disco permanece como marca */
-  #navLogoExpand { display: none !important; }
   .lang-inline-btn { padding: 0.4rem 0.42rem; }
   #navReserveBtn {
     padding: 0.5rem 0.85rem !important;
@@ -1657,4 +1655,59 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 @media print {
   .nav-top, #bkPopup, .d2-dots { display: none; }
   body { color: #000; background: #fff; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   [RESPONSIVO] NAV NO CELULAR (≤ 560px)
+   Antes: o nome "Solar do Espinhaço" ficava escondido (a animação
+   da logo nunca aparecia) e o disco ficava espremido fora do centro.
+   Agora: 3 colunas — menu | logo centralizada | reservar — e os
+   idiomas passam para dentro do menu, onde há espaço.
+═══════════════════════════════════════════════════════════ */
+.site-menu-lang { display: none; }
+
+@media (max-width: 560px) {
+  .nav-top-inner {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+  }
+  #menuZone { justify-self: start; }
+  #navRight { justify-self: end; }
+  #navLogoGroup { justify-self: center; }
+
+  /* idiomas: saem da barra e entram no menu */
+  #navRight .lang-inline { display: none; }
+  .site-menu-lang {
+    display: flex; align-items: center;
+    padding: 0.85rem 0 0.25rem;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    margin-top: 0.35rem;
+  }
+  .site-menu-lang .lang-inline-btn:first-child { padding-left: 0; }
+
+  /* logo menor para caber o nome ao lado do disco */
+  #navLogoDisc { width: 30px !important; height: 30px !important; }
+  #navLogoExpand > div:first-child { margin-left: 0.6rem !important; height: 28px !important; }
+  #navLogoWordmark { margin-left: 0.6rem !important; }
+  #navLogoWordmark > div:first-child { font-size: 0.5rem !important; letter-spacing: 0.32em !important; }
+  #navLogoWordmark > div:last-child  { font-size: 1.05rem !important; margin-top: 3px !important; }
+}
+
+/* Reservar vira só o ícone onde o nome da pousada precisa do espaço */
+@media (max-width: 430px) {
+  .nav-reserve-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  #navReserveBtn { padding: 0 !important; width: var(--tap); height: var(--tap); justify-content: center; }
+}
+@media (max-width: 340px) {
+  #navLogoWordmark > div:last-child { font-size: 0.92rem !important; }
+  #navLogoWordmark > div:first-child { letter-spacing: 0.26em !important; }
+}
+
+/* [RESPONSIVO] hero no celular — "SOLAR DO" numa linha só e o texto de
+   cima sem ser cortado na borda (em 320px quebrava e vazava) */
+@media (max-width: 560px) {
+  #heroTitle .hero-name-1 { font-size: clamp(2.6rem, 15vw, 3.6rem) !important; white-space: nowrap; }
+  #heroTitle .hero-eyebrow { letter-spacing: 0.22em; padding-right: 1rem; line-height: 1.7; }
 }

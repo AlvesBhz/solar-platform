@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<script>
+  /* Refresh sempre abre no topo: desliga a restauração automática de
+     rolagem do navegador e remove o #âncora do endereço (senão o
+     refresh pula direto para a seção e as animações de abertura
+     acontecem fora da tela). Precisa rodar antes do resto da página. */
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+</script>
 <title>Solar do Espinhaço · Design System V3.3</title>
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
@@ -33,6 +41,11 @@
           <li class="site-menu-item"><a href="#dobra-2">O Chalé</a></li>
           <li class="site-menu-item"><a href="#passeios-priv">Experiências</a></li>
           <li class="site-menu-item"><a href="#cta-final">Contato</a></li>
+          <li class="site-menu-lang" aria-label="Idioma">
+            <button class="lang-inline-btn active" data-lang="pt" onclick="setLang('pt')">PT</button>
+            <button class="lang-inline-btn"        data-lang="en" onclick="setLang('en')">EN</button>
+            <button class="lang-inline-btn"        data-lang="es" onclick="setLang('es')">ES</button>
+          </li>
         </ul>
       </nav>
     </div>
@@ -119,13 +132,13 @@
     <div class="flex flex-col lg:flex-row items-start lg:items-end gap-10">
       <div class="flex-1">
         <div id="heroTitle" style="animation: fadeIn 1.2s 0.3s ease both; opacity:0; animation-fill-mode:both;">
-          <span class="block text-[10px] tracking-[0.32em] uppercase mb-5 pl-1"
+          <span class="hero-eyebrow block text-[10px] tracking-[0.32em] uppercase mb-5 pl-1"
                 style="color:rgba(255,255,255,0.55); text-shadow:0 1px 8px rgba(0,0,0,0.7);">
             Chalé Boutique · Lapinha da Serra · Minas Gerais
           </span>
           <!-- mix-blend-overlay = o lettering "transparente" do Jamaican Scape -->
           <h1 class="leading-[0.82] tracking-tighter mix-blend-overlay" style="font-family:var(--font-serif);">
-            <span class="block text-white font-medium"
+            <span class="hero-name-1 block text-white font-medium"
                   style="font-size:clamp(3.6rem,9vw,7.8rem);">SOLAR DO</span>
             <span class="block text-stone-100 font-light opacity-88"
                   style="font-size:clamp(2rem,4.5vw,4rem); margin-left:clamp(2rem,6vw,7rem);">

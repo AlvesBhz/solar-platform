@@ -29,6 +29,7 @@ window.I18N = (function () {
     'Reservar': ['Book', 'Reservar'],
     'Abrir menu': ['Open menu', 'Abrir menú'],
     'Menu': ['Menu', 'Menú'],
+    'Idioma': ['Language', 'Idioma'],
     'Ir para o início': ['Back to top', 'Ir al inicio'],
     'Fazer reserva': ['Make a reservation', 'Hacer una reserva'],
     'Slide 1': ['Slide 1', 'Imagen 1'],

@@ -1,5 +1,30 @@
 /* Solar do Espinhaço — scripts do site (extraído dos <script> inline) */
 
+/* ── REFRESH NO TOPO ──
+   Complementa o script do <head>: garante o topo também depois que o
+   navegador termina de carregar e quando a página volta do cache de
+   "voltar/avançar" (iOS Safari). 'instant' evita a rolagem suave do
+   html.scroll-smooth. */
+(function () {
+  function toTop() { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
+  toTop();
+  window.addEventListener('load', toTop);
+  window.addEventListener('pageshow', function (e) { if (e.persisted) toTop(); });
+})();
+
+/* ── LINKS INTERNOS (#secao) ──
+   Rola até a seção sem gravar o #âncora no endereço — assim um
+   refresh depois de usar o menu não pula para o meio da página. */
+document.addEventListener('click', function (e) {
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || a.id === 'navLogoGroup') return;
+  var id = a.getAttribute('href').slice(1);
+  var target = id && document.getElementById(id);
+  if (!target) return;
+  e.preventDefault();
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 /* Experiências — Caderno de Campo da Serra */
 /* ── EXPERIÊNCIAS · Caderno de Campo da Serra ── */
 (function () {
