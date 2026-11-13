@@ -8,6 +8,7 @@ export type Rascunho = {
   presenca: { gps?: ResultadoValidacao; qr?: ResultadoValidacao };
   inicio?: string;
   respostas: Record<string, string>;
+  obs?: Record<string, string>;
   salvoEm?: string;
 };
 

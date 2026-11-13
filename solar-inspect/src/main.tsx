@@ -16,6 +16,9 @@ import T07TipoVistoria from './screens/T07TipoVistoria';
 import T08ValidacaoPresenca from './screens/T08ValidacaoPresenca';
 import T09LeitorQr from './screens/T09LeitorQr';
 import T10Checklist from './screens/T10Checklist';
+import T11DetalheItem from './screens/T11DetalheItem';
+import T12CapturaEvidencia from './screens/T12CapturaEvidencia';
+import T13Comparacao from './screens/T13Comparacao';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -31,6 +34,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/app/vistorias/nova/:unidadeId/presenca" element={<T08ValidacaoPresenca />} />
         <Route path="/app/vistorias/nova/:unidadeId/qr" element={<T09LeitorQr />} />
         <Route path="/app/vistorias/nova/:unidadeId/checklist" element={<T10Checklist />} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<T11DetalheItem />} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<T12CapturaEvidencia />} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<T13Comparacao />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

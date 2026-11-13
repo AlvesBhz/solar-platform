@@ -1,8 +1,8 @@
 # Solar Inspect — App de Vistorias (mockup)
 
-Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade**, **T07 Tipo de vistoria**, **T08 Validação de presença**, **T09 Leitor QR** e **T10 Checklist** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação, unidades, validação de presença (servidor) e rascunho da vistoria são simulados em `src/mocks/`.
+Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade**, **T07 Tipo de vistoria**, **T08 Validação de presença**, **T09 Leitor QR**, **T10 Checklist**, **T11 Detalhe do item**, **T12 Captura de evidência** e **T13 Comparação entrada × saída** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação, unidades, validação de presença (servidor) e rascunho da vistoria são simulados em `src/mocks/`.
 
-**Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · html5-qrcode · Iconify (coleção `solar`, empacotada localmente).
+**Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · html5-qrcode · Dexie (IndexedDB, fotos no aparelho) · Iconify (coleção `solar`, empacotada localmente).
 Os tokens vêm de `../design-system/colors_and_type.css`, importado sem alteração e espelhado em `tailwind.config.js`.
 
 ## Rodar
@@ -45,6 +45,9 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 | `/app/vistorias/nova/:unidadeId/presenca` | T08 Validação de presença — falhas com `?simular=fora` ou `?simular=precisao` |
 | `/app/vistorias/nova/:unidadeId/qr` | T09 Leitor QR (câmera ao vivo; painel *Mockup · simular leitura*: válido, outra unidade, expirado) |
 | `/app/vistorias/nova/:unidadeId/checklist` | T10 Checklist (só abre após presença validada) |
+| `/app/vistorias/nova/:unidadeId/item/:itemId` | T11 Detalhe do item (referência, resposta, observação, evidências) |
+| `/app/vistorias/nova/:unidadeId/item/:itemId/foto` | T12 Captura de evidência (câmera, referência sobreposta, carimbo de local e hora) |
+| `/app/vistorias/nova/:unidadeId/item/:itemId/comparar` | T13 Comparação entrada × saída (vistoria de Saída, ex.: `chale-candeia`) |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |
 
 ## Contas de teste (mock)
@@ -54,3 +57,7 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 | `assessor@solar.dev` / `gestor@solar.dev` | Link enviado → "Simular clique no link" segue para T03 → T05 |
 | `inativo@solar.dev` | Bloqueado (usuário inativo) |
 | qualquer outro | E-mail não cadastrado |
+
+## Fotos de referência
+
+As imagens em `public/referencias/` são cópias reduzidas de `site/assets/images/` (originais intactos). O banheiro ainda não tem foto de referência.

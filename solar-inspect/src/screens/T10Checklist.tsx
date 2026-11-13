@@ -1,10 +1,12 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
-import { RESPOSTAS_OK, checklistDa, type Item } from '../mocks/checklist';
+import { divergente, itemCompleto } from '../lib/evidencia';
+import { checklistDa, type Item } from '../mocks/checklist';
+import { contarFotosPorItem } from '../mocks/fotos';
 import { listarTiposAtivos, obterUnidade, type TipoVistoria, type Unidade } from '../mocks/unidades';
 import { lerRascunho, salvarRascunho, type Rascunho } from '../mocks/vistoria';
 
@@ -16,16 +18,20 @@ export default function T10Checklist() {
   const [rasc, setRasc] = useState<Rascunho | null>(() => lerRascunho(unidadeId));
   const [idx, setIdx] = useState(0);
   const [aviso, setAviso] = useState(false);
+  const [nFotos, setNFotos] = useState<Record<string, number>>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     obterUnidade(unidadeId).then(setU);
     listarTiposAtivos().then((ts) => setTipo(ts.find((t) => t.id === rasc?.tipoId) ?? null));
   }, [unidadeId, rasc?.tipoId]);
+  useEffect(() => { if (rasc?.id) contarFotosPorItem(rasc.id).then(setNFotos); }, [rasc?.id]);
 
   const ambientes = useMemo(() => (u ? checklistDa(u) : []), [u]);
   const todos = ambientes.flatMap((a) => a.itens);
-  const respondidos = todos.filter((i) => rasc?.respostas[i.id]).length;
-  const divergentes = todos.filter((i) => { const r = rasc?.respostas[i.id]; return r && !RESPOSTAS_OK.includes(r); }).length;
+  const completo = (i: Item) => itemCompleto(i, rasc?.respostas[i.id], rasc?.obs?.[i.id], nFotos[i.id] ?? 0);
+  const respondidos = todos.filter(completo).length;
+  const divergentes = todos.filter((i) => divergente(rasc?.respostas[i.id])).length;
   const pct = todos.length ? Math.round((respondidos / todos.length) * 100) : 0;
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
@@ -33,11 +39,14 @@ export default function T10Checklist() {
   if (!rasc?.inicio) return <Navigate to={`/app/vistorias/nova/${unidadeId}/presenca`} replace />;
 
   const amb = ambientes[idx];
-  const feitos = (itens: Item[]) => itens.filter((i) => rasc.respostas[i.id]).length;
+  const feitos = (itens: Item[]) => itens.filter(completo).length;
+  const detalhe = (itemId: string) => `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc.tipoId === 'saida' ? '/comparar' : ''}`;
 
   function responder(itemId: string, valor: string) {
     // Gravação incremental: cada toque salva o rascunho no aparelho.
     setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, [itemId]: valor } }));
+    // Divergência exige foto e observação: abre o detalhe do item na hora.
+    if (divergente(valor)) navigate(detalhe(itemId));
   }
 
   return (
@@ -48,7 +57,7 @@ export default function T10Checklist() {
       <div className="sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-[9] border-b border-line-1 bg-cream">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 pb-3 pt-3">
           <div className="flex items-center justify-between gap-3 text-[0.75rem]">
-            <span className="text-fg-2"><span className="font-mono font-medium text-fg-1">{respondidos}/{todos.length}</span> itens</span>
+            <span className="text-fg-2"><span className="font-mono font-medium text-fg-1">{respondidos}/{todos.length}</span> itens completos</span>
             <span className="inline-flex items-center gap-1 text-fg-3" role="status">
               <Icon icon="solar:diskette-linear" width={14} aria-hidden="true" />
               {rasc.salvoEm ? `Salvo no aparelho · ${new Date(rasc.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Rascunho'}
@@ -93,12 +102,14 @@ export default function T10Checklist() {
             <ul className="flex flex-col gap-3" role="tabpanel">
               {amb.itens.map((item) => {
                 const r = rasc.respostas[item.id];
-                const diverge = r && !RESPOSTAS_OK.includes(r);
+                const diverge = divergente(r);
+                const ok = completo(item);
+                const n = nFotos[item.id] ?? 0;
                 return (
                   <li key={item.id} className={`flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm ${diverge ? 'border-warning' : 'border-line-1'}`}>
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-[0.875rem] font-medium text-fg-1">{item.nome}</span>
-                      {r && !diverge && <Icon icon="solar:check-circle-linear" width={18} className="shrink-0 text-available" aria-label="Respondido" />}
+                      {ok && <Icon icon="solar:check-circle-linear" width={18} className="shrink-0 text-available" aria-label="Item completo" />}
                     </div>
                     {(item.critico || item.foto) && (
                       <div className="flex flex-wrap gap-x-3 gap-y-1 text-[0.6875rem] uppercase tracking-[0.08em]">
@@ -109,7 +120,7 @@ export default function T10Checklist() {
                     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(5.5rem,100%),1fr))] gap-2" role="radiogroup" aria-label={`Resposta para ${item.nome}`}>
                       {tipo.respostas.map((op) => {
                         const sel = r === op;
-                        const neg = !RESPOSTAS_OK.includes(op);
+                        const neg = divergente(op);
                         return (
                           <button
                             key={op}
@@ -126,12 +137,18 @@ export default function T10Checklist() {
                         );
                       })}
                     </div>
-                    {diverge && (
-                      <p className="flex items-start gap-2 text-[0.75rem] text-warning">
-                        <Icon icon="solar:camera-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />
-                        Divergência: foto e observação serão exigidas (T11 · Detalhe do item).
-                      </p>
-                    )}
+                    <Link
+                      to={detalhe(item.id)}
+                      className={`-mx-1 flex min-h-11 items-center justify-between gap-2 rounded-md px-1 text-[0.75rem] transition-colors duration-fast hover:bg-cream ${r && !ok ? 'text-warning' : 'text-fg-3'}`}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        <Icon icon={r && !ok ? 'solar:danger-circle-linear' : 'solar:camera-linear'} width={16} aria-hidden="true" />
+                        {r && !ok ? (diverge ? 'Pendente: foto e observação' : 'Pendente: foto obrigatória') : `${n} foto${n === 1 ? '' : 's'}${rasc.obs?.[item.id] ? ' · com observação' : ''}`}
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 text-pine">
+                        {rasc.tipoId === 'saida' ? 'Comparar' : 'Detalhes'} <Icon icon="solar:alt-arrow-right-linear" width={16} aria-hidden="true" />
+                      </span>
+                    </Link>
                   </li>
                 );
               })}
@@ -153,7 +170,7 @@ export default function T10Checklist() {
           </p>
         ) : (
           <p className="text-center text-[0.75rem] text-fg-3">
-            {respondidos < todos.length ? `${todos.length - respondidos} itens pendentes` : 'Todos os itens respondidos'}
+            {respondidos < todos.length ? `${todos.length - respondidos} itens pendentes` : 'Todos os itens completos'}
             {divergentes > 0 && ` · ${divergentes} divergência${divergentes > 1 ? 's' : ''}`}
           </p>
         )}
