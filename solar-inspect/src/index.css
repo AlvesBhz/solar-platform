@@ -1,6 +1,9 @@
 /* Design System do Solar — consumido sem alteração */
 @import '../../design-system/colors_and_type.css';
 
+/* Fundo "bone" do sistema de logo (brand/logo/index.html). Uso restrito ao selo. */
+:root { --c-bone: #EAE5D9; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

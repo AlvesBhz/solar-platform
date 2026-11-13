@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo';
+import { Seal } from '../components/Logo';
 import NetworkBadge from '../components/NetworkBadge';
 import { APP_VERSION, checkSession } from '../mocks/auth';
 
@@ -30,7 +30,7 @@ export default function T01Inicializacao() {
       <div className="self-end"><NetworkBadge onDark /></div>
 
       <div className="flex flex-col items-center gap-8">
-        <Logo tone="light" size="lg" />
+        <Seal />
         <p className="text-xs uppercase tracking-[0.32em] text-white/70">Vistorias</p>
         <div className="flex flex-col items-center gap-3" aria-live="polite">
           <span

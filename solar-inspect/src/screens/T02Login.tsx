@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useState } from 'react';
-import Logo from '../components/Logo';
+import { LockupHorizontal } from '../components/Logo';
 import NetworkBadge, { useOnline } from '../components/NetworkBadge';
 import { APP_VERSION, requestLoginLink, type LoginResult } from '../mocks/auth';
 
@@ -37,8 +37,8 @@ export default function T02Login() {
       <div className="flex w-full max-w-md justify-end"><NetworkBadge /></div>
 
       <section className="my-auto flex w-full max-w-md flex-col gap-8 py-8">
-        <header className="flex flex-col items-center gap-2">
-          <Logo />
+        <header className="flex flex-col items-center gap-4">
+          <LockupHorizontal />
           <p className="text-xs uppercase tracking-[0.32em] text-fg-3">Vistorias</p>
         </header>
 
