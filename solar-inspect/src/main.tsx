@@ -17,8 +17,6 @@ createRoot(document.getElementById('root')!).render(
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
         <Route path="/login" element={<T02Login />} />
-        <Route path="/login/a" element={<T02Login variant="a" />} />
-        <Route path="/login/b" element={<T02Login variant="b" />} />
         <Route path="/permissao-localizacao" element={<T03PermissaoLocalizacao />} />
         <Route path="/acesso-indisponivel" element={<T04AcessoIndisponivel />} />
         <Route path="*" element={<Navigate to="/" replace />} />
