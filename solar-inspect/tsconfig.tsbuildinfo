@@ -1,0 +1,1 @@
+{"root":["./src/main.tsx","./src/components/Logo.tsx","./src/components/NetworkBadge.tsx","./src/mocks/auth.ts","./src/screens/T01Inicializacao.tsx","./src/screens/T02Login.tsx"],"version":"5.6.3"}

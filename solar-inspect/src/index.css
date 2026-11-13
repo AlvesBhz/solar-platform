@@ -1,0 +1,32 @@
+/* Design System do Solar — consumido sem alteração */
+@import '../../design-system/colors_and_type.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* [RESPONSIVO] fundação — box-sizing, sem scroll lateral, altura móvel real */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
+body { overflow-x: clip; overscroll-behavior-y: none; min-height: 100svh; }
+input, select, textarea { font-size: max(16px, 1rem); }
+
+.screen { min-height: 100svh; min-height: 100dvh; }
+@supports not (height: 100dvh) { .screen { min-height: 100vh; } }
+
+.safe-pad {
+  padding: max(env(safe-area-inset-top), 1.5rem) max(env(safe-area-inset-right), 1rem)
+           max(env(safe-area-inset-bottom), 1.5rem) max(env(safe-area-inset-left), 1rem);
+}
+
+.bg-pine-gradient {
+  background: var(--c-pine-deep);
+  background: linear-gradient(160deg, var(--c-pine-deep), var(--c-pine) 55%, var(--c-pine-mid));
+}
+
+:focus-visible { outline: 2px solid var(--c-pine); outline-offset: 2px; }
+.on-dark :focus-visible { outline-color: var(--c-cream); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
