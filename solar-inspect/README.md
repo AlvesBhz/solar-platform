@@ -1,6 +1,6 @@
 # Solar Inspect — App de Vistorias (mockup)
 
-Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização** e **T04 Acesso indisponível** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: a autenticação é simulada em `src/mocks/auth.ts`.
+Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade** e **T07 Tipo de vistoria** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação e unidades são simuladas em `src/mocks/`.
 
 **Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · Iconify (coleção `solar`, empacotada localmente).
 Os tokens vêm de `../design-system/colors_and_type.css`, importado sem alteração e espelhado em `tailwind.config.js`.
@@ -31,12 +31,15 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 | `/` | T01 Inicialização (verifica sessão/sincronização → `/login`) |
 | `/login` | T02 Login |
 | `/permissao-localizacao` | T03 Permissão de localização (usa o GPS real do navegador, leitura única) |
+| `/app/unidades` | T05 Minhas unidades — teste estados com `?simular=erro`, `vazio` ou `lento` |
+| `/app/unidades/:id` | T06 Detalhe da unidade (ex.: `chale-sempre-viva`) |
+| `/app/vistorias/nova/:unidadeId` | T07 Tipo de vistoria (Saída só habilitada com estadia em curso, ex.: `chale-candeia`) |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |
 
 ## Contas de teste (mock)
 
 | E-mail | Resultado |
 |---|---|
-| `assessor@solar.dev` / `gestor@solar.dev` | Link de acesso enviado |
+| `assessor@solar.dev` / `gestor@solar.dev` | Link enviado → "Simular clique no link" segue para T03 → T05 |
 | `inativo@solar.dev` | Bloqueado (usuário inativo) |
 | qualquer outro | E-mail não cadastrado |

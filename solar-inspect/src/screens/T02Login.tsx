@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Seal } from '../components/Logo';
 import NetworkBadge, { useOnline } from '../components/NetworkBadge';
 import { APP_VERSION, requestLoginLink, type LoginResult } from '../mocks/auth';
@@ -18,6 +19,7 @@ const btnBase =
 
 /** T02 — Login: autenticação por e-mail (mockup, sem banco). Bloqueia usuário inativo. */
 export default function T02Login() {
+  const navigate = useNavigate();
   const online = useOnline();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -75,6 +77,10 @@ export default function T02Login() {
                   Enviamos um link de acesso para <strong className="font-medium text-fg-1">{sentTo}</strong>. Toque no link para entrar.
                 </p>
               </div>
+              {/* Mockup: simula o clique no link recebido por e-mail */}
+              <button type="button" onClick={() => navigate('/permissao-localizacao')} className={`${btnBase} bg-pine text-white shadow-md hover:-translate-y-0.5 hover:bg-pine-deep`}>
+                Simular clique no link <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 onClick={() => { setSentTo(null); setEmail(''); }}
