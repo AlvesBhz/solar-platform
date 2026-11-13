@@ -1,10 +1,11 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary } from '../components/ScreenShell';
 import { listarTiposAtivos, obterUnidade, type TipoVistoria, type Unidade } from '../mocks/unidades';
+import { lerRascunho, novoRascunho } from '../mocks/vistoria';
 
 const ICONES: Record<string, string> = {
   entrada: 'solar:login-3-linear',
@@ -17,8 +18,8 @@ export default function T07TipoVistoria() {
   const { unidadeId = '' } = useParams();
   const [u, setU] = useState<Unidade | null | undefined>(null);
   const [tipos, setTipos] = useState<TipoVistoria[] | null>(null);
-  const [sel, setSel] = useState<string | null>(null);
-  const [aviso, setAviso] = useState(false);
+  const navigate = useNavigate();
+  const [sel, setSel] = useState<string | null>(() => lerRascunho(unidadeId)?.tipoId ?? null);
 
   useEffect(() => {
     obterUnidade(unidadeId).then(setU);
@@ -62,7 +63,7 @@ export default function T07TipoVistoria() {
                     value={t.id}
                     checked={marcado}
                     disabled={!!motivo}
-                    onChange={() => { setSel(t.id); setAviso(false); }}
+                    onChange={() => setSel(t.id)}
                     className="sr-only"
                   />
                   <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${marcado ? 'bg-pine text-white' : 'bg-cream text-pine'}`}>
@@ -70,7 +71,7 @@ export default function T07TipoVistoria() {
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                     <span className="flex items-center justify-between gap-3">
-                      <span className="text-base font-medium text-fg-1">{t.nome}</span>
+                      <span className="text-[0.9375rem] font-medium text-fg-1">{t.nome}</span>
                       <Icon
                         icon={marcado ? 'solar:check-circle-linear' : 'solar:alt-arrow-right-linear'}
                         width={20}
@@ -78,7 +79,7 @@ export default function T07TipoVistoria() {
                         aria-hidden="true"
                       />
                     </span>
-                    <span className="text-sm text-fg-2">{t.descricao}</span>
+                    <span className="text-[0.8125rem] leading-relaxed text-fg-2">{t.descricao}</span>
                     {motivo ? (
                       <span className="mt-1 flex items-start gap-1.5 text-xs text-fg-2">
                         <Icon icon="solar:info-circle-linear" width={16} className="shrink-0" aria-hidden="true" /> {motivo}
@@ -98,13 +99,7 @@ export default function T07TipoVistoria() {
       </main>
 
       <BottomBar>
-        {aviso && (
-          <p className="flex items-start gap-2 text-sm text-fg-2" role="status">
-            <Icon icon="solar:info-circle-linear" width={18} className="mt-px shrink-0 text-pine" aria-hidden="true" />
-            Mockup: a próxima etapa (T08 · Validação de presença) ainda não foi implementada.
-          </p>
-        )}
-        <button type="button" className={btnPrimary} disabled={!sel} onClick={() => setAviso(true)}>
+        <button type="button" className={btnPrimary} disabled={!sel} onClick={() => { novoRascunho(unidadeId, sel!); navigate(`/app/vistorias/nova/${unidadeId}/presenca`); }}>
           Validar presença <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
         </button>
       </BottomBar>

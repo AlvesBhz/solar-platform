@@ -42,7 +42,7 @@ export default function T03PermissaoLocalizacao() {
         <div className="flex flex-col gap-3" role="status">
           <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">Localização</span>
           <h1 className="screen-title">Tudo pronto</h1>
-          <p className="text-sm leading-relaxed text-fg-2">A localização está permitida e será usada apenas durante as vistorias.</p>
+          <p className="text-[0.8125rem] leading-relaxed text-fg-2">A localização está permitida e será usada apenas durante as vistorias.</p>
         </div>
         {/* Próxima tela: T05 Minhas unidades (ainda não implementada). */}
         <button type="button" className={btnPrimary} onClick={() => navigate('/app/unidades')}>
@@ -60,7 +60,7 @@ export default function T03PermissaoLocalizacao() {
         <div className="flex flex-col gap-3" role="alert">
           <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-warning">Atenção</span>
           <h1 className="screen-title">{denied ? 'Localização bloqueada' : 'GPS indisponível'}</h1>
-          <p className="text-sm leading-relaxed text-fg-2">
+          <p className="text-[0.8125rem] leading-relaxed text-fg-2">
             {denied
               ? 'Sem a localização não é possível validar sua presença na unidade. Libere o acesso nas configurações do navegador e tente novamente.'
               : 'Não foi possível obter sua posição. Verifique se o GPS do aparelho está ligado e tente em um local com melhor sinal.'}
@@ -91,11 +91,11 @@ export default function T03PermissaoLocalizacao() {
       <div className="flex flex-col gap-3">
         <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">Permissão</span>
         <h1 className="screen-title">Permitir localização</h1>
-        <p className="text-sm leading-relaxed text-fg-2">As vistorias exigem comprovação de presença. Sua localização é usada para:</p>
+        <p className="text-[0.8125rem] leading-relaxed text-fg-2">As vistorias exigem comprovação de presença. Sua localização é usada para:</p>
       </div>
       <ul className="flex flex-col gap-4">
         {USES.map((u) => (
-          <li key={u.icon} className="flex items-start gap-3 text-sm text-fg-2">
+          <li key={u.icon} className="flex items-start gap-3 text-[0.8125rem] text-fg-2">
             <Icon icon={u.icon} width={20} className="mt-px shrink-0 text-pine" aria-hidden="true" />
             {u.text}
           </li>

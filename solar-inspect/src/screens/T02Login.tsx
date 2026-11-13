@@ -73,7 +73,7 @@ export default function T02Login() {
               <Icon icon="solar:check-circle-linear" width={40} className="text-available" aria-hidden="true" />
               <div className="flex flex-col gap-3">
                 <h1 className="screen-title">Verifique seu e-mail</h1>
-                <p className="text-sm leading-relaxed text-fg-2 [overflow-wrap:anywhere]">
+                <p className="text-[0.8125rem] leading-relaxed text-fg-2 [overflow-wrap:anywhere]">
                   Enviamos um link de acesso para <strong className="font-medium text-fg-1">{sentTo}</strong>. Toque no link para entrar.
                 </p>
               </div>
@@ -94,7 +94,7 @@ export default function T02Login() {
               <div className="flex flex-col gap-3">
                 <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">Acesso</span>
                 <h1 className="screen-title">Entrar</h1>
-                <p className="text-sm leading-relaxed text-fg-2">Informe seu e-mail para receber o link de acesso.</p>
+                <p className="text-[0.8125rem] leading-relaxed text-fg-2">Informe seu e-mail para receber o link de acesso.</p>
               </div>
 
               <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">

@@ -74,7 +74,7 @@ export default function T06DetalheUnidade() {
                           Prazo {new Date(o.prazo + 'T12:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                         </span>
                       </div>
-                      <p className="text-sm text-fg-1">{o.descricao}</p>
+                      <p className="text-[0.8125rem] text-fg-1">{o.descricao}</p>
                       <p className="text-xs text-fg-3">{o.ambiente}</p>
                     </li>
                   ))}

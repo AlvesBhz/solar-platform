@@ -12,7 +12,7 @@ export const ESTADOS: Record<EstadoUnidade, { label: string; icon: string; cls: 
 
 export function EstadoBadge({ estado, size = 'sm' }: { estado: EstadoUnidade; size?: 'sm' | 'md' }) {
   const e = ESTADOS[estado];
-  const sz = size === 'md' ? 'px-3 py-1.5 text-sm gap-2' : 'px-2.5 py-1 text-xs gap-1.5';
+  const sz = size === 'md' ? 'px-3 py-1.5 text-[0.8125rem] gap-1.5' : 'px-2.5 py-1 text-[0.6875rem] gap-1';
   return (
     <span className={`inline-flex shrink-0 items-center rounded-full border font-medium ${sz} ${e.cls}`}>
       <Icon icon={e.icon} width={size === 'md' ? 18 : 16} aria-hidden="true" />
@@ -30,7 +30,7 @@ const GRAVIDADES: Record<Gravidade, { label: string; icon: string; cls: string }
 export function GravidadeTag({ g }: { g: Gravidade }) {
   const x = GRAVIDADES[g];
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium uppercase tracking-[0.08em] ${x.cls}`}>
+    <span className={`inline-flex items-center gap-1 text-[0.6875rem] font-medium uppercase tracking-[0.08em] ${x.cls}`}>
       <Icon icon={x.icon} width={16} aria-hidden="true" />
       {x.label}
     </span>

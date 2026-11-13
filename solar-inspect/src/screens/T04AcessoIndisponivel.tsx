@@ -48,7 +48,7 @@ export default function T04AcessoIndisponivel() {
           Acesso indisponível
         </span>
         <h1 className="screen-title">{r.title}</h1>
-        <p className="text-sm leading-relaxed text-fg-2">{r.text}</p>
+        <p className="text-[0.8125rem] leading-relaxed text-fg-2">{r.text}</p>
       </div>
       <div className="flex flex-col gap-3">
         <button type="button" className={btnPrimary} onClick={primary.go}>

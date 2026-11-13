@@ -20,8 +20,8 @@ export default function AppHeader({ title, eyebrow, back, action }: { title: str
           </button>
         )}
         <div className="flex min-w-0 flex-1 flex-col">
-          {eyebrow && <span className="truncate text-[0.6875rem] uppercase tracking-[0.24em] text-fg-3">{eyebrow}</span>}
-          <span className="truncate text-base font-medium text-fg-1">{title}</span>
+          {eyebrow && <span className="truncate text-[0.625rem] uppercase tracking-[0.24em] text-fg-3">{eyebrow}</span>}
+          <span className="truncate text-[0.9375rem] font-medium text-fg-1">{title}</span>
         </div>
         <NetworkBadge />
         {action}

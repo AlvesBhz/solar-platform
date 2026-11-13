@@ -1,8 +1,8 @@
 # Solar Inspect — App de Vistorias (mockup)
 
-Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade** e **T07 Tipo de vistoria** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação e unidades são simuladas em `src/mocks/`.
+Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade**, **T07 Tipo de vistoria**, **T08 Validação de presença**, **T09 Leitor QR** e **T10 Checklist** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação, unidades, validação de presença (servidor) e rascunho da vistoria são simulados em `src/mocks/`.
 
-**Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · Iconify (coleção `solar`, empacotada localmente).
+**Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · html5-qrcode · Iconify (coleção `solar`, empacotada localmente).
 Os tokens vêm de `../design-system/colors_and_type.css`, importado sem alteração e espelhado em `tailwind.config.js`.
 
 ## Rodar
@@ -22,6 +22,14 @@ npm run dev
 
 O terminal mostra um endereço `Network`, por exemplo `http://192.168.0.10:5173`. Abra no celular e acrescente a rota (ex.: `/login`).
 
+**Câmera (T09) e GPS (T03/T08) exigem HTTPS no celular.** Para testá-los use:
+
+```bash
+npm run dev:celular
+```
+
+Abra o endereço `https://…` mostrado. O navegador vai avisar que o certificado não é confiável (é local): toque em *Avançado → Continuar*.
+
 Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de saída `dist`, diretório raiz `solar-inspect`. O arquivo `public/_redirects` garante que as rotas abram direto.
 
 ## Rotas
@@ -34,6 +42,9 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 | `/app/unidades` | T05 Minhas unidades — teste estados com `?simular=erro`, `vazio` ou `lento` |
 | `/app/unidades/:id` | T06 Detalhe da unidade (ex.: `chale-sempre-viva`) |
 | `/app/vistorias/nova/:unidadeId` | T07 Tipo de vistoria (Saída só habilitada com estadia em curso, ex.: `chale-candeia`) |
+| `/app/vistorias/nova/:unidadeId/presenca` | T08 Validação de presença — falhas com `?simular=fora` ou `?simular=precisao` |
+| `/app/vistorias/nova/:unidadeId/qr` | T09 Leitor QR (câmera ao vivo; painel *Mockup · simular leitura*: válido, outra unidade, expirado) |
+| `/app/vistorias/nova/:unidadeId/checklist` | T10 Checklist (só abre após presença validada) |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |
 
 ## Contas de teste (mock)

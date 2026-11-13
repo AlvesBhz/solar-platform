@@ -18,7 +18,7 @@ export default function NetworkBadge({ onDark = false }: { onDark?: boolean }) {
   const online = useOnline();
   const base = onDark ? 'bg-white/10 text-white' : 'bg-white text-fg-2 border border-line-1';
   return (
-    <span role="status" className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
+    <span role="status" className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-medium ${base}`}>
       <Icon
         icon={online ? 'solar:check-circle-linear' : 'solar:close-circle-linear'}
         width={16}

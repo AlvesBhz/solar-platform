@@ -102,7 +102,7 @@ export default function T05MinhasUnidades() {
                   type="button"
                   aria-pressed={ativo}
                   onClick={() => setFiltro(f)}
-                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm transition-colors duration-fast ${ativo ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2 hover:border-fg-3'}`}
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-[0.8125rem] transition-colors duration-fast ${ativo ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2 hover:border-fg-3'}`}
                 >
                   {f !== 'todos' && <Icon icon={ESTADOS[f].icon} width={16} aria-hidden="true" />}
                   {f === 'todos' ? 'Todas' : ESTADOS[f].label}
@@ -154,12 +154,12 @@ function CartaoUnidade({ u }: { u: Unidade }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-0.5">
             <span className="truncate text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">{u.tipo}{u.andar ? ` · ${u.andar}` : ''}</span>
-            <span className="truncate text-lg font-medium text-fg-1">{u.nome}</span>
-            <span className="truncate text-sm text-fg-2">{u.propriedade}</span>
+            <span className="truncate text-base font-medium text-fg-1">{u.nome}</span>
+            <span className="truncate text-[0.8125rem] text-fg-2">{u.propriedade}</span>
           </div>
           <EstadoBadge estado={u.estado} />
         </div>
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-line-1 pt-3 text-xs text-fg-3">
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-line-1 pt-3 text-[0.6875rem] text-fg-3">
           <span className={`inline-flex items-center gap-1.5 ${abertas ? (critica ? 'text-error' : 'text-warning') : ''}`}>
             <Icon icon={abertas ? 'solar:danger-triangle-linear' : 'solar:check-circle-linear'} width={16} aria-hidden="true" />
             {abertas ? `${abertas} ocorrência${abertas > 1 ? 's' : ''} aberta${abertas > 1 ? 's' : ''}` : 'Sem ocorrências'}
@@ -178,8 +178,8 @@ export function Aviso({ icon, tom, titulo, texto, children }: { icon: string; to
   return (
     <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-line-2 px-6 py-10 text-center" role="status">
       <Icon icon={icon} width={32} className={tom} aria-hidden="true" />
-      <p className="text-base font-medium text-fg-1">{titulo}</p>
-      <p className="max-w-xs text-sm text-fg-2">{texto}</p>
+      <p className="text-[0.9375rem] font-medium text-fg-1">{titulo}</p>
+      <p className="max-w-xs text-[0.8125rem] text-fg-2">{texto}</p>
       {children}
     </div>
   );
