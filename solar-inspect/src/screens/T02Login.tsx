@@ -17,7 +17,13 @@ const btnBase =
   'flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 text-xs font-semibold uppercase tracking-[0.1em] transition duration-base';
 
 /** T02 — Login: autenticação por e-mail (mockup, sem banco). Bloqueia usuário inativo. */
-export default function T02Login() {
+/**
+ * Variantes do cabeçalho no celular (comparação de propostas):
+ *  - padrão: lockup à esquerda + rede à direita
+ *  - 'a': lockup horizontal centralizado
+ *  - 'b': selo SE menor + "Vistorias"
+ */
+export default function T02Login({ variant }: { variant?: 'a' | 'b' }) {
   const online = useOnline();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,12 +58,27 @@ export default function T02Login() {
       </aside>
 
       <div className="safe-pad grid grid-rows-[auto_1fr_auto] gap-8 lg:px-[clamp(3rem,6vw,6rem)]">
-        <div className="flex items-center justify-between gap-4">
-          <span className="lg:invisible"><LockupHorizontal size="clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem)" /></span>
+        <div className={`flex items-center gap-4 ${variant ? 'justify-end' : 'justify-between'}`}>
+          {!variant && <span className="lg:invisible"><LockupHorizontal size="clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem)" /></span>}
           <NetworkBadge />
         </div>
 
         <section className="mx-auto flex w-full max-w-sm flex-col justify-center gap-8">
+          {variant === 'a' && (
+            <div className="flex justify-center pb-2 lg:hidden">
+              <LockupHorizontal size="clamp(1.6rem, 1.4rem + 0.8vw, 1.875rem)" />
+            </div>
+          )}
+          {variant === 'b' && (
+            <div className="flex flex-col items-center gap-4 pb-2 lg:hidden">
+              <Seal size="clamp(6.75rem, 6rem + 3vw, 7.5rem)" />
+              <div className="flex items-center gap-3 text-fg-3">
+                <span className="h-px w-6 bg-line-2" aria-hidden="true" />
+                <span className="text-[0.6875rem] uppercase tracking-[0.32em]">Vistorias</span>
+                <span className="h-px w-6 bg-line-2" aria-hidden="true" />
+              </div>
+            </div>
+          )}
           {sentTo ? (
             <div className="flex flex-col gap-6" role="status">
               <Icon icon="solar:check-circle-linear" width={40} className="text-available" aria-hidden="true" />
