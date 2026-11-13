@@ -33,3 +33,16 @@ input, select, textarea { font-size: max(16px, 1rem); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* [RESPONSIVO] barra de progresso indeterminada — só transform (compositor) */
+@keyframes indeterminate { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+.progress-indeterminate { animation: indeterminate 1.4s var(--ease-out) infinite; }
+
+/* Título de tela: escala H2 do DS sem o tracking apertado do h1 global */
+.screen-title {
+  font-family: var(--font-serif); font-weight: 500; color: var(--fg-1);
+  font-size: clamp(2rem, 1.7rem + 1.2vw, 2.5rem); line-height: 1.1; letter-spacing: -0.02em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress-indeterminate { animation: none; width: 100%; opacity: 0.5; }
+}

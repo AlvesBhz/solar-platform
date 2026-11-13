@@ -6,18 +6,18 @@ import { Icon } from '@iconify/react';
  */
 
 /** Selo "F · bone" (SE no disco) — brasão formal. Só em tamanho grande (≥ 110px). */
-export function Seal() {
+export function Seal({ size = 'clamp(8.5rem, 6rem + 12vw, 11.5rem)' }: { size?: string }) {
   return (
     <div
       role="img"
       aria-label="Solar do Espinhaço"
       className="relative flex aspect-square flex-col items-center justify-center rounded-full text-pine-deep"
-      style={{ width: 'clamp(8.5rem, 6rem + 12vw, 11.5rem)', background: 'var(--c-bone)', gap: '4.5%' }}
+      style={{ width: size, background: 'var(--c-bone)', gap: '4.5%', containerType: 'inline-size' }}
     >
       {/* anel interno: inset 8%, opacidade .28 (igual ao original) */}
       <span className="pointer-events-none absolute inset-[8%] rounded-full border border-current opacity-[0.28]" aria-hidden="true" />
       <Icon icon="solar:leaf-linear" style={{ width: '33%', height: 'auto' }} aria-hidden="true" />
-      <span className="font-serif leading-none" style={{ fontWeight: 400, fontSize: 'clamp(1.55rem, 1.1rem + 2.2vw, 2.1rem)', letterSpacing: '0.18em', paddingLeft: '0.18em' }}>
+      <span className="font-serif leading-none" style={{ fontWeight: 400, fontSize: '18cqi', letterSpacing: '0.18em', paddingLeft: '0.18em' }}>
         SE
       </span>
     </div>
@@ -25,13 +25,13 @@ export function Seal() {
 }
 
 /** Lockup horizontal "1B · light · solar do / ESPINHAÇO" (invertido). Navbar, cartão, cabeçalho. */
-export function LockupHorizontal() {
+export function LockupHorizontal({ size = 'clamp(1.5rem, 1.35rem + 0.6vw, 1.75rem)' }: { size?: string }) {
   return (
     <div
       role="img"
       aria-label="Solar do Espinhaço"
       className="flex items-center whitespace-nowrap text-pine-deep"
-      style={{ fontSize: 'clamp(1.6rem, 1.3rem + 1.4vw, 2rem)', gap: '0.59em' }}
+      style={{ fontSize: size, gap: '0.59em' }}
     >
       <span className="relative flex shrink-0 items-center justify-center" style={{ width: '1.36em', height: '1.36em' }} aria-hidden="true">
         <span className="absolute inset-0 rounded-full border border-current opacity-[0.42]" />
