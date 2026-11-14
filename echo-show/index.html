@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Solar do Espinhaço · Echo Show</title>
+<meta name="description" content="Proposta de tela para Echo Show: a pousada Solar do Espinhaço apresentada como uma receita passo a passo."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+
+<style>
+/* Proposta Echo Show · arquivo próprio, só consome os tokens do design system.
+   Palco fixo 1920×1080 (Echo Show 15) escalado para caber em qualquer tela (Show 8/10 inclusive). */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark-2)}
+body{font-family:var(--font-sans);color:var(--fg-2);-webkit-tap-highlight-color:transparent;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;background:var(--bg-2);overflow:hidden}
+
+/* ─── telas ─── */
+.screen{position:absolute;inset:0;display:grid;grid-template-columns:840px 1fr;opacity:0;visibility:hidden;pointer-events:none}
+.screen.on{opacity:1;visibility:visible;pointer-events:auto}
+.screen.on .reveal{animation:fadeUp var(--dur-slow) var(--ease-out) both;animation-delay:calc(var(--i,0) * 90ms)}
+.screen.on .photo img{animation:fadeIn .7s ease-out both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+
+/* foto à esquerda, como a foto do prato numa receita */
+.photo{position:relative;overflow:hidden;background:var(--bg-dark-2)}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,var(--scrim-top),transparent 35%,var(--scrim-bottom))}
+.photo .cap{position:absolute;left:56px;right:56px;bottom:150px;z-index:2;color:var(--fg-inverse)}
+.photo .cap .ds-eyebrow{color:rgba(255,255,255,.7);font-size:16px;letter-spacing:.32em}
+.photo .cap .big{font-family:var(--font-serif);font-weight:500;font-size:88px;line-height:.95;letter-spacing:-.03em;margin-top:14px}
+
+/* painel de conteúdo */
+.panel{padding:72px 120px 168px 96px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.eyebrow{font-size:18px;letter-spacing:.32em;text-transform:uppercase;color:var(--fg-3)}
+.title{font-family:var(--font-serif);font-weight:500;font-size:96px;line-height:.98;letter-spacing:-.03em;color:var(--fg-1);margin:18px 0 12px}
+.title em{font-family:var(--font-italic);font-weight:400;color:var(--c-pine)}
+.lead{font-size:30px;line-height:1.5;color:var(--fg-2);max-width:880px}
+.rule{height:1px;background:var(--border-2);margin:36px 0}
+
+/* chips estilo "tempo · serve · dificuldade" */
+.meta{display:flex;gap:20px;flex-wrap:wrap}
+.meta .m{display:flex;align-items:center;gap:16px;padding:18px 28px;border-radius:var(--r-xl);background:var(--bg-1);border:1px solid var(--border-1);box-shadow:var(--shadow-sm)}
+.meta .m iconify-icon{color:var(--c-pine);font-size:40px}
+.meta .k{font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3);line-height:1.2}
+.meta .v{font-size:28px;font-weight:500;color:var(--fg-1);line-height:1.2}
+
+/* ingredientes: itens marcáveis ao toque */
+.ing{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px;margin-top:30px}
+.ing button{display:flex;align-items:center;gap:20px;min-height:96px;padding:0 28px;text-align:left;border-radius:var(--r-xl);background:var(--bg-1);border:1px solid var(--border-1);font-size:28px;font-weight:500;color:var(--fg-1);transition:all var(--dur-base) ease-out}
+.ing button .ico{font-size:44px;color:var(--c-pine);flex:none}
+.ing button .tk{margin-left:auto;font-size:36px;color:transparent;transition:color var(--dur-fast)}
+.ing button small{display:block;font-size:20px;font-weight:400;color:var(--fg-3);margin-top:2px}
+.ing button.done{background:var(--c-pine);border-color:var(--c-pine);color:var(--fg-inverse)}
+.ing button.done .ico,.ing button.done .tk,.ing button.done small{color:var(--fg-inverse)}
+.ing button:active{transform:scale(.98)}
+
+/* modo de preparo: passos grandes */
+.steps{display:flex;flex-direction:column;gap:20px;margin-top:34px}
+.step{display:flex;gap:32px;align-items:center;padding:28px 36px;border-radius:var(--r-2xl);background:var(--bg-1);border:1px solid var(--border-1);text-align:left;width:100%;transition:all var(--dur-base) ease-out}
+.step .n{flex:none;width:84px;height:84px;border-radius:var(--r-pill);display:grid;place-items:center;font-family:var(--font-serif);font-size:52px;font-weight:500;color:var(--c-pine);border:2px solid var(--c-pine);transition:all var(--dur-base)}
+.step h4{font-size:32px;color:var(--fg-1)}
+.step p{font-size:24px;line-height:1.4;margin-top:4px}
+.step.cur{background:var(--c-pine);border-color:var(--c-pine);box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.step.cur .n{background:var(--fg-inverse);color:var(--c-pine);border-color:var(--fg-inverse)}
+.step.cur h4{color:var(--fg-inverse)}
+.step.cur p{color:rgba(255,255,255,.78)}
+
+/* experiências: cartões */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:30px}
+.card{padding:32px 34px;border-radius:var(--r-2xl);background:var(--bg-1);border:1px solid var(--border-1);box-shadow:var(--shadow-sm)}
+.card iconify-icon{font-size:48px;color:var(--c-pine)}
+.card h4{font-size:32px;margin:14px 0 6px}
+.card p{font-size:23px;line-height:1.45}
+.card .tag{display:inline-block;margin-top:14px;font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--c-pine);border:1px solid var(--c-pine);border-radius:var(--r-pill);padding:6px 16px}
+
+/* tela final escura */
+.screen.dark{background:var(--bg-dark-2);grid-template-columns:1fr}
+.screen.dark::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,var(--c-pine-deep),var(--c-pine) 55%,var(--c-pine-mid))}
+.screen.dark .photo{position:absolute;inset:0;opacity:.28}
+.screen.dark .photo::after{background:linear-gradient(to bottom,var(--scrim-top),var(--scrim-bottom))}
+.screen.dark .panel{position:relative;z-index:2;align-items:center;text-align:center;padding:72px 160px 180px}
+.screen.dark .eyebrow{color:rgba(255,255,255,.6)}
+.screen.dark .title{color:var(--fg-inverse);font-size:120px}
+.screen.dark .title em{color:var(--fg-inverse)}
+.screen.dark .lead{color:rgba(255,255,255,.78);margin:0 auto}
+.contact{display:flex;gap:28px;margin-top:56px;justify-content:center}
+.contact .c{display:flex;align-items:center;gap:20px;padding:26px 36px;border-radius:var(--r-2xl);background:var(--glass-bg-2);border:1px solid var(--glass-bd-2);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow-glass);text-align:left;color:var(--fg-inverse)}
+.contact iconify-icon{font-size:48px}
+.contact .k{font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.contact .v{font-size:30px;font-weight:500}
+.brand{display:flex;align-items:center;gap:18px;justify-content:center;color:var(--fg-inverse)}
+.brand iconify-icon{font-size:56px}
+.brand span{font-family:var(--font-serif);font-weight:500;font-size:48px}
+
+/* botão primário (padrão do DS, em escala de toque) */
+.btn{display:inline-flex;align-items:center;gap:16px;min-height:88px;padding:0 56px;border-radius:var(--r-pill);background:var(--c-pine);color:var(--fg-inverse);font-size:22px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:transform var(--dur-base) ease-out,box-shadow var(--dur-base);box-shadow:var(--shadow-md)}
+.btn:active{transform:translateY(-2px) scale(.98)}
+.btn.light{background:var(--fg-inverse);color:var(--c-pine)}
+.btn iconify-icon{font-size:30px}
+
+/* barra de navegação inferior */
+#nav{position:absolute;left:0;right:0;bottom:0;height:128px;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:0 72px;background:linear-gradient(to top,rgba(28,41,34,.92),rgba(28,41,34,0))}
+#nav .arrow{width:88px;height:88px;border-radius:var(--r-pill);display:grid;place-items:center;font-size:44px;color:var(--fg-inverse);background:var(--glass-bg-3);border:1px solid var(--glass-bd-3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform var(--dur-fast)}
+#nav .arrow:active{transform:scale(.94)}
+#nav .arrow[disabled]{opacity:.25;pointer-events:none}
+#dots{display:flex;gap:16px;align-items:center}
+#dots button{width:48px;height:48px;display:grid;place-items:center}
+#dots i{display:block;width:14px;height:14px;border-radius:var(--r-pill);background:rgba(255,255,255,.4);transition:all var(--dur-base)}
+#dots button.on i{width:44px;background:var(--fg-inverse)}
+#label{position:absolute;left:50%;transform:translateX(-50%);bottom:104px;font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+
+@media (prefers-reduced-motion:reduce){
+  .screen.on .reveal,.screen.on .photo img{animation:fadeIn .3s ease-out both}
+}
+</style>
+</head>
+<body>
+
+<main id="stage" aria-live="polite">
+
+  <!-- 1 · CAPA -->
+  <section class="screen on" data-name="Receita">
+    <div class="photo">
+      <img src="../site/assets/images/Frente%20Dia%203.webp" alt="Fachada do Solar do Espinhaço de dia, com a serra ao fundo"/>
+      <div class="cap">
+        <div class="ds-eyebrow">Lapinha da Serra · Minas Gerais</div>
+        <div class="big">Solar do<br/>Espinhaço</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow reveal" style="--i:0">Receita de fim de semana</div>
+      <h1 class="title reveal" style="--i:1">Um refúgio<br/>para viver <em>devagar</em></h1>
+      <p class="lead reveal" style="--i:2">Pousada boutique na Serra do Espinhaço. Silêncio, paisagem e hospitalidade, no ponto certo.</p>
+      <div class="rule reveal" style="--i:3"></div>
+      <div class="meta reveal" style="--i:4">
+        <div class="m"><iconify-icon icon="solar:clock-circle-linear"></iconify-icon><div><div class="k">Check-in</div><div class="v">15h</div></div></div>
+        <div class="m"><iconify-icon icon="solar:calendar-linear"></iconify-icon><div><div class="k">Check-out</div><div class="v">12h</div></div></div>
+        <div class="m"><iconify-icon icon="solar:leaf-linear"></iconify-icon><div><div class="k">Dificuldade</div><div class="v">Nenhuma</div></div></div>
+      </div>
+      <div style="margin-top:48px" class="reveal" style="--i:5">
+        <button class="btn" data-go="1">Começar a receita <iconify-icon icon="solar:arrow-right-linear"></iconify-icon></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · INGREDIENTES · SUÍTE -->
+  <section class="screen" data-name="Ingredientes · Suíte">
+    <div class="photo">
+      <img src="../site/assets/images/Suite.jpeg" alt="Suíte com cama king size e vista para a serra"/>
+      <div class="cap">
+        <div class="ds-eyebrow">Ingrediente 01</div>
+        <div class="big">A suíte</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow reveal" style="--i:0">Ingredientes · quarto de 28 m²</div>
+      <h2 class="title reveal" style="--i:1;font-size:76px">Separe o <em>essencial</em></h2>
+      <p class="lead reveal" style="--i:2;font-size:26px">Toque para ir marcando, como numa lista de receita.</p>
+      <div class="ing reveal" style="--i:3">
+        <button><iconify-icon class="ico" icon="solar:bed-linear"></iconify-icon><span>Cama king size<small>Roupa de cama 600 fios</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:bath-linear"></iconify-icon><span>Banheira de imersão<small>Ducha dupla · box até o teto</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:snowflake-linear"></iconify-icon><span>Ar quente e frio</span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:tv-linear"></iconify-icon><span>Smart TV 55″<small>Soundbar e streaming</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:hanger-linear"></iconify-icon><span>Closet e roupão<small>Toalhas de algodão egípcio</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:sun-2-linear"></iconify-icon><span>Vista panorâmica<small>Para a Serra do Espinhaço</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · INGREDIENTES · SALA, COZINHA, PISCINA -->
+  <section class="screen" data-name="Ingredientes · Sala e piscina">
+    <div class="photo">
+      <img src="../site/assets/images/Piscina.jpeg" alt="Piscina aquecida de borda infinita diante da serra"/>
+      <div class="cap">
+        <div class="ds-eyebrow">Ingrediente 02</div>
+        <div class="big">Sala, deck<br/>e piscina</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow reveal" style="--i:0">Ingredientes · sala de 26 m² e área externa</div>
+      <h2 class="title reveal" style="--i:1;font-size:76px">Misture com a <em>paisagem</em></h2>
+      <p class="lead reveal" style="--i:2;font-size:26px">Portas de correr abrem a sala por completo para o deck.</p>
+      <div class="ing reveal" style="--i:3">
+        <button><iconify-icon class="ico" icon="solar:sofa-linear"></iconify-icon><span>Sala integrada<small>Sofá-cama · Smart TV 65″</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:cup-hot-linear"></iconify-icon><span>Cozinha completa<small>Marcenaria sob medida</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:speaker-minimalistic-linear"></iconify-icon><span>Echo Show<small>E soundbar com streaming</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:leaf-linear"></iconify-icon><span>Piscina aquecida<small>Borda infinita · hidromassagem</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:fire-linear"></iconify-icon><span>Deck em cumaru<small>Pergolado envidraçado</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+        <button><iconify-icon class="ico" icon="solar:moon-stars-linear"></iconify-icon><span>Iluminação noturna<small>Área privativa</small></span><iconify-icon class="tk" icon="solar:check-circle-linear"></iconify-icon></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · MODO DE PREPARO -->
+  <section class="screen" data-name="Modo de preparo">
+    <div class="photo">
+      <img src="../site/assets/images/Frente%20Noite%202.webp" alt="Fachada do Solar do Espinhaço à noite"/>
+      <div class="cap">
+        <div class="ds-eyebrow">Tempo de preparo · 2 a 3 noites</div>
+        <div class="big">Modo de<br/>preparo</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow reveal" style="--i:0">Passo a passo</div>
+      <h2 class="title reveal" style="--i:1;font-size:76px">Sem pressa,<br/><em>no seu ponto</em></h2>
+      <div class="steps">
+        <button class="step cur reveal" style="--i:2"><span class="n">1</span><span><h4>Chegue a partir das 15h</h4><p>Deixe a bagagem e deixe o tempo desacelerar.</p></span></button>
+        <button class="step reveal" style="--i:3"><span class="n">2</span><span><h4>Mergulhe na piscina aquecida</h4><p>De frente para a serra, em qualquer estação.</p></span></button>
+        <button class="step reveal" style="--i:4"><span class="n">3</span><span><h4>Deixe o deck esquentar a noite</h4><p>Sob o pergolado, junto ao calor do fogo.</p></span></button>
+        <button class="step reveal" style="--i:5"><span class="n">4</span><span><h4>Finalize na banheira de imersão</h4><p>Um spa privativo para fechar o dia.</p></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · EXPERIÊNCIAS -->
+  <section class="screen" data-name="Experiências">
+    <div class="photo">
+      <img src="../site/assets/images/trilha.avif" alt="Trilha na Serra do Espinhaço"/>
+      <div class="cap">
+        <div class="ds-eyebrow">Para acompanhar</div>
+        <div class="big">Passeios<br/>exclusivos</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="eyebrow reveal" style="--i:0">Lapinha da Serra · passeios privativos</div>
+      <h2 class="title reveal" style="--i:1;font-size:76px">Crie seu próprio <em>caminho</em></h2>
+      <div class="cards reveal" style="--i:2">
+        <div class="card"><iconify-icon icon="solar:map-point-linear"></iconify-icon><h4>Poço do Boqueirão</h4><p>A 15 minutos do centro. Águas escuras e cristalinas, com ducha natural.</p><span class="tag">Fácil</span></div>
+        <div class="card"><iconify-icon icon="solar:map-point-linear"></iconify-icon><h4>Cachoeira do Lajeado</h4><p>Queda de cerca de 40 metros e um dos melhores poços para mergulho.</p><span class="tag">A pé, a cavalo ou caiaque</span></div>
+        <div class="card"><iconify-icon icon="solar:gallery-linear"></iconify-icon><h4>Pinturas rupestres</h4><p>Quase sete mil anos de história, sempre com guia.</p><span class="tag">Com guia</span></div>
+        <div class="card"><iconify-icon icon="solar:sun-2-linear"></iconify-icon><h4>Pico da Lapinha</h4><p>1.647 metros e uma vista soberana do vilarejo e da lagoa.</p><span class="tag">Trilha</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · SERVIR / RESERVAR -->
+  <section class="screen dark" data-name="Reservar">
+    <div class="photo"><img src="../site/assets/images/serra-hero.avif" alt=""/></div>
+    <div class="panel">
+      <div class="brand reveal" style="--i:0"><iconify-icon icon="solar:leaf-linear"></iconify-icon><span>Solar do Espinhaço</span></div>
+      <div class="eyebrow reveal" style="--i:1;margin-top:56px">Rende uma estadia inesquecível</div>
+      <h2 class="title reveal" style="--i:2">Sua estadia na serra<br/><em>começa aqui</em></h2>
+      <p class="lead reveal" style="--i:3">Reservas diretas, sem intermediários. Fale com a gente.</p>
+      <div class="contact reveal" style="--i:4">
+        <div class="c"><iconify-icon icon="solar:phone-calling-linear"></iconify-icon><div><div class="k">Telefone</div><div class="v">+55 31 9 9755-5245</div></div></div>
+        <div class="c"><iconify-icon icon="solar:calendar-mark-bold"></iconify-icon><div><div class="k">Site</div><div class="v">solardoespinhaco.com.br</div></div></div>
+      </div>
+      <div class="contact reveal" style="--i:5;margin-top:24px">
+        <div class="c"><iconify-icon icon="solar:map-point-linear"></iconify-icon><div><div class="k">Endereço</div><div class="v">Rua Olhos D'água, 22 · Lapinha da Serra, MG</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div id="label"></div>
+  <nav id="nav" aria-label="Navegação da receita">
+    <button class="arrow" id="prev" aria-label="Anterior"><iconify-icon icon="solar:alt-arrow-left-linear"></iconify-icon></button>
+    <div id="dots"></div>
+    <button class="arrow" id="next" aria-label="Próximo"><iconify-icon icon="solar:alt-arrow-right-linear"></iconify-icon></button>
+  </nav>
+</main>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var screens=[].slice.call(document.querySelectorAll('.screen'));
+  var dots=document.getElementById('dots'), label=document.getElementById('label');
+  var prev=document.getElementById('prev'), next=document.getElementById('next');
+  var cur=0;
+
+  // escala o palco 1920×1080 para a tela (Echo Show 15, 10, 8…)
+  function fit(){
+    var s=Math.min(innerWidth/1920,innerHeight/1080);
+    stage.style.transform='translate(-50%,-50%) scale('+s+')';
+  }
+  addEventListener('resize',fit); fit();
+
+  screens.forEach(function(sc,i){
+    var b=document.createElement('button');
+    b.setAttribute('aria-label','Tela '+(i+1)+': '+sc.dataset.name);
+    b.innerHTML='<i></i>'; b.onclick=function(){go(i)};
+    dots.appendChild(b);
+  });
+
+  function go(n){
+    n=Math.max(0,Math.min(screens.length-1,n));
+    screens.forEach(function(s,i){s.classList.toggle('on',i===n)});
+    [].forEach.call(dots.children,function(d,i){d.classList.toggle('on',i===n)});
+    label.textContent=screens[n].dataset.name;
+    prev.disabled=n===0; next.disabled=n===screens.length-1;
+    cur=n; resetSteps();
+  }
+  prev.onclick=function(){go(cur-1)};
+  next.onclick=function(){go(cur+1)};
+  [].forEach.call(document.querySelectorAll('[data-go]'),function(b){b.onclick=function(){go(+b.dataset.go)}});
+
+  // ingredientes: marcar ao toque
+  [].forEach.call(document.querySelectorAll('.ing button'),function(b){
+    b.onclick=function(){b.classList.toggle('done'); b.querySelector('.tk').setAttribute('icon',b.classList.contains('done')?'solar:check-circle-bold':'solar:check-circle-linear')};
+  });
+
+  // passos: o toque escolhe o passo atual
+  var steps=[].slice.call(document.querySelectorAll('.step'));
+  function resetSteps(){}
+  steps.forEach(function(s){s.onclick=function(){steps.forEach(function(x){x.classList.remove('cur')});s.classList.add('cur')}});
+
+  // teclado e deslize
+  addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' ')go(cur+1);
+    if(e.key==='ArrowLeft')go(cur-1);
+  });
+  var x0=null;
+  addEventListener('pointerdown',function(e){x0=e.clientX});
+  addEventListener('pointerup',function(e){
+    if(x0===null)return; var d=e.clientX-x0; x0=null;
+    if(Math.abs(d)>80) go(cur+(d<0?1:-1));
+  });
+  go(0);
+})();
+</script>
+</body>
+</html>
