@@ -71,38 +71,24 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
   text-shadow:0 2px 40px rgba(0,0,0,.55),0 1px 10px rgba(0,0,0,.35)}
 
 /* ═══ PÁGINA 2 · SELO ═══ */
-#final{position:absolute;inset:0;background:var(--bg-dark-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;opacity:0;pointer-events:none;transition:opacity 2400ms ease-in-out}
+#final{position:absolute;inset:0;background:var(--bg-dark-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;opacity:0;pointer-events:none;transition:opacity 2400ms ease-in-out}
 #final.on{opacity:1;pointer-events:auto;transition-delay:1400ms}
 #final::before{content:"";position:absolute;width:1100px;height:1100px;left:50%;top:44%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(44,62,53,.55),transparent 68%);filter:blur(60px);pointer-events:none}
-#final::before{animation:breathe 9s ease-in-out infinite 4s}
-@keyframes breathe{0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}50%{opacity:.7;transform:translate(-50%,-50%) scale(1.1)}}
-#final .seal{position:relative;width:660px;height:660px;overflow:visible}
-#final .seal .disc{opacity:0;transform-box:fill-box;transform-origin:center;transform:scale(.55)}
-#final .seal .ring{stroke-dasharray:1;stroke-dashoffset:1;transform-box:fill-box;transform-origin:center;transform:rotate(-90deg)}
-#final .seal .leaf{stroke-dasharray:1;stroke-dashoffset:1}
-#final .seal .se{opacity:0}
-#final.on .seal .disc{animation:discIn 1500ms var(--ease-spring) 1900ms both}
-#final.on .seal .ring{animation:draw 2000ms cubic-bezier(.65,0,.35,1) 2500ms forwards}
-#final.on .seal .leaf{animation:draw 2200ms cubic-bezier(.65,0,.35,1) 2900ms forwards}
-#final.on .seal .se{animation:seIn 1200ms var(--ease-out) 4300ms both}
-@keyframes discIn{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
-@keyframes draw{to{stroke-dashoffset:0}}
-@keyframes seIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-#final .label{display:flex;align-items:center;gap:52px;font-size:32px;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.78);padding-left:.42em;opacity:0;margin-top:28px;white-space:nowrap}
-#final .label::before,#final .label::after{content:"";width:160px;height:1.5px;background:var(--glass-bd-3);transform:scaleX(0)}
-#final .label::before{transform-origin:right}#final .label::after{transform-origin:left}
-#final.on .label{animation:labelIn 2200ms var(--ease-out) 4700ms both}
-#final.on .label::before,#final.on .label::after{animation:line 1600ms var(--ease-out) 5000ms forwards}
-@keyframes labelIn{from{opacity:0;letter-spacing:.2em}to{opacity:1;letter-spacing:.42em}}
-@keyframes line{to{transform:scaleX(1)}}
+#final .seal{position:relative;width:360px;height:360px;opacity:0;transform:scale(.92)}
+#final.on .seal{animation:scaleIn 1100ms var(--ease-spring) 1900ms both}
+#final .name{font-family:var(--font-serif);font-weight:500;font-size:118px;line-height:1;letter-spacing:.01em;color:var(--c-cream);opacity:0;margin-top:-8px}
+#final.on .name{animation:up 1100ms var(--ease-out) 2500ms both}
+#final .est{font-family:var(--font-serif);font-style:italic;font-weight:400;font-size:34px;letter-spacing:.06em;color:var(--c-s400);opacity:0;margin-top:-20px}
+#final.on .est{animation:up 1000ms var(--ease-out) 2800ms both}
+#final .label{display:flex;align-items:center;gap:44px;font-size:24px;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.7);padding-left:.42em;opacity:0;margin-top:16px}
+#final .label::before,#final .label::after{content:"";width:120px;height:1.5px;background:var(--glass-bd-3)}
+#final.on .label{animation:up 1000ms var(--ease-out) 3100ms both}
 @keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
 @media (prefers-reduced-motion:reduce){
   .intro-run #hero .bg img,.orb{animation:none}
-  #final.on .seal .disc,#final.on .seal .se,#final.on .label{animation:fadeIn 900ms ease both}
-  #final .seal .ring,#final .seal .leaf{stroke-dashoffset:0;animation:none!important}
-  #final .label::before,#final .label::after{transform:none;animation:none!important}
+  #final.on .seal,#final.on .name,#final.on .est,#final.on .label{animation:fadeIn 900ms ease both}
 }
 </style>
 </head>
@@ -132,7 +118,9 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
   </section>
 
   <section id="final" aria-hidden="true">
-    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><circle class="disc" cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle class="ring" cx="100" cy="100" r="84" pathLength="1" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1" opacity="0.28"/><svg x="68" y="45" width="65" height="65" viewBox="0 0 24 24"><path class="leaf" pathLength="1" d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><text class="se" x="100" y="145" text-anchor="middle" font-weight="400" font-size="36" letter-spacing="6.5" style="font-family:var(--font-serif);fill:var(--c-pine-deep)">SE</text></svg>
+    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><use href="#seal"/></svg>
+    <div class="name">Solar do Espinhaço</div>
+    <div class="est">est · 2024</div>
     <div class="label">Lapinha · Minas Gerais · Brasil</div>
   </section>
 </main>
