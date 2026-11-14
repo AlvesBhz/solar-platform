@@ -1,9 +1,9 @@
 import { Icon } from '@iconify/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { btnPrimary, btnSecondary } from '../components/ScreenShell';
+import { btnSecondary } from '../components/ScreenShell';
 import { VALIDACAO } from '../components/Status';
 import { POSICAO_SIMULADA, SIMULADO } from '../lib/sim';
 import { validarGps, type ResultadoValidacao } from '../mocks/servidor';
@@ -18,15 +18,32 @@ export default function T08ValidacaoPresenca() {
   const [rasc, setRasc] = useState<Rascunho | null>(() => lerRascunho(unidadeId));
   const [lendoGps, setLendoGps] = useState(false);
 
-  useEffect(() => { obterUnidade(unidadeId).then(setU); }, [unidadeId]);
+  const iniciou = useRef(false);
 
-  if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
-  if (!rasc) return <Navigate to={`/app/vistorias/nova/${unidadeId}`} replace />; // sem tipo escolhido
+  useEffect(() => { obterUnidade(unidadeId).then(setU); }, [unidadeId]);
 
   const precisaGps = u?.validacao !== 'qr';
   const precisaQr = u?.validacao !== 'gps';
-  const { gps, qr } = rasc.presenca;
-  const aprovado = !!u && (!precisaGps || gps?.ok) && (!precisaQr || qr?.ok);
+  const gps = rasc?.presenca.gps;
+  const qr = rasc?.presenca.qr;
+  const aprovado = !!u && !!rasc && (!precisaGps || !!gps?.ok) && (!precisaQr || !!qr?.ok);
+
+  // Ao abrir a tela, a localização já é verificada (o navegador pede a permissão aqui, durante a vistoria).
+  useEffect(() => {
+    if (u && rasc && precisaGps && !gps && !iniciou.current) { iniciou.current = true; verificarGps(); }
+  }, [u]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Presença completa (GPS e/ou QR conforme a unidade): segue sozinho para o checklist.
+  useEffect(() => {
+    if (!aprovado) return;
+    // Vistoria já iniciada (ex.: botão Voltar do navegador a partir do checklist): sai em vez de reabrir o checklist.
+    if (rasc?.inicio) { navigate(`/app/unidades/${unidadeId}`, { replace: true }); return; }
+    const t = setTimeout(iniciarChecklist, 1100);
+    return () => clearTimeout(t);
+  }, [aprovado]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
+  if (!rasc) return <Navigate to={`/app/vistorias/nova/${unidadeId}`} replace />; // sem tipo escolhido
 
   function atualizar(parcial: Partial<Rascunho['presenca']>) {
     setRasc((r) => salvarRascunho({ ...r!, presenca: { ...r!.presenca, ...parcial } }));
@@ -47,7 +64,7 @@ export default function T08ValidacaoPresenca() {
 
   function iniciarChecklist() {
     salvarRascunho({ ...rasc!, inicio: rasc!.inicio ?? new Date().toISOString() });
-    navigate(`/app/vistorias/nova/${unidadeId}/checklist`);
+    navigate(`/app/vistorias/nova/${unidadeId}/checklist`, { replace: true });
   }
 
   return (
@@ -108,10 +125,13 @@ export default function T08ValidacaoPresenca() {
       </main>
 
       <BottomBar>
-        {!aprovado && <p className="text-center text-[0.75rem] text-fg-3">Conclua as validações para liberar o checklist.</p>}
-        <button type="button" className={btnPrimary} disabled={!aprovado} onClick={iniciarChecklist}>
-          Iniciar checklist <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
-        </button>
+        {aprovado ? (
+          <p className="flex items-center justify-center gap-2 py-1 text-[0.8125rem] font-medium text-available" role="status">
+            <Icon icon="solar:check-circle-linear" width={18} aria-hidden="true" /> Presença validada · abrindo o checklist
+          </p>
+        ) : (
+          <p className="py-1 text-center text-[0.75rem] text-fg-3">O checklist abre automaticamente quando a presença for validada.</p>
+        )}
       </BottomBar>
     </div>
   );

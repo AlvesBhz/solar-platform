@@ -24,7 +24,6 @@ export default function T02Login() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,7 +32,8 @@ export default function T02Login() {
     setLoading(true);
     const res = await requestLoginLink(email);
     setLoading(false);
-    if (res.ok) setSentTo(email.trim().toLowerCase());
+    // Mockup: entra direto (o link por e-mail será a etapa real do Supabase Auth).
+    if (res.ok) navigate(/^(gestor|admin)@/.test(email.trim().toLowerCase()) ? '/gestao' : '/app/unidades');
     else setError(ERRORS[res.reason]);
   }
 
@@ -68,33 +68,11 @@ export default function T02Login() {
                 <span className="h-px w-6 bg-line-2" aria-hidden="true" />
               </div>
           </div>
-          {sentTo ? (
-            <div className="flex flex-col gap-6" role="status">
-              <Icon icon="solar:check-circle-linear" width={40} className="text-available" aria-hidden="true" />
-              <div className="flex flex-col gap-3">
-                <h1 className="screen-title">Verifique seu e-mail</h1>
-                <p className="text-[0.8125rem] leading-relaxed text-fg-2 [overflow-wrap:anywhere]">
-                  Enviamos um link de acesso para <strong className="font-medium text-fg-1">{sentTo}</strong>. Toque no link para entrar.
-                </p>
-              </div>
-              {/* Mockup: simula o clique no link recebido por e-mail */}
-              <button type="button" onClick={() => navigate(/^(gestor|admin)@/.test(sentTo) ? '/gestao' : '/permissao-localizacao')} className={`${btnBase} bg-pine text-white shadow-md hover:-translate-y-0.5 hover:bg-pine-deep`}>
-                Simular clique no link <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSentTo(null); setEmail(''); }}
-                className={`${btnBase} border border-line-2 text-fg-1 hover:border-fg-1`}
-              >
-                Usar outro e-mail
-              </button>
-            </div>
-          ) : (
-            <>
+          <>
               <div className="flex flex-col gap-3">
                 <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">Acesso</span>
                 <h1 className="screen-title">Entrar</h1>
-                <p className="text-[0.8125rem] leading-relaxed text-fg-2">Informe seu e-mail para receber o link de acesso.</p>
+                <p className="text-[0.8125rem] leading-relaxed text-fg-2">Informe seu e-mail para acessar.</p>
               </div>
 
               <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
@@ -144,7 +122,7 @@ export default function T02Login() {
                     </>
                   ) : (
                     <>
-                      Receber link de acesso
+                      Entrar
                       <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
                     </>
                   )}
@@ -155,8 +133,7 @@ export default function T02Login() {
                 <span className="text-fg-2">Mockup · contas de teste:</span>{' '}
                 <span className="font-mono [overflow-wrap:anywhere]">assessor@solar.dev (campo), gestor@solar.dev e admin@solar.dev (gestão), inativo@solar.dev</span>
               </p>
-            </>
-          )}
+          </>
         </section>
 
         <p className="text-center font-mono text-[0.6875rem] text-fg-3">v{APP_VERSION}</p>

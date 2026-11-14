@@ -42,7 +42,7 @@ Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu 
 |---|---|
 | `/` | T01 Inicialização (verifica sessão/sincronização → `/login`) |
 | `/login` | T02 Login |
-| `/permissao-localizacao` | T03 Permissão de localização (usa o GPS real do navegador, leitura única) |
+| `/permissao-localizacao` | T03 Permissão de localização (fora do fluxo principal: a permissão é pedida na T08, durante a vistoria; a T03 só ajuda quando o GPS está bloqueado) |
 | `/app/unidades` | T05 Minhas unidades — teste estados com `?simular=erro`, `vazio` ou `lento` |
 | `/app/unidades/:id` | T06 Detalhe da unidade (ex.: `chale-sempre-viva`) |
 | `/app/vistorias/nova/:unidadeId` | T07 Tipo de vistoria (Saída só habilitada com estadia em curso, ex.: `chale-candeia`) |
@@ -66,7 +66,7 @@ Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu 
 
 | E-mail | Resultado |
 |---|---|
-| `assessor@solar.dev` / `gestor@solar.dev` | Link enviado → "Simular clique no link" segue para T03 → T05 |
+| `assessor@solar.dev` / `gestor@solar.dev` | Entra direto em Minhas unidades (T05) |
 | `inativo@solar.dev` | Bloqueado (usuário inativo) |
 | qualquer outro | E-mail não cadastrado |
 
