@@ -118,7 +118,7 @@ export function T29FormPropriedade() {
   }
   return (
     <GestaoShell eyebrow="Administração" titulo="Nova propriedade">
-      <form className={`${card} grid max-w-2xl gap-4 p-5 sm:grid-cols-2`} onSubmit={(e) => { e.preventDefault(); if (!erros.length) salvar(); }} noValidate>
+      <form className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} onSubmit={(e) => { e.preventDefault(); if (!erros.length) salvar(); }} noValidate>
         <label className={`${rot} sm:col-span-2`}>Nome<input id="p-nome" className={campo} value={f.nome} onChange={set('nome')} placeholder="Ex.: Chalés da Serra" /></label>
         <label className={rot}>Tipo<select id="p-tipo" className={campo} value={f.tipo} onChange={set('tipo')}><option>Pousada</option><option>Hotel</option><option>Chalés</option></select></label>
         <label className={rot}>Validação padrão<select id="p-val" className={campo} value={f.validacao} onChange={set('validacao')}>{Object.entries(VALIDACAO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></label>
@@ -126,7 +126,7 @@ export function T29FormPropriedade() {
         <label className={rot}>Longitude<input id="p-lng" inputMode="decimal" className={campo} value={f.lng} onChange={set('lng')} /></label>
         <label className={rot}>Raio (m)<input id="p-raio" inputMode="numeric" className={campo} value={f.raio} onChange={set('raio')} /></label>
         {erros.length > 0 && <ul className="flex flex-col gap-1 text-[0.8125rem] text-warning sm:col-span-2" role="alert">{erros.map((e) => <li key={e} className="flex items-center gap-1.5"><Icon icon="solar:danger-circle-linear" width={16} aria-hidden="true" />{e}</li>)}</ul>}
-        <div className="flex gap-3 sm:col-span-2">
+        <div className="flex flex-wrap gap-3 sm:col-span-2">
           <button type="button" className={`${btnSecondary} w-auto`} onClick={() => navigate('/admin/propriedades')}>Cancelar</button>
           <button type="submit" className={`${btnPrimary} w-auto`} disabled={erros.length > 0}>Salvar propriedade</button>
         </div>

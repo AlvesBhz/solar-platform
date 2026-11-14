@@ -46,7 +46,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             {eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>
           </div>
-          <div className="flex items-center gap-2">{acoes}<NetworkBadge /></div>
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge /></div>
         </header>
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-24 lg:px-8">{children}</main>
       </div>

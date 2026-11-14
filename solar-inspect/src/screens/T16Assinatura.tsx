@@ -60,8 +60,8 @@ export default function T16Assinatura() {
         </div>
       </main>
       <BottomBar>
-        <div className="grid grid-cols-[auto_1fr] gap-3">
-          <button type="button" className={`${btnSecondary} w-auto`} onClick={limpar} disabled={vazio}>
+        <div className="grid grid-cols-2 gap-3">
+          <button type="button" className={btnSecondary} onClick={limpar} disabled={vazio}>
             <Icon icon="solar:trash-bin-minimalistic-linear" width={18} aria-hidden="true" /> Limpar
           </button>
           <button type="button" className={btnPrimary} disabled={vazio} onClick={confirmar}>

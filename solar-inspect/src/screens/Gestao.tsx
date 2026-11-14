@@ -38,7 +38,7 @@ export function T20Dashboard() {
 
   return (
     <GestaoShell eyebrow="Gestão" titulo="Visão operacional" acoes={
-      <select aria-label="Propriedade" value={prop} onChange={(e) => setProp(e.target.value)} className="min-h-11 rounded-md border border-line-2 bg-white px-3 text-fg-1">
+      <select aria-label="Propriedade" value={prop} onChange={(e) => setProp(e.target.value)} className="min-h-11 min-w-0 max-w-full rounded-md border border-line-2 bg-white px-3 text-fg-1">
         <option value="">Todas as propriedades</option>{props.map((p) => <option key={p}>{p}</option>)}
       </select>}>
       {!us || !ocs ? <Carregando /> : (
@@ -133,7 +133,7 @@ export function T22DetalheUnidade() {
   return (
     <GestaoShell eyebrow={u?.propriedade ?? 'Unidade'} titulo={u?.nome ?? '…'} acoes={u && <EstadoBadge estado={u.estado} size="md" />}>
       {!u || !ocs ? <Carregando /> : (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="flex flex-col gap-6">
             <section className="flex flex-col gap-2">
               <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Ocorrências</h2>
@@ -279,7 +279,7 @@ export function T26Tratamento() {
   return (
     <GestaoShell eyebrow={o ? `${o.unidade} · ${o.ambiente}` : 'Ocorrência'} titulo={o?.descricao ?? '…'} acoes={o && <StatusOcTag s={o.status} />}>
       {!o ? <Carregando /> : (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <section className="flex flex-col gap-3">
             <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Histórico</h2>
             <ol className={`${card} flex flex-col gap-4 p-4`}>
