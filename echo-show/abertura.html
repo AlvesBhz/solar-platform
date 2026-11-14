@@ -70,31 +70,57 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
 #heroPhrase p{font-family:var(--font-italic);font-style:italic;font-weight:400;font-size:72px;line-height:1.15;letter-spacing:.01em;color:rgba(255,255,255,.93);white-space:nowrap;
   text-shadow:0 2px 40px rgba(0,0,0,.55),0 1px 10px rgba(0,0,0,.35)}
 
-/* ═══ PÁGINA 2 · SELO ═══ */
-#final{position:absolute;inset:0;background:var(--bg-dark-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;opacity:0;pointer-events:none;transition:opacity 2400ms ease-in-out}
-#final.on{opacity:1;pointer-events:auto;transition-delay:1400ms}
-#final::before{content:"";position:absolute;width:1100px;height:1100px;left:50%;top:44%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(44,62,53,.55),transparent 68%);filter:blur(60px);pointer-events:none}
-#final .seal{position:relative;width:360px;height:360px;opacity:0;transform:scale(.92)}
-#final.on .seal{animation:scaleIn 1100ms var(--ease-spring) 1900ms both}
-#final .name{font-family:var(--font-serif);font-weight:500;font-size:118px;line-height:1;letter-spacing:.01em;color:var(--c-cream);opacity:0;margin-top:-8px}
-#final.on .name{animation:up 1100ms var(--ease-out) 2500ms both}
-#final .est{font-family:var(--font-serif);font-style:italic;font-weight:400;font-size:34px;letter-spacing:.06em;color:var(--c-s400);opacity:0;margin-top:-20px}
-#final.on .est{animation:up 1000ms var(--ease-out) 2800ms both}
-#final .label{display:flex;align-items:center;gap:44px;font-size:24px;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.7);padding-left:.42em;opacity:0;margin-top:16px}
-#final .label::before,#final .label::after{content:"";width:120px;height:1.5px;background:var(--glass-bd-3)}
-#final.on .label{animation:up 1000ms var(--ease-out) 3100ms both}
-@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
-@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+/* ═══ PÁGINA 2 · SELO ═══
+   O disco do topo vira o selo: desce ao centro, cresce, o bone preenche de dentro para fora,
+   a folha passa de branco a pine-deep, o SE surge e duas ondas se abrem. */
+#final{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:72px;pointer-events:none}
+#final.on{pointer-events:auto}
+#final .shade{position:absolute;inset:0;background:var(--bg-dark-1);opacity:0;transition:opacity 2200ms ease-in-out}
+#final.on .shade{opacity:1}
+#final .glow{position:absolute;width:1200px;height:1200px;left:50%;top:45%;transform:translate(-50%,-50%) scale(.5);background:radial-gradient(circle,rgba(44,62,53,.62),transparent 68%);filter:blur(60px);opacity:0;transition:opacity 2200ms ease,transform 3000ms var(--ease-out)}
+#final.land .glow{opacity:1;transform:translate(-50%,-50%) scale(1);animation:breathe 9s ease-in-out 3s infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.72}}
+
+.sealwrap{position:relative;width:400px;height:400px;opacity:0;transform-origin:center}
+.sealwrap.fly{opacity:1}
+.sealwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.seal .fill{transform-origin:100px 100px;transform:scale(0);transition:transform 1200ms var(--ease-spring)}
+.seal .edge{fill:none;stroke:var(--c-cream);stroke-width:2.9;opacity:.55;transition:opacity 700ms ease}
+.seal .ring{opacity:0;transition:opacity 900ms ease 400ms}
+.seal .leafg{transform-origin:100px 77.5px;transform:translateY(22.5px) scale(1.72);transition:transform 1200ms cubic-bezier(.65,0,.35,1)}
+.seal .leaf{stroke:var(--c-cream);transition:stroke 700ms ease 150ms}
+.seal .se{opacity:0;transform:translateY(8px);transition:opacity 900ms ease 650ms,transform 1000ms var(--ease-out) 650ms}
+#final.land .seal .fill{transform:scale(1)}
+#final.land .seal .edge{opacity:0}
+#final.land .seal .ring{opacity:1}
+#final.land .seal .leafg{transform:none}
+#final.land .seal .leaf{stroke:var(--c-pine-deep)}
+#final.land .seal .se{opacity:1;transform:none}
+
+.wave{position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--c-bone);opacity:0;pointer-events:none}
+#final.land .wave{animation:wave 2200ms cubic-bezier(.2,.7,.3,1) 250ms both}
+#final.land .wave.w2{animation-delay:600ms}
+@keyframes wave{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(2.8)}}
+
+#final .label{position:relative;display:flex;align-items:center;gap:48px;font-size:28px;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.78);padding-left:.42em;white-space:nowrap;opacity:0}
+#final .label::before,#final .label::after{content:"";width:140px;height:1.5px;background:var(--glass-bd-3);transform:scaleX(0)}
+#final .label::before{transform-origin:right}
+#final .label::after{transform-origin:left}
+#final.land .label{animation:labelIn 1800ms var(--ease-out) 1100ms both}
+#final.land .label::before,#final.land .label::after{animation:line 1400ms var(--ease-out) 1400ms forwards}
+@keyframes labelIn{from{opacity:0;letter-spacing:.2em}to{opacity:1;letter-spacing:.42em}}
+@keyframes line{to{transform:scaleX(1)}}
+
+.noanim,.noanim *{transition:none!important;animation:none!important}
 
 @media (prefers-reduced-motion:reduce){
   .intro-run #hero .bg img,.orb{animation:none}
-  #final.on .seal,#final.on .name,#final.on .est,#final.on .label{animation:fadeIn 900ms ease both}
+  #final.land .wave{animation:none}
+  #final.land .glow{animation:none}
 }
 </style>
 </head>
 <body>
-
-
 <main id="stage" aria-label="Abertura Solar do Espinhaço. Toque para repetir.">
 
   <section id="hero" aria-hidden="false">
@@ -118,10 +144,13 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
   </section>
 
   <section id="final" aria-hidden="true">
-    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><use href="#seal"/></svg>
-    <div class="name">Solar do Espinhaço</div>
-    <div class="est">est · 2024</div>
-    <div class="label">Lapinha · Minas Gerais · Brasil</div>
+    <div class="shade"></div>
+    <div class="glow"></div>
+    <div class="sealwrap" id="sealwrap">
+      <div class="wave"></div><div class="wave w2"></div>
+      <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><circle class="fill" cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle class="edge" cx="100" cy="100" r="98.5"/><circle class="ring" cx="100" cy="100" r="84" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1" stroke-opacity="0.28"/><g class="leafg"><svg x="68" y="45" width="65" height="65" viewBox="0 0 24 24"><path class="leaf" d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></g><text class="se" x="100" y="145" text-anchor="middle" font-weight="400" font-size="36" letter-spacing="6.5" style="font-family:var(--font-serif);fill:var(--c-pine-deep)">SE</text></svg>
+    </div>
+    <div class="label">Lapinha da Serra · MG</div>
   </section>
 </main>
 
@@ -136,6 +165,7 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
   var hero=document.getElementById('hero'),fin=document.getElementById('final');
   var title=document.getElementById('heroTitle'),phrase=document.getElementById('heroPhrase');
   var disc=document.getElementById('disc'),expand=document.getElementById('expand'),wm=document.getElementById('wm'),logo=document.getElementById('logo');
+  var wrap=document.getElementById('sealwrap');
   var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var timers=[],anims=[];
   function at(ms,fn){timers.push(setTimeout(fn,ms))}
@@ -165,9 +195,10 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
     disc.style.transition='none';disc.style.opacity='0';
     expand.style.opacity='0';wm.style.transform='translateX(-14px)';
     disc.style.transform='translateX('+centerOffset()+'px)';
-    hero.style.transition=fin.style.transition='none';
-    hero.classList.remove('out');fin.classList.remove('on');fin.setAttribute('aria-hidden','true');
-    void stage.offsetWidth;hero.style.transition=fin.style.transition='';
+    stage.classList.add('noanim');
+    hero.classList.remove('out');fin.classList.remove('on','land');fin.setAttribute('aria-hidden','true');
+    wrap.classList.remove('fly');
+    void stage.offsetWidth;stage.classList.remove('noanim');
   }
 
   function run(){
@@ -184,9 +215,7 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
       /* fase 3 · 4,22 s: o disco desliza e o wordmark aparece */
       at(4220,function(){requestAnimationFrame(openLogo)});
       /* página 2 · 10 s: o selo */
-      at(10000,function(){
-        hero.classList.add('out');fin.classList.add('on');fin.setAttribute('aria-hidden','false');
-      });
+      at(10000,toSeal);
     });
   }
 
@@ -201,12 +230,42 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
     anims.push(wm.animate([{transform:'translateX(-14px)'},{transform:'translateX(0)'}],{duration:900,delay:300,easing:ease,fill:'backwards'}));
   }
 
+  /* transição: o disco do topo vira o selo */
+  function toSeal(){
+    fin.setAttribute('aria-hidden','false');
+    if(reduced||!wrap.animate){
+      hero.classList.add('out');fin.classList.add('on');wrap.classList.add('fly');
+      at(600,function(){fin.classList.add('land')});return;
+    }
+    var ease='cubic-bezier(0.65, 0, 0.35, 1)';
+    /* 1 · o wordmark recolhe e o disco volta ao centro (inverso da abertura) */
+    var dx=centerOffset();
+    anims.push(expand.animate([{opacity:1},{opacity:0}],{duration:500,easing:'ease',fill:'forwards'}));
+    anims.push(wm.animate([{transform:'translateX(0)'},{transform:'translateX(-14px)'}],{duration:600,easing:ease,fill:'forwards'}));
+    anims.push(disc.animate([{transform:'translateX(0)'},{transform:'translateX('+dx+'px)'}],{duration:900,delay:150,easing:ease,fill:'forwards'}));
+    /* 2 · a foto escurece e o disco desce ao centro, crescendo até virar o selo */
+    at(1100,function(){
+      var d=disc.getBoundingClientRect(),w=wrap.getBoundingClientRect(),k=w.width/400;
+      var x=((d.left+d.width/2)-(w.left+w.width/2))/k, y=((d.top+d.height/2)-(w.top+w.height/2))/k, s=d.width/w.width;
+      disc.style.opacity='0';
+      hero.classList.add('out');fin.classList.add('on');wrap.classList.add('fly');
+      anims.push(wrap.animate([
+        {transform:'translate('+x+'px,'+y+'px) scale('+s+')'},
+        {transform:'translate(0,'+(y*0.12)+'px) scale(1.04)',offset:.82},
+        {transform:'none'}
+      ],{duration:2000,easing:ease,fill:'both'}));
+      /* 3 · pouso: bone preenche, folha escurece, SE surge, ondas se abrem */
+      at(1750,function(){fin.classList.add('land')});
+    });
+  }
+
   /* toque repete a abertura */
   stage.addEventListener('click',run);
   addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter')run()});
   run();
 })();
 </script>
+
 
 </body>
 </html>
