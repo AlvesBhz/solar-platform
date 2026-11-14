@@ -109,3 +109,9 @@ export async function listarTiposAtivos(): Promise<TipoVistoria[]> {
   await wait(300);
   return TIPOS.filter((t) => t.ativo);
 }
+
+/** Admin: todos os tipos, inclusive inativos. */
+export async function listarTipos(): Promise<TipoVistoria[]> {
+  await wait(200);
+  return TIPOS.map((t) => ({ ...t }));
+}

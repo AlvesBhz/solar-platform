@@ -10,6 +10,9 @@ const MENU = [
   { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
   { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
   { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true },
+  { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', admin: true },
+  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true },
+  { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', admin: true },
   { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true },
   { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true },
 ];

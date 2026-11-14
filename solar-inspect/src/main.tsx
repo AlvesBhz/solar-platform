@@ -30,7 +30,7 @@ import T17Confirmacao from './screens/T17Confirmacao';
 import T18Sincronizacao from './screens/T18Sincronizacao';
 import T19MeuHistorico from './screens/T19MeuHistorico';
 import { T20Dashboard, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
-import { T28Propriedades, T32Usuarios, T34Auditoria } from './screens/Admin';
+import { T28Propriedades, T29FormPropriedade, T30Ambientes, T31Tipos, T32Usuarios, T33Presenca, T34Auditoria } from './screens/Admin';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -65,6 +65,10 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/gestao/ocorrencias" element={<T25Ocorrencias />} />
         <Route path="/gestao/ocorrencias/:id" element={<T26Tratamento />} />
         <Route path="/admin/propriedades" element={<T28Propriedades />} />
+        <Route path="/admin/propriedades/nova" element={<T29FormPropriedade />} />
+        <Route path="/admin/checklists" element={<T30Ambientes />} />
+        <Route path="/admin/tipos" element={<T31Tipos />} />
+        <Route path="/admin/presenca" element={<T33Presenca />} />
         <Route path="/admin/usuarios" element={<T32Usuarios />} />
         <Route path="/admin/auditoria" element={<T34Auditoria />} />
         <Route path="*" element={<Navigate to="/" replace />} />
