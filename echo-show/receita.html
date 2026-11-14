@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Receita da Serra</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<style>
+/* Receita da Serra · Echo Show
+   Conceito: ficha de receita editorial na linguagem do selo SE.
+   Papel cream, selo bone, tinta pine-deep, fios stone-300. Fotos em arco com o aro do selo.
+   Só os tokens necessários do design system (colors_and_type.css) + bone do sistema de logo. */
+:root{--c-bone:#EAE5D9;color-scheme:light} /* bone · brand/logo */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--c-cream)}
+body{font-family:var(--font-sans);color:var(--c-s600);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+button:focus-visible{outline:2px solid var(--c-pine);outline-offset:4px;border-radius:var(--r-md)}
+.ic{width:1em;height:1em;flex:none;display:inline-block}
+
+/* palco 1920×1080 (Echo Show 15), escalado para qualquer tela */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;background:var(--c-cream);overflow:hidden}
+
+/* ─── cabeçalho: selo · fio com título · contador ─── */
+.top{position:absolute;left:96px;right:96px;top:44px;height:72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;z-index:5}
+.top .who{display:flex;align-items:center;gap:20px}
+.top .who b{font-family:var(--font-serif);font-weight:500;font-size:30px;color:var(--c-pine-deep);letter-spacing:.01em}
+.rule-title{display:flex;align-items:center;gap:28px;font-size:17px;letter-spacing:.42em;text-transform:uppercase;color:var(--c-s600);padding-left:.42em}
+.rule-title::before,.rule-title::after{content:"";width:72px;height:1px;background:var(--c-s400)}
+.count{justify-self:end;font-family:var(--font-mono);font-size:22px;letter-spacing:.08em;color:var(--c-s500)}
+.count b{color:var(--c-pine-deep);font-weight:500}
+
+.seal{display:block;flex:none}
+
+/* ─── telas ─── */
+.screen{position:absolute;left:96px;right:96px;top:150px;bottom:150px;display:none}
+.screen.on{display:grid}
+.on .rv{animation:up var(--dur-slow) var(--ease-out) both;animation-delay:calc(var(--i,0)*80ms)}
+.on .arch img{animation:fade 900ms var(--ease-out) both}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+
+/* foto em arco + aro fino do selo */
+.arch{position:relative;height:100%;border-radius:400px 400px var(--r-md) var(--r-md);overflow:hidden;background:var(--c-bone)}
+.arch img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.arch::after{content:"";position:absolute;inset:18px;border:1.5px solid rgba(250,250,249,.75);border-radius:382px 382px 2px 2px;pointer-events:none}
+.arch figcaption{position:absolute;left:0;right:0;bottom:36px;text-align:center;z-index:2;font-size:15px;letter-spacing:.36em;text-transform:uppercase;color:var(--c-cream);text-shadow:0 1px 12px rgba(28,25,23,.6)}
+
+.eyebrow{font-size:17px;letter-spacing:.42em;text-transform:uppercase;color:var(--c-s500)}
+.h{font-family:var(--font-serif);font-weight:400;color:var(--c-pine-deep);letter-spacing:-.02em;line-height:.95;text-wrap:balance}
+.h em{font-style:italic;font-weight:300}
+.lead{font-size:28px;line-height:1.55;color:var(--c-s600);max-width:760px}
+
+/* ─── capa ─── */
+.cover{grid-template-columns:1fr 680px;gap:120px;align-items:stretch}
+.cover .txt{display:flex;flex-direction:column;justify-content:center;gap:30px}
+.cover .h{font-size:148px}
+.ficha{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;border-top:1px solid var(--c-s300);margin-top:8px}
+.ficha div{padding:28px 56px 0 0;margin-right:56px;border-right:1px solid var(--c-s300)}
+.ficha div:last-child{border-right:0}
+.ficha .k{font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:var(--c-s500)}
+.ficha .v{font-family:var(--font-serif);font-size:56px;color:var(--c-pine-deep);line-height:1.1;margin-top:6px}
+.ficha .v small{font-family:var(--font-sans);font-size:20px;color:var(--c-s500);margin-left:6px}
+.go{display:inline-flex;align-items:center;gap:20px;align-self:flex-start;height:96px;padding:0 48px;border-radius:var(--r-md);background:var(--c-pine-deep);color:var(--c-cream);font-size:22px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;transition:transform var(--dur-fast)}
+.go .ic{font-size:30px}
+.go:active{transform:scale(.98)}
+
+/* ─── ingredientes ─── */
+.ingr{grid-template-columns:600px 1fr;gap:112px}
+.ingr .txt{display:flex;flex-direction:column;min-width:0}
+.ingr .h{font-size:96px;margin:20px 0 0}
+.list{margin-top:36px;border-top:1px solid var(--c-s300)}
+.row{display:grid;grid-template-columns:190px 1fr 56px;align-items:center;width:100%;min-height:88px;border-bottom:1px solid var(--c-s300);transition:opacity var(--dur-base)}
+.row .q{font-family:var(--font-serif);font-size:44px;color:var(--c-pine);line-height:1}
+.row .q small{font-family:var(--font-sans);font-size:18px;letter-spacing:.06em;color:var(--c-s500);margin-left:4px}
+.row .n{font-size:30px;font-weight:500;color:var(--c-s900)}
+.row .n span{font-weight:400;color:var(--c-s500);font-size:22px;margin-left:14px}
+.row .ck{font-size:44px;color:var(--c-s300);justify-self:end;transition:color var(--dur-fast)}
+.row.done{opacity:.42}
+.row.done .ck{color:var(--c-pine-deep)}
+.row.done .n{text-decoration:line-through;text-decoration-thickness:1px}
+.hint{margin-top:22px;font-size:20px;color:var(--c-s500)}
+
+/* ─── modo de preparo ─── */
+.prep{grid-template-rows:auto 1fr;gap:48px}
+.prep .head{display:flex;align-items:flex-end;justify-content:space-between;gap:48px}
+.prep .h{font-size:112px;margin-top:20px}
+.prep .head .lead{max-width:560px;text-align:right}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--c-s300)}
+.step{display:flex;flex-direction:column;gap:18px;padding:40px 40px 32px;border-right:1px solid var(--c-s300);transition:background var(--dur-base)}
+.step:last-child{border-right:0}
+.step .when{font-family:var(--font-mono);font-size:20px;letter-spacing:.08em;color:var(--c-s500);text-transform:uppercase}
+.step .num{font-family:var(--font-serif);font-weight:300;font-size:200px;line-height:.8;color:var(--c-pine-deep)}
+.step h4{font-size:32px;font-weight:500;color:var(--c-s900);line-height:1.2;margin-top:auto}
+.step p{font-size:23px;line-height:1.5;color:var(--c-s600)}
+.step.cur{background:var(--c-bone)}
+
+/* ─── final ─── */
+.serve{grid-template-columns:1fr;place-items:center;text-align:center}
+.serve .in{display:flex;flex-direction:column;align-items:center;gap:28px}
+.serve .h{font-size:120px}
+.contact{display:grid;grid-template-columns:repeat(3,auto);margin-top:28px;border-top:1px solid var(--c-s300)}
+.contact div{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px 64px 0;border-right:1px solid var(--c-s300)}
+.contact div:last-child{border-right:0}
+.contact .ic{font-size:36px;color:var(--c-pine)}
+.contact .k{font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:var(--c-s500)}
+.contact .v{font-size:28px;font-weight:500;color:var(--c-s900);user-select:text}
+
+/* ─── índice inferior (navegação) ─── */
+.nav{position:absolute;left:96px;right:96px;bottom:36px;height:96px;display:grid;grid-template-columns:96px 1fr 96px;gap:32px;align-items:center;z-index:5}
+.arrow{width:96px;height:96px;border-radius:var(--r-pill);border:1px solid var(--c-s300);display:grid;place-items:center;font-size:40px;color:var(--c-pine-deep);background:var(--c-cream);transition:transform var(--dur-fast),opacity var(--dur-base)}
+.arrow:active{transform:scale(.94)}
+.arrow[disabled]{opacity:.3;pointer-events:none}
+.idx{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;height:96px}
+.idx button{display:flex;align-items:center;gap:14px;border-top:2px solid var(--c-s300);font-size:16px;letter-spacing:.2em;text-transform:uppercase;color:var(--c-s500);transition:border-color var(--dur-base),color var(--dur-base)}
+.idx button i{font-style:normal;font-family:var(--font-mono);letter-spacing:.04em}
+.idx button.on{border-top-color:var(--c-pine-deep);color:var(--c-pine-deep)}
+.idx button.seen{border-top-color:var(--c-s400)}
+
+@media (prefers-reduced-motion:reduce){.on .rv,.on .arch img{animation:none}}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-alt-arrow-left-linear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5L9 12L15 19"/></symbol><symbol id="i-alt-arrow-right-linear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5L15 12L9 19"/></symbol><symbol id="i-arrow-right-linear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12H20M14 18L20 12L14 6"/></symbol><symbol id="i-check-circle-bold" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM16.0303 8.96967C16.3232 9.26256 16.3232 9.73744 16.0303 10.0303L11.0303 15.0303C10.7374 15.3232 10.2626 15.3232 9.96967 15.0303L7.96967 13.0303C7.67678 12.7374 7.67678 12.2626 7.96967 11.9697C8.26256 11.6768 8.73744 11.6768 9.03033 11.9697L10.5 13.4393L12.7348 11.2045L14.9697 8.96967C15.2626 8.67678 15.7374 8.67678 16.0303 8.96967Z" clip-rule="evenodd"/></symbol><symbol id="i-check-circle-linear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path stroke-linejoin="round" d="M8.5 12.5L10.5 14.5L15.5 9.5"/></g></symbol><symbol id="i-global-linear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M22 12C22 13.3132 21.7413 14.6136 21.2388 15.8268C20.7362 17.0401 19.9997 18.1425 19.0711 19.0711C18.1425 19.9997 17.0401 20.7362 15.8268 21.2388C14.6136 21.7413 13.3132 22 12 22C10.6868 22 9.38642 21.7413 8.17317 21.2388C6.95991 20.7362 5.85752 19.9997 4.92893 19.0711C4.00035 18.1425 3.26375 17.0401 2.7612 15.8268C2.25866 14.6136 2 13.3132 2 12C2 10.6868 2.25866 9.38642 2.76121 8.17316C3.26375 6.95991 4.00035 5.85752 4.92893 4.92893C5.85752 4.00035 6.95991 3.26375 8.17317 2.7612C9.38642 2.25866 10.6868 2 12 2C13.3132 2 14.6136 2.25866 15.8268 2.76121C17.0401 3.26375 18.1425 4.00035 19.0711 4.92893C19.9997 5.85752 20.7362 6.95991 21.2388 8.17317C21.7413 9.38642 22 10.6868 22 12L22 12Z"/><path d="M16 12C16 13.3132 15.8965 14.6136 15.6955 15.8268C15.4945 17.0401 15.1999 18.1425 14.8284 19.0711C14.457 19.9997 14.016 20.7362 13.5307 21.2388C13.0454 21.7413 12.5253 22 12 22C11.4747 22 10.9546 21.7413 10.4693 21.2388C9.98396 20.7362 9.54301 19.9997 9.17157 19.0711C8.80014 18.1425 8.5055 17.0401 8.30448 15.8268C8.10346 14.6136 8 13.3132 8 12C8 10.6868 8.10346 9.38642 8.30448 8.17316C8.5055 6.95991 8.80014 5.85752 9.17157 4.92893C9.54301 4.00035 9.98396 3.26375 10.4693 2.7612C10.9546 2.25866 11.4747 2 12 2C12.5253 2 13.0454 2.25866 13.5307 2.76121C14.016 3.26375 14.457 4.00035 14.8284 4.92893C15.1999 5.85752 15.4945 6.95991 15.6955 8.17317C15.8965 9.38642 16 10.6868 16 12L16 12Z"/><path d="M2 12H22"/></g></symbol><symbol id="i-leaf-linear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M12 9.00005L16.4317 4.56839M12 14.5L18.6143 7.88579M12 19.5L19.811 11.689"/><path d="M12 22C16.4183 22 20 18.3541 20 13.8567C20 9.39453 17.4467 4.18759 13.4629 2.32555C12.9986 2.10852 12.4993 2 12 2M12 22C7.58172 22 4 18.3541 4 13.8567C4 9.39453 6.55332 4.18759 10.5371 2.32555C11.0014 2.10852 11.5007 2 12 2M12 22V2"/></g></symbol><symbol id="i-map-point-linear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M13.4629 21.6744C12.5343 22.1085 11.4657 22.1085 10.5371 21.6744C6.55332 19.8124 4 14.6055 4 10.1433C4 5.64588 7.58172 2 12 2C16.4183 2 20 5.64588 20 10.1433C20 14.6055 17.4467 19.8124 13.4629 21.6744Z"/><circle cx="12" cy="10" r="3"/></g></symbol><symbol id="i-phone-calling-linear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M13.5 2.00006C13.5 2.00006 15.8335 2.21219 18.8033 5.18204C21.7731 8.15189 21.9853 10.4853 21.9853 10.4853"/><path d="M14.207 5.53564C14.207 5.53564 15.197 5.81849 16.6819 7.30341C18.1668 8.78834 18.4497 9.77829 18.4497 9.77829"/><path d="M19.0011 20.254C18.6399 20.6343 18.1917 20.9122 17.6763 20.9631C16.0468 21.1239 12.0621 20.9462 7.81536 16.4752C3.81072 12.259 3.09304 8.64546 3.00289 6.96594C2.96765 6.30945 3.25823 5.71766 3.69185 5.26114L5.26145 3.60864C6.13596 2.68795 7.61028 2.8305 8.37326 3.90961L9.63424 5.6931C10.2507 6.56497 10.1841 7.75924 9.47752 8.50311L9.1907 8.80507C9.1907 8.80507 8.10812 9.94484 11.0631 13.0559C14.0181 16.167 15.1007 15.0272 15.1007 15.0272L15.5562 14.5477C16.1858 13.8848 17.1672 13.7486 17.9728 14.2123L19.8833 15.312C21.1102 16.0182 21.3806 17.7489 20.4217 18.7584L19.0011 20.254Z"/></g></symbol><symbol id="seal" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle cx="100" cy="100" r="84" style="fill:none;stroke:var(--c-s400);stroke-width:1.6"/><use href="#i-leaf-linear" x="70" y="40" width="60" height="60" style="color:var(--c-pine-deep)"/><text x="104" y="146" text-anchor="middle" style="font-family:var(--font-serif);font-size:34px;letter-spacing:8px;fill:var(--c-pine-deep)">SE</text></symbol></svg>
+
+<main id="stage">
+
+  <header class="top">
+    <div class="who">
+      <svg class="seal" width="72" height="72" viewBox="0 0 200 200" aria-hidden="true"><use href="#seal"/></svg>
+      <b>Solar do Espinhaço</b>
+    </div>
+    <div class="rule-title">Receita da serra</div>
+    <div class="count"><b id="cn">01</b> / 06</div>
+  </header>
+
+  <!-- 01 · CAPA -->
+  <section class="screen cover on" data-name="Capa">
+    <div class="txt">
+      <div class="eyebrow rv" style="--i:0">Lapinha da Serra · Minas Gerais</div>
+      <h1 class="h rv" style="--i:1">Uma estadia<br/><em>em ponto lento</em></h1>
+      <p class="lead rv" style="--i:2">Chalé boutique na Serra do Espinhaço. Silêncio, paisagem e hospitalidade, preparados com calma.</p>
+      <div class="ficha rv" style="--i:3">
+        <div><div class="k">Check-in</div><div class="v">15h</div></div>
+        <div><div class="k">Check-out</div><div class="v">12h</div></div>
+        <div><div class="k">Preparo</div><div class="v">2–3<small>noites</small></div></div>
+      </div>
+      <button class="go rv" style="--i:4" data-go="1">Ver ingredientes <svg class="ic"><use href="#i-arrow-right-linear"/></svg></button>
+    </div>
+    <figure class="arch rv" style="--i:1">
+      <img src="../site/assets/images/Frente%20Dia%203.webp" alt="Fachada do Solar do Espinhaço de dia, com a serra ao fundo"/>
+      <figcaption>Lapinha · Minas Gerais · Brasil</figcaption>
+    </figure>
+  </section>
+
+  <!-- 02 · INGREDIENTES · SUÍTE -->
+  <section class="screen ingr" data-name="Suíte">
+    <figure class="arch rv" style="--i:0">
+      <img src="../site/assets/images/Suite.jpeg" alt="Suíte com cama king size e vista para a serra"/>
+      <figcaption>A suíte</figcaption>
+    </figure>
+    <div class="txt">
+      <div class="eyebrow rv" style="--i:1">Ingredientes · I</div>
+      <h2 class="h rv" style="--i:2">Para o <em>descanso</em></h2>
+      <div class="list rv" style="--i:3">
+        <button class="row"><span class="q">28<small>m²</small></span><span class="n">Suíte<span>com vista panorâmica</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">600<small>fios</small></span><span class="n">Cama king size<span>roupa de cama</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">1</span><span class="n">Banheira de imersão<span>em pedra natural</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">2</span><span class="n">Duchas<span>box até o teto</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">55<small>″</small></span><span class="n">Smart TV<span>soundbar e streaming</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">1</span><span class="n">Closet e roupão<span>toalhas de algodão egípcio</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+      </div>
+      <p class="hint rv" style="--i:4">Toque nos itens para marcar.</p>
+    </div>
+  </section>
+
+  <!-- 03 · INGREDIENTES · SALA E PISCINA -->
+  <section class="screen ingr" data-name="Sala">
+    <figure class="arch rv" style="--i:0">
+      <img src="../site/assets/images/Sala%20+%20Cozinha.webp" alt="Sala integrada com cozinha e portas abertas para o deck"/>
+      <figcaption>Sala, deck e piscina</figcaption>
+    </figure>
+    <div class="txt">
+      <div class="eyebrow rv" style="--i:1">Ingredientes · II</div>
+      <h2 class="h rv" style="--i:2">Para <em>misturar</em> à serra</h2>
+      <div class="list rv" style="--i:3">
+        <button class="row"><span class="q">26<small>m²</small></span><span class="n">Sala integrada<span>com sofá-cama</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">1</span><span class="n">Cozinha completa<span>marcenaria sob medida</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">65<small>″</small></span><span class="n">Smart TV<span>e Echo Show</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">1</span><span class="n">Deck em cumaru<span>sob pergolado envidraçado</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">∞</span><span class="n">Piscina aquecida<span>de borda infinita</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+        <button class="row"><span class="q">1</span><span class="n">Hidromassagem<span>área privativa</span></span><svg class="ic ck"><use href="#i-check-circle-linear"/></svg></button>
+      </div>
+      <p class="hint rv" style="--i:4">Toque nos itens para marcar.</p>
+    </div>
+  </section>
+
+  <!-- 04 · MODO DE PREPARO -->
+  <section class="screen prep" data-name="Preparo">
+    <div class="head">
+      <div>
+        <div class="eyebrow rv" style="--i:0">Modo de preparo</div>
+        <h2 class="h rv" style="--i:1">Sem pressa, <em>no seu ponto</em></h2>
+      </div>
+      <p class="lead rv" style="--i:2">Quatro passos para o primeiro dia. Toque em um passo para acompanhar.</p>
+    </div>
+    <div class="steps rv" style="--i:3">
+      <button class="step cur"><span class="when">15h</span><span class="num">1</span><h4>Chegue e desacelere</h4><p>Deixe a bagagem e abra as portas da sala para o deck.</p></button>
+      <button class="step"><span class="when">Fim de tarde</span><span class="num">2</span><h4>Mergulhe na piscina</h4><p>Água aquecida, de frente para a cordilheira.</p></button>
+      <button class="step"><span class="when">Noite</span><span class="num">3</span><h4>Acenda o deck</h4><p>Sob o pergolado, junto ao calor do fogo.</p></button>
+      <button class="step"><span class="when">Antes de dormir</span><span class="num">4</span><h4>Finalize na banheira</h4><p>Um spa privativo para fechar o dia.</p></button>
+    </div>
+  </section>
+
+  <!-- 05 · ACOMPANHAMENTOS -->
+  <section class="screen ingr" data-name="Passeios">
+    <figure class="arch rv" style="--i:0">
+      <img src="../site/assets/images/trilha.avif" alt="Trilha na Serra do Espinhaço"/>
+      <figcaption>Passeios privativos</figcaption>
+    </figure>
+    <div class="txt">
+      <div class="eyebrow rv" style="--i:1">Acompanhamentos</div>
+      <h2 class="h rv" style="--i:2">Para servir <em>lá fora</em></h2>
+      <div class="list rv" style="--i:3">
+        <div class="row"><span class="q">15<small>min</small></span><span class="n">Poço do Boqueirão<span>a pé do centro</span></span></div>
+        <div class="row"><span class="q">40<small>m</small></span><span class="n">Cachoeira do Lajeado<span>de queda</span></span></div>
+        <div class="row"><span class="q">7<small>mil anos</small></span><span class="n">Pinturas rupestres<span>com guia</span></span></div>
+        <div class="row"><span class="q">1.647<small>m</small></span><span class="n">Pico da Lapinha<span>de altitude</span></span></div>
+        <div class="row"><span class="q">273<small>m</small></span><span class="n">Cachoeira do Tabuleiro<span>travessia de 2 a 3 dias</span></span></div>
+      </div>
+      <p class="hint rv" style="--i:4">Roteiros organizados pelo Solar, no seu ritmo.</p>
+    </div>
+  </section>
+
+  <!-- 06 · SERVIR -->
+  <section class="screen serve" data-name="Reservar">
+    <div class="in">
+      <svg class="seal rv" style="--i:0" width="200" height="200" viewBox="0 0 200 200" aria-hidden="true"><use href="#seal"/></svg>
+      <div class="rule-title rv" style="--i:1">Rendimento · uma estadia</div>
+      <h2 class="h rv" style="--i:2">Sua estadia na serra<br/><em>começa aqui</em></h2>
+      <div class="contact rv" style="--i:3">
+        <div><svg class="ic"><use href="#i-phone-calling-linear"/></svg><span class="k">Telefone</span><span class="v">+55 31 9 9755-5245</span></div>
+        <div><svg class="ic"><use href="#i-global-linear"/></svg><span class="k">Reservas</span><span class="v">solardoespinhaco.com.br</span></div>
+        <div><svg class="ic"><use href="#i-map-point-linear"/></svg><span class="k">Endereço</span><span class="v">Rua Olhos D'água, 22</span></div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav" aria-label="Índice da receita">
+    <button class="arrow" id="prev" aria-label="Anterior"><svg class="ic"><use href="#i-alt-arrow-left-linear"/></svg></button>
+    <div class="idx" id="idx"></div>
+    <button class="arrow" id="next" aria-label="Próximo"><svg class="ic"><use href="#i-alt-arrow-right-linear"/></svg></button>
+  </nav>
+</main>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var screens=[].slice.call(document.querySelectorAll('.screen'));
+  var idx=document.getElementById('idx'),cn=document.getElementById('cn');
+  var prev=document.getElementById('prev'),next=document.getElementById('next');
+  var cur=0,seen={0:1};
+
+  function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
+  addEventListener('resize',fit);fit();
+
+  screens.forEach(function(sc,i){
+    var b=document.createElement('button');
+    b.innerHTML='<i>0'+(i+1)+'</i>'+sc.dataset.name;
+    b.setAttribute('aria-label','Ir para '+sc.dataset.name);
+    b.onclick=function(){go(i)};idx.appendChild(b);
+  });
+
+  function go(n){
+    n=Math.max(0,Math.min(screens.length-1,n));seen[n]=1;
+    screens.forEach(function(s,i){s.classList.toggle('on',i===n)});
+    [].forEach.call(idx.children,function(b,i){b.classList.toggle('on',i===n);b.classList.toggle('seen',!!seen[i]&&i!==n)});
+    cn.textContent='0'+(n+1);prev.disabled=n===0;next.disabled=n===screens.length-1;cur=n;
+  }
+  prev.onclick=function(){go(cur-1)};next.onclick=function(){go(cur+1)};
+  [].forEach.call(document.querySelectorAll('[data-go]'),function(b){b.onclick=function(){go(+b.dataset.go)}});
+
+  [].forEach.call(document.querySelectorAll('button.row'),function(r){
+    r.onclick=function(){r.classList.toggle('done');r.querySelector('.ck use').setAttribute('href','#i-'+(r.classList.contains('done')?'check-circle-bold':'check-circle-linear'))};
+  });
+  var steps=[].slice.call(document.querySelectorAll('.step'));
+  steps.forEach(function(s){s.onclick=function(){steps.forEach(function(x){x.classList.remove('cur')});s.classList.add('cur')}});
+
+  addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1)});
+  var x0=null;
+  stage.addEventListener('pointerdown',function(e){x0=e.clientX});
+  stage.addEventListener('pointerup',function(e){if(x0===null)return;var d=e.clientX-x0;x0=null;if(Math.abs(d)>90)go(cur+(d<0?1:-1))});
+  go(0);
+})();
+</script>
+
+</body>
+</html>
