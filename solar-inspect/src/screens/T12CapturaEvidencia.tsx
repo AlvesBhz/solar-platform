@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { comprimirComCarimbo, obterPosicao, uuid } from '../lib/imagem';
 import { itemDa } from '../mocks/checklist';
 import { salvarFoto } from '../mocks/fotos';
@@ -16,7 +16,10 @@ export default function T12CapturaEvidencia() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
   const rasc = lerRascunho(unidadeId);
-  const volta = `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc?.tipoId === 'saida' ? '/comparar' : ''}`;
+  const [q] = useSearchParams();
+  const volta = q.get('de') === 'checklist'
+    ? `/app/vistorias/nova/${unidadeId}/checklist`
+    : `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc?.tipoId === 'saida' ? '/comparar' : ''}`;
 
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);

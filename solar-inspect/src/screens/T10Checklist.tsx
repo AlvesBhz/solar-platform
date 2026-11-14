@@ -45,18 +45,22 @@ export default function T10Checklist() {
     if (alvo) setTimeout(() => document.getElementById(`item-${alvo}`)?.scrollIntoView({ block: 'center' }), 80);
   }, [ambientes]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Todos os itens do ambiente completos: segue sozinho para o próximo (uma vez por ambiente).
+  // Ambiente completo: segue sozinho (uma vez por ambiente) para o próximo que ainda tem pendência;
+  // se não restar nenhum, abre o resumo.
   useEffect(() => {
     const a = ambientes[idx];
-    if (!rasc || !a || idx >= ambientes.length - 1 || rasc.avancou?.[a.id]) return;
-    if (!a.itens.every((i) => itemCompleto(i, rasc.respostas[i.id], rasc.obs?.[i.id], nFotos[i.id] ?? 0))) return;
+    if (!rasc || !a || rasc.avancou?.[a.id]) return;
+    const completa = (x: typeof a) => x.itens.every((i) => itemCompleto(i, rasc.respostas[i.id], rasc.obs?.[i.id], nFotos[i.id] ?? 0));
+    if (!completa(a)) return;
     const t = setTimeout(() => {
-      setRasc(salvarRascunho({ ...rasc, avancou: { ...rasc.avancou, [a.id]: true }, ambAtual: ambientes[idx + 1].id, ultimoItem: undefined }));
-      setIdx(idx + 1);
+      const prox = [...ambientes.slice(idx + 1), ...ambientes.slice(0, idx)].find((x) => !completa(x));
+      setRasc(salvarRascunho({ ...rasc, avancou: { ...rasc.avancou, [a.id]: true }, ambAtual: (prox ?? a).id, ultimoItem: undefined }));
+      if (!prox) return navigate(`/app/vistorias/nova/${unidadeId}/resumo`);
+      setIdx(ambientes.indexOf(prox));
       window.scrollTo({ top: 0 });
     }, 600);
     return () => clearTimeout(t);
-  }, [rasc, nFotos, idx, ambientes]);
+  }, [rasc, nFotos, idx, ambientes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
   // Sem presença validada não há checklist (CA-02).
@@ -74,6 +78,8 @@ export default function T10Checklist() {
     setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, [itemId]: valor }, ambAtual: amb.id, ultimoItem: itemId }));
     // Divergência exige foto e observação: abre o detalhe do item na hora.
     if (divergente(valor)) navigate(detalhe(itemId));
+    // Foto obrigatória: abre a câmera na hora (sem foto o ambiente nunca fecha); volta direto ao checklist.
+    else if (todos.find((i) => i.id === itemId)?.foto && valor !== 'N/A' && !nFotos[itemId]) navigate(`/app/vistorias/nova/${unidadeId}/item/${itemId}/foto?de=checklist`);
   }
 
   return (
