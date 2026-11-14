@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
@@ -34,6 +34,30 @@ export default function T10Checklist() {
   const divergentes = todos.filter((i) => divergente(rasc?.respostas[i.id])).length;
   const pct = todos.length ? Math.round((respondidos / todos.length) * 100) : 0;
 
+  // Volta do detalhe do item: reabre o ambiente e a posição em que o usuário estava.
+  const restaurou = useRef(false);
+  useEffect(() => {
+    if (!ambientes.length || restaurou.current) return;
+    restaurou.current = true;
+    const i = ambientes.findIndex((a) => a.id === rasc?.ambAtual);
+    if (i > 0) setIdx(i);
+    const alvo = rasc?.ultimoItem;
+    if (alvo) setTimeout(() => document.getElementById(`item-${alvo}`)?.scrollIntoView({ block: 'center' }), 80);
+  }, [ambientes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Todos os itens do ambiente completos: segue sozinho para o próximo (uma vez por ambiente).
+  useEffect(() => {
+    const a = ambientes[idx];
+    if (!rasc || !a || idx >= ambientes.length - 1 || rasc.avancou?.[a.id]) return;
+    if (!a.itens.every((i) => itemCompleto(i, rasc.respostas[i.id], rasc.obs?.[i.id], nFotos[i.id] ?? 0))) return;
+    const t = setTimeout(() => {
+      setRasc(salvarRascunho({ ...rasc, avancou: { ...rasc.avancou, [a.id]: true }, ambAtual: ambientes[idx + 1].id, ultimoItem: undefined }));
+      setIdx(idx + 1);
+      window.scrollTo({ top: 0 });
+    }, 600);
+    return () => clearTimeout(t);
+  }, [rasc, nFotos, idx, ambientes]);
+
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
   // Sem presença validada não há checklist (CA-02).
   if (!rasc?.inicio) return <Navigate to={`/app/vistorias/nova/${unidadeId}/presenca`} replace />;
@@ -42,9 +66,12 @@ export default function T10Checklist() {
   const feitos = (itens: Item[]) => itens.filter(completo).length;
   const detalhe = (itemId: string) => `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc.tipoId === 'saida' ? '/comparar' : ''}`;
 
+  const irPara = (i: number) => { setIdx(i); setRasc((r) => salvarRascunho({ ...r!, ambAtual: ambientes[i].id, ultimoItem: undefined })); };
+  const marcar = (itemId: string) => setRasc((r) => salvarRascunho({ ...r!, ambAtual: amb.id, ultimoItem: itemId }));
+
   function responder(itemId: string, valor: string) {
     // Gravação incremental: cada toque salva o rascunho no aparelho.
-    setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, [itemId]: valor } }));
+    setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, [itemId]: valor }, ambAtual: amb.id, ultimoItem: itemId }));
     // Divergência exige foto e observação: abre o detalhe do item na hora.
     if (divergente(valor)) navigate(detalhe(itemId));
   }
@@ -77,7 +104,7 @@ export default function T10Checklist() {
                     type="button"
                     role="tab"
                     aria-selected={atual}
-                    onClick={() => setIdx(i)}
+                    onClick={() => irPara(i)}
                     className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] transition-colors duration-fast ${
                       atual ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2'
                     }`}
@@ -106,7 +133,7 @@ export default function T10Checklist() {
                 const ok = completo(item);
                 const n = nFotos[item.id] ?? 0;
                 return (
-                  <li key={item.id} className={`flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm ${diverge ? 'border-warning' : 'border-line-1'}`}>
+                  <li key={item.id} id={`item-${item.id}`} className={`scroll-mt-52 flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm ${diverge ? 'border-warning' : 'border-line-1'}`}>
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-[0.875rem] font-medium text-fg-1">{item.nome}</span>
                       {ok && <Icon icon="solar:check-circle-linear" width={18} className="shrink-0 text-available" aria-label="Item completo" />}
@@ -139,6 +166,7 @@ export default function T10Checklist() {
                     </div>
                     <Link
                       to={detalhe(item.id)}
+                      onClick={() => marcar(item.id)}
                       className={`-mx-1 flex min-h-11 items-center justify-between gap-2 rounded-md px-1 text-[0.75rem] transition-colors duration-fast hover:bg-cream ${r && !ok ? 'text-warning' : 'text-fg-3'}`}
                     >
                       <span className="inline-flex items-center gap-1.5">
@@ -154,7 +182,7 @@ export default function T10Checklist() {
               })}
             </ul>
             {idx < ambientes.length - 1 && (
-              <button type="button" className={`${btnSecondary} mt-2`} onClick={() => { setIdx(idx + 1); window.scrollTo({ top: 0 }); }}>
+              <button type="button" className={`${btnSecondary} mt-2`} onClick={() => { irPara(idx + 1); window.scrollTo({ top: 0 }); }}>
                 Próximo ambiente: {ambientes[idx + 1].nome} <Icon icon="solar:alt-arrow-right-linear" width={18} aria-hidden="true" />
               </button>
             )}

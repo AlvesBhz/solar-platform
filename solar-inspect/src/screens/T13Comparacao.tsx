@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { CampoObservacao, GradeEvidencias, ListaRequisitos, SeletorResposta } from '../components/Evidencia';
+import { CampoObservacao, GradeEvidencias, ListaRequisitos, SeletorGravidade, SeletorResposta } from '../components/Evidencia';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { formatarData } from '../components/Status';
 import { divergente, requisitos } from '../lib/evidencia';
@@ -13,7 +13,7 @@ import { useItem } from '../lib/useItem';
 export default function T13Comparacao() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade } = useItem(unidadeId, itemId);
   const base = `/app/vistorias/nova/${unidadeId}`;
   const atual = fotos[fotos.length - 1];
   const [urlAtual, setUrlAtual] = useState<string>();
@@ -85,6 +85,8 @@ export default function T13Comparacao() {
               <SeletorResposta opcoes={tipo.respostas} valor={resposta} onChange={responder} rotulo={`Estado de ${ctx.item.nome} na saída`} />
             </section>
 
+            {divergente(resposta) && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
+
             <CampoObservacao valor={obs} onChange={observar} obrigatoria={divergente(resposta)} />
 
             {fotos.length > 0 && (
@@ -97,12 +99,6 @@ export default function T13Comparacao() {
             )}
 
             {resposta && <ListaRequisitos itens={reqs} />}
-            {divergente(resposta) && (
-              <Link to={`${base}/item/${itemId}/ocorrencia`} className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-warning bg-warning-bg px-4 text-[0.8125rem] font-medium text-warning">
-                <span className="inline-flex items-center gap-2"><Icon icon="solar:danger-triangle-linear" width={18} aria-hidden="true" />{rasc.ocorrencias?.[itemId] ? 'Editar ocorrência' : 'Detalhar ocorrência'}</span>
-                <Icon icon="solar:alt-arrow-right-linear" width={18} aria-hidden="true" />
-              </Link>
-            )}
           </>
         )}
       </main>

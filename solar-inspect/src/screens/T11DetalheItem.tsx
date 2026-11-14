@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorResposta } from '../components/Evidencia';
+import { CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorGravidade, SeletorResposta } from '../components/Evidencia';
 import { btnPrimary } from '../components/ScreenShell';
 import { divergente, requisitos } from '../lib/evidencia';
 import { useItem } from '../lib/useItem';
@@ -11,7 +11,7 @@ import { useItem } from '../lib/useItem';
 export default function T11DetalheItem() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade } = useItem(unidadeId, itemId);
   const base = `/app/vistorias/nova/${unidadeId}`;
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
@@ -55,6 +55,8 @@ export default function T11DetalheItem() {
               )}
             </section>
 
+            {div && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
+
             <CampoObservacao valor={obs} onChange={observar} obrigatoria={div} />
 
             <section className="flex flex-col gap-2">
@@ -65,12 +67,6 @@ export default function T11DetalheItem() {
             </section>
 
             {resposta && <ListaRequisitos itens={reqs} />}
-            {divergente(resposta) && (
-              <Link to={`${base}/item/${itemId}/ocorrencia`} className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-warning bg-warning-bg px-4 text-[0.8125rem] font-medium text-warning">
-                <span className="inline-flex items-center gap-2"><Icon icon="solar:danger-triangle-linear" width={18} aria-hidden="true" />{rasc.ocorrencias?.[itemId] ? 'Editar ocorrência' : 'Detalhar ocorrência'}</span>
-                <Icon icon="solar:alt-arrow-right-linear" width={18} aria-hidden="true" />
-              </Link>
-            )}
           </>
         )}
       </main>

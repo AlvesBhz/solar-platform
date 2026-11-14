@@ -11,6 +11,9 @@ export type Rascunho = {
   obs?: Record<string, string>;
   ocorrencias?: Record<string, { gravidade: 'baixa' | 'media' | 'critica'; descricao: string }>; // 1 por item (sem duplicidade)
   assinatura?: string;
+  ambAtual?: string; // ambiente em avaliação (volta do detalhe reposiciona aqui)
+  ultimoItem?: string;
+  avancou?: Record<string, boolean>; // ambientes já concluídos que avançaram sozinhos
   salvoEm?: string;
 };
 

@@ -3,18 +3,12 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { GradeEvidencias } from '../components/Evidencia';
+import { GradeEvidencias, SeletorGravidade } from '../components/Evidencia';
 import { btnPrimary } from '../components/ScreenShell';
 import { divergente } from '../lib/evidencia';
 import { useItem } from '../lib/useItem';
 import type { Gravidade } from '../mocks/unidades';
 import { salvarRascunho } from '../mocks/vistoria';
-
-const GRAVIDADES: { id: Gravidade; label: string; icon: string; desc: string; cls: string }[] = [
-  { id: 'baixa', label: 'Baixa', icon: 'solar:info-circle-linear', desc: 'Não afeta a estadia', cls: 'border-pine bg-pine text-white' },
-  { id: 'media', label: 'Média', icon: 'solar:danger-circle-linear', desc: 'Resolver antes da próxima estadia', cls: 'border-warning bg-warning-bg text-warning' },
-  { id: 'critica', label: 'Crítica', icon: 'solar:danger-triangle-linear', desc: 'Impede a entrega da unidade', cls: 'border-error bg-white text-error ring-1 ring-error' },
-];
 
 /** T14 — Ocorrência: detalha a divergência (descrição, gravidade, fotos). Uma por item: sem duplicidade. */
 export default function T14Ocorrencia() {
@@ -25,7 +19,7 @@ export default function T14Ocorrencia() {
   const base = `/app/vistorias/nova/${unidadeId}`;
   const existente = rasc?.ocorrencias?.[itemId];
   const [grav, setGrav] = useState<Gravidade | null>(existente?.gravidade ?? null);
-  const [desc, setDesc] = useState(existente?.descricao ?? obs);
+  const [desc, setDesc] = useState(existente?.descricao || obs);
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
   if (!rasc?.inicio) return <Navigate to={`${base}/presenca`} replace />;
@@ -48,22 +42,7 @@ export default function T14Ocorrencia() {
           <h1 className="screen-title">{ctx?.item.nome ?? '…'}</h1>
         </div>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-xs uppercase tracking-[0.08em] text-fg-2">Gravidade</legend>
-          {GRAVIDADES.map((o) => {
-            const sel = g === o.id;
-            return (
-              <label key={o.id} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors duration-fast ${sel ? o.cls : 'border-line-1 bg-white text-fg-2 hover:border-fg-3'}`}>
-                <input type="radio" name="grav" className="sr-only" checked={sel} onChange={() => setGrav(o.id)} />
-                <Icon icon={o.icon} width={20} aria-hidden="true" />
-                <span className="flex flex-col">
-                  <span className="text-[0.875rem] font-medium">{o.label}</span>
-                  <span className={`text-[0.75rem] ${sel && o.id === 'baixa' ? 'text-white/80' : 'opacity-80'}`}>{o.desc}</span>
-                </span>
-              </label>
-            );
-          })}
-        </fieldset>
+        <SeletorGravidade valor={g} onChange={setGrav} />
 
         <label className="flex flex-col gap-2">
           <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Descrição</span>

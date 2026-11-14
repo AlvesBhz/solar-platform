@@ -30,7 +30,7 @@ export function useResumo(unidadeId: string) {
     .filter(({ item }) => divergente(resp(item.id)))
     .map(({ item, ambiente }) => {
       const o = rasc?.ocorrencias?.[item.id];
-      return { item, ambiente, gravidade: o?.gravidade ?? (item.critico ? 'critica' : 'media'), descricao: o?.descricao ?? rasc?.obs?.[item.id] ?? '' };
+      return { item, ambiente, gravidade: o?.gravidade ?? (item.critico ? 'critica' : 'media'), descricao: o?.descricao || rasc?.obs?.[item.id] || '' };
     });
   const totalFotos = Object.values(nFotos ?? {}).reduce((a, b) => a + b, 0);
   const minutos = rasc?.inicio ? Math.max(0, Math.round((Date.now() - new Date(rasc.inicio).getTime()) / 60000)) : 0;
