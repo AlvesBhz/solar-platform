@@ -43,6 +43,13 @@ export default function T05MinhasUnidades() {
         eyebrow="Vistorias"
         title="Minhas unidades"
         action={
+          <>
+          <Link to="/app/sincronizacao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Sincronização">
+            <Icon icon="solar:refresh-circle-linear" width={22} aria-hidden="true" />
+          </Link>
+          <Link to="/app/historico" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Meu histórico">
+            <Icon icon="solar:history-linear" width={22} aria-hidden="true" />
+          </Link>
           <button
             type="button"
             onClick={() => navigate('/login')}
@@ -51,6 +58,7 @@ export default function T05MinhasUnidades() {
           >
             <Icon icon="solar:logout-2-linear" width={22} aria-hidden="true" />
           </button>
+          </>
         }
       />
 

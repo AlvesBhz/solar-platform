@@ -166,7 +166,7 @@ export default function T10Checklist() {
         {aviso ? (
           <p className="flex items-start gap-2 text-[0.75rem] text-fg-2" role="status">
             <Icon icon="solar:info-circle-linear" width={16} className="mt-px shrink-0 text-pine" aria-hidden="true" />
-            Mockup: a próxima etapa (T15 · Resumo) ainda não foi implementada.
+            Mockup: etapa seguinte indisponível.
           </p>
         ) : (
           <p className="text-center text-[0.75rem] text-fg-3">
@@ -174,7 +174,7 @@ export default function T10Checklist() {
             {divergentes > 0 && ` · ${divergentes} divergência${divergentes > 1 ? 's' : ''}`}
           </p>
         )}
-        <button type="button" className={btnPrimary} disabled={!todos.length || respondidos < todos.length} onClick={() => setAviso(true)}>
+        <button type="button" className={btnPrimary} disabled={!todos.length || respondidos < todos.length} onClick={() => navigate(`/app/vistorias/nova/${unidadeId}/resumo`)}>
           Revisar e enviar <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
         </button>
       </BottomBar>

@@ -97,6 +97,12 @@ export default function T13Comparacao() {
             )}
 
             {resposta && <ListaRequisitos itens={reqs} />}
+            {divergente(resposta) && (
+              <Link to={`${base}/item/${itemId}/ocorrencia`} className="flex min-h-12 items-center justify-between gap-3 rounded-xl border border-warning bg-warning-bg px-4 text-[0.8125rem] font-medium text-warning">
+                <span className="inline-flex items-center gap-2"><Icon icon="solar:danger-triangle-linear" width={18} aria-hidden="true" />{rasc.ocorrencias?.[itemId] ? 'Editar ocorrência' : 'Detalhar ocorrência'}</span>
+                <Icon icon="solar:alt-arrow-right-linear" width={18} aria-hidden="true" />
+              </Link>
+            )}
           </>
         )}
       </main>

@@ -23,6 +23,12 @@ import T10Checklist from './screens/T10Checklist';
 import T11DetalheItem from './screens/T11DetalheItem';
 import T12CapturaEvidencia from './screens/T12CapturaEvidencia';
 import T13Comparacao from './screens/T13Comparacao';
+import T14Ocorrencia from './screens/T14Ocorrencia';
+import T15Resumo from './screens/T15Resumo';
+import T16Assinatura from './screens/T16Assinatura';
+import T17Confirmacao from './screens/T17Confirmacao';
+import T18Sincronizacao from './screens/T18Sincronizacao';
+import T19MeuHistorico from './screens/T19MeuHistorico';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -42,6 +48,12 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<T11DetalheItem />} />
         <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<T12CapturaEvidencia />} />
         <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<T13Comparacao />} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/ocorrencia" element={<T14Ocorrencia />} />
+        <Route path="/app/vistorias/nova/:unidadeId/resumo" element={<T15Resumo />} />
+        <Route path="/app/vistorias/nova/:unidadeId/assinatura" element={<T16Assinatura />} />
+        <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<T17Confirmacao />} />
+        <Route path="/app/sincronizacao" element={<T18Sincronizacao />} />
+        <Route path="/app/historico" element={<T19MeuHistorico />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

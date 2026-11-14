@@ -9,6 +9,8 @@ export type Rascunho = {
   inicio?: string;
   respostas: Record<string, string>;
   obs?: Record<string, string>;
+  ocorrencias?: Record<string, { gravidade: 'baixa' | 'media' | 'critica'; descricao: string }>; // 1 por item (sem duplicidade)
+  assinatura?: string;
   salvoEm?: string;
 };
 
@@ -34,4 +36,9 @@ export function salvarRascunho(r: Rascunho): Rascunho {
 
 export function novoRascunho(unidadeId: string, tipoId: string): Rascunho {
   return salvarRascunho({ id: uuid(), unidadeId, tipoId, presenca: {}, respostas: {} });
+}
+
+export function descartarRascunho() {
+  memoria = null;
+  try { sessionStorage.removeItem(KEY); } catch { /* ok */ }
 }

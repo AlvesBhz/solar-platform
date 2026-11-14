@@ -5,7 +5,7 @@ import { salvarRascunho } from '../mocks/vistoria';
 
 // MOCKUP: menu flutuante para pular entre as telas na simulação. Remover na versão real.
 const V = '/app/vistorias/nova';
-type Tela = { id: string; nome: string; rota: string; rascunho?: { u: string; tipo: string; inicio?: boolean } };
+type Tela = { id: string; nome: string; rota: string; rascunho?: { u: string; tipo: string; inicio?: boolean; resp?: Record<string, string> } };
 
 const GRUPOS: { titulo: string; telas: Tela[] }[] = [
   { titulo: 'Acesso', telas: [
@@ -24,6 +24,11 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
     { id: 'T11', nome: 'Detalhe do item', rota: `${V}/chale-ipe/item/cama`, rascunho: { u: 'chale-ipe', tipo: 'entrada', inicio: true } },
     { id: 'T12', nome: 'Captura de evidência', rota: `${V}/chale-ipe/item/cama/foto`, rascunho: { u: 'chale-ipe', tipo: 'entrada', inicio: true } },
     { id: 'T13', nome: 'Comparação entrada × saída', rota: `${V}/chale-candeia/item/sofa/comparar`, rascunho: { u: 'chale-candeia', tipo: 'saida', inicio: true } },
+    { id: 'T14', nome: 'Ocorrência', rota: `${V}/chale-candeia/item/sofa/ocorrencia`, rascunho: { u: 'chale-candeia', tipo: 'saida', inicio: true, resp: { sofa: 'Danificado' } } },
+    { id: 'T15', nome: 'Resumo', rota: `${V}/chale-candeia/resumo`, rascunho: { u: 'chale-candeia', tipo: 'saida', inicio: true } },
+    { id: 'T16', nome: 'Assinatura', rota: `${V}/chale-candeia/assinatura`, rascunho: { u: 'chale-candeia', tipo: 'saida', inicio: true } },
+    { id: 'T18', nome: 'Sincronização', rota: '/app/sincronizacao' },
+    { id: 'T19', nome: 'Meu histórico', rota: '/app/historico' },
   ] },
 ];
 
@@ -34,8 +39,8 @@ export default function SimNav() {
 
   function ir(t: Tela) {
     if (t.rascunho) {
-      const { u, tipo, inicio } = t.rascunho;
-      salvarRascunho({ id: `sim-${u}-${tipo}`, unidadeId: u, tipoId: tipo, presenca: {}, respostas: {}, inicio: inicio ? new Date().toISOString() : undefined });
+      const { u, tipo, inicio, resp } = t.rascunho;
+      salvarRascunho({ id: `sim-${u}-${tipo}`, unidadeId: u, tipoId: tipo, presenca: {}, respostas: resp ?? {}, inicio: inicio ? new Date().toISOString() : undefined });
     }
     setAberto(false);
     navigate(t.rota);
@@ -46,7 +51,7 @@ export default function SimNav() {
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="fixed right-0 top-1/2 z-40 flex h-12 w-11 -translate-y-1/2 items-center justify-center rounded-l-lg bg-pine-deep text-white shadow-lg"
+        className="fixed z-40 flex h-11 w-11 items-center justify-center rounded-full bg-pine-deep text-white opacity-90 shadow-lg" style={{ left: 'calc(env(safe-area-inset-left, 0px) + 0.5rem)', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6.5rem)' }}
         aria-label="Abrir navegação da simulação"
       >
         <Icon icon="solar:layers-minimalistic-linear" width={20} aria-hidden="true" />
