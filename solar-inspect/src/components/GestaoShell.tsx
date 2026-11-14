@@ -1,8 +1,10 @@
 import { Icon } from '@iconify/react';
-import type { ReactNode } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LockupHorizontal } from './Logo';
 import NetworkBadge from './NetworkBadge';
+
+let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
 
 const MENU = [
   { to: '/gestao', icon: 'solar:widget-linear', label: 'Dashboard', end: true },
@@ -20,6 +22,28 @@ const MENU = [
 /** Moldura de gestão/admin: responsiva para desktop e tablet (menu lateral) e utilizável no celular. */
 export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titulo: string; eyebrow?: string; acoes?: ReactNode; children: ReactNode }) {
   const navigate = useNavigate();
+  const nav = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const n = nav.current;
+    if (!n || n.scrollWidth <= n.clientWidth) return; // no desktop o menu é vertical
+    const reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const centralizar = (suave: boolean) => {
+      const a = n.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!a) return;
+      const alvo = Math.max(0, a.offsetLeft - (n.clientWidth - a.offsetWidth) / 2);
+      n.scrollTo({ left: alvo, behavior: suave && !reduz ? 'smooth' : 'auto' });
+      ultimoScroll = alvo;
+    };
+    n.scrollLeft = ultimoScroll;
+    centralizar(true);
+    // Os ícones carregam depois do primeiro desenho e mudam a largura dos itens: recentraliza.
+    let largura = n.scrollWidth;
+    const ro = new ResizeObserver(() => { if (n.scrollWidth !== largura) { largura = n.scrollWidth; centralizar(false); } });
+    n.querySelectorAll('a').forEach((a) => ro.observe(a));
+    const t = setTimeout(() => ro.disconnect(), 2000);
+    return () => { ro.disconnect(); clearTimeout(t); };
+  }, [pathname]);
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] transition-colors duration-fast ${isActive ? 'bg-white/10 font-medium text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`;
   return (
@@ -28,7 +52,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         <div className="hidden px-2 pt-2 lg:block">
           <LockupHorizontal size="1.25rem" claro />
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-3 py-2 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden" aria-label="Gestão">
+        <nav ref={nav} className="relative flex gap-1 overflow-x-auto px-[45vw] py-2 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden" aria-label="Gestão">
           {MENU.map((m, i) => (
             <div key={m.to} className="contents">
               {m.admin && !MENU[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
@@ -51,6 +75,35 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-24 lg:px-8">{children}</main>
       </div>
     </div>
+  );
+}
+
+export type Col<T> = { h: string; r: (x: T) => ReactNode; principal?: boolean };
+
+/** Tabela a partir de 768 px; no celular cada linha vira um cartão (sem rolagem lateral). */
+export function TabelaResp<T>({ cols, rows }: { cols: Col<T>[]; rows: T[] }) {
+  const tit = cols.find((c) => c.principal) ?? cols[0];
+  return (
+    <>
+      <div className={`${card} hidden overflow-x-auto md:block`}>
+        <table className="w-full">
+          <thead className="border-b border-line-1"><tr>{cols.map((c) => <th key={c.h} className={th}>{c.h}</th>)}</tr></thead>
+          <tbody className="divide-y divide-line-1">{rows.map((x, i) => <tr key={i} className="hover:bg-cream">{cols.map((c) => <td key={c.h} className={td}>{c.r(x)}</td>)}</tr>)}</tbody>
+        </table>
+      </div>
+      <ul className="flex flex-col gap-2 md:hidden">
+        {rows.map((x, i) => (
+          <li key={i} className={`${card} flex flex-col gap-2 p-4`}>
+            <div className="text-[0.9375rem] font-medium text-fg-1 [overflow-wrap:anywhere]">{tit.r(x)}</div>
+            <dl className="grid grid-cols-[minmax(0,1fr)] gap-1.5 text-[0.8125rem]">
+              {cols.filter((c) => c !== tit).map((c) => (
+                <div key={c.h} className="flex items-baseline justify-between gap-3"><dt className="shrink-0 text-fg-3">{c.h}</dt><dd className="min-w-0 text-right text-fg-1 [overflow-wrap:anywhere]">{c.r(x)}</dd></div>
+              ))}
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 

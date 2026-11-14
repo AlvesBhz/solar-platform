@@ -1,7 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import GestaoShell, { card, td, th } from '../components/GestaoShell';
+import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
 import { listarEnvios, type Envio } from '../mocks/envios';
@@ -96,22 +96,13 @@ export function T21Unidades() {
         </select>
       </div>
       {!us ? <Carregando /> : (
-        <div className={`${card} overflow-x-auto`}>
-          <table className="w-full min-w-[36rem]">
-            <thead className="border-b border-line-1"><tr><th className={th}>Unidade</th><th className={th}>Propriedade</th><th className={th}>Estado</th><th className={th}>Ocorrências</th><th className={th}>Última vistoria</th></tr></thead>
-            <tbody className="divide-y divide-line-1">
-              {lista.map((u) => (
-                <tr key={u.id} className="hover:bg-cream">
-                  <td className={td}><Link to={`/gestao/unidades/${u.id}`} className="font-medium text-pine underline-offset-4 hover:underline">{u.nome}</Link><div className="text-[0.75rem] text-fg-3">{u.tipo}</div></td>
-                  <td className={td}>{u.propriedade}</td>
-                  <td className={td}><EstadoBadge estado={u.estado} /></td>
-                  <td className={`${td} font-mono`}>{nOc(u.id) || '—'}</td>
-                  <td className={`${td} text-fg-2`}>{u.ultima ? `${u.ultima.tipo} · ${formatarData(u.ultima.data)}` : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TabelaResp rows={lista} cols={[
+          { h: 'Unidade', r: (u) => (<><Link to={`/gestao/unidades/${u.id}`} className="font-medium text-pine underline-offset-4 hover:underline">{u.nome}</Link><div className="text-[0.75rem] text-fg-3">{u.tipo}</div></>) },
+          { h: 'Propriedade', r: (u) => u.propriedade },
+          { h: 'Estado', r: (u) => <EstadoBadge estado={u.estado} /> },
+          { h: 'Ocorrências', r: (u) => <span className="font-mono">{nOc(u.id) || '—'}</span> },
+          { h: 'Última vistoria', r: (u) => <span className="text-fg-2">{u.ultima ? `${u.ultima.tipo} · ${formatarData(u.ultima.data)}` : '—'}</span> },
+        ]} />
       )}
     </GestaoShell>
   );
@@ -192,20 +183,13 @@ export function T23Vistorias() {
       <select value={st} onChange={(e) => { setSt(e.target.value); setPag(0); }} className="min-h-11 w-full rounded-md border border-line-2 bg-white px-3 sm:w-56" aria-label="Status">
         <option value="">Todos os status</option><option value="enviada">Enviada</option><option value="sinalizada">Sinalizada</option><option value="pendente">Pendente</option>
       </select>
-      <div className={`${card} overflow-x-auto`}>
-        <table className="w-full min-w-[34rem]">
-          <thead className="border-b border-line-1"><tr><th className={th}>Unidade</th><th className={th}>Tipo</th><th className={th}>Concluída</th><th className={th}>Status</th><th className={th}>Ocorr.</th></tr></thead>
-          <tbody className="divide-y divide-line-1">
-            {lista.slice(pag * POR, pag * POR + POR).map((e) => (
-              <tr key={e.id} className="hover:bg-cream">
-                <td className={td}><Link to={`/gestao/vistorias/${e.id}`} className="font-medium text-pine hover:underline">{e.unidade}</Link></td>
-                <td className={td}>{e.tipo}</td><td className={`${td} text-fg-2`}>{formatarData(e.fim)}</td>
-                <td className={td}><span className={e.status === 'enviada' ? 'text-available' : 'text-warning'}>{e.status}</span></td><td className={`${td} font-mono`}>{e.ocorrencias}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TabelaResp rows={lista.slice(pag * POR, pag * POR + POR)} cols={[
+        { h: 'Unidade', r: (e) => <Link to={`/gestao/vistorias/${e.id}`} className="font-medium text-pine hover:underline">{e.unidade}</Link> },
+        { h: 'Tipo', r: (e) => e.tipo },
+        { h: 'Concluída', r: (e) => <span className="text-fg-2">{formatarData(e.fim)}</span> },
+        { h: 'Status', r: (e) => <span className={e.status === 'enviada' ? 'text-available' : 'text-warning'}>{e.status}</span> },
+        { h: 'Ocorr.', r: (e) => <span className="font-mono">{e.ocorrencias}</span> },
+      ]} />
       <div className="flex items-center justify-between text-[0.75rem] text-fg-3">
         <span>{lista.length} registros</span>
         <div className="flex gap-2"><button type="button" disabled={pag === 0} onClick={() => setPag(pag - 1)} className="min-h-11 px-3 disabled:opacity-40">Anterior</button><button type="button" disabled={(pag + 1) * POR >= lista.length} onClick={() => setPag(pag + 1)} className="min-h-11 px-3 disabled:opacity-40">Próxima</button></div>

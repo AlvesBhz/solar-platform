@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { checklistDa, type Ambiente } from '../mocks/checklist';
-import GestaoShell, { card, td, th } from '../components/GestaoShell';
+import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { VALIDACAO, formatarData } from '../components/Status';
 import { listarAuditoria, registrarAuditoria, unidadesGestao } from '../mocks/gestao';
 import { listarTipos, type TipoVistoria, type Unidade } from '../mocks/unidades';
@@ -48,27 +48,22 @@ const USUARIOS = [
 /** T32 — Usuários e permissões: perfil, propriedades e status (menor privilégio). */
 export function T32Usuarios() {
   const [l, setL] = useState(USUARIOS);
+  const alternar = (email: string) => {
+    const u = l.find((x) => x.email === email)!;
+    setL(l.map((x) => (x.email === email ? { ...x, ativo: !x.ativo } : x)));
+    registrarAuditoria(u.ativo ? 'Usuário desativado' : 'Usuário reativado', email);
+  };
   return (
     <GestaoShell eyebrow="Administração" titulo="Usuários e permissões">
-      <div className={`${card} overflow-x-auto`}>
-        <table className="w-full min-w-[38rem]">
-          <thead className="border-b border-line-1"><tr><th className={th}>Usuário</th><th className={th}>Perfil</th><th className={th}>Propriedades</th><th className={th}>Status</th></tr></thead>
-          <tbody className="divide-y divide-line-1">
-            {l.map((u, i) => (
-              <tr key={u.email}>
-                <td className={td}><div className="font-medium">{u.nome}</div><div className="text-[0.75rem] text-fg-3">{u.email}</div></td>
-                <td className={td}>{u.perfil}</td><td className={`${td} text-fg-2`}>{u.props}</td>
-                <td className={td}>
-                  <button type="button" aria-pressed={u.ativo} onClick={() => { setL((x) => x.map((y, j) => j === i ? { ...y, ativo: !y.ativo } : y)); registrarAuditoria(u.ativo ? 'Usuário desativado' : 'Usuário reativado', u.email); }}
-                    className={`inline-flex min-h-11 items-center gap-1.5 text-[0.75rem] font-medium ${u.ativo ? 'text-available' : 'text-fg-3'}`}>
-                    <Icon icon={u.ativo ? 'solar:check-circle-linear' : 'solar:user-block-linear'} width={16} aria-hidden="true" />{u.ativo ? 'Ativo' : 'Inativo'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TabelaResp rows={l} cols={[
+        { h: 'Usuário', r: (u) => (<><div>{u.nome}</div><div className="text-[0.75rem] font-normal text-fg-3">{u.email}</div></>) },
+        { h: 'Perfil', r: (u) => u.perfil },
+        { h: 'Propriedades', r: (u) => <span className="text-fg-2">{u.props}</span> },
+        { h: 'Status', r: (u) => (
+          <button type="button" aria-pressed={u.ativo} onClick={() => alternar(u.email)} className={`inline-flex min-h-11 items-center gap-1.5 text-[0.75rem] font-medium ${u.ativo ? 'text-available' : 'text-fg-3'}`}>
+            <Icon icon={u.ativo ? 'solar:check-circle-linear' : 'solar:user-block-linear'} width={16} aria-hidden="true" />{u.ativo ? 'Ativo' : 'Inativo'}
+          </button>) },
+      ]} />
       <p className="text-[0.75rem] text-fg-3">Toque no status para ativar ou desativar. O acesso de cada usuário fica limitado às propriedades vinculadas (RLS).</p>
     </GestaoShell>
   );
@@ -82,14 +77,12 @@ export function T34Auditoria() {
   return (
     <GestaoShell eyebrow="Administração" titulo="Auditoria">
       <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filtrar por usuário, ação ou unidade" className="min-h-11 rounded-md border border-line-2 bg-white px-3 placeholder:text-fg-4" aria-label="Filtrar" />
-      <div className={`${card} overflow-x-auto`}>
-        <table className="w-full min-w-[36rem]">
-          <thead className="border-b border-line-1"><tr><th className={th}>Quando</th><th className={th}>Usuário</th><th className={th}>Ação</th><th className={th}>Detalhe</th></tr></thead>
-          <tbody className="divide-y divide-line-1">
-            {lista.map((e, i) => <tr key={i}><td className={`${td} whitespace-nowrap font-mono text-[0.75rem] text-fg-2`}>{formatarData(e.em)}</td><td className={td}>{e.usuario}</td><td className={`${td} font-medium`}>{e.acao}</td><td className={`${td} text-fg-2`}>{e.detalhe}</td></tr>)}
-          </tbody>
-        </table>
-      </div>
+      <TabelaResp rows={lista} cols={[
+        { h: 'Quando', r: (e) => <span className="font-mono text-[0.75rem] text-fg-2">{formatarData(e.em)}</span> },
+        { h: 'Usuário', r: (e) => e.usuario },
+        { h: 'Ação', principal: true, r: (e) => e.acao },
+        { h: 'Detalhe', r: (e) => <span className="text-fg-2">{e.detalhe}</span> },
+      ]} />
     </GestaoShell>
   );
 }
@@ -142,6 +135,13 @@ export function T30Ambientes() {
   const [arv, setArv] = useState<Ambiente[]>([]);
   const [novo, setNovo] = useState<Record<string, string>>({});
   const [salvo, setSalvo] = useState(false);
+  const [novoAmb, setNovoAmb] = useState('');
+  const addAmb = () => {
+    const n = novoAmb.trim();
+    if (!n) return;
+    setArv([...arv, { id: `amb-${Date.now()}`, nome: n, icon: 'solar:home-2-linear', itens: [] }]);
+    setNovoAmb(''); setSalvo(false);
+  };
   useEffect(() => { unidadesGestao().then(setUs); }, []);
   useEffect(() => { const u = us.find((x) => x.id === uid); if (u) setArv(checklistDa(u).map((a) => ({ ...a, itens: a.itens.map((i) => ({ ...i })) }))); setSalvo(false); }, [us, uid]);
   const mover = (i: number, d: number) => { const l = [...arv]; [l[i], l[i + d]] = [l[i + d], l[i]]; setArv(l); setSalvo(false); };
@@ -161,7 +161,7 @@ export function T30Ambientes() {
               <button type="button" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-cream disabled:opacity-30" disabled={ai === 0} onClick={() => mover(ai, -1)} aria-label={`Subir ${a.nome}`}><Icon icon="solar:alt-arrow-up-linear" width={18} /></button>
               <button type="button" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-cream disabled:opacity-30" disabled={ai === arv.length - 1} onClick={() => mover(ai, 1)} aria-label={`Descer ${a.nome}`}><Icon icon="solar:alt-arrow-down-linear" width={18} /></button>
             </div>
-            <ul className="divide-y divide-line-1 rounded-md border border-line-1">
+            <ul className="divide-y divide-line-1 rounded-md border border-line-1 empty:hidden">
               {a.itens.map((it, ii) => (
                 <li key={it.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-[0.8125rem]">
                   <span className="min-w-0 flex-1">{it.nome}</span>
@@ -181,6 +181,14 @@ export function T30Ambientes() {
           </li>
         ))}
       </ol>
+      <div className={`${card} flex flex-col gap-3 border-dashed p-4`}>
+        <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Novo ambiente</h2>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input aria-label="Nome do novo ambiente" className={campo} placeholder="Ex.: Área gourmet" value={novoAmb} onChange={(e) => setNovoAmb(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addAmb()} />
+          <button type="button" className={`${btnSecondary} sm:w-auto sm:shrink-0`} disabled={!novoAmb.trim()} onClick={addAmb}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Criar ambiente</button>
+        </div>
+        <p className="text-[0.75rem] text-fg-3">Entra no fim do percurso; use as setas para reposicionar e adicione os itens em seguida.</p>
+      </div>
       <button type="button" className={`${btnPrimary} sm:w-auto sm:self-start`} disabled={salvo} onClick={() => { registrarAuditoria('Checklist alterado', `${uid}: nova versão com ${arv.reduce((n, a) => n + a.itens.length, 0)} itens`); setSalvo(true); }}>
         {salvo ? 'Nova versão salva' : 'Salvar nova versão'}
       </button>
