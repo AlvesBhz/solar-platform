@@ -1,3 +1,7 @@
+import refCopa from '../assets/referencias/copa.webp';
+import refQuarto from '../assets/referencias/quarto.webp';
+import refSala from '../assets/referencias/sala.webp';
+import refVaranda from '../assets/referencias/varanda.webp';
 // MOCKUP do checklist (ambientes → itens). Na versão real vem de ambientes/itens/tipo_vistoria_itens.
 import type { Unidade } from './unidades';
 
@@ -6,7 +10,7 @@ export type Item = { id: string; nome: string; critico?: boolean; foto?: boolean
 export type Ambiente = { id: string; nome: string; icon: string; ref?: string; itens: Item[] };
 
 const QUARTO: Ambiente = {
-  id: 'quarto', nome: 'Quarto', icon: 'solar:bed-linear', ref: '/referencias/quarto.webp', itens: [
+  id: 'quarto', nome: 'Quarto', icon: 'solar:bed-linear', ref: refQuarto, itens: [
     { id: 'cama', nome: 'Cama arrumada e roupa de cama', critico: true, foto: true },
     { id: 'ar', nome: 'Ar-condicionado (quente e frio)', critico: true },
     { id: 'blackout', nome: 'Cortinas e blackout' },
@@ -23,20 +27,20 @@ const BANHEIRO: Ambiente = {
   ],
 };
 const SALA: Ambiente = {
-  id: 'sala', nome: 'Sala', icon: 'solar:sofa-linear', ref: '/referencias/sala.webp', itens: [
+  id: 'sala', nome: 'Sala', icon: 'solar:sofa-linear', ref: refSala, itens: [
     { id: 'sofa', nome: 'Sofá e almofadas' },
     { id: 'tv', nome: 'TV, controle e streaming' },
     { id: 'frigobar', nome: 'Frigobar abastecido', foto: true },
   ],
 };
 const COZINHA: Ambiente = {
-  id: 'cozinha', nome: 'Copa', icon: 'solar:cup-hot-linear', ref: '/referencias/copa.webp', itens: [
+  id: 'cozinha', nome: 'Copa', icon: 'solar:cup-hot-linear', ref: refCopa, itens: [
     { id: 'cafeteira', nome: 'Cafeteira e cápsulas' },
     { id: 'tacas', nome: 'Taças e utensílios', foto: true },
   ],
 };
 const VARANDA: Ambiente = {
-  id: 'varanda', nome: 'Varanda', icon: 'solar:home-2-linear', ref: '/referencias/varanda.webp', itens: [
+  id: 'varanda', nome: 'Varanda', icon: 'solar:home-2-linear', ref: refVaranda, itens: [
     { id: 'mobiliario', nome: 'Mobiliário externo' },
     { id: 'limpeza-varanda', nome: 'Limpeza do piso e guarda-corpo' },
   ],

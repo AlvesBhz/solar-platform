@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { VALIDACAO } from '../components/Status';
+import { POSICAO_SIMULADA, SIMULADO } from '../lib/sim';
 import { validarGps, type ResultadoValidacao } from '../mocks/servidor';
 import { obterUnidade, type Unidade } from '../mocks/unidades';
 import { lerRascunho, salvarRascunho, type Rascunho } from '../mocks/vistoria';
@@ -34,6 +35,7 @@ export default function T08ValidacaoPresenca() {
   function verificarGps() {
     setLendoGps(true);
     const falha = (motivo: string) => { atualizar({ gps: { ok: false, motivo, em: new Date().toISOString() } }); setLendoGps(false); };
+    if (SIMULADO) { validarGps(unidadeId, POSICAO_SIMULADA).then((gps) => { atualizar({ gps }); setLendoGps(false); }); return; }
     if (!('geolocation' in navigator)) return falha('GPS indisponível neste aparelho.');
     // Leitura única, alta precisão, 15 s (sem acompanhamento em segundo plano).
     navigator.geolocation.getCurrentPosition(

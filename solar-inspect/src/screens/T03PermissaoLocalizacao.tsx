@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScreenShell, { StateIcon, btnPrimary, btnSecondary } from '../components/ScreenShell';
+import { SIMULADO } from '../lib/sim';
 
 type State = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable';
 
@@ -18,6 +19,7 @@ export default function T03PermissaoLocalizacao() {
 
   // Só consulta o status da permissão; não lê a posição.
   useEffect(() => {
+    if (SIMULADO) return;
     if (!('geolocation' in navigator)) return setState('unavailable');
     navigator.permissions?.query({ name: 'geolocation' }).then((p) => {
       if (p.state === 'granted') setState('granted');
@@ -27,6 +29,7 @@ export default function T03PermissaoLocalizacao() {
 
   function requestPermission() {
     setState('requesting');
+    if (SIMULADO) { setTimeout(() => setState('granted'), 600); return; }
     // Leitura única (sem watchPosition), apenas para disparar o pedido do navegador.
     navigator.geolocation.getCurrentPosition(
       () => setState('granted'),

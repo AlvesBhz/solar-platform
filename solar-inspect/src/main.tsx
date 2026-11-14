@@ -1,12 +1,15 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
 import SimNav from './components/SimNav';
 import './index.css';
 
 addCollection(solar);
+
+// No link publicado (artifact) não há rotas de URL: a navegação fica em memória.
+const Router = import.meta.env.MODE === 'artifact' ? MemoryRouter : BrowserRouter;
 import T01Inicializacao from './screens/T01Inicializacao';
 import T02Login from './screens/T02Login';
 import T03PermissaoLocalizacao from './screens/T03PermissaoLocalizacao';
@@ -23,7 +26,7 @@ import T13Comparacao from './screens/T13Comparacao';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <Router>
       <SimNav />
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
@@ -41,6 +44,6 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<T13Comparacao />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   </StrictMode>,
 );

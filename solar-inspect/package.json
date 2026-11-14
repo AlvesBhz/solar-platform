@@ -8,7 +8,8 @@
     "dev:celular": "vite --mode celular",
     "icons": "node scripts/icons.mjs",
     "build": "npm run icons && tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:artifact": "npm run icons && vite build --mode artifact && node scripts/artifact.mjs"
   },
   "dependencies": {
     "@iconify/react": "5.0.2",
@@ -29,6 +30,7 @@
     "postcss": "8.4.49",
     "tailwindcss": "3.4.17",
     "typescript": "5.6.3",
-    "vite": "5.4.11"
+    "vite": "5.4.11",
+    "vite-plugin-singlefile": "^2.0.3"
   }
 }

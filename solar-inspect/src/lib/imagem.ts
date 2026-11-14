@@ -27,8 +27,11 @@ export async function comprimirComCarimbo(fonte: CanvasImageSource, w0: number, 
   return new Promise((ok, erro) => c.toBlob((b) => (b ? ok(b) : erro(new Error('Falha ao gerar imagem'))), 'image/jpeg', 0.8));
 }
 
+import { POSICAO_SIMULADA, SIMULADO } from './sim';
+
 export function obterPosicao(timeout = 10000): Promise<GeolocationCoordinates | null> {
   return new Promise((ok) => {
+    if (SIMULADO) return ok(POSICAO_SIMULADA);
     if (!('geolocation' in navigator)) return ok(null);
     navigator.geolocation.getCurrentPosition((p) => ok(p.coords), () => ok(null), { enableHighAccuracy: true, timeout, maximumAge: 0 });
   });
