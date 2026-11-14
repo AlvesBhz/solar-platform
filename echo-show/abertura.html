@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Solar do Espinhaço · Abertura</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<style>
+/* Solar do Espinhaço · abertura para Echo Show (duas páginas)
+   Página 1 reproduz a abertura do site (site/index.html + site/js/main.js):
+   disco no topo, nome transparente que some, frase que entra, disco desliza e revela o wordmark.
+   Página 2 é o selo F · bone (brand/logo/index.html) sobre cream, como na tela de acesso. */
+:root{--c-bone:#EAE5D9;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--c-s900)}
+body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;background:var(--c-s900);cursor:pointer}
+
+/* ═══ PÁGINA 1 · HERO ═══ */
+#hero{position:absolute;inset:0;transition:opacity 1600ms ease-in-out}
+#hero .bg{position:absolute;inset:0}
+#hero .bg img{width:100%;height:100%;object-fit:cover;opacity:.55;transform:scale(1.05)}
+.intro-run #hero .bg img{animation:pulse 14s ease-in-out infinite}
+#hero .bg::before,#hero .bg::after{content:"";position:absolute;inset:0}
+#hero .bg::before{background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent 50%,rgba(0,0,0,.8))}
+#hero .bg::after{background:linear-gradient(to right,rgba(0,0,0,.35),transparent 60%)}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(1.06)}50%{opacity:.45;transform:scale(1)}}
+
+.orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.o1{width:1000px;height:1000px;top:-220px;right:-140px;background:radial-gradient(circle,rgba(44,62,53,.4),transparent 70%);animation:orb1 20s ease-in-out infinite}
+.o2{width:760px;height:760px;bottom:60px;left:-160px;background:radial-gradient(circle,rgba(44,62,53,.28),transparent 70%);animation:orb2 24s ease-in-out infinite}
+.o3{width:560px;height:560px;top:38%;right:22%;background:radial-gradient(circle,rgba(255,255,255,.04),transparent 70%);animation:glow 10s ease-in-out infinite}
+@keyframes orb1{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(70px,-90px) scale(1.08)}66%{transform:translate(-50px,45px) scale(.94)}}
+@keyframes orb2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-90px,55px) scale(.92)}66%{transform:translate(60px,-70px) scale(1.06)}}
+@keyframes glow{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.65;transform:scale(1.12)}}
+
+/* logo do topo: disco → disco + divisor + wordmark */
+#logo{position:absolute;top:72px;left:50%;transform:translateX(-50%);display:flex;align-items:center;z-index:5}
+#disc{position:relative;width:72px;height:72px;display:flex;align-items:center;justify-content:center;flex:none;opacity:0}
+#disc::before{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.48)}
+#disc svg{width:40px;height:40px;color:rgba(255,255,255,.88)}
+#expand{display:flex;align-items:center;opacity:0}
+#expand .div{width:1px;height:72px;background:rgba(255,255,255,.18);margin-left:28px;flex:none}
+#wm{margin-left:28px;transform:translateX(-14px)}
+#wm .a{font-size:17px;letter-spacing:.38em;text-transform:uppercase;color:rgba(255,255,255,.6);line-height:1;text-shadow:0 1px 8px rgba(0,0,0,.55)}
+#wm .b{font-family:var(--font-serif);font-weight:500;font-size:46px;letter-spacing:.08em;text-transform:uppercase;line-height:1;color:rgba(255,255,255,.93);margin-top:8px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+
+/* nome transparente */
+#heroTitle{position:absolute;left:180px;top:50%;transform:translateY(-46%);opacity:0;z-index:4}
+#heroTitle .eyebrow{display:block;font-size:20px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.55);text-shadow:0 1px 8px rgba(0,0,0,.7);margin-bottom:36px;padding-left:6px}
+#heroTitle h1{font-family:var(--font-serif);line-height:.82;letter-spacing:-.05em;mix-blend-mode:overlay;color:var(--fg-inverse)}
+#heroTitle h1 span{display:block}
+#heroTitle .n1{font-weight:500;font-size:270px;color:var(--fg-inverse)}
+#heroTitle .n2{font-weight:300;font-size:138px;color:var(--c-s100);opacity:.88;margin-left:150px;margin-top:12px}
+.intro-run #heroTitle{animation:fadeIn 1.2s .3s ease both}
+.intro-run #heroTitle.fade-out{animation:heroFadeOut 2.5s linear forwards}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes heroFadeOut{0%{opacity:1}12%{opacity:.96}28%{opacity:.82}48%{opacity:.55}68%{opacity:.28}85%{opacity:.08}100%{opacity:0}}
+
+/* frase */
+#heroPhrase{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;opacity:0;transform:translateY(24px);
+  transition:opacity 2.4s cubic-bezier(.25,.46,.45,.94),transform 2.4s cubic-bezier(.25,.46,.45,.94)}
+#heroPhrase.is-visible{opacity:1;transform:none}
+#heroPhrase p{font-family:var(--font-italic);font-style:italic;font-weight:400;font-size:72px;line-height:1.15;letter-spacing:.01em;color:rgba(255,255,255,.93);white-space:nowrap;
+  text-shadow:0 2px 40px rgba(0,0,0,.55),0 1px 10px rgba(0,0,0,.35)}
+
+/* ═══ PÁGINA 2 · SELO ═══ */
+#final{position:absolute;inset:0;background:var(--c-cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:56px;opacity:0;pointer-events:none;transition:opacity 1600ms ease-in-out}
+#final.on{opacity:1;pointer-events:auto}
+#final .seal{width:420px;height:420px;opacity:0;transform:scale(.92)}
+#final.on .seal{animation:scaleIn 1100ms var(--ease-spring) 500ms both}
+#final .label{display:flex;align-items:center;gap:44px;font-size:26px;letter-spacing:.42em;text-transform:uppercase;color:var(--c-s600);padding-left:.42em;opacity:0}
+#final .label::before,#final .label::after{content:"";width:120px;height:1.5px;background:var(--c-s300)}
+#final.on .label{animation:up 1000ms var(--ease-out) 1100ms both}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .intro-run #hero .bg img,.orb{animation:none}
+  #final.on .seal,#final.on .label{animation:fadeIn 900ms ease both}
+}
+</style>
+</head>
+<body>
+
+
+<main id="stage" aria-label="Abertura Solar do Espinhaço. Toque para repetir.">
+
+  <section id="hero" aria-hidden="false">
+    <div class="bg"><img src="../site/assets/images/serra-hero.avif" alt="Serra do Espinhaço, Lapinha da Serra"></div>
+    <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+    <div id="logo">
+      <div id="disc"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#leaf"/></svg></div>
+      <div id="expand">
+        <div class="div"></div>
+        <div id="wm"><div class="a">Solar do</div><div class="b">Espinhaço</div></div>
+      </div>
+    </div>
+
+    <div id="heroTitle">
+      <span class="eyebrow">Chalé Boutique · Lapinha da Serra · Minas Gerais</span>
+      <h1><span class="n1">SOLAR DO</span><span class="n2">ESPINHAÇO</span></h1>
+    </div>
+
+    <div id="heroPhrase"><p>O espinhaço te conecta com a natureza.</p></div>
+  </section>
+
+  <section id="final" aria-hidden="true">
+    <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><use href="#seal"/></svg>
+    <div class="label">Solar do Espinhaço</div>
+  </section>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="leaf" viewBox="0 0 24 24"><path d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="seal" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle cx="100" cy="100" r="84" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1" opacity="0.28"/><svg x="68" y="45" width="65" height="65" viewBox="0 0 24 24"><path d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><text x="100" y="145" text-anchor="middle" font-weight="400" font-size="36" letter-spacing="6.5" style="font-family:var(--font-serif);fill:var(--c-pine-deep)">SE</text></symbol></svg>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage'),root=document.documentElement;
+  function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
+  addEventListener('resize',fit);fit();
+
+  var hero=document.getElementById('hero'),fin=document.getElementById('final');
+  var title=document.getElementById('heroTitle'),phrase=document.getElementById('heroPhrase');
+  var disc=document.getElementById('disc'),expand=document.getElementById('expand'),wm=document.getElementById('wm'),logo=document.getElementById('logo');
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var timers=[],anims=[];
+  function at(ms,fn){timers.push(setTimeout(fn,ms))}
+
+  /* mesma espera do site: fonte e foto prontas (no máx. 2,5 s), mais dois quadros */
+  function ready(){
+    var img=hero.querySelector('img');
+    var fonts=(document.fonts&&document.fonts.ready)||Promise.resolve();
+    var photo=(img&&img.decode)?img.decode().catch(function(){}):Promise.resolve();
+    return Promise.race([Promise.all([fonts,photo]),new Promise(function(r){setTimeout(r,2500)})])
+      .then(function(){return new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r)})})});
+  }
+
+  /* deslocamento do disco até o centro do grupo (o grupo já nasce na largura final) */
+  function centerOffset(){
+    var prev=disc.style.transform;disc.style.transform='none';
+    var g=logo.getBoundingClientRect(),d=disc.getBoundingClientRect(),s=g.width/logo.offsetWidth||1;
+    disc.style.transform=prev;
+    return ((g.left+g.width/2)-(d.left+d.width/2))/s;
+  }
+
+  function reset(){
+    timers.forEach(clearTimeout);timers=[];anims.forEach(function(a){a.cancel()});anims=[];
+    root.classList.remove('intro-run');
+    title.classList.remove('fade-out');title.style.display='';
+    phrase.classList.remove('is-visible');
+    disc.style.transition='none';disc.style.opacity='0';
+    expand.style.opacity='0';wm.style.transform='translateX(-14px)';
+    disc.style.transform='translateX('+centerOffset()+'px)';
+    fin.classList.remove('on');fin.setAttribute('aria-hidden','true');hero.style.opacity='1';
+    void stage.offsetWidth;
+  }
+
+  function run(){
+    reset();
+    ready().then(function(){
+      root.classList.add('intro-run');
+      /* fase 1 · 0–1,2 s: o disco surge, centrado */
+      at(80,function(){disc.style.transition='opacity 1.2s ease';disc.style.opacity='1'});
+      /* fase 2 · 1,5 s: o nome some devagar; 4,1 s: a frase entra */
+      at(1500,function(){
+        title.classList.add('fade-out');
+        at(2600,function(){title.style.display='none';phrase.classList.add('is-visible')});
+      });
+      /* fase 3 · 4,22 s: o disco desliza e o wordmark aparece */
+      at(4220,function(){requestAnimationFrame(openLogo)});
+      /* página 2 · 10 s: o selo */
+      at(10000,function(){
+        hero.style.opacity='0';fin.classList.add('on');fin.setAttribute('aria-hidden','false');
+      });
+    });
+  }
+
+  function openLogo(){
+    var dx=centerOffset();
+    disc.style.transform='';expand.style.opacity='1';wm.style.transform='translateX(0)';
+    if(!disc.animate)return;
+    if(reduced){anims.push(logo.animate([{opacity:0},{opacity:1}],{duration:900,easing:'ease-out'}));return}
+    var ease='cubic-bezier(0.65, 0, 0.35, 1)';
+    anims.push(disc.animate([{transform:'translateX('+dx+'px)'},{transform:'translateX(0)'}],{duration:1000,easing:ease,fill:'backwards'}));
+    anims.push(expand.animate([{opacity:0},{opacity:1}],{duration:800,delay:300,easing:'ease',fill:'backwards'}));
+    anims.push(wm.animate([{transform:'translateX(-14px)'},{transform:'translateX(0)'}],{duration:900,delay:300,easing:ease,fill:'backwards'}));
+  }
+
+  /* toque repete a abertura */
+  stage.addEventListener('click',run);
+  addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter')run()});
+  run();
+})();
+</script>
+
+</body>
+</html>
