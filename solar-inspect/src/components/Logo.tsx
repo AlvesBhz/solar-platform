@@ -25,12 +25,12 @@ export function Seal({ size = 'clamp(8.5rem, 6rem + 12vw, 11.5rem)' }: { size?: 
 }
 
 /** Lockup horizontal "1B · light · solar do / ESPINHAÇO" (invertido). Navbar, cartão, cabeçalho. */
-export function LockupHorizontal({ size = 'clamp(1.5rem, 1.35rem + 0.6vw, 1.75rem)' }: { size?: string }) {
+export function LockupHorizontal({ size = 'clamp(1.5rem, 1.35rem + 0.6vw, 1.75rem)', claro = false }: { size?: string; claro?: boolean }) {
   return (
     <div
       role="img"
       aria-label="Solar do Espinhaço"
-      className="flex items-center whitespace-nowrap text-pine-deep"
+      className={`flex items-center whitespace-nowrap ${claro ? 'text-cream' : 'text-pine-deep'}`}
       style={{ fontSize: size, gap: '0.59em' }}
     >
       <span className="relative flex shrink-0 items-center justify-center" style={{ width: '1.36em', height: '1.36em' }} aria-hidden="true">
@@ -38,7 +38,7 @@ export function LockupHorizontal({ size = 'clamp(1.5rem, 1.35rem + 0.6vw, 1.75re
         <Icon icon="solar:leaf-linear" style={{ width: '0.86em', height: '0.86em' }} />
       </span>
       <span className="flex flex-col">
-        <span className="font-sans uppercase leading-none text-fg-3" style={{ fontWeight: 300, fontSize: 'max(0.75rem, 0.386em)', letterSpacing: '0.34em' }}>
+        <span className={`font-sans uppercase leading-none ${claro ? 'text-white/70' : 'text-fg-3'}`} style={{ fontWeight: 300, fontSize: 'max(0.75rem, 0.386em)', letterSpacing: '0.34em' }}>
           Solar do
         </span>
         <span className="font-serif font-medium uppercase leading-none" style={{ letterSpacing: '0.06em', marginTop: '0.14em' }}>

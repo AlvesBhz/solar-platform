@@ -78,7 +78,7 @@ export default function T02Login() {
                 </p>
               </div>
               {/* Mockup: simula o clique no link recebido por e-mail */}
-              <button type="button" onClick={() => navigate('/permissao-localizacao')} className={`${btnBase} bg-pine text-white shadow-md hover:-translate-y-0.5 hover:bg-pine-deep`}>
+              <button type="button" onClick={() => navigate(/^(gestor|admin)@/.test(sentTo) ? '/gestao' : '/permissao-localizacao')} className={`${btnBase} bg-pine text-white shadow-md hover:-translate-y-0.5 hover:bg-pine-deep`}>
                 Simular clique no link <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
               </button>
               <button
@@ -153,7 +153,7 @@ export default function T02Login() {
 
               <p className="border-t border-line-1 pt-5 text-xs leading-relaxed text-fg-3">
                 <span className="text-fg-2">Mockup · contas de teste:</span>{' '}
-                <span className="font-mono [overflow-wrap:anywhere]">assessor@solar.dev, gestor@solar.dev, inativo@solar.dev</span>
+                <span className="font-mono [overflow-wrap:anywhere]">assessor@solar.dev (campo), gestor@solar.dev e admin@solar.dev (gestão), inativo@solar.dev</span>
               </p>
             </>
           )}

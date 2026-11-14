@@ -30,6 +30,21 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
     { id: 'T18', nome: 'Sincronização', rota: '/app/sincronizacao' },
     { id: 'T19', nome: 'Meu histórico', rota: '/app/historico' },
   ] },
+  { titulo: 'Gestão', telas: [
+    { id: 'T20', nome: 'Dashboard', rota: '/gestao' },
+    { id: 'T21', nome: 'Gestão de unidades', rota: '/gestao/unidades' },
+    { id: 'T22', nome: 'Detalhe da unidade', rota: '/gestao/unidades/chale-sempre-viva' },
+    { id: 'T23', nome: 'Lista de vistorias', rota: '/gestao/vistorias' },
+    { id: 'T24', nome: 'Detalhe da vistoria', rota: '/gestao/vistorias/v-1018' },
+    { id: 'T25', nome: 'Lista de ocorrências', rota: '/gestao/ocorrencias' },
+    { id: 'T26', nome: 'Tratamento da ocorrência', rota: '/gestao/ocorrencias/o-2' },
+    { id: 'T27', nome: 'Relatório', rota: '/gestao/vistorias/v-1018/relatorio' },
+  ] },
+  { titulo: 'Administração', telas: [
+    { id: 'T28', nome: 'Propriedades', rota: '/admin/propriedades' },
+    { id: 'T32', nome: 'Usuários e permissões', rota: '/admin/usuarios' },
+    { id: 'T34', nome: 'Auditoria', rota: '/admin/auditoria' },
+  ] },
 ];
 
 export default function SimNav() {

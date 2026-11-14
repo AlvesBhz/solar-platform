@@ -6,6 +6,7 @@ type MockUser = { email: string; nome: string; ativo: boolean };
 const USERS: MockUser[] = [
   { email: 'assessor@solar.dev', nome: 'Assessor Demo', ativo: true },
   { email: 'gestor@solar.dev', nome: 'Gestor Demo', ativo: true },
+  { email: 'admin@solar.dev', nome: 'Admin Demo', ativo: true },
   { email: 'inativo@solar.dev', nome: 'Usuário Inativo', ativo: false },
 ];
 

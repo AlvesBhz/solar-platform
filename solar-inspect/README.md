@@ -34,7 +34,7 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 
 ## Navegação da simulação
 
-Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu **Navegar entre telas** (T01–T19). Para as telas que dependem de uma vistoria em andamento (T08–T13), o menu cria o rascunho necessário antes de abrir. É só do mockup: remover na versão real (`src/components/SimNav.tsx`).
+Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu **Navegar entre telas** (T01–T28, T32, T34). Para as telas que dependem de uma vistoria em andamento (T08–T13), o menu cria o rascunho necessário antes de abrir. É só do mockup: remover na versão real (`src/components/SimNav.tsx`).
 
 ## Rotas
 
@@ -56,6 +56,8 @@ Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu 
 | `…/resumo` · `…/assinatura` · `…/confirmacao` | T15 Resumo · T16 Assinatura · T17 Confirmação (envio definitivo, novo estado da unidade) |
 | `/app/sincronizacao` | T18 Sincronização (fila offline, tentar agora) |
 | `/app/historico` | T19 Meu histórico (filtros por unidade, tipo, status) |
+| `/gestao` … | T20 Dashboard · T21/T22 Unidades · T23/T24 Vistorias · T25/T26 Ocorrências · T27 Relatório (login `gestor@solar.dev` ou `admin@solar.dev`) |
+| `/admin/propriedades` · `/admin/usuarios` · `/admin/auditoria` | T28 · T32 · T34 (T29–T31 e T33 ainda não feitas) |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |
 
 ## Contas de teste (mock)

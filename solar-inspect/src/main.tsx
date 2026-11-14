@@ -29,6 +29,8 @@ import T16Assinatura from './screens/T16Assinatura';
 import T17Confirmacao from './screens/T17Confirmacao';
 import T18Sincronizacao from './screens/T18Sincronizacao';
 import T19MeuHistorico from './screens/T19MeuHistorico';
+import { T20Dashboard, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
+import { T28Propriedades, T32Usuarios, T34Auditoria } from './screens/Admin';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -54,6 +56,17 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<T17Confirmacao />} />
         <Route path="/app/sincronizacao" element={<T18Sincronizacao />} />
         <Route path="/app/historico" element={<T19MeuHistorico />} />
+        <Route path="/gestao" element={<T20Dashboard />} />
+        <Route path="/gestao/unidades" element={<T21Unidades />} />
+        <Route path="/gestao/unidades/:id" element={<T22DetalheUnidade />} />
+        <Route path="/gestao/vistorias" element={<T23Vistorias />} />
+        <Route path="/gestao/vistorias/:id" element={<T24DetalheVistoria />} />
+        <Route path="/gestao/vistorias/:id/relatorio" element={<T27Relatorio />} />
+        <Route path="/gestao/ocorrencias" element={<T25Ocorrencias />} />
+        <Route path="/gestao/ocorrencias/:id" element={<T26Tratamento />} />
+        <Route path="/admin/propriedades" element={<T28Propriedades />} />
+        <Route path="/admin/usuarios" element={<T32Usuarios />} />
+        <Route path="/admin/auditoria" element={<T34Auditoria />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
