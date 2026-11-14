@@ -32,6 +32,10 @@ Abra o endereço `https://…` mostrado. O navegador vai avisar que o certificad
 
 Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de saída `dist`, diretório raiz `solar-inspect`. O arquivo `public/_redirects` garante que as rotas abram direto.
 
+## Navegação da simulação
+
+Em qualquer tela, a aba verde na borda direita abre o menu **Navegar entre telas** (T01–T13). Para as telas que dependem de uma vistoria em andamento (T08–T13), o menu cria o rascunho necessário antes de abrir. É só do mockup: remover na versão real (`src/components/SimNav.tsx`).
+
 ## Rotas
 
 | Rota | Tela |

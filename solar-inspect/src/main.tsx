@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
+import SimNav from './components/SimNav';
 import './index.css';
 
 addCollection(solar);
@@ -23,6 +24,7 @@ import T13Comparacao from './screens/T13Comparacao';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
+      <SimNav />
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
         <Route path="/login" element={<T02Login />} />
