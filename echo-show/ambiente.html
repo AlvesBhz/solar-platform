@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Solar do Espinhaço · Ambiente</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<style>
+/* Solar do Espinhaço · modo ambiente para Echo Show
+   Linguagem do hero do site: foto em tela cheia, scrim, zoom lento,
+   letreiro transparente em mix-blend-overlay, lockup folha + wordmark em cream.
+   Cenas passam sozinhas; toque à direita avança, à esquerda volta. Sem cantos arredondados. */
+:root{--c-bone:#EAE5D9;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--c-pine-deep)}
+body{font-family:var(--font-sans);color:var(--fg-inverse);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none;cursor:default}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+button:focus-visible{outline:1px solid var(--c-cream);outline-offset:6px}
+
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;background:var(--c-pine-deep)}
+
+/* ─── cena ─── */
+.scene{position:absolute;inset:0;opacity:0;transition:opacity 1400ms ease-in-out;pointer-events:none}
+.scene.on{opacity:1;pointer-events:auto}
+.scene .bg{position:absolute;inset:0;overflow:hidden;background:var(--c-s900)}
+.scene .bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.04)}
+.scene.on .bg img{animation:drift var(--t,10s) linear forwards}
+@keyframes drift{from{transform:scale(1.04)}to{transform:scale(1.13)}}
+.scene .bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to bottom,var(--scrim-top),transparent 38%,transparent 52%,var(--scrim-bottom)),
+             linear-gradient(to right,rgba(0,0,0,.35),transparent 55%)}
+
+/* letreiro transparente (assinatura do hero) */
+.word{position:absolute;left:84px;top:150px;font-family:var(--font-serif);font-weight:500;color:var(--fg-inverse);
+  font-size:330px;line-height:.82;letter-spacing:-.045em;mix-blend-mode:overlay;white-space:nowrap}
+.word.light{font-weight:300;color:var(--c-s100)}
+.scene.on .word{animation:rise 1800ms var(--ease-out) 300ms both}
+@keyframes rise{from{opacity:0;transform:translateY(40px);letter-spacing:-.02em}to{opacity:1;transform:none;letter-spacing:-.045em}}
+
+/* legenda */
+.cap{position:absolute;left:96px;bottom:150px;max-width:900px}
+.cap .place{font-size:16px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+.cap h2{font-family:var(--font-serif);font-weight:400;font-size:72px;line-height:1.02;letter-spacing:-.02em;color:var(--fg-inverse);margin:18px 0 18px;text-wrap:balance}
+.cap h2 em{font-family:var(--font-italic);font-style:italic;font-weight:400}
+.cap p{font-size:26px;line-height:1.55;font-weight:300;color:rgba(255,255,255,.82);max-width:760px}
+.scene.on .cap>*{animation:up 1100ms var(--ease-out) both}
+.scene.on .cap>*:nth-child(1){animation-delay:700ms}
+.scene.on .cap>*:nth-child(2){animation-delay:820ms}
+.scene.on .cap>*:nth-child(3){animation-delay:940ms}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+
+/* ─── abertura ─── */
+.open .title{position:absolute;left:96px;top:300px;mix-blend-mode:overlay;font-family:var(--font-serif);line-height:.82;letter-spacing:-.04em}
+.open .title span{display:block}
+.open .t1{font-weight:500;font-size:270px;color:var(--fg-inverse)}
+.open .t2{font-weight:300;font-size:140px;color:var(--c-s100);margin-left:150px;margin-top:10px}
+.scene.on.open .title{animation:rise 2000ms var(--ease-out) 200ms both}
+.phrase{position:absolute;left:0;right:0;bottom:150px;text-align:center;font-family:var(--font-italic);font-style:italic;font-size:44px;color:rgba(255,255,255,.9)}
+.scene.on .phrase{animation:up 1400ms var(--ease-out) 1400ms both}
+
+/* ─── lugares para conhecer ─── */
+.places{background:linear-gradient(135deg,var(--c-pine-deep),var(--c-pine) 60%,var(--c-pine-mid))}
+.places .photo{position:absolute;top:0;right:0;bottom:0;width:760px;overflow:hidden}
+.places .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1200ms ease-in-out;transform:scale(1.05)}
+.places .photo img.on{opacity:1}
+.scene.on.places .photo img.on{animation:drift 30s linear forwards}
+.places .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to right,var(--c-pine-deep),transparent 35%)}
+.places .col{z-index:9;position:absolute;left:96px;top:170px;bottom:150px;width:960px;display:flex;flex-direction:column}
+.places .kicker{font-size:16px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.places ul{list-style:none;margin-top:30px}
+.places li button{display:block;width:100%;padding:6px 0;font-family:var(--font-serif);font-weight:400;font-size:60px;line-height:1.12;letter-spacing:-.015em;color:rgba(255,255,255,.3);transition:color 600ms ease,transform 600ms var(--ease-out)}
+.places li button.on{color:var(--fg-inverse);transform:translateX(24px)}
+.places .detail{margin-top:auto;display:grid;grid-template-columns:auto 1fr;gap:56px;align-items:end;min-height:150px}
+.places .fact{font-family:var(--font-italic);font-style:italic;font-size:104px;line-height:.9;color:var(--fg-inverse);white-space:nowrap}
+.places .fact small{display:block;font-family:var(--font-sans);font-style:normal;font-size:16px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:18px}
+.places .desc{font-size:26px;line-height:1.55;font-weight:300;color:rgba(255,255,255,.82);padding-bottom:6px}
+.places .detail.swap>*{animation:up 800ms var(--ease-out) both}
+
+/* ─── fecho ─── */
+.close .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:40px}
+.close .bg img{opacity:.5}
+.close h2{color:var(--fg-inverse);font-family:var(--font-serif);font-weight:400;font-size:96px;line-height:1;letter-spacing:-.02em}
+.close h2 em{font-family:var(--font-italic);font-style:italic}
+.close .links{display:flex;gap:64px;font-size:22px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.75);user-select:text}
+.scene.on.close .center>*{animation:up 1200ms var(--ease-out) both}
+.scene.on.close .center>*:nth-child(2){animation-delay:200ms}
+.scene.on.close .center>*:nth-child(3){animation-delay:400ms}
+
+/* ─── moldura fixa: lockup e progresso ─── */
+.lockup{position:absolute;left:96px;top:64px;display:flex;align-items:center;gap:18px;z-index:10;color:var(--c-cream)}
+.lockup svg{width:44px;height:44px}
+.lockup span{font-family:var(--font-serif);font-weight:500;font-size:34px;letter-spacing:.01em}
+.where{position:absolute;right:96px;top:78px;z-index:10;font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.progress{position:absolute;left:96px;right:96px;bottom:72px;height:2px;display:flex;gap:10px;z-index:10}
+.progress i{flex:1;background:rgba(255,255,255,.22);position:relative;overflow:hidden}
+.progress i b{position:absolute;inset:0;background:var(--c-cream);transform-origin:left;transform:scaleX(0)}
+.progress i.done b{transform:scaleX(1)}
+.zone{position:absolute;top:0;bottom:0;z-index:8}
+.zone.l{left:0;width:30%}.zone.r{right:0;width:30%}
+.pause{position:absolute;right:96px;bottom:96px;z-index:10;font-size:14px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.55);opacity:0;transition:opacity 300ms}
+.paused .pause{opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  .scene.on .bg img,.scene.on.places .photo img.on{animation:none}
+  .scene.on .word,.scene.on .cap>*,.scene.on .phrase,.scene.on.open .title,.scene.on.close .center>*,.places .detail.swap>*{animation:none}
+}
+</style>
+</head>
+<body>
+
+
+<main id="stage">
+
+  <!-- abertura -->
+  <section class="scene open on" data-t="11">
+    <div class="bg"><img src="../site/assets/images/serra-hero.avif" alt="Serra do Espinhaço ao entardecer"></div>
+    <h1 class="title"><span class="t1">SOLAR DO</span><span class="t2">ESPINHAÇO</span></h1>
+    <p class="phrase">O espinhaço te conecta com a natureza.</p>
+  </section>
+
+  <section class="scene" data-t="10">
+    <div class="bg"><img src="../site/assets/images/Frente%20Dia%203.webp" alt="Fachada do chalé de dia, com a serra ao fundo"></div>
+    <div class="word">Chalé</div>
+    <div class="cap">
+      <div class="place">Lapinha da Serra · Minas Gerais</div>
+      <h2>Um chalé boutique <em>dentro da paisagem</em></h2>
+      <p>Silêncio, natureza e hospitalidade no alto da Serra do Espinhaço.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-t="10">
+    <div class="bg"><img src="../site/assets/images/Suite.jpeg" alt="Suíte com cama king size e vista para a serra"></div>
+    <div class="word light">Repouso</div>
+    <div class="cap">
+      <div class="place">A suíte</div>
+      <h2>Linhas serenas, <em>materiais nobres</em></h2>
+      <p>Cama king size, banheira de imersão e um banho em pedra natural, com a serra na janela.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-t="10">
+    <div class="bg"><img src="../site/assets/images/Sala%20+%20Cozinha.webp" alt="Sala integrada à cozinha, aberta para o deck"></div>
+    <div class="word">Encontro</div>
+    <div class="cap">
+      <div class="place">Sala e cozinha</div>
+      <h2>O coração <em>da estadia</em></h2>
+      <p>Marcenaria sob medida e portas de correr que trazem a cordilheira para dentro da sala.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-t="10">
+    <div class="bg"><img src="../site/assets/images/Piscina.jpeg" alt="Piscina de borda infinita aquecida diante da serra"></div>
+    <div class="word light">Horizonte</div>
+    <div class="cap">
+      <div class="place">Piscina e deck</div>
+      <h2>Onde a água <em>encontra a serra</em></h2>
+      <p>Piscina de borda infinita aquecida e deck em cumaru sob o pergolado.</p>
+    </div>
+  </section>
+
+  <!-- lugares para conhecer -->
+  <section class="scene places" data-t="36">
+    <div class="photo">
+      <img class="on" src="../site/assets/images/trilha.avif" alt="Trilha na Serra do Espinhaço">
+      <img src="../site/assets/images/serra-hero.avif" alt="Vista da Serra do Espinhaço">
+    </div>
+    <div class="col">
+      <div class="kicker">Lugares para conhecer</div>
+      <ul id="plist"></ul>
+      <div class="detail" id="pdetail"></div>
+    </div>
+  </section>
+
+  <section class="scene" data-t="10">
+    <div class="bg"><img src="../site/assets/images/Frente%20Noite%202.webp" alt="O chalé iluminado à noite"></div>
+    <div class="word light">Silêncio</div>
+    <div class="cap">
+      <div class="place">À noite</div>
+      <h2>O fogo aceso, <em>a serra em volta</em></h2>
+      <p>Noites de inverno no deck, junto ao calor do fogo.</p>
+    </div>
+  </section>
+
+  <!-- fecho -->
+  <section class="scene close" data-t="12">
+    <div class="bg"><img src="../site/assets/images/serra-hero.avif" alt=""></div>
+    <div class="center">
+      <svg width="200" height="200" viewBox="0 0 200 200" aria-label="Selo Solar do Espinhaço"><use href="#seal"/></svg>
+      <h2>Sua estadia na serra <em>começa aqui</em></h2>
+      <div class="links"><span>solardoespinhaco.com.br</span><span>@solardoespinhaco</span></div>
+    </div>
+  </section>
+
+  <!-- moldura -->
+  <div class="lockup"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#leaf"/></svg><span>Solar do Espinhaço</span></div>
+  <div class="where" id="where">Lapinha da Serra</div>
+  <button class="zone l" id="zl" aria-label="Cena anterior"></button>
+  <button class="zone r" id="zr" aria-label="Próxima cena"></button>
+  <div class="pause">Pausado · toque para seguir</div>
+  <div class="progress" id="prog"></div>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="leaf" viewBox="0 0 24 24"><path d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></symbol><symbol id="seal" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle cx="100" cy="100" r="84" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1" opacity="0.28"/><svg x="68" y="45" width="65" height="65" viewBox="0 0 24 24"><path d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><text x="100" y="145" text-anchor="middle" font-weight="400" font-size="36" letter-spacing="6.5" style="font-family:var(--font-serif);fill:var(--c-pine-deep)">SE</text></symbol></svg>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='translate(-50%,-50%) scale('+s+')'}
+  addEventListener('resize',fit);fit();
+
+  /* lugares: dados do site (seção Passeios Exclusivos) */
+  var P=[
+    {n:'Cachoeira do Lajeado',f:'40 m',u:'de queda',d:'Um amplo poço de águas verdes e cristalinas, alcançado a pé, a cavalo ou de caiaque.',img:1},
+    {n:'Poço do Boqueirão',f:'15 min',u:'a pé do centro',d:'Águas cristalinas abraçadas por um desfiladeiro de pedra que forma uma ducha natural.',img:0},
+    {n:'Pico da Lapinha',f:'1.647 m',u:'de altitude',d:'Uma subida íngreme que recompensa com a vista do vilarejo e da lagoa.',img:1},
+    {n:'Pinturas Rupestres',f:'7 mil anos',u:'de história',d:'Ao pé do Pico do Breu, alcançadas de barco ou por trilha, sempre com guia.',img:0},
+    {n:'Cachoeira do Tabuleiro',f:'273 m',u:'a mais alta de Minas',d:'Destino da travessia Lapinha–Tabuleiro, dois a três dias pela Serra do Espinhaço.',img:1},
+    {n:'Stand up e caiaque',f:'Entardecer',u:'na represa',d:'Remadas guiadas ao pôr do sol e, em datas especiais, sob a lua cheia.',img:0}
+  ];
+  var ul=document.getElementById('plist'),det=document.getElementById('pdetail');
+  var pimgs=document.querySelectorAll('.places .photo img'),pi=0,ptimer=null;
+  P.forEach(function(p,i){var li=document.createElement('li'),b=document.createElement('button');b.textContent=p.n;b.onclick=function(){showPlace(i,true)};li.appendChild(b);ul.appendChild(li)});
+  function showPlace(i,manual){
+    pi=i;[].forEach.call(ul.querySelectorAll('button'),function(b,k){b.classList.toggle('on',k===i)});
+    det.classList.remove('swap');void det.offsetWidth;
+    det.innerHTML='<div class="fact">'+P[i].f+'<small>'+P[i].u+'</small></div><p class="desc">'+P[i].d+'</p>';
+    det.classList.add('swap');
+    [].forEach.call(pimgs,function(im,k){im.classList.toggle('on',k===P[i].img)});
+    if(manual)pauseFor();
+  }
+
+  /* sequência */
+  var scenes=[].slice.call(document.querySelectorAll('.scene')),prog=document.getElementById('prog'),where=document.getElementById('where');
+  var labels=['Lapinha da Serra','O chalé','A suíte','Sala e cozinha','Piscina e deck','Arredores','À noite','Reservas'];
+  scenes.forEach(function(){var i=document.createElement('i');i.innerHTML='<b></b>';prog.appendChild(i)});
+  var cur=0,timer=null,paused=false,startAt=0,dur=0,raf=0;
+
+  function go(n){
+    cur=(n+scenes.length)%scenes.length;
+    scenes.forEach(function(s,i){s.classList.toggle('on',i===cur)});
+    var bars=prog.children;
+    for(var k=0;k<bars.length;k++){bars[k].classList.toggle('done',k<cur);bars[k].firstChild.style.transform=k<cur?'scaleX(1)':'scaleX(0)'}
+    where.textContent=labels[cur];
+    dur=(+scenes[cur].dataset.t||10)*1000;
+    scenes[cur].style.setProperty('--t',(dur/1000+2)+'s');
+    clearInterval(ptimer);
+    if(scenes[cur].classList.contains('places')){showPlace(0);ptimer=setInterval(function(){if(!paused)showPlace((pi+1)%P.length)},dur/P.length)}
+    startAt=performance.now();elapsed=0;
+  }
+  var elapsed=0,last=performance.now();
+  function tick(now){
+    var dt=now-last;last=now;
+    if(!paused){elapsed+=dt;var f=Math.min(1,elapsed/dur);prog.children[cur].firstChild.style.transform='scaleX('+f+')';if(f>=1)go(cur+1)}
+    raf=requestAnimationFrame(tick);
+  }
+  var resume=null;
+  function pauseFor(){paused=true;stage.classList.add('paused');clearTimeout(resume);resume=setTimeout(function(){paused=false;stage.classList.remove('paused')},12000)}
+
+  document.getElementById('zr').onclick=function(){go(cur+1)};
+  document.getElementById('zl').onclick=function(){go(cur-1)};
+  addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);if(e.key===' '){paused?(paused=false,stage.classList.remove('paused')):pauseFor()}});
+  var x0=null;
+  stage.addEventListener('pointerdown',function(e){x0=e.clientX});
+  stage.addEventListener('pointerup',function(e){if(x0===null)return;var d=e.clientX-x0;x0=null;if(Math.abs(d)>90)go(cur+(d<0?1:-1))});
+
+  go(0);requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
