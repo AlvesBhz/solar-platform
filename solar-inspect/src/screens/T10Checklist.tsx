@@ -106,27 +106,30 @@ export default function T10Checklist() {
     <div className="screen flex flex-col bg-cream">
       <AppHeader back={`/app/unidades/${unidadeId}`} eyebrow={`${u?.nome ?? ''} · ${tipo?.nome ?? ''}`} title="Checklist" />
 
-      {/* Progresso geral + ambientes com anel de progresso */}
+      {/* Progresso + ambientes */}
       <div className="sticky top-[calc(env(safe-area-inset-top)+3.75rem)] z-[9] border-b border-line-1 bg-cream">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-2.5 px-4 pb-3 pt-3">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 pb-3 pt-3">
           <div className="flex items-center justify-between gap-3 text-[0.75rem]">
-            <span className="text-fg-2"><span className="font-mono font-medium text-fg-1">{respondidos}/{todos.length}</span> itens · {pct}%</span>
+            <span className="text-fg-2"><span className="font-mono font-medium text-fg-1">{respondidos}/{todos.length}</span> itens completos</span>
             <span className="inline-flex items-center gap-1 text-fg-3" role="status">
               <Icon icon="solar:diskette-linear" width={14} aria-hidden="true" />
-              {rasc.salvoEm ? `Salvo · ${new Date(rasc.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Rascunho'}
+              {rasc.salvoEm ? `Salvo no aparelho · ${new Date(rasc.salvoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Rascunho'}
             </span>
           </div>
+          <div className="h-1 overflow-hidden rounded-full bg-line-1" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Progresso da vistoria">
+            <div className="h-full origin-left rounded-full bg-pine transition-transform duration-base" style={{ transform: `scaleX(${pct / 100})` }} />
+          </div>
           <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="flex w-max gap-1.5" role="tablist" aria-label="Ambientes">
+            <div className="flex w-max gap-2" role="tablist" aria-label="Ambientes">
               {ambientes.map((a, i) => {
-                const f = feitos(a.itens);
+                const ok = feitos(a.itens) === a.itens.length;
                 const atual = i === idx;
                 return (
                   <button key={a.id} type="button" role="tab" aria-selected={atual} onClick={() => irPara(i)}
-                    aria-label={`${a.nome}: ${f} de ${a.itens.length} itens completos`}
-                    className={`inline-flex min-h-11 items-center gap-2 rounded-full pl-1.5 pr-3.5 text-[0.8125rem] transition-colors duration-fast ${atual ? 'bg-pine text-white' : 'text-fg-2 hover:bg-white'}`}>
-                    <Anel p={f / a.itens.length} icon={a.icon} claro={atual} />
+                    className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] transition-colors duration-fast ${atual ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2'}`}>
+                    <Icon icon={ok ? 'solar:check-circle-linear' : a.icon} width={16} className={!atual && ok ? 'text-available' : ''} aria-hidden="true" />
                     {a.nome}
+                    <span className={`font-mono text-[0.6875rem] ${atual ? 'text-white/70' : 'text-fg-3'}`}>{feitos(a.itens)}/{a.itens.length}</span>
                   </button>
                 );
               })}
@@ -205,21 +208,6 @@ export default function T10Checklist() {
   );
 }
 
-/** Anel de progresso do ambiente; vira um check verde quando completo. */
-function Anel({ p, icon, claro }: { p: number; icon: string; claro: boolean }) {
-  const c = 2 * Math.PI * 13;
-  if (p >= 1) return <span className={`flex h-8 w-8 items-center justify-center rounded-full ${claro ? 'bg-white text-available' : 'bg-available text-white'}`}><Icon icon="solar:check-read-linear" width={16} aria-hidden="true" /></span>;
-  return (
-    <span className="relative flex h-8 w-8 items-center justify-center">
-      <svg viewBox="0 0 32 32" className="absolute inset-0 -rotate-90" aria-hidden="true">
-        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2" />
-        <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - p)} className="transition-[stroke-dashoffset] duration-base" />
-      </svg>
-      <Icon icon={icon} width={14} aria-hidden="true" />
-    </span>
-  );
-}
-
 type LinhaProps = {
   item: Item; resposta?: string; positivo: string; temNA: boolean; completo: boolean; nFotos: number; obs: boolean; detalhe: string;
   onOk: () => void; onNao: () => void; onNA: () => void; onFoto: () => void; onAbrir: () => void;
@@ -279,21 +267,21 @@ function LinhaItem({ item, resposta, positivo, temNA, completo, nFotos, obs, det
           </Link>
 
           <div className="flex shrink-0 items-center" role="radiogroup" aria-label={`Resposta para ${item.nome}`}>
-            {temNA && (
-              <button type="button" role="radio" aria-checked={na} onClick={onNA} className="flex h-11 items-center px-1.5" aria-label="Não se aplica">
-                <span className={`rounded-full px-2 py-1 text-[0.6875rem] font-medium transition-colors duration-fast ${na ? 'bg-fg-3 text-white' : 'text-fg-3 hover:text-fg-2'}`}>N/A</span>
-              </button>
-            )}
-            <button type="button" role="radio" aria-checked={nao} onClick={onNao} className="flex h-11 w-11 items-center justify-center" aria-label="Problema">
-              <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${nao ? 'border-error bg-error text-white' : 'border-line-2 text-error hover:border-error'}`}>
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
-              </span>
-            </button>
             <button type="button" role="radio" aria-checked={ok} onClick={onOk} className="flex h-11 w-11 items-center justify-center" aria-label={positivo}>
               <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${ok ? 'border-available bg-available text-white' : 'border-line-2 text-available hover:border-available'}`}>
                 <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </span>
             </button>
+            <button type="button" role="radio" aria-checked={nao} onClick={onNao} className="flex h-11 w-11 items-center justify-center" aria-label="Problema">
+              <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${nao ? 'border-error bg-error text-white' : 'border-line-2 text-error hover:border-error'}`}>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
+              </span>
+            </button>
+            {temNA && (
+              <button type="button" role="radio" aria-checked={na} onClick={onNA} className="flex h-11 items-center px-1.5" aria-label="Não se aplica">
+                <span className={`rounded-full px-2 py-1 text-[0.6875rem] font-medium transition-colors duration-fast ${na ? 'bg-fg-3 text-white' : 'text-fg-3 hover:text-fg-2'}`}>N/A</span>
+              </button>
+            )}
           </div>
         </div>
 
