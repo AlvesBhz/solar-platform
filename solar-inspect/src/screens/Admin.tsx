@@ -38,29 +38,29 @@ export function T28Propriedades() {
 }
 
 const USUARIOS = [
-  { nome: 'Ana Souza', email: 'ana@solar.dev', perfil: 'Assessor', props: 'Pousada Solar do Espinhaço', ativo: true },
-  { nome: 'Bruno Lima', email: 'bruno@solar.dev', perfil: 'Assessor', props: 'Pousada Solar do Espinhaço', ativo: true },
-  { nome: 'Carla Dias', email: 'carla@solar.dev', perfil: 'Assessor', props: 'Hotel Lapinha', ativo: true },
-  { nome: 'Gestor Demo', email: 'gestor@solar.dev', perfil: 'Gestor', props: 'Todas', ativo: true },
-  { nome: 'Usuário Inativo', email: 'inativo@solar.dev', perfil: 'Assessor', props: 'Hotel Lapinha', ativo: false },
+  { nome: 'Ana Souza', usuario: 'ana', cpf: '•••.982.247-••', perfil: 'Assessor', props: 'Pousada Solar do Espinhaço', ativo: true },
+  { nome: 'Bruno Lima', usuario: 'bruno', cpf: '•••.456.789-••', perfil: 'Assessor', props: 'Pousada Solar do Espinhaço', ativo: true },
+  { nome: 'Carla Dias', usuario: 'carla', cpf: '•••.321.654-••', perfil: 'Assessor', props: 'Hotel Lapinha', ativo: true },
+  { nome: 'Gestor Demo', usuario: 'gestor', cpf: '•••.444.777-••', perfil: 'Gestor', props: 'Todas', ativo: true },
+  { nome: 'Usuário Inativo', usuario: 'inativo', cpf: '•••.053.344-••', perfil: 'Assessor', props: 'Hotel Lapinha', ativo: false },
 ];
 
 /** T32 — Usuários e permissões: perfil, propriedades e status (menor privilégio). */
 export function T32Usuarios() {
   const [l, setL] = useState(USUARIOS);
-  const alternar = (email: string) => {
-    const u = l.find((x) => x.email === email)!;
-    setL(l.map((x) => (x.email === email ? { ...x, ativo: !x.ativo } : x)));
-    registrarAuditoria(u.ativo ? 'Usuário desativado' : 'Usuário reativado', email);
+  const alternar = (usuario: string) => {
+    const u = l.find((x) => x.usuario === usuario)!;
+    setL(l.map((x) => (x.usuario === usuario ? { ...x, ativo: !x.ativo } : x)));
+    registrarAuditoria(u.ativo ? 'Usuário desativado' : 'Usuário reativado', usuario);
   };
   return (
     <GestaoShell eyebrow="Administração" titulo="Usuários e permissões">
       <TabelaResp rows={l} cols={[
-        { h: 'Usuário', r: (u) => (<><div>{u.nome}</div><div className="text-[0.75rem] font-normal text-fg-3">{u.email}</div></>) },
+        { h: 'Usuário', r: (u) => (<><div>{u.nome}</div><div className="text-[0.75rem] font-normal text-fg-3">{u.usuario} · CPF {u.cpf}</div></>) },
         { h: 'Perfil', r: (u) => u.perfil },
         { h: 'Propriedades', r: (u) => <span className="text-fg-2">{u.props}</span> },
         { h: 'Status', r: (u) => (
-          <button type="button" aria-pressed={u.ativo} onClick={() => alternar(u.email)} className={`inline-flex min-h-11 items-center gap-1.5 text-[0.75rem] font-medium ${u.ativo ? 'text-available' : 'text-fg-3'}`}>
+          <button type="button" aria-pressed={u.ativo} onClick={() => alternar(u.usuario)} className={`inline-flex min-h-11 items-center gap-1.5 text-[0.75rem] font-medium ${u.ativo ? 'text-available' : 'text-fg-3'}`}>
             <Icon icon={u.ativo ? 'solar:check-circle-linear' : 'solar:user-block-linear'} width={16} aria-hidden="true" />{u.ativo ? 'Ativo' : 'Inativo'}
           </button>) },
       ]} />

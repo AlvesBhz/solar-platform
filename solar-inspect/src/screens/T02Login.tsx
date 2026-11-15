@@ -3,37 +3,38 @@ import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Seal } from '../components/Logo';
 import NetworkBadge, { useOnline } from '../components/NetworkBadge';
-import { APP_VERSION, requestLoginLink, type LoginResult } from '../mocks/auth';
+import { cpfValido, formatarCpf, pareceCpf } from '../lib/cpf';
+import { APP_VERSION, entrar, type LoginResult } from '../mocks/auth';
 
-const ERRORS: Record<Exclude<LoginResult, { ok: true }>['reason'] | 'invalid', string> = {
-  invalid: 'Informe um e-mail válido.',
-  not_found: 'E-mail não cadastrado. Fale com o administrador.',
+const ERRORS: Record<Exclude<LoginResult, { ok: true }>['reason'] | 'invalid' | 'cpf', string> = {
+  invalid: 'Informe seu usuário ou CPF.',
+  cpf: 'CPF inválido. Confira os números.',
+  not_found: 'Usuário ou CPF não cadastrado. Fale com o administrador.',
   inactive: 'Usuário inativo. O acesso foi bloqueado pelo administrador.',
   offline: 'Sem conexão. Conecte-se à internet para entrar.',
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const btnBase =
   'flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-6 text-xs font-semibold uppercase tracking-[0.1em] transition duration-base';
 
-/** T02 — Login: autenticação por e-mail (mockup, sem banco). Bloqueia usuário inativo. */
+/** T02 — Login: usuário ou CPF (mockup, sem banco). Bloqueia usuário inativo. */
 export default function T02Login() {
   const navigate = useNavigate();
   const online = useOnline();
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!EMAIL_RE.test(email.trim())) return setError(ERRORS.invalid);
+    if (id.trim().length < 3) return setError(ERRORS.invalid);
+    if (pareceCpf(id) && !cpfValido(id)) return setError(ERRORS.cpf);
     setLoading(true);
-    const res = await requestLoginLink(email);
+    const res = await entrar(id);
     setLoading(false);
-    // Mockup: entra direto (o link por e-mail será a etapa real do Supabase Auth).
-    if (res.ok) navigate(/^(gestor|admin)@/.test(email.trim().toLowerCase()) ? '/gestao' : '/app/unidades');
+    // Mockup: entra direto; o perfil define a área (assessor no campo, gestor e admin na gestão).
+    if (res.ok) navigate(res.perfil === 'assessor' ? '/app/unidades' : '/gestao');
     else setError(ERRORS[res.reason]);
   }
 
@@ -72,22 +73,26 @@ export default function T02Login() {
               <div className="flex flex-col gap-3">
                 <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">Acesso</span>
                 <h1 className="screen-title">Entrar</h1>
-                <p className="text-[0.8125rem] leading-relaxed text-fg-2">Informe seu e-mail para acessar.</p>
+                <p className="text-[0.8125rem] leading-relaxed text-fg-2">Informe seu usuário ou CPF.</p>
               </div>
 
               <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 <label className="flex flex-col gap-2">
-                  <span className="text-xs uppercase tracking-[0.08em] text-fg-2">E-mail</span>
+                  <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Usuário ou CPF</span>
                   <div className="relative">
-                    <Icon icon="solar:letter-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
+                    <Icon icon="solar:user-rounded-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
                     <input
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
+                      id="login-id"
+                      type="text"
+                      inputMode="text"
+                      autoComplete="username"
                       autoCapitalize="none"
-                      placeholder="voce@exemplo.com.br"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      autoCorrect="off"
+                      spellCheck={false}
+                      placeholder="seu.usuario ou 000.000.000-00"
+                      value={id}
+                      // CPF ganha máscara enquanto digita; usuário (com letras) fica como está.
+                      onChange={(e) => setId(pareceCpf(e.target.value) ? formatarCpf(e.target.value) : e.target.value)}
                       aria-invalid={!!error}
                       aria-describedby={error ? 'login-error' : undefined}
                       disabled={loading}
@@ -131,7 +136,7 @@ export default function T02Login() {
 
               <p className="border-t border-line-1 pt-5 text-xs leading-relaxed text-fg-3">
                 <span className="text-fg-2">Mockup · contas de teste:</span>{' '}
-                <span className="font-mono [overflow-wrap:anywhere]">assessor@solar.dev (campo), gestor@solar.dev e admin@solar.dev (gestão), inativo@solar.dev</span>
+                <span className="font-mono [overflow-wrap:anywhere]">ana (campo), gestor e admin (gestão), inativo. CPF da Ana: 529.982.247-25</span>
               </p>
           </>
         </section>

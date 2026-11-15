@@ -28,11 +28,11 @@ PWA mobile-first para vistorias de unidades de hospedagem, com validação de pr
 | Gestor | Acompanhar unidades, vistorias, relatórios e ocorrências; tratar pendências. | Gestão (`/gestao`) |
 | Administrador | Tudo do gestor, mais cadastros, usuários, permissões e configurações de presença. | Gestão e administração (`/admin`) |
 
-- **Login por e-mail.** No protótipo, o e-mail válido entra direto, sem etapa intermediária de confirmação. O método real (link mágico ou código por e-mail) está pendente (seção 13).
-- **Destino após o login:** assessor vai para Minhas unidades (T05); gestor e administrador vão para o Dashboard (T20). Usuário inativo é barrado no próprio login; acesso negado leva à T04.
+- **Login por usuário ou CPF.** Um único campo aceita o nome de usuário ou o CPF. O CPF ganha máscara (000.000.000-00) enquanto é digitado e tem os dígitos verificadores conferidos; usuário não diferencia maiúsculas. No protótipo, o identificador válido entra direto, sem senha nem etapa intermediária. **Um CPF não é segredo:** na versão real o acesso exige um segundo fator (senha, PIN emitido com segurança ou código), a definir na seção 13.
+- **Destino após o login:** definido pelo perfil do usuário: assessor vai para Minhas unidades (T05); gestor e administrador vão para o Dashboard (T20). Usuário inativo é barrado no próprio login; acesso negado leva à T04.
 - **Localização não é pedida no login.** A permissão é solicitada na vistoria, na validação de presença (T08). A T03 só serve de ajuda quando o GPS está bloqueado.
 - **Regra de acesso:** todo acesso é limitado por perfil e pelas propriedades vinculadas ao usuário, aplicado no banco com Row Level Security (RLS) **[servidor]**. Unidade inexistente ou sem acesso leva à T04 sem revelar dados.
-- **Contas de teste do protótipo:** `assessor@solar.dev` (campo), `gestor@solar.dev` e `admin@solar.dev` (gestão), `inativo@solar.dev` (bloqueado).
+- **Contas de teste do protótipo:** `ana` (campo; CPF 529.982.247-25), `gestor` e `admin` (gestão; CPFs 111.444.777-35 e 123.456.789-09) e `inativo` (bloqueado). Os CPFs de teste são fictícios, válidos apenas pelos dígitos verificadores.
 
 ## 3. Regras centrais
 
@@ -155,7 +155,7 @@ A propriedade define o modo padrão e a unidade pode sobrescrevê-lo; a configur
 
 | Gatilho | Comportamento |
 |---|---|
-| E-mail válido no login | Entra direto: assessor em T05, gestor/admin em T20. |
+| Usuário ou CPF válido no login | Entra direto: assessor em T05, gestor/admin em T20. |
 | Abrir a T08 | Verifica o GPS sozinha (quando exigido). |
 | Presença completa | Mostra "Presença validada" e abre o checklist em ~1 s. |
 | Resposta negativa no checklist | Abre o detalhe do item (T11, ou T13 na saída). |
@@ -186,7 +186,7 @@ Telas responsivas: menu lateral no computador e no tablet; barra superior roláv
 | T29 Formulário de propriedade | Nome (mín. 3), tipo, validação padrão, latitude (-90 a 90), longitude (-180 a 180) e raio (10 a 500 m). |
 | T30 Ambientes e itens | Por unidade: reordenar ambientes, **criar ambiente**, adicionar item, marcar crítico e foto; "Salvar nova versão" preserva o histórico. |
 | T31 Tipos de vistoria | Ativar e desativar (sem itens não ativa) e periodicidade. |
-| T32 Usuários e permissões | Perfil, propriedades e status ativo; menor privilégio e RLS. |
+| T32 Usuários e permissões | Usuário e CPF (parcialmente oculto), perfil, propriedades e status ativo; menor privilégio e RLS. |
 | T33 Configuração GPS/QR | Modo, raio (10 a 500 m) e **rotação do segredo** (invalida os códigos anteriores; o segredo não é exibido). |
 | T34 Auditoria | Eventos por usuário, ação e detalhe, somente leitura, com filtro. |
 
@@ -214,7 +214,7 @@ Telas responsivas: menu lateral no computador e no tablet; barra superior roláv
 
 | Tabela | Campos principais | Observação |
 |---|---|---|
-| `usuarios` | id, nome, email, perfil, ativo, aceite_lgpd_em | Vínculo com propriedades por tabela associativa. |
+| `usuarios` | id, nome, usuario (único), cpf (único, protegido), perfil, ativo, aceite_lgpd_em | Autenticação por usuário ou CPF; CPF mascarado nas telas (LGPD). Vínculo com propriedades por tabela associativa. |
 | `usuario_propriedades` | usuario_id, propriedade_id | Permissões por propriedade. |
 | `propriedades` | id, nome, tipo, modo_validacao, latitude, longitude, raio_m, ativo | Configuração padrão de presença. |
 | `unidades` | id, propriedade_id, nome, tipo, andar, coordenadas, raio_m, qr_secret, modo_validacao, status | Pode herdar a validação da propriedade. |
@@ -289,7 +289,7 @@ Motivos da T04: `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-l
 | CA-12 | Localização não é coletada fora do fluxo de vistoria. | Ok (T08, T12 e T17) |
 | CA-13 | Painel mostra estado atual, histórico e ocorrências abertas de cada unidade. | Ok |
 | CA-14 | Logs registram tentativas de presença, envios e alterações administrativas. | Parcial; ver seção 13 |
-| CA-15 | Login válido entra direto, sem etapa intermediária e sem pedir localização. | Ok |
+| CA-15 | Login por usuário ou CPF válido entra direto, sem etapa intermediária e sem pedir localização; CPF inválido é recusado antes de consultar o servidor. | Ok |
 | CA-16 | Presença completa abre o checklist sozinha, sem botão. | Ok |
 | CA-17 | Ambiente completo avança para o próximo com pendência ou para o resumo. | Ok |
 | CA-18 | Voltar do detalhe reabre o ambiente e rola até o item avaliado. | Ok |
@@ -297,7 +297,7 @@ Motivos da T04: `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-l
 
 ## 12. O que mudou em relação à versão anterior
 
-- **Entrada no app:** removidas a confirmação por e-mail e a permissão de localização após o login; a presença (GPS e QR) acontece na vistoria.
+- **Entrada no app:** o login passou de e-mail para **usuário ou CPF** (máscara e validação do CPF); removidas a confirmação por e-mail e a permissão de localização após o login; a presença (GPS e QR) acontece na vistoria.
 - **Presença (T08):** GPS automático ao abrir e avanço automático ao validar.
 - **Checklist (T10):** linhas compactas com ✓ ✗ N/A, deslizar para responder, Tudo OK, etiquetas de pendência, abas por ambiente e avanço automático para o próximo ambiente com pendência.
 - **Evidência:** item com foto obrigatória abre a câmera; voltar do detalhe reposiciona no item avaliado.
@@ -311,7 +311,7 @@ Motivos da T04: `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-l
 - [ ] Confirmar se o gestor pode liberar manualmente uma unidade bloqueada (o protótipo permite, com justificativa e auditoria).
 - [ ] Definir a política de retenção das fotos no aparelho após a sincronização.
 - [ ] Definir os raios iniciais por propriedade e se o assessor pode prosseguir com vistoria sinalizada quando o GPS falha (hoje a T08 bloqueia o checklist).
-- [ ] Definir o método final de autenticação (link mágico, código por e-mail ou outro). Não implementar PIN próprio sem emissão, expiração e bloqueio seguros.
+- [ ] Definir o segundo fator do login por usuário ou CPF (senha, PIN ou código por SMS ou e-mail). O CPF sozinho não autentica: é um dado de conhecimento amplo. O Supabase Auth não entra por usuário ou CPF de fábrica; é preciso mapear o identificador para uma credencial interna. Não implementar PIN próprio sem emissão, expiração e bloqueio seguros, e prever limite de tentativas e recuperação de acesso.
 - [ ] Definir se a assinatura é obrigatória para todos os tipos ou configurável.
 - [ ] Confirmar a observação opcional na divergência (decisão do protótipo; a versão anterior exigia observação).
 - [ ] Separar as telas de gestor e administrador por perfil (hoje ambos veem as mesmas).
