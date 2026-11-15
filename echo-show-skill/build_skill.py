@@ -16,7 +16,8 @@ doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":30
      "autoplay":True,"audioTrack":"none","source":"${payload.data.video}",
      # ao terminar (o vídeo acaba em preto, depois da pausa no selo) volta ao início e toca de novo
      "onEnd":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},
-              {"type":"ControlMedia","componentId":"abertura","command":"play"}]},
+              {"type":"ControlMedia","componentId":"abertura","command":"play"}],
+     "onFail":[{"type":"SendEvent","arguments":["videoFail","${event.errorCode}","${event.error}"]}]},
     # toque na tela: volta ao início e toca de novo
     {"type":"TouchWrapper","position":"absolute","width":"100vw","height":"100vh",
      "onPress":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},
@@ -103,6 +104,24 @@ const SessionEndedHandler = {
   },
 };
 
+/* O Alexa avisa a skill quando a tela (APL) dá erro de execução, por exemplo vídeo que não abre. Fica no CloudWatch. */
+const RuntimeErrorHandler = {
+  canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'Alexa.Presentation.APL.RuntimeError',
+  handle(h) {
+    console.log('Erro da tela (APL):', JSON.stringify(h.requestEnvelope.request.errors));
+    return h.responseBuilder.getResponse();
+  },
+};
+
+const VideoFailHandler = {
+  canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'Alexa.Presentation.APL.UserEvent'
+    && (h.requestEnvelope.request.arguments || [])[0] === 'videoFail',
+  handle(h) {
+    console.log('O player não conseguiu abrir o vídeo:', JSON.stringify(h.requestEnvelope.request.arguments));
+    return h.responseBuilder.getResponse();
+  },
+};
+
 const ErrorHandler = {
   canHandle: () => true,
   handle(h, error) {
@@ -112,7 +131,7 @@ const ErrorHandler = {
 };
 
 exports.handler = Alexa.SkillBuilders.custom()
-  .addRequestHandlers(LaunchRequestHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
+  .addRequestHandlers(LaunchRequestHandler, RuntimeErrorHandler, VideoFailHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
   .addErrorHandlers(ErrorHandler)
   .lambda();
 '''
