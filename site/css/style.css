@@ -1761,3 +1761,18 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
      mover o fundo por script a cada quadro causava trepidação */
   .cta-bg { will-change: auto; }
 }
+
+/* [RESPONSIVO] "Explorar" do hero — antes escondido abaixo de 768px
+   (hidden md:flex). Agora aparece também no celular, acima da barra de
+   gestos do iPhone, com área de toque confortável. */
+#heroScroll {
+  z-index: 12;                                   /* acima da frase (#heroPhrase, z 11) */
+  bottom: max(2rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem)) !important;
+  padding: 0.5rem 1.25rem;
+  -webkit-tap-highlight-color: transparent;
+}
+#heroScroll:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 4px; border-radius: 4px; }
+@media (max-height: 480px) and (orientation: landscape) {
+  #heroScroll { bottom: 0.75rem !important; }
+  #heroScroll .h-8 { height: 1.25rem; }
+}

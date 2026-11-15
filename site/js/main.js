@@ -165,6 +165,18 @@ var introReady = (function () {
   }, 1500); });
 })();
 
+/* ── EXPLORAR (hero): toque/clique leva à primeira seção ── */
+(function () {
+  var btn = document.getElementById('heroScroll');
+  var target = document.getElementById('dobra-2');
+  if (!btn || !target) return;
+  function go() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  btn.addEventListener('click', go);
+  btn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+  });
+})();
+
 /* ── NAV: transparente no topo, pine glass ao rolar ── */
 (function () {
   const nav = document.getElementById('siteNav');
