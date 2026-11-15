@@ -43,7 +43,7 @@ Este pacote foi escrito sem acesso à documentação do APL e **ainda não foi t
 - **`letterSpacing` e `fontWeight`.** Se o simulador acusar propriedade inválida, remova.
 - **Degradês.** O ângulo `0` deveria ir de cima para baixo. Se o escurecimento vier de lado, troque para `90`.
 - **Estado final das animações.** Cada animação é seguida de um `SetValue` com o valor final, para o caso de o aparelho voltar ao valor inicial.
-- **Duração da sessão.** O texto falado tem duas pausas de 9 s para manter a skill aberta durante a animação (cerca de 17 s).
+- **Duração da tela.** A abertura é silenciosa (a Alexa recusa fala só com pausas). O documento APL tem `idleTimeout` de 5 minutos para a tela continuar no aparelho depois da animação. Se a tela sumir antes, ajuste esse valor.
 
 ## Diferenças em relação ao teste em navegador
 

@@ -118,7 +118,7 @@ cmds=[
  {"type":"Sequential","commands":[ANIM("heroImg",0,14000,[{"property":"transform","from":[{"scale":1.06}],"to":[{"scale":1}]}],"ease-in-out")]},  # zoom lento da foto
 ]
 
-doc={"type":"APL","version":"2023.3","theme":"dark",
+doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":300000},
  "graphics":{"leafLight":avg("#FFFFFF",1.5),"leafPine":avg(PINE_DEEP,1.5)},
  "onMount":[{"type":"Parallel","commands":cmds}],
  "mainTemplate":{"parameters":["payload"],"items":[
@@ -161,8 +161,8 @@ const render = (h) => h.responseBuilder.addDirective({
   datasources: { payload: { data: { image: imageUrl() } } },
 });
 
-/* A animação dura ~17 s. Pausas de até 10 s por tag mantêm a sessão aberta enquanto a tela roda. */
-const HOLD = '<speak><break time="9s"/><break time="9s"/></speak>';
+/* A abertura é silenciosa: nenhuma fala, só a tela. O documento APL tem idleTimeout longo (5 min),
+   então a tela continua no aparelho depois que a animação termina. */
 
 const LaunchRequestHandler = {
   canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'LaunchRequest',
@@ -170,7 +170,7 @@ const LaunchRequestHandler = {
     if (!supportsAPL(h)) {
       return h.responseBuilder.speak('Solar do Espinhaço. Esta skill foi feita para a tela do Echo Show.').getResponse();
     }
-    return render(h).speak(HOLD).withShouldEndSession(false).getResponse();
+    return render(h).withShouldEndSession(false).getResponse();
   },
 };
 
@@ -178,13 +178,13 @@ const LaunchRequestHandler = {
 const ReplayHandler = {
   canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'Alexa.Presentation.APL.UserEvent'
     && (h.requestEnvelope.request.arguments || [])[0] === 'replay',
-  handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
+  handle: (h) => render(h).withShouldEndSession(false).getResponse(),
 };
 
 const ReplayIntentHandler = {
   canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'IntentRequest'
     && Alexa.getIntentName(h.requestEnvelope) === 'ReplayIntent',
-  handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
+  handle: (h) => render(h).withShouldEndSession(false).getResponse(),
 };
 
 const HelpHandler = {
