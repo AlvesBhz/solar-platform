@@ -25,11 +25,10 @@ Pré-requisito: a skill já criada no Alexa Developer Console como **Custom + Al
 1. **Aba Build, menu da esquerda → Invocations → Skill Invocation Name:** troque para `solar marca`. Salve.
 2. **Aba Build, menu da esquerda → Interfaces** (depois de *Tasks*): ligue **Alexa Presentation Language** (sem isso a tela não aparece). Salve.
 3. **Aba Build, menu da esquerda → Interaction Model → JSON Editor:** cole o conteúdo de `pt-BR.json`. Clique em **Save** e depois em **Build skill**.
-4. **Aba Code, canto inferior esquerdo → Media storage:** envie `assets/serra-hero.jpg`. Copie o endereço do arquivo.
+4. **Aba Code → botão S3 Storage → Buckets de uso geral → bucket da skill → pasta `Media` → Carregar:** envie `assets/serra-hero.jpg`, com esse nome exato. A foto fica privada e a skill gera um link temporário sozinha, então não é preciso copiar URL.
 5. **Aba Code:**
    - substitua `lambda/index.js` pelo arquivo deste repositório;
-   - substitua `lambda/package.json` pelo deste repositório;
-   - na primeira linha de código do `index.js`, troque `COLE_AQUI_O_ENDERECO_DA_FOTO` pelo endereço copiado no passo 4;
+   - substitua `lambda/package.json` pelo deste repositório (inclui o `aws-sdk`, usado para assinar o link da foto);
    - clique em **Deploy**.
 6. **Aba Test:** mude para **Development**, escolha o dispositivo **Echo Show 8** no simulador e digite `abrir solar marca`.
 7. **No Echo Show 8:** diga "Alexa, abrir solar marca". O idioma do aparelho precisa ser Português (Brasil).

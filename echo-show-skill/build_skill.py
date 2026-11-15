@@ -131,10 +131,21 @@ doc_js=json.dumps(doc,ensure_ascii=False,indent=1)
 
 INDEX=r'''/* Solar do Espinhaço · skill para Echo Show (APL)
    Hospedagem: Alexa-hosted (Node.js). Cole este arquivo como lambda/index.js.
-   ⚠ Antes de publicar, preencha IMAGE_URL com o endereço da foto no "Media storage" da aba Code. */
+   A foto fica privada no bucket da skill (pasta Media). A skill assina um link temporário a cada abertura,
+   então não é preciso copiar nenhuma URL. O arquivo precisa se chamar serra-hero.jpg e estar em Media/. */
 const Alexa = require('ask-sdk-core');
+const AWS = require('aws-sdk');
 
-const IMAGE_URL = 'COLE_AQUI_O_ENDERECO_DA_FOTO';   // ex.: https://<bucket>.s3.amazonaws.com/Media/serra-hero.jpg
+const IMAGE_KEY = 'Media/serra-hero.jpg';
+const s3 = new AWS.S3({ signatureVersion: 'v4', region: process.env.S3_PERSISTENCE_REGION });
+function imageUrl() {
+  try {
+    return s3.getSignedUrl('getObject', { Bucket: process.env.S3_PERSISTENCE_BUCKET, Key: IMAGE_KEY, Expires: 900 });
+  } catch (e) {
+    console.log('Falha ao assinar a foto:', e);
+    return '';   // sem foto: o fundo fica escuro e o resto da animação segue
+  }
+}
 
 const DOCUMENT = __DOC__;
 
@@ -147,7 +158,7 @@ const render = (h) => h.responseBuilder.addDirective({
   type: 'Alexa.Presentation.APL.RenderDocument',
   token: TOKEN,
   document: DOCUMENT,
-  datasources: { payload: { data: { image: IMAGE_URL } } },
+  datasources: { payload: { data: { image: imageUrl() } } },
 });
 
 /* A animação dura ~17 s. Pausas de até 10 s por tag mantêm a sessão aberta enquanto a tela roda. */
@@ -214,7 +225,7 @@ exports.handler = Alexa.SkillBuilders.custom()
   .lambda();
 '''
 open('lambda/index.js','w').write(INDEX.replace('__DOC__',doc_js))
-open('lambda/package.json','w').write(json.dumps({"name":"solar-do-espinhaco-echo-show","version":"1.0.0","description":"Abertura Solar do Espinhaço para Echo Show","main":"index.js","dependencies":{"ask-sdk-core":"^2.14.0","ask-sdk-model":"^1.86.0"}},indent=2)+'\n')
+open('lambda/package.json','w').write(json.dumps({"name":"solar-do-espinhaco-echo-show","version":"1.0.0","description":"Abertura Solar do Espinhaço para Echo Show","main":"index.js","dependencies":{"ask-sdk-core":"^2.14.0","ask-sdk-model":"^1.86.0","aws-sdk":"^2.1692.0"}},indent=2)+'\n')
 open('skill-package/interactionModels/custom/pt-BR.json','w').write(json.dumps({"interactionModel":{"languageModel":{
   "invocationName":"solar marca",
   "intents":[{"name":"AMAZON.CancelIntent","samples":[]},{"name":"AMAZON.HelpIntent","samples":[]},
