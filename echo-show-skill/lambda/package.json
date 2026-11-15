@@ -1,0 +1,10 @@
+{
+  "name": "solar-do-espinhaco-echo-show",
+  "version": "1.0.0",
+  "description": "Abertura Solar do Espinha\u00e7o para Echo Show",
+  "main": "index.js",
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-model": "^1.86.0"
+  }
+}
