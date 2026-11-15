@@ -1,6 +1,7 @@
 """Gera lambda/index.js e o modelo de fala da skill de vídeo.
 A abertura é o vídeo assets/abertura.mp4 (gravado de echo-show/abertura.html), tocado em tela cheia pelo componente Video do APL.
-Rode:  python3 build_skill.py"""
+Rode:  python3 build_skill.py
+O vídeo dura ~21,7 s: abertura, selo com pausa de ~4 s, escurece e termina em preto; começa também em preto, então o loop não pisca."""
 import json
 
 S900='#1C1917'   # --bg-dark-1 do design system: fundo atrás do vídeo
@@ -12,7 +13,10 @@ doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":30
     # best-fill cobre a tela (em 16:10 corta ~5% de cada lado, onde só há fundo); em retrato usa best-fit para não cortar
     {"type":"Video","id":"abertura","position":"absolute","width":"100vw","height":"100vh",
      "scale":"${viewport.width >= viewport.height ? 'best-fill' : 'best-fit'}",
-     "autoplay":True,"audioTrack":"none","source":"${payload.data.video}"},
+     "autoplay":True,"audioTrack":"none","source":"${payload.data.video}",
+     # ao terminar (o vídeo acaba em preto, depois da pausa no selo) volta ao início e toca de novo
+     "onEnd":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},
+              {"type":"ControlMedia","componentId":"abertura","command":"play"}]},
     # toque na tela: volta ao início e toca de novo
     {"type":"TouchWrapper","position":"absolute","width":"100vw","height":"100vh",
      "onPress":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},

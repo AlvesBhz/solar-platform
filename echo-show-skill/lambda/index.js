@@ -49,7 +49,19 @@ const DOCUMENT = {
       "scale": "${viewport.width >= viewport.height ? 'best-fill' : 'best-fit'}",
       "autoplay": true,
       "audioTrack": "none",
-      "source": "${payload.data.video}"
+      "source": "${payload.data.video}",
+      "onEnd": [
+       {
+        "type": "ControlMedia",
+        "componentId": "abertura",
+        "command": "rewind"
+       },
+       {
+        "type": "ControlMedia",
+        "componentId": "abertura",
+        "command": "play"
+       }
+      ]
      },
      {
       "type": "TouchWrapper",

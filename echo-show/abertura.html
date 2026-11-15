@@ -16,9 +16,9 @@
    Página 2 é o selo F · bone (brand/logo/index.html) sobre cream, como na tela de acesso. */
 :root{--c-bone:#EAE5D9;color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--c-s900)}
+html,body{height:100%;overflow:hidden;background:#000}
 body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none}
-#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;background:var(--c-s900);cursor:pointer}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;background:#000;cursor:pointer}
 
 /* ═══ PÁGINA 1 · HERO ═══ */
 #hero{position:absolute;inset:0;transition:opacity 2800ms cubic-bezier(.4,0,.2,1),filter 2800ms cubic-bezier(.4,0,.2,1),transform 2800ms cubic-bezier(.4,0,.2,1)}
@@ -75,11 +75,8 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
    a folha passa de branco a pine-deep, o SE surge e duas ondas se abrem. */
 #final{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:72px;pointer-events:none}
 #final.on{pointer-events:auto}
-#final .shade{position:absolute;inset:0;background:var(--bg-dark-1);opacity:0;transition:opacity 2200ms ease-in-out}
+#final .shade{position:absolute;inset:0;background:#000;opacity:0;transition:opacity 2200ms ease-in-out}
 #final.on .shade{opacity:1}
-#final .glow{position:absolute;width:1200px;height:1200px;left:50%;top:45%;transform:translate(-50%,-50%) scale(.5);background:radial-gradient(circle,rgba(44,62,53,.62),transparent 68%);filter:blur(60px);opacity:0;transition:opacity 2200ms ease,transform 3000ms var(--ease-out)}
-#final.land .glow{opacity:1;transform:translate(-50%,-50%) scale(1);animation:breathe 9s ease-in-out 3s infinite}
-@keyframes breathe{0%,100%{opacity:1}50%{opacity:.72}}
 
 .sealwrap{position:relative;width:400px;height:400px;opacity:0;transform-origin:center}
 .sealwrap.fly{opacity:1}
@@ -116,14 +113,13 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
 @media (prefers-reduced-motion:reduce){
   .intro-run #hero .bg img,.orb{animation:none}
   #final.land .wave{animation:none}
-  #final.land .glow{animation:none}
 }
 </style>
 </head>
 <body>
 <main id="stage" aria-label="Abertura Solar do Espinhaço. Toque para repetir.">
 
-  <section id="hero" aria-hidden="false">
+  <section id="hero" aria-hidden="false" style="opacity:0">
     <div class="bg"><img src="../site/assets/images/serra-hero.avif" alt="Serra do Espinhaço, Lapinha da Serra"></div>
     <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
 
@@ -145,7 +141,6 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
 
   <section id="final" aria-hidden="true">
     <div class="shade"></div>
-    <div class="glow"></div>
     <div class="sealwrap" id="sealwrap">
       <div class="wave"></div><div class="wave w2"></div>
       <svg class="seal" viewBox="0 0 200 200" role="img" aria-label="Selo SE · Solar do Espinhaço"><circle class="fill" cx="100" cy="100" r="100" style="fill:var(--c-bone)"/><circle class="edge" cx="100" cy="100" r="98.5"/><circle class="ring" cx="100" cy="100" r="84" fill="none" style="stroke:var(--c-pine-deep)" stroke-width="1" stroke-opacity="0.28"/><g class="leafg"><svg x="68" y="45" width="65" height="65" viewBox="0 0 24 24"><path class="leaf" d="m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></g><text class="se" x="100" y="145" text-anchor="middle" font-weight="400" font-size="36" letter-spacing="6.5" style="font-family:var(--font-serif);fill:var(--c-pine-deep)">SE</text></svg>
@@ -196,6 +191,7 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
     expand.style.opacity='0';wm.style.transform='translateX(-14px)';
     disc.style.transform='translateX('+centerOffset()+'px)';
     stage.classList.add('noanim');
+    fin.style.transition='';fin.style.opacity='';hero.style.transition='';hero.style.opacity='0';
     hero.classList.remove('out');fin.classList.remove('on','land');fin.setAttribute('aria-hidden','true');
     wrap.classList.remove('fly');
     void stage.offsetWidth;stage.classList.remove('noanim');
@@ -205,6 +201,8 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
     reset();
     ready().then(function(){
       root.classList.add('intro-run');
+      hero.style.transition='opacity 1600ms ease-in-out';hero.style.opacity='1';
+      at(1700,function(){hero.style.transition='';hero.style.opacity=''});
       /* fase 1 · 0–1,2 s: o disco surge, centrado */
       at(80,function(){disc.style.transition='opacity 1.2s ease';disc.style.opacity='1'});
       /* fase 2 · 1,5 s: o nome some devagar; 4,1 s: a frase entra */
@@ -233,6 +231,8 @@ body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;-webkit-tap
   /* transição: o disco do topo vira o selo */
   function toSeal(){
     fin.setAttribute('aria-hidden','false');
+    /* pausa no selo (cerca de 4 s), escurece e a abertura recomeça do início */
+    at(10000,function(){fin.style.transition='opacity 1500ms ease-in-out';fin.style.opacity='0';at(1900,run)});
     if(reduced||!wrap.animate){
       hero.classList.add('out');fin.classList.add('on');wrap.classList.add('fly');
       at(600,function(){fin.classList.add('land')});return;
