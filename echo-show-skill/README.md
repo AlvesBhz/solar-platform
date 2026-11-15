@@ -1,54 +1,42 @@
 # Solar do Espinhaço · skill para Echo Show
 
-Abertura animada da marca para rodar **nativa** no Echo Show, como uma skill Alexa com tela em APL. Reproduz `echo-show/abertura.html`.
+Abertura da marca em **vídeo**, tocada em tela cheia no Echo Show por uma skill Alexa (APL, componente `Video`).
 
-**Responsiva:** a foto e o fundo ocupam a tela inteira. O conteúdo fica num palco com as proporções do HTML (1280×800), que escala para caber em qualquer Echo Show (5, 8, 10, 15, 21, paisagem ou retrato) sem cortar e sempre centralizado. Cada medida do desenho é multiplicada por `min(largura/1280, altura/800)`.
+Falar **"Alexa, abrir solar marca"** toca `assets/abertura.mp4`: o efeito do hero do site, a transição em que o disco do topo vira o selo e a página final com o selo claro sobre o fundo escuro. Um toque na tela repete.
 
-Falar **"Alexa, abrir solar marca"** mostra:
-
-1. Página 1: o efeito do hero do site. O disco com a folha aparece no topo, o nome transparente surge e some, entra a frase "O espinhaço te conecta com a natureza." e o disco desliza para revelar o wordmark.
-2. Transição: o wordmark recolhe, a foto escurece e o disco desce ao centro e vira o selo.
-3. Página 2: fundo escuro, selo claro (disco bone) e a linha "LAPINHA DA SERRA · MG". Um toque na tela repete tudo.
+O vídeo é a gravação de `echo-show/abertura.html`, por isso ele é idêntico ao HTML (fonte Cormorant, nome transparente, desfoque e brilhos). Foi a saída para o que o APL não consegue reproduzir.
 
 ## Arquivos
 
 | Arquivo | Para quê |
 | --- | --- |
-| `lambda/index.js` | Código da skill, com a tela APL já embutida |
-| `lambda/package.json` | Dependências |
-| `skill-package/interactionModels/custom/pt-BR.json` | Modelo de fala (nome de invocação "solar marca") |
-| `assets/serra-hero.jpg` | Foto de fundo (1600×1000, JPEG), recortada da foto do site |
-| `build_skill.py` | Gera `index.js` e o modelo de fala. Edite a tela aqui e rode `python3 build_skill.py` |
+| `assets/abertura.mp4` | Vídeo: H.264 High nível 4.1, 1920×1080, 30 fps, 20,5 s, sem áudio, ~4 MB |
+| `lambda/index.js` | Código da skill (gera um link temporário do vídeo e abre o player) |
+| `lambda/package.json` | Dependências (inclui `aws-sdk`) |
+| `skill-package/interactionModels/custom/pt-BR.json` | Modelo de fala (invocação "solar marca") |
+| `build_skill.py` | Gera `index.js` e o modelo de fala |
+| `tools/capture.js` | Grava o HTML em quadros (Playwright), para montar o vídeo de novo |
 
-## Instalar (uma vez só)
+## Instalar
 
-Pré-requisito: a skill já criada no Alexa Developer Console como **Custom + Alexa-hosted (Node.js)**, idioma **Português (Brasil)**, com o mesmo login Amazon do Echo Show.
+Pré-requisito: skill criada no Alexa Developer Console como **Custom + Alexa-hosted (Node.js)**, idioma **Português (Brasil)**.
 
-1. **Aba Build, menu da esquerda → Invocations → Skill Invocation Name:** troque para `solar marca`. Salve.
-2. **Aba Build, menu da esquerda → Interfaces** (depois de *Tasks*): ligue **Alexa Presentation Language** (sem isso a tela não aparece). Salve.
-3. **Aba Build, menu da esquerda → Interaction Model → JSON Editor:** cole o conteúdo de `pt-BR.json`. Clique em **Save** e depois em **Build skill**.
-4. **Aba Code → botão S3 Storage → Buckets de uso geral → bucket da skill → pasta `Media` → Carregar:** envie `assets/serra-hero.jpg`, com esse nome exato. A foto fica privada e a skill gera um link temporário sozinha, então não é preciso copiar URL.
-5. **Aba Code:**
-   - substitua `lambda/index.js` pelo arquivo deste repositório;
-   - substitua `lambda/package.json` pelo deste repositório (inclui o `aws-sdk`, usado para assinar o link da foto);
-   - clique em **Deploy**.
-6. **Aba Test:** mude para **Development**, escolha o dispositivo **Echo Show 8** no simulador e digite `abrir solar marca`.
-7. **No Echo Show 8:** diga "Alexa, abrir solar marca". O idioma do aparelho precisa ser Português (Brasil).
+1. **Build → Invocations → Skill Invocation Name:** `solar marca`.
+2. **Build → Interfaces:** ligue **Alexa Presentation Language**.
+3. **Build → Interaction Model → JSON Editor:** cole `pt-BR.json`, **Save** e **Build skill**.
+4. **Code → S3 Storage → Buckets de uso geral → bucket da skill → pasta `Media` → Carregar:** envie `assets/abertura.mp4`, com esse nome exato.
+5. **Code:** substitua `lambda/index.js` e `lambda/package.json` pelos deste repositório e clique em **Deploy**.
+6. **Test:** ative **Development**, escolha **Echo Show 8** e digite `abrir solar marca`.
+7. No aparelho: "Alexa, abrir solar marca" (idioma do Echo Show em Português do Brasil).
 
-Uma skill em desenvolvimento aparece sozinha nos aparelhos da conta que a criou. Não precisa enviar para certificação.
+## Como o vídeo foi gerado
 
-## Se algo não aparecer como esperado
+1. Copiar `echo-show/abertura.html`, `design-system/` e a foto para uma pasta de trabalho, trocando as fontes do Google por `@fontsource/cormorant-garamond`, `@fontsource/inter` e `@fontsource/instrument-serif` locais.
+2. `node tools/capture.js <pasta_de_quadros> 24 1920 <caminho>/abertura.html` grava os quadros pelo Chromium (screencast), com os horários de cada quadro.
+3. `ffmpeg` monta os quadros em 30 fps, H.264 High nível 4.1, `-crf 23 -an -movflags +faststart`, cortado em 20,5 s.
 
-Este pacote foi escrito sem acesso à documentação do APL e **ainda não foi testado em aparelho**. Se o simulador reclamar, confira primeiro estes pontos, que eram os mais incertos:
+## Pontos a conferir no aparelho
 
-- **Fontes.** O aparelho não carrega fontes próprias, então Cormorant e Inter foram trocadas por `noto-serif` e `amazon-ember`. Se o nome não existir, use outro da lista de fontes do APL.
-- **`letterSpacing` e `fontWeight`.** Se o simulador acusar propriedade inválida, remova.
-- **Degradês.** O ângulo `0` deveria ir de cima para baixo. Se o escurecimento vier de lado, troque para `90`.
-- **Estado final das animações.** Cada animação é seguida de um `SetValue` com o valor final, para o caso de o aparelho voltar ao valor inicial.
-- **Duração da tela.** A abertura é silenciosa (a Alexa recusa fala só com pausas). O documento APL tem `idleTimeout` de 5 minutos para a tela continuar no aparelho depois da animação. Se a tela sumir antes, ajuste esse valor.
-
-## Diferenças em relação ao HTML
-
-- **Fontes:** o APL usa as fontes do aparelho. No lugar de Cormorant e Inter entram a serifada e a sem serifa nativas, então o desenho das letras é diferente; tamanhos, espaçamentos e posições seguem o HTML.
-- **Efeitos:** o nome transparente (`mix-blend-overlay`) e o desfoque não existem no APL. O nome usa branco semitransparente, a foto só escurece e os brilhos em pine são degradês radiais.
-- **APL não tem `margin`:** os espaços entre elementos usam `spacing`.
+- **O vídeo precisa estar em `Media/abertura.mp4`** (M maiúsculo). Se a tela ficar escura, veja no CloudWatch a linha `Vídeo:` e as mensagens `Falha ao assinar o vídeo:` ou `Sessão encerrada com erro:`.
+- **Ao fim do vídeo** a tela deve ficar no último quadro (o selo). Se ficar preta, o jeito é gravar o vídeo em loop ou tocar de novo no fim.
+- **Em 16:10** (Echo Show 8 e 10) o vídeo corta cerca de 5% de cada lado, onde só há fundo. Em retrato ele não corta e deixa faixas escuras.
