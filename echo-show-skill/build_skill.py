@@ -5,7 +5,7 @@ import json
 
 LEAF='m12 9l4.5-4.5m-4.5 10L18.5 8M12 19.5l7.5-7.5M12 22c4.418 0 8-3.646 8-8.143c0-4.462-2.553-9.67-6.537-11.531A3.45 3.45 0 0 0 12 2m0 20c-4.418 0-8-3.646-8-8.143c0-4.462 2.553-9.67 6.537-11.531A3.45 3.45 0 0 1 12 2m0 20V2'
 def avg(color,w=1.5):
-    return {"type":"AVG","version":"1.2","width":24,"height":24,"viewportWidth":24,"viewportHeight":24,
+    return {"type":"AVG","version":"1.0","width":24,"height":24,"viewportWidth":24,"viewportHeight":24,
             "items":[{"type":"path","pathData":LEAF,"stroke":color,"strokeWidth":w,"strokeLineCap":"round","strokeLineJoin":"round"}]}
 
 # cores do design system (tokens): cream, stone-900, pine, pine-deep e bone (sistema de logo)
@@ -27,25 +27,28 @@ def fade(id_,delay,dur,a,b,easing="ease-in-out"):
         ANIM(id_,delay,dur,[{"property":"opacity","from":a,"to":b}],easing),
         SET(id_,0,"opacity",b)]}
 
-DISC_DX=155   # (largura do grupo 380 / 2) - (disco 70 / 2): o disco nasce centralizado e desliza para a esquerda
+DISC_DX=190   # (largura do grupo 450 / 2) - (disco 70 / 2): o disco nasce centralizado e desliza para a esquerda
 
 hero={"type":"Container","id":"hero","position":"absolute","width":"100vw","height":"100vh","items":[
   {"type":"Image","id":"heroImg","source":"${payload.data.image}","scale":"best-fill","width":"100vw","height":"100vh","opacity":0.55,"position":"absolute"},
   {"type":"Frame","width":"100vw","height":"100vh","position":"absolute","backgroundColor":{"type":"linear","angle":0,"colorRange":["rgba(0,0,0,0.5)","rgba(0,0,0,0)","rgba(0,0,0,0.8)"],"inputRange":[0,0.5,1]}},
-  {"type":"Container","id":"logo","position":"absolute","top":"43dp","left":"450dp","width":"380dp","direction":"row","alignItems":"center","items":[
+  {"type":"Frame","width":"100vw","height":"100vh","position":"absolute","backgroundColor":{"type":"linear","angle":90,"colorRange":["rgba(0,0,0,0.35)","rgba(0,0,0,0)"],"inputRange":[0,0.6]}},
+  {"type":"Frame","position":"absolute","left":"706dp","top":"-147dp","width":"667dp","height":"667dp","borderRadius":"334dp","backgroundColor":{"type":"radial","colorRange":["rgba(44,62,53,0.4)","rgba(44,62,53,0)"],"inputRange":[0,0.7]}},
+  {"type":"Frame","position":"absolute","left":"-107dp","top":"253dp","width":"507dp","height":"507dp","borderRadius":"254dp","backgroundColor":{"type":"radial","colorRange":["rgba(44,62,53,0.28)","rgba(44,62,53,0)"],"inputRange":[0,0.7]}},
+  {"type":"Container","position":"absolute","top":"43dp","width":"100vw","alignItems":"center","items":[{"type":"Container","id":"logo","width":"450dp","direction":"row","alignItems":"center","items":[
      {"type":"Container","id":"disc","width":"70dp","height":"70dp","opacity":0,"alignItems":"center","justifyContent":"center","transform":[{"translateX":f"{DISC_DX}dp"}],"items":[
         {"type":"Frame","position":"absolute","width":"70dp","height":"70dp","borderRadius":"35dp","borderWidth":"1dp","borderColor":"rgba(255,255,255,0.55)"},
-        {"type":"AlexaVectorGraphic","source":"leafLight","width":"39dp","height":"39dp"}]},
+        {"type":"AlexaVectorGraphic","source":"leafLight","width":"39dp","height":"39dp","scale":"best-fit"}]},
      {"type":"Container","id":"expand","direction":"row","alignItems":"center","opacity":0,"items":[
-        {"type":"Frame","width":"1dp","height":"70dp","marginLeft":"24dp","backgroundColor":"rgba(255,255,255,0.22)"},
-        {"type":"Container","marginLeft":"24dp","items":[
-           T("wm1","SOLAR DO",11,"rgba(255,255,255,0.6)",letterSpacing="4dp"),
-           T("wm2","ESPINHAÇO",31,"rgba(255,255,255,0.93)",font=SERIF,letterSpacing="2dp",fontWeight="500",spacing="4dp"),
-           T("wm3","LAPINHA · MINAS GERAIS",10,"rgba(255,255,255,0.55)",letterSpacing="3dp",spacing="8dp")]}]}]},
-  {"type":"Container","id":"title","position":"absolute","left":"110dp","top":"230dp","opacity":0,"items":[
+        {"type":"Frame","width":"1dp","height":"70dp","spacing":"24dp","backgroundColor":"rgba(255,255,255,0.22)"},
+        {"type":"Container","spacing":"24dp","items":[
+           T("wm1","SOLAR DO",13,"rgba(255,255,255,0.6)",letterSpacing="5dp"),
+           T("wm2","ESPINHAÇO",45,"rgba(255,255,255,0.93)",font=SERIF,letterSpacing="3.6dp",fontWeight="500",spacing="7dp"),
+           T("wm3","LAPINHA · MINAS GERAIS",10,"rgba(255,255,255,0.55)",letterSpacing="3.4dp",spacing="9dp")]}]}]}]},
+  {"type":"Container","id":"title","position":"absolute","left":"120dp","top":"248dp","opacity":0,"items":[
      T("t0","CHALÉ BOUTIQUE · LAPINHA DA SERRA · MINAS GERAIS",13,"rgba(255,255,255,0.55)",letterSpacing="4dp"),
-     T("t1","SOLAR DO",170,"rgba(255,255,255,0.80)",font=SERIF,fontWeight="500",lineHeight=0.9,spacing="22dp"),
-     T("t2","ESPINHAÇO",90,"rgba(245,245,244,0.72)",font=SERIF,fontWeight="300",lineHeight=0.9,spacing="6dp",paddingLeft="100dp")]},
+     T("t1","SOLAR DO",180,"rgba(255,255,255,0.80)",font=SERIF,fontWeight="500",lineHeight=1.0,spacing="24dp"),
+     T("t2","ESPINHAÇO",92,"rgba(245,245,244,0.72)",font=SERIF,fontWeight="300",lineHeight=1.1,spacing="8dp",paddingLeft="100dp")]},
   {"type":"Container","id":"phrase","position":"absolute","width":"100vw","height":"100vh","justifyContent":"center","alignItems":"center","opacity":0,"items":[
      T("ph","O espinhaço te conecta com a natureza.",48,"rgba(255,255,255,0.93)",font=SERIF,fontStyle="italic")]}
 ]}
@@ -53,24 +56,41 @@ hero={"type":"Container","id":"hero","position":"absolute","width":"100vw","heig
 SEAL=267  # 400px do desenho web
 final={"type":"Container","id":"final","position":"absolute","width":"100vw","height":"100vh","opacity":0,"items":[
   {"type":"Frame","width":"100vw","height":"100vh","position":"absolute","backgroundColor":S900},
-  {"type":"Frame","position":"absolute","left":"240dp","top":"-40dp","width":"800dp","height":"800dp","borderRadius":"400dp",
-     "backgroundColor":{"type":"radial","colorRange":["rgba(44,62,53,0.62)","rgba(44,62,53,0)"],"inputRange":[0,0.7]}},
-  {"type":"Container","id":"seal","position":"absolute","left":f"{(1280-SEAL)//2}dp","top":"250dp","width":f"{SEAL}dp","height":f"{SEAL}dp","opacity":0,"items":[
+  {"type":"Container","position":"absolute","top":"-40dp","width":"100vw","alignItems":"center","items":[
+   {"type":"Frame","width":"800dp","height":"800dp","borderRadius":"400dp",
+     "backgroundColor":{"type":"radial","colorRange":["rgba(44,62,53,0.62)","rgba(44,62,53,0)"],"inputRange":[0,0.7]}}]},
+  {"type":"Container","position":"absolute","top":"191dp","width":"100vw","alignItems":"center","items":[{"type":"Container","id":"seal","width":f"{SEAL}dp","height":f"{SEAL}dp","opacity":0,"items":[
      {"type":"Frame","id":"sealFill","position":"absolute","width":f"{SEAL}dp","height":f"{SEAL}dp","borderRadius":f"{SEAL//2}dp","backgroundColor":BONE,"transform":[{"scale":0}]},
      {"type":"Frame","id":"sealEdge","position":"absolute","width":f"{SEAL}dp","height":f"{SEAL}dp","borderRadius":f"{SEAL//2}dp","borderWidth":"1.5dp","borderColor":"rgba(255,255,255,0.55)"},
      {"type":"Frame","id":"sealRing","position":"absolute","left":"21dp","top":"21dp","width":"225dp","height":"225dp","borderRadius":"112dp","borderWidth":"0.8dp","borderColor":"rgba(28,41,34,0.28)","opacity":0},
      {"type":"Container","id":"leafBox","position":"absolute","left":"90dp","top":"60dp","width":"87dp","height":"87dp","transform":[{"translateY":"15dp"},{"scale":1.72}],"items":[
-        {"type":"AlexaVectorGraphic","id":"leafPine","position":"absolute","source":"leafPine","width":"87dp","height":"87dp","opacity":0},
-        {"type":"AlexaVectorGraphic","id":"leafWhite","position":"absolute","source":"leafLight","width":"87dp","height":"87dp"}]},
-     T("sealSE","SE",48,PINE_DEEP,font=SERIF,position="absolute",top="156dp",width=f"{SEAL}dp",textAlign="center",letterSpacing="9dp",opacity=0)]},
-  {"type":"Container","id":"labelRow","position":"absolute","top":"560dp","width":"100vw","direction":"row","justifyContent":"center","alignItems":"center","opacity":0,"items":[
-     {"type":"Frame","width":"90dp","height":"1dp","backgroundColor":"rgba(255,255,255,0.3)"},
-     T("lab","LAPINHA DA SERRA · MG",19,"rgba(255,255,255,0.78)",letterSpacing="8dp",marginLeft="32dp",marginRight="32dp"),
-     {"type":"Frame","width":"90dp","height":"1dp","backgroundColor":"rgba(255,255,255,0.3)"}]}
+        {"type":"AlexaVectorGraphic","id":"leafPine","position":"absolute","source":"leafPine","width":"87dp","height":"87dp","scale":"best-fit","opacity":0},
+        {"type":"AlexaVectorGraphic","id":"leafWhite","position":"absolute","source":"leafLight","width":"87dp","height":"87dp","scale":"best-fit"}]},
+     T("sealSE","SE",48,PINE_DEEP,font=SERIF,position="absolute",top="156dp",width=f"{SEAL}dp",textAlign="center",letterSpacing="9dp",opacity=0)]}]},
+  {"type":"Container","id":"labelRow","position":"absolute","top":"506dp","width":"100vw","direction":"row","justifyContent":"center","alignItems":"center","opacity":0,"items":[
+     {"type":"Frame","width":"93dp","height":"1dp","backgroundColor":"rgba(255,255,255,0.3)"},
+     T("lab","LAPINHA DA SERRA · MG",19,"rgba(255,255,255,0.78)",letterSpacing="8dp",spacing="32dp"),
+     {"type":"Frame","width":"93dp","height":"1dp","spacing":"32dp","backgroundColor":"rgba(255,255,255,0.3)"}]}
 ]}
 
+# ── responsivo ──
+# Fundo (foto, escurecimentos, brilhos, cor) ocupa a tela inteira.
+# O conteúdo vai num "palco" com as proporções do HTML (1280x800) que escala para caber em qualquer viewport
+# (Echo Show 5, 8, 10, 15, 21, paisagem ou retrato) sem cortar, sempre centralizado.
+def _pct(x):
+    if isinstance(x,dict): return {k:_pct(v) for k,v in x.items()}
+    if isinstance(x,list): return [_pct(v) for v in x]
+    if x in ("100vw","100vh"): return "100%"
+    return x
+def _stage(items):
+    return {"type":"Container","width":"1280dp","height":"800dp","items":_pct(items)}
+_hb,_hc=hero["items"][:5],hero["items"][5:]
+hero["items"]=_hb+[_stage(_hc)]; hero.update({"alignItems":"center","justifyContent":"center"})
+_fb,_fc=final["items"][:1],final["items"][1:]
+final["items"]=_fb+[_stage(_fc)]; final.update({"alignItems":"center","justifyContent":"center"})
+
 # ── linha do tempo (ms) — mesma do efeito do site ──
-SEAL_DY=-322; SEAL_S=0.262   # disco do topo (centro y=78dp) -> centro do selo (400dp), escala 70/267
+SEAL_DY=-246.5; SEAL_S=0.262   # disco do topo (centro y=78dp) -> centro do selo (191+133,5dp), escala 70/267
 START=11100                   # a foto escurece e o disco desce
 LAND=START+1750
 cmds=[
@@ -127,6 +147,15 @@ doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":30
       hero, final,
       {"type":"TouchWrapper","position":"absolute","width":"100vw","height":"100vh","onPress":{"type":"SendEvent","arguments":["replay"]}}]}]}}
 
+import re as _re
+def _vh(x):  # escala cada medida do desenho pelo tamanho real da tela
+    if isinstance(x,dict): return {k:_vh(v) for k,v in x.items()}
+    if isinstance(x,list): return [_vh(v) for v in x]
+    if isinstance(x,str):
+        m=_re.fullmatch(r"(-?\d+(?:\.\d+)?)dp",x)
+        if m: return "${Math.min(viewport.width/1280,viewport.height/800)*%s}dp" % f"{float(m.group(1)):g}"
+    return x
+doc=_vh(doc)
 doc_js=json.dumps(doc,ensure_ascii=False,indent=1)
 
 INDEX=r'''/* Solar do Espinhaço · skill para Echo Show (APL)
@@ -154,12 +183,16 @@ const supportsAPL = (h) => {
   const i = Alexa.getSupportedInterfaces(h.requestEnvelope);
   return !!(i && i['Alexa.Presentation.APL']);
 };
-const render = (h) => h.responseBuilder.addDirective({
+const render = (h) => {
+  const image = imageUrl();
+  console.log('Foto:', image ? image.split('?')[0] : '(sem foto)');
+  return h.responseBuilder.addDirective({
   type: 'Alexa.Presentation.APL.RenderDocument',
   token: TOKEN,
   document: DOCUMENT,
-  datasources: { payload: { data: { image: imageUrl() } } },
-});
+  datasources: { payload: { data: { image } } },
+  });
+};
 
 /* A abertura é silenciosa: nenhuma fala, só a tela. O documento APL tem idleTimeout longo (5 min),
    então a tela continua no aparelho depois que a animação termina. */

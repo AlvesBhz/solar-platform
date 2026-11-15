@@ -26,7 +26,7 @@ const DOCUMENT = {
  "graphics": {
   "leafLight": {
    "type": "AVG",
-   "version": "1.2",
+   "version": "1.0",
    "width": 24,
    "height": 24,
    "viewportWidth": 24,
@@ -44,7 +44,7 @@ const DOCUMENT = {
   },
   "leafPine": {
    "type": "AVG",
-   "version": "1.2",
+   "version": "1.0",
    "width": 24,
    "height": 24,
    "viewportWidth": 24,
@@ -161,7 +161,7 @@ const DOCUMENT = {
          "property": "transform",
          "from": [
           {
-           "translateY": "16dp"
+           "translateY": "${Math.min(viewport.width/1280,viewport.height/800)*16}dp"
           }
          ],
          "to": [
@@ -199,7 +199,7 @@ const DOCUMENT = {
          "property": "transform",
          "from": [
           {
-           "translateX": "155dp"
+           "translateX": "${Math.min(viewport.width/1280,viewport.height/800)*190}dp"
           }
          ],
          "to": [
@@ -293,7 +293,7 @@ const DOCUMENT = {
            ],
            "to": [
             {
-             "translateX": "155dp"
+             "translateX": "${Math.min(viewport.width/1280,viewport.height/800)*190}dp"
             }
            ]
           }
@@ -315,7 +315,7 @@ const DOCUMENT = {
        "property": "transform",
        "value": [
         {
-         "translateX": "155dp"
+         "translateX": "${Math.min(viewport.width/1280,viewport.height/800)*190}dp"
         }
        ]
       }
@@ -384,7 +384,7 @@ const DOCUMENT = {
            "property": "transform",
            "from": [
             {
-             "translateY": "-322dp"
+             "translateY": "${Math.min(viewport.width/1280,viewport.height/800)*-246.5}dp"
             },
             {
              "scale": 0.262
@@ -504,7 +504,7 @@ const DOCUMENT = {
            "property": "transform",
            "from": [
             {
-             "translateY": "15dp"
+             "translateY": "${Math.min(viewport.width/1280,viewport.height/800)*15}dp"
             },
             {
              "scale": 1.72
@@ -733,164 +733,238 @@ const DOCUMENT = {
         }
        },
        {
-        "type": "Container",
-        "id": "logo",
+        "type": "Frame",
+        "width": "100vw",
+        "height": "100vh",
         "position": "absolute",
-        "top": "43dp",
-        "left": "450dp",
-        "width": "380dp",
-        "direction": "row",
-        "alignItems": "center",
+        "backgroundColor": {
+         "type": "linear",
+         "angle": 90,
+         "colorRange": [
+          "rgba(0,0,0,0.35)",
+          "rgba(0,0,0,0)"
+         ],
+         "inputRange": [
+          0,
+          0.6
+         ]
+        }
+       },
+       {
+        "type": "Frame",
+        "position": "absolute",
+        "left": "${Math.min(viewport.width/1280,viewport.height/800)*706}dp",
+        "top": "${Math.min(viewport.width/1280,viewport.height/800)*-147}dp",
+        "width": "${Math.min(viewport.width/1280,viewport.height/800)*667}dp",
+        "height": "${Math.min(viewport.width/1280,viewport.height/800)*667}dp",
+        "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*334}dp",
+        "backgroundColor": {
+         "type": "radial",
+         "colorRange": [
+          "rgba(44,62,53,0.4)",
+          "rgba(44,62,53,0)"
+         ],
+         "inputRange": [
+          0,
+          0.7
+         ]
+        }
+       },
+       {
+        "type": "Frame",
+        "position": "absolute",
+        "left": "${Math.min(viewport.width/1280,viewport.height/800)*-107}dp",
+        "top": "${Math.min(viewport.width/1280,viewport.height/800)*253}dp",
+        "width": "${Math.min(viewport.width/1280,viewport.height/800)*507}dp",
+        "height": "${Math.min(viewport.width/1280,viewport.height/800)*507}dp",
+        "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*254}dp",
+        "backgroundColor": {
+         "type": "radial",
+         "colorRange": [
+          "rgba(44,62,53,0.28)",
+          "rgba(44,62,53,0)"
+         ],
+         "inputRange": [
+          0,
+          0.7
+         ]
+        }
+       },
+       {
+        "type": "Container",
+        "width": "${Math.min(viewport.width/1280,viewport.height/800)*1280}dp",
+        "height": "${Math.min(viewport.width/1280,viewport.height/800)*800}dp",
         "items": [
          {
           "type": "Container",
-          "id": "disc",
-          "width": "70dp",
-          "height": "70dp",
-          "opacity": 0,
+          "position": "absolute",
+          "top": "${Math.min(viewport.width/1280,viewport.height/800)*43}dp",
+          "width": "100%",
           "alignItems": "center",
-          "justifyContent": "center",
-          "transform": [
-           {
-            "translateX": "155dp"
-           }
-          ],
           "items": [
-           {
-            "type": "Frame",
-            "position": "absolute",
-            "width": "70dp",
-            "height": "70dp",
-            "borderRadius": "35dp",
-            "borderWidth": "1dp",
-            "borderColor": "rgba(255,255,255,0.55)"
-           },
-           {
-            "type": "AlexaVectorGraphic",
-            "source": "leafLight",
-            "width": "39dp",
-            "height": "39dp"
-           }
-          ]
-         },
-         {
-          "type": "Container",
-          "id": "expand",
-          "direction": "row",
-          "alignItems": "center",
-          "opacity": 0,
-          "items": [
-           {
-            "type": "Frame",
-            "width": "1dp",
-            "height": "70dp",
-            "marginLeft": "24dp",
-            "backgroundColor": "rgba(255,255,255,0.22)"
-           },
            {
             "type": "Container",
-            "marginLeft": "24dp",
+            "id": "logo",
+            "width": "${Math.min(viewport.width/1280,viewport.height/800)*450}dp",
+            "direction": "row",
+            "alignItems": "center",
             "items": [
              {
-              "type": "Text",
-              "id": "wm1",
-              "text": "SOLAR DO",
-              "fontSize": "11dp",
-              "color": "rgba(255,255,255,0.6)",
-              "fontFamily": "amazon-ember, sans-serif",
-              "letterSpacing": "4dp"
+              "type": "Container",
+              "id": "disc",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*70}dp",
+              "height": "${Math.min(viewport.width/1280,viewport.height/800)*70}dp",
+              "opacity": 0,
+              "alignItems": "center",
+              "justifyContent": "center",
+              "transform": [
+               {
+                "translateX": "${Math.min(viewport.width/1280,viewport.height/800)*190}dp"
+               }
+              ],
+              "items": [
+               {
+                "type": "Frame",
+                "position": "absolute",
+                "width": "${Math.min(viewport.width/1280,viewport.height/800)*70}dp",
+                "height": "${Math.min(viewport.width/1280,viewport.height/800)*70}dp",
+                "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*35}dp",
+                "borderWidth": "${Math.min(viewport.width/1280,viewport.height/800)*1}dp",
+                "borderColor": "rgba(255,255,255,0.55)"
+               },
+               {
+                "type": "AlexaVectorGraphic",
+                "source": "leafLight",
+                "width": "${Math.min(viewport.width/1280,viewport.height/800)*39}dp",
+                "height": "${Math.min(viewport.width/1280,viewport.height/800)*39}dp",
+                "scale": "best-fit"
+               }
+              ]
              },
              {
-              "type": "Text",
-              "id": "wm2",
-              "text": "ESPINHAÇO",
-              "fontSize": "31dp",
-              "color": "rgba(255,255,255,0.93)",
-              "fontFamily": "noto-serif, bookerly, serif",
-              "letterSpacing": "2dp",
-              "fontWeight": "500",
-              "spacing": "4dp"
-             },
-             {
-              "type": "Text",
-              "id": "wm3",
-              "text": "LAPINHA · MINAS GERAIS",
-              "fontSize": "10dp",
-              "color": "rgba(255,255,255,0.55)",
-              "fontFamily": "amazon-ember, sans-serif",
-              "letterSpacing": "3dp",
-              "spacing": "8dp"
+              "type": "Container",
+              "id": "expand",
+              "direction": "row",
+              "alignItems": "center",
+              "opacity": 0,
+              "items": [
+               {
+                "type": "Frame",
+                "width": "${Math.min(viewport.width/1280,viewport.height/800)*1}dp",
+                "height": "${Math.min(viewport.width/1280,viewport.height/800)*70}dp",
+                "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*24}dp",
+                "backgroundColor": "rgba(255,255,255,0.22)"
+               },
+               {
+                "type": "Container",
+                "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*24}dp",
+                "items": [
+                 {
+                  "type": "Text",
+                  "id": "wm1",
+                  "text": "SOLAR DO",
+                  "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*13}dp",
+                  "color": "rgba(255,255,255,0.6)",
+                  "fontFamily": "amazon-ember, sans-serif",
+                  "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*5}dp"
+                 },
+                 {
+                  "type": "Text",
+                  "id": "wm2",
+                  "text": "ESPINHAÇO",
+                  "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*45}dp",
+                  "color": "rgba(255,255,255,0.93)",
+                  "fontFamily": "noto-serif, bookerly, serif",
+                  "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*3.6}dp",
+                  "fontWeight": "500",
+                  "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*7}dp"
+                 },
+                 {
+                  "type": "Text",
+                  "id": "wm3",
+                  "text": "LAPINHA · MINAS GERAIS",
+                  "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*10}dp",
+                  "color": "rgba(255,255,255,0.55)",
+                  "fontFamily": "amazon-ember, sans-serif",
+                  "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*3.4}dp",
+                  "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*9}dp"
+                 }
+                ]
+               }
+              ]
              }
             ]
            }
           ]
-         }
-        ]
-       },
-       {
-        "type": "Container",
-        "id": "title",
-        "position": "absolute",
-        "left": "110dp",
-        "top": "230dp",
-        "opacity": 0,
-        "items": [
-         {
-          "type": "Text",
-          "id": "t0",
-          "text": "CHALÉ BOUTIQUE · LAPINHA DA SERRA · MINAS GERAIS",
-          "fontSize": "13dp",
-          "color": "rgba(255,255,255,0.55)",
-          "fontFamily": "amazon-ember, sans-serif",
-          "letterSpacing": "4dp"
          },
          {
-          "type": "Text",
-          "id": "t1",
-          "text": "SOLAR DO",
-          "fontSize": "170dp",
-          "color": "rgba(255,255,255,0.80)",
-          "fontFamily": "noto-serif, bookerly, serif",
-          "fontWeight": "500",
-          "lineHeight": 0.9,
-          "spacing": "22dp"
+          "type": "Container",
+          "id": "title",
+          "position": "absolute",
+          "left": "${Math.min(viewport.width/1280,viewport.height/800)*120}dp",
+          "top": "${Math.min(viewport.width/1280,viewport.height/800)*248}dp",
+          "opacity": 0,
+          "items": [
+           {
+            "type": "Text",
+            "id": "t0",
+            "text": "CHALÉ BOUTIQUE · LAPINHA DA SERRA · MINAS GERAIS",
+            "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*13}dp",
+            "color": "rgba(255,255,255,0.55)",
+            "fontFamily": "amazon-ember, sans-serif",
+            "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*4}dp"
+           },
+           {
+            "type": "Text",
+            "id": "t1",
+            "text": "SOLAR DO",
+            "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*180}dp",
+            "color": "rgba(255,255,255,0.80)",
+            "fontFamily": "noto-serif, bookerly, serif",
+            "fontWeight": "500",
+            "lineHeight": 1.0,
+            "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*24}dp"
+           },
+           {
+            "type": "Text",
+            "id": "t2",
+            "text": "ESPINHAÇO",
+            "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*92}dp",
+            "color": "rgba(245,245,244,0.72)",
+            "fontFamily": "noto-serif, bookerly, serif",
+            "fontWeight": "300",
+            "lineHeight": 1.1,
+            "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*8}dp",
+            "paddingLeft": "${Math.min(viewport.width/1280,viewport.height/800)*100}dp"
+           }
+          ]
          },
          {
-          "type": "Text",
-          "id": "t2",
-          "text": "ESPINHAÇO",
-          "fontSize": "90dp",
-          "color": "rgba(245,245,244,0.72)",
-          "fontFamily": "noto-serif, bookerly, serif",
-          "fontWeight": "300",
-          "lineHeight": 0.9,
-          "spacing": "6dp",
-          "paddingLeft": "100dp"
-         }
-        ]
-       },
-       {
-        "type": "Container",
-        "id": "phrase",
-        "position": "absolute",
-        "width": "100vw",
-        "height": "100vh",
-        "justifyContent": "center",
-        "alignItems": "center",
-        "opacity": 0,
-        "items": [
-         {
-          "type": "Text",
-          "id": "ph",
-          "text": "O espinhaço te conecta com a natureza.",
-          "fontSize": "48dp",
-          "color": "rgba(255,255,255,0.93)",
-          "fontFamily": "noto-serif, bookerly, serif",
-          "fontStyle": "italic"
+          "type": "Container",
+          "id": "phrase",
+          "position": "absolute",
+          "width": "100%",
+          "height": "100%",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "opacity": 0,
+          "items": [
+           {
+            "type": "Text",
+            "id": "ph",
+            "text": "O espinhaço te conecta com a natureza.",
+            "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*48}dp",
+            "color": "rgba(255,255,255,0.93)",
+            "fontFamily": "noto-serif, bookerly, serif",
+            "fontStyle": "italic"
+           }
+          ]
          }
         ]
        }
-      ]
+      ],
+      "alignItems": "center",
+      "justifyContent": "center"
      },
      {
       "type": "Container",
@@ -908,161 +982,184 @@ const DOCUMENT = {
         "backgroundColor": "#1C1917"
        },
        {
-        "type": "Frame",
-        "position": "absolute",
-        "left": "240dp",
-        "top": "-40dp",
-        "width": "800dp",
-        "height": "800dp",
-        "borderRadius": "400dp",
-        "backgroundColor": {
-         "type": "radial",
-         "colorRange": [
-          "rgba(44,62,53,0.62)",
-          "rgba(44,62,53,0)"
-         ],
-         "inputRange": [
-          0,
-          0.7
-         ]
-        }
-       },
-       {
         "type": "Container",
-        "id": "seal",
-        "position": "absolute",
-        "left": "506dp",
-        "top": "250dp",
-        "width": "267dp",
-        "height": "267dp",
-        "opacity": 0,
+        "width": "${Math.min(viewport.width/1280,viewport.height/800)*1280}dp",
+        "height": "${Math.min(viewport.width/1280,viewport.height/800)*800}dp",
         "items": [
          {
-          "type": "Frame",
-          "id": "sealFill",
+          "type": "Container",
           "position": "absolute",
-          "width": "267dp",
-          "height": "267dp",
-          "borderRadius": "133dp",
-          "backgroundColor": "#EAE5D9",
-          "transform": [
+          "top": "${Math.min(viewport.width/1280,viewport.height/800)*-40}dp",
+          "width": "100%",
+          "alignItems": "center",
+          "items": [
            {
-            "scale": 0
+            "type": "Frame",
+            "width": "${Math.min(viewport.width/1280,viewport.height/800)*800}dp",
+            "height": "${Math.min(viewport.width/1280,viewport.height/800)*800}dp",
+            "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*400}dp",
+            "backgroundColor": {
+             "type": "radial",
+             "colorRange": [
+              "rgba(44,62,53,0.62)",
+              "rgba(44,62,53,0)"
+             ],
+             "inputRange": [
+              0,
+              0.7
+             ]
+            }
            }
           ]
-         },
-         {
-          "type": "Frame",
-          "id": "sealEdge",
-          "position": "absolute",
-          "width": "267dp",
-          "height": "267dp",
-          "borderRadius": "133dp",
-          "borderWidth": "1.5dp",
-          "borderColor": "rgba(255,255,255,0.55)"
-         },
-         {
-          "type": "Frame",
-          "id": "sealRing",
-          "position": "absolute",
-          "left": "21dp",
-          "top": "21dp",
-          "width": "225dp",
-          "height": "225dp",
-          "borderRadius": "112dp",
-          "borderWidth": "0.8dp",
-          "borderColor": "rgba(28,41,34,0.28)",
-          "opacity": 0
          },
          {
           "type": "Container",
-          "id": "leafBox",
           "position": "absolute",
-          "left": "90dp",
-          "top": "60dp",
-          "width": "87dp",
-          "height": "87dp",
-          "transform": [
-           {
-            "translateY": "15dp"
-           },
-           {
-            "scale": 1.72
-           }
-          ],
+          "top": "${Math.min(viewport.width/1280,viewport.height/800)*191}dp",
+          "width": "100%",
+          "alignItems": "center",
           "items": [
            {
-            "type": "AlexaVectorGraphic",
-            "id": "leafPine",
-            "position": "absolute",
-            "source": "leafPine",
-            "width": "87dp",
-            "height": "87dp",
-            "opacity": 0
-           },
-           {
-            "type": "AlexaVectorGraphic",
-            "id": "leafWhite",
-            "position": "absolute",
-            "source": "leafLight",
-            "width": "87dp",
-            "height": "87dp"
+            "type": "Container",
+            "id": "seal",
+            "width": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+            "height": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+            "opacity": 0,
+            "items": [
+             {
+              "type": "Frame",
+              "id": "sealFill",
+              "position": "absolute",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+              "height": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+              "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*133}dp",
+              "backgroundColor": "#EAE5D9",
+              "transform": [
+               {
+                "scale": 0
+               }
+              ]
+             },
+             {
+              "type": "Frame",
+              "id": "sealEdge",
+              "position": "absolute",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+              "height": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+              "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*133}dp",
+              "borderWidth": "${Math.min(viewport.width/1280,viewport.height/800)*1.5}dp",
+              "borderColor": "rgba(255,255,255,0.55)"
+             },
+             {
+              "type": "Frame",
+              "id": "sealRing",
+              "position": "absolute",
+              "left": "${Math.min(viewport.width/1280,viewport.height/800)*21}dp",
+              "top": "${Math.min(viewport.width/1280,viewport.height/800)*21}dp",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*225}dp",
+              "height": "${Math.min(viewport.width/1280,viewport.height/800)*225}dp",
+              "borderRadius": "${Math.min(viewport.width/1280,viewport.height/800)*112}dp",
+              "borderWidth": "${Math.min(viewport.width/1280,viewport.height/800)*0.8}dp",
+              "borderColor": "rgba(28,41,34,0.28)",
+              "opacity": 0
+             },
+             {
+              "type": "Container",
+              "id": "leafBox",
+              "position": "absolute",
+              "left": "${Math.min(viewport.width/1280,viewport.height/800)*90}dp",
+              "top": "${Math.min(viewport.width/1280,viewport.height/800)*60}dp",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+              "height": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+              "transform": [
+               {
+                "translateY": "${Math.min(viewport.width/1280,viewport.height/800)*15}dp"
+               },
+               {
+                "scale": 1.72
+               }
+              ],
+              "items": [
+               {
+                "type": "AlexaVectorGraphic",
+                "id": "leafPine",
+                "position": "absolute",
+                "source": "leafPine",
+                "width": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+                "height": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+                "scale": "best-fit",
+                "opacity": 0
+               },
+               {
+                "type": "AlexaVectorGraphic",
+                "id": "leafWhite",
+                "position": "absolute",
+                "source": "leafLight",
+                "width": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+                "height": "${Math.min(viewport.width/1280,viewport.height/800)*87}dp",
+                "scale": "best-fit"
+               }
+              ]
+             },
+             {
+              "type": "Text",
+              "id": "sealSE",
+              "text": "SE",
+              "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*48}dp",
+              "color": "#1C2922",
+              "fontFamily": "noto-serif, bookerly, serif",
+              "position": "absolute",
+              "top": "${Math.min(viewport.width/1280,viewport.height/800)*156}dp",
+              "width": "${Math.min(viewport.width/1280,viewport.height/800)*267}dp",
+              "textAlign": "center",
+              "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*9}dp",
+              "opacity": 0
+             }
+            ]
            }
           ]
          },
          {
-          "type": "Text",
-          "id": "sealSE",
-          "text": "SE",
-          "fontSize": "48dp",
-          "color": "#1C2922",
-          "fontFamily": "noto-serif, bookerly, serif",
+          "type": "Container",
+          "id": "labelRow",
           "position": "absolute",
-          "top": "156dp",
-          "width": "267dp",
-          "textAlign": "center",
-          "letterSpacing": "9dp",
-          "opacity": 0
-         }
-        ]
-       },
-       {
-        "type": "Container",
-        "id": "labelRow",
-        "position": "absolute",
-        "top": "560dp",
-        "width": "100vw",
-        "direction": "row",
-        "justifyContent": "center",
-        "alignItems": "center",
-        "opacity": 0,
-        "items": [
-         {
-          "type": "Frame",
-          "width": "90dp",
-          "height": "1dp",
-          "backgroundColor": "rgba(255,255,255,0.3)"
-         },
-         {
-          "type": "Text",
-          "id": "lab",
-          "text": "LAPINHA DA SERRA · MG",
-          "fontSize": "19dp",
-          "color": "rgba(255,255,255,0.78)",
-          "fontFamily": "amazon-ember, sans-serif",
-          "letterSpacing": "8dp",
-          "marginLeft": "32dp",
-          "marginRight": "32dp"
-         },
-         {
-          "type": "Frame",
-          "width": "90dp",
-          "height": "1dp",
-          "backgroundColor": "rgba(255,255,255,0.3)"
+          "top": "${Math.min(viewport.width/1280,viewport.height/800)*506}dp",
+          "width": "100%",
+          "direction": "row",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "opacity": 0,
+          "items": [
+           {
+            "type": "Frame",
+            "width": "${Math.min(viewport.width/1280,viewport.height/800)*93}dp",
+            "height": "${Math.min(viewport.width/1280,viewport.height/800)*1}dp",
+            "backgroundColor": "rgba(255,255,255,0.3)"
+           },
+           {
+            "type": "Text",
+            "id": "lab",
+            "text": "LAPINHA DA SERRA · MG",
+            "fontSize": "${Math.min(viewport.width/1280,viewport.height/800)*19}dp",
+            "color": "rgba(255,255,255,0.78)",
+            "fontFamily": "amazon-ember, sans-serif",
+            "letterSpacing": "${Math.min(viewport.width/1280,viewport.height/800)*8}dp",
+            "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*32}dp"
+           },
+           {
+            "type": "Frame",
+            "width": "${Math.min(viewport.width/1280,viewport.height/800)*93}dp",
+            "height": "${Math.min(viewport.width/1280,viewport.height/800)*1}dp",
+            "spacing": "${Math.min(viewport.width/1280,viewport.height/800)*32}dp",
+            "backgroundColor": "rgba(255,255,255,0.3)"
+           }
+          ]
          }
         ]
        }
-      ]
+      ],
+      "alignItems": "center",
+      "justifyContent": "center"
      },
      {
       "type": "TouchWrapper",
@@ -1087,12 +1184,16 @@ const supportsAPL = (h) => {
   const i = Alexa.getSupportedInterfaces(h.requestEnvelope);
   return !!(i && i['Alexa.Presentation.APL']);
 };
-const render = (h) => h.responseBuilder.addDirective({
+const render = (h) => {
+  const image = imageUrl();
+  console.log('Foto:', image ? image.split('?')[0] : '(sem foto)');
+  return h.responseBuilder.addDirective({
   type: 'Alexa.Presentation.APL.RenderDocument',
   token: TOKEN,
   document: DOCUMENT,
-  datasources: { payload: { data: { image: imageUrl() } } },
-});
+  datasources: { payload: { data: { image } } },
+  });
+};
 
 /* A abertura é silenciosa: nenhuma fala, só a tela. O documento APL tem idleTimeout longo (5 min),
    então a tela continua no aparelho depois que a animação termina. */

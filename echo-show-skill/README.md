@@ -1,6 +1,8 @@
 # Solar do Espinhaço · skill para Echo Show
 
-Abertura animada da marca para rodar **nativa** no Echo Show 8 (tela de 1280×800), como uma skill Alexa com tela em APL.
+Abertura animada da marca para rodar **nativa** no Echo Show, como uma skill Alexa com tela em APL. Reproduz `echo-show/abertura.html`.
+
+**Responsiva:** a foto e o fundo ocupam a tela inteira. O conteúdo fica num palco com as proporções do HTML (1280×800), que escala para caber em qualquer Echo Show (5, 8, 10, 15, 21, paisagem ou retrato) sem cortar e sempre centralizado. Cada medida do desenho é multiplicada por `min(largura/1280, altura/800)`.
 
 Falar **"Alexa, abrir solar marca"** mostra:
 
@@ -45,6 +47,8 @@ Este pacote foi escrito sem acesso à documentação do APL e **ainda não foi t
 - **Estado final das animações.** Cada animação é seguida de um `SetValue` com o valor final, para o caso de o aparelho voltar ao valor inicial.
 - **Duração da tela.** A abertura é silenciosa (a Alexa recusa fala só com pausas). O documento APL tem `idleTimeout` de 5 minutos para a tela continuar no aparelho depois da animação. Se a tela sumir antes, ajuste esse valor.
 
-## Diferenças em relação ao teste em navegador
+## Diferenças em relação ao HTML
 
-O nome transparente (`mix-blend-overlay`) e o desfoque da foto não existem no APL. O nome usa branco semitransparente, e a foto só escurece.
+- **Fontes:** o APL usa as fontes do aparelho. No lugar de Cormorant e Inter entram a serifada e a sem serifa nativas, então o desenho das letras é diferente; tamanhos, espaçamentos e posições seguem o HTML.
+- **Efeitos:** o nome transparente (`mix-blend-overlay`) e o desfoque não existem no APL. O nome usa branco semitransparente, a foto só escurece e os brilhos em pine são degradês radiais.
+- **APL não tem `margin`:** os espaços entre elementos usam `spacing`.
