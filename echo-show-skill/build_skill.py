@@ -5,6 +5,7 @@ O vídeo dura ~21,7 s: abertura, selo com pausa de ~4 s, escurece e termina em p
 import json
 
 S900='#1C1917'   # --bg-dark-1 do design system: fundo atrás do vídeo
+DEBUG=True       # mostra no canto da tela o estado do vídeo; ponha False quando estiver funcionando
 
 doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":300000},
  # o vídeo começa em preto por ~0,5 s; este comando garante o play caso o autoplay seja bloqueado
@@ -19,7 +20,12 @@ doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":30
      # ao terminar (o vídeo acaba em preto, depois da pausa no selo) volta ao início e toca de novo
      "onEnd":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},
               {"type":"ControlMedia","componentId":"abertura","command":"play"}],
-     "onFail":[{"type":"SendEvent","arguments":["videoFail","${event.errorCode}","${event.error}"]}]},
+     "onTrackReady":[{"type":"SetValue","componentId":"status","property":"text","value":"Vídeo pronto"}],
+     "onPlay":[{"type":"SetValue","componentId":"status","property":"text","value":"Tocando"}],
+     "onTrackFail":[{"type":"SetValue","componentId":"status","property":"text","value":"Falha ao abrir o vídeo"},
+                    {"type":"SendEvent","arguments":["videoFail","${event.trackIndex}"]}]},
+    {"type":"Text","id":"status","position":"absolute","left":"16dp","bottom":"12dp","fontSize":"14dp","color":"rgba(255,255,255,0.7)",
+     "text":"Abrindo o vídeo…","opacity":1 if DEBUG else 0},
     # toque na tela: volta ao início e toca de novo
     {"type":"TouchWrapper","position":"absolute","width":"100vw","height":"100vh",
      "onPress":[{"type":"ControlMedia","componentId":"abertura","command":"rewind"},

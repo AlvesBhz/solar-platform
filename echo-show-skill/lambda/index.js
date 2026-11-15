@@ -70,16 +70,48 @@ const DOCUMENT = {
         "command": "play"
        }
       ],
-      "onFail": [
+      "onTrackReady": [
+       {
+        "type": "SetValue",
+        "componentId": "status",
+        "property": "text",
+        "value": "Vídeo pronto"
+       }
+      ],
+      "onPlay": [
+       {
+        "type": "SetValue",
+        "componentId": "status",
+        "property": "text",
+        "value": "Tocando"
+       }
+      ],
+      "onTrackFail": [
+       {
+        "type": "SetValue",
+        "componentId": "status",
+        "property": "text",
+        "value": "Falha ao abrir o vídeo"
+       },
        {
         "type": "SendEvent",
         "arguments": [
          "videoFail",
-         "${event.errorCode}",
-         "${event.error}"
+         "${event.trackIndex}"
         ]
        }
       ]
+     },
+     {
+      "type": "Text",
+      "id": "status",
+      "position": "absolute",
+      "left": "16dp",
+      "bottom": "12dp",
+      "fontSize": "14dp",
+      "color": "rgba(255,255,255,0.7)",
+      "text": "Abrindo o vídeo…",
+      "opacity": 1
      },
      {
       "type": "TouchWrapper",
