@@ -1,9 +1,18 @@
 # Solar Inspect — App de Vistorias (mockup)
 
-Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade**, **T07 Tipo de vistoria**, **T08 Validação de presença**, **T09 Leitor QR**, **T10 Checklist**, **T11 Detalhe do item**, **T12 Captura de evidência** , **T13 Comparação entrada × saída**, **T14 Ocorrência**, **T15 Resumo**, **T16 Assinatura**, **T17 Confirmação**, **T18 Sincronização** e **T19 Meu histórico** da [especificação](../vistorias/docs/ESPECIFICACAO.md). Sem banco de dados: autenticação, unidades, validação de presença (servidor) e rascunho da vistoria são simulados em `src/mocks/`.
+Mockup inicial das telas **T01 Inicialização**, **T02 Login**, **T03 Permissão de localização**, **T04 Acesso indisponível**, **T05 Minhas unidades**, **T06 Detalhe da unidade**, **T07 Tipo de vistoria**, **T08 Validação de presença**, **T09 Leitor QR**, **T10 Checklist**, **T11 Detalhe do item**, **T12 Captura de evidência** , **T13 Comparação entrada × saída**, **T14 Ocorrência**, **T15 Resumo**, **T16 Assinatura**, **T17 Confirmação**, **T18 Sincronização** e **T19 Meu histórico** da [especificação](./docs/ESPECIFICACAO.md). Sem banco de dados: autenticação, unidades, validação de presença (servidor) e rascunho da vistoria são simulados em `src/mocks/`.
 
 **Stack:** TypeScript · React · Vite · Tailwind CSS · React Router · html5-qrcode · Dexie (IndexedDB, fotos no aparelho) · Iconify (coleção `solar`, empacotada localmente).
 Os tokens vêm de `../design-system/colors_and_type.css`, importado sem alteração e espelhado em `tailwind.config.js`.
+
+## Documentação
+
+- [Especificação técnica v3 (Markdown)](./docs/ESPECIFICACAO.md): fonte de verdade do comportamento, dos critérios de aceite e das pendências.
+- [Especificação técnica v3 (PDF)](./docs/Especificacao_Tecnica_App_Vistorias_Solar_do_Espinhaco.pdf)
+
+## Estado
+
+As 34 telas (T01–T34) estão prototipadas com dados fictícios e sem banco de dados. Falta ligar ao Supabase (RLS, autenticação real, PDF no servidor, sincronização real); a ordem técnica e as decisões em aberto estão nas seções 13 da especificação.
 
 ## Rodar
 
