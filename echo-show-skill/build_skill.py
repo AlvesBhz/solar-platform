@@ -7,6 +7,8 @@ import json
 S900='#1C1917'   # --bg-dark-1 do design system: fundo atrás do vídeo
 
 doc={"type":"APL","version":"2023.3","theme":"dark","settings":{"idleTimeout":300000},
+ # o vídeo começa em preto por ~0,5 s; este comando garante o play caso o autoplay seja bloqueado
+ "onMount":[{"type":"ControlMedia","componentId":"abertura","command":"play","delay":700}],
  "mainTemplate":{"parameters":["payload"],"items":[
   {"type":"Container","width":"100vw","height":"100vh","items":[
     {"type":"Frame","position":"absolute","width":"100vw","height":"100vh","backgroundColor":S900},
@@ -122,6 +124,15 @@ const VideoFailHandler = {
   },
 };
 
+const CatchAllHandler = {
+  canHandle: () => true,
+  handle(h) {
+    const r = h.requestEnvelope.request;
+    console.log('Pedido sem tratamento:', r.type, JSON.stringify(r.arguments || r.intent || ''));
+    return h.responseBuilder.getResponse();
+  },
+};
+
 const ErrorHandler = {
   canHandle: () => true,
   handle(h, error) {
@@ -131,7 +142,7 @@ const ErrorHandler = {
 };
 
 exports.handler = Alexa.SkillBuilders.custom()
-  .addRequestHandlers(LaunchRequestHandler, RuntimeErrorHandler, VideoFailHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
+  .addRequestHandlers(LaunchRequestHandler, RuntimeErrorHandler, VideoFailHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler, CatchAllHandler)
   .addErrorHandlers(ErrorHandler)
   .lambda();
 '''

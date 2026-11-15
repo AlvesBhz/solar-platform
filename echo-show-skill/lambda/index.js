@@ -23,6 +23,14 @@ const DOCUMENT = {
  "settings": {
   "idleTimeout": 300000
  },
+ "onMount": [
+  {
+   "type": "ControlMedia",
+   "componentId": "abertura",
+   "command": "play",
+   "delay": 700
+  }
+ ],
  "mainTemplate": {
   "parameters": [
    "payload"
@@ -176,6 +184,15 @@ const VideoFailHandler = {
   },
 };
 
+const CatchAllHandler = {
+  canHandle: () => true,
+  handle(h) {
+    const r = h.requestEnvelope.request;
+    console.log('Pedido sem tratamento:', r.type, JSON.stringify(r.arguments || r.intent || ''));
+    return h.responseBuilder.getResponse();
+  },
+};
+
 const ErrorHandler = {
   canHandle: () => true,
   handle(h, error) {
@@ -185,6 +202,6 @@ const ErrorHandler = {
 };
 
 exports.handler = Alexa.SkillBuilders.custom()
-  .addRequestHandlers(LaunchRequestHandler, RuntimeErrorHandler, VideoFailHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
+  .addRequestHandlers(LaunchRequestHandler, RuntimeErrorHandler, VideoFailHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler, CatchAllHandler)
   .addErrorHandlers(ErrorHandler)
   .lambda();
