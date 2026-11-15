@@ -170,6 +170,12 @@ const ReplayHandler = {
   handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
 };
 
+const ReplayIntentHandler = {
+  canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'IntentRequest'
+    && Alexa.getIntentName(h.requestEnvelope) === 'ReplayIntent',
+  handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
+};
+
 const HelpHandler = {
   canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'IntentRequest'
     && Alexa.getIntentName(h.requestEnvelope) === 'AMAZON.HelpIntent',
@@ -203,7 +209,7 @@ const ErrorHandler = {
 };
 
 exports.handler = Alexa.SkillBuilders.custom()
-  .addRequestHandlers(LaunchRequestHandler, ReplayHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
+  .addRequestHandlers(LaunchRequestHandler, ReplayHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
   .addErrorHandlers(ErrorHandler)
   .lambda();
 '''
@@ -213,5 +219,6 @@ open('skill-package/interactionModels/custom/pt-BR.json','w').write(json.dumps({
   "invocationName":"solar marca",
   "intents":[{"name":"AMAZON.CancelIntent","samples":[]},{"name":"AMAZON.HelpIntent","samples":[]},
              {"name":"AMAZON.StopIntent","samples":[]},{"name":"AMAZON.NavigateHomeIntent","samples":[]},
-             {"name":"AMAZON.FallbackIntent","samples":[]}],"types":[]}}},ensure_ascii=False,indent=2)+'\n')
+             {"name":"AMAZON.FallbackIntent","samples":[]},
+             {"name":"ReplayIntent","slots":[],"samples":["de novo","repetir","repita","mostrar de novo","mostre de novo","começar de novo","ver de novo","passar de novo"]}],"types":[]}}},ensure_ascii=False,indent=2)+'\n')
 print('ok',len(doc_js))

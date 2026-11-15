@@ -1100,6 +1100,12 @@ const ReplayHandler = {
   handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
 };
 
+const ReplayIntentHandler = {
+  canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'IntentRequest'
+    && Alexa.getIntentName(h.requestEnvelope) === 'ReplayIntent',
+  handle: (h) => render(h).speak(HOLD).withShouldEndSession(false).getResponse(),
+};
+
 const HelpHandler = {
   canHandle: (h) => Alexa.getRequestType(h.requestEnvelope) === 'IntentRequest'
     && Alexa.getIntentName(h.requestEnvelope) === 'AMAZON.HelpIntent',
@@ -1133,6 +1139,6 @@ const ErrorHandler = {
 };
 
 exports.handler = Alexa.SkillBuilders.custom()
-  .addRequestHandlers(LaunchRequestHandler, ReplayHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
+  .addRequestHandlers(LaunchRequestHandler, ReplayHandler, ReplayIntentHandler, HelpHandler, StopHandler, FallbackHandler, SessionEndedHandler)
   .addErrorHandlers(ErrorHandler)
   .lambda();

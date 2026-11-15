@@ -22,6 +22,20 @@
         {
           "name": "AMAZON.FallbackIntent",
           "samples": []
+        },
+        {
+          "name": "ReplayIntent",
+          "slots": [],
+          "samples": [
+            "de novo",
+            "repetir",
+            "repita",
+            "mostrar de novo",
+            "mostre de novo",
+            "começar de novo",
+            "ver de novo",
+            "passar de novo"
+          ]
         }
       ],
       "types": []

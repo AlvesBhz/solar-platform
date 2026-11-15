@@ -22,10 +22,10 @@ Falar **"Alexa, abrir solar marca"** mostra:
 
 Pré-requisito: a skill já criada no Alexa Developer Console como **Custom + Alexa-hosted (Node.js)**, idioma **Português (Brasil)**, com o mesmo login Amazon do Echo Show.
 
-1. **Aba Build → Invocations → Skill Invocation Name:** troque para `solar marca`. Salve.
-2. **Aba Build → Interfaces:** ligue **Alexa Presentation Language** (sem isso a tela não aparece). Salve.
-3. **Aba Build → JSON Editor:** cole o conteúdo de `pt-BR.json`. Clique em **Save** e depois em **Build**.
-4. **Aba Code → Media storage:** envie `assets/serra-hero.jpg`. Copie o endereço do arquivo.
+1. **Aba Build, menu da esquerda → Invocations → Skill Invocation Name:** troque para `solar marca`. Salve.
+2. **Aba Build, menu da esquerda → Interfaces** (depois de *Tasks*): ligue **Alexa Presentation Language** (sem isso a tela não aparece). Salve.
+3. **Aba Build, menu da esquerda → Interaction Model → JSON Editor:** cole o conteúdo de `pt-BR.json`. Clique em **Save** e depois em **Build skill**.
+4. **Aba Code, canto inferior esquerdo → Media storage:** envie `assets/serra-hero.jpg`. Copie o endereço do arquivo.
 5. **Aba Code:**
    - substitua `lambda/index.js` pelo arquivo deste repositório;
    - substitua `lambda/package.json` pelo deste repositório;
