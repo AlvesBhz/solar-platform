@@ -55,7 +55,7 @@ export default function T10Checklist() {
     if (!completa(a)) return;
     const t = setTimeout(() => {
       const prox = [...ambientes.slice(idx + 1), ...ambientes.slice(0, idx)].find((x) => !completa(x));
-      setRasc(salvarRascunho({ ...rasc, avancou: { ...rasc.avancou, [a.id]: true }, ambAtual: (prox ?? a).id, ultimoItem: undefined }));
+      setRasc(salvarRascunho({ ...(lerRascunho(unidadeId) ?? rasc), avancou: { ...rasc.avancou, [a.id]: true }, ambAtual: (prox ?? a).id, ultimoItem: undefined }));
       if (!prox) return navigate(`/app/vistorias/nova/${unidadeId}/resumo`);
       setIdx(ambientes.indexOf(prox));
       window.scrollTo({ top: 0 });
@@ -71,12 +71,14 @@ export default function T10Checklist() {
   const feitos = (itens: Item[]) => itens.filter(completo).length;
   const detalhe = (itemId: string) => `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc.tipoId === 'saida' ? '/comparar' : ''}`;
 
-  const irPara = (i: number) => { setIdx(i); setRasc((r) => salvarRascunho({ ...r!, ambAtual: ambientes[i].id, ultimoItem: undefined })); };
-  const marcar = (itemId: string) => setRasc((r) => salvarRascunho({ ...r!, ambAtual: amb.id, ultimoItem: itemId }));
+  // Grava no armazenamento ANTES de qualquer navegação: uma atualização de estado pendente se perde se a tela trocar logo depois.
+  const gravar = (f: (r: Rascunho) => Partial<Rascunho>) => { const r = lerRascunho(unidadeId)!; setRasc(salvarRascunho({ ...r, ...f(r) })); };
+  const irPara = (i: number) => { setIdx(i); gravar(() => ({ ambAtual: ambientes[i].id, ultimoItem: undefined })); };
+  const marcar = (itemId: string) => gravar(() => ({ ambAtual: amb.id, ultimoItem: itemId }));
 
   function responder(itemId: string, valor: string) {
     // Gravação incremental: cada toque salva o rascunho no aparelho.
-    setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, [itemId]: valor }, ambAtual: amb.id, ultimoItem: itemId }));
+    gravar((r) => ({ respostas: { ...r.respostas, [itemId]: valor }, ambAtual: amb.id, ultimoItem: itemId }));
     // Divergência exige foto e observação: abre o detalhe do item na hora.
     if (divergente(valor)) navigate(detalhe(itemId));
     // Foto obrigatória: abre a câmera na hora (sem foto o ambiente nunca fecha); volta direto ao checklist.
@@ -98,7 +100,7 @@ export default function T10Checklist() {
   const tudoOk = () => {
     const pend = amb.itens.filter((i) => !rasc.respostas[i.id]);
     if (!pend.length) return;
-    setRasc((r) => salvarRascunho({ ...r!, respostas: { ...r!.respostas, ...Object.fromEntries(pend.map((i) => [i.id, positivo])) }, ambAtual: amb.id }));
+    gravar((r) => ({ respostas: { ...r.respostas, ...Object.fromEntries(pend.map((i) => [i.id, positivo])) }, ambAtual: amb.id }));
   };
   const ambCompleto = !!amb && feitos(amb.itens) === amb.itens.length;
   const semResposta = amb ? amb.itens.filter((i) => !rasc.respostas[i.id]).length : 0;
