@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { divergente, itemCompleto } from '../lib/evidencia';
+import { BotoesResposta } from '../components/Evidencia';
 import { RESPOSTAS_OK, checklistDa, type Item } from '../mocks/checklist';
 import { contarFotosPorItem } from '../mocks/fotos';
 import { listarTiposAtivos, obterUnidade, type TipoVistoria, type Unidade } from '../mocks/unidades';
@@ -266,30 +267,14 @@ function LinhaItem({ item, resposta, positivo, temNA, completo, nFotos, obs, det
             )}
           </Link>
 
-          <div className="flex shrink-0 items-center" role="radiogroup" aria-label={`Resposta para ${item.nome}`}>
-            <button type="button" role="radio" aria-checked={ok} onClick={onOk} className="flex h-11 w-11 items-center justify-center" aria-label={positivo}>
-              <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${ok ? 'border-available bg-available text-white' : 'border-line-2 text-available hover:border-available'}`}>
-                <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </span>
-            </button>
-            <button type="button" role="radio" aria-checked={nao} onClick={onNao} className="flex h-11 w-11 items-center justify-center" aria-label="Problema">
-              <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${nao ? 'border-error bg-error text-white' : 'border-line-2 text-error hover:border-error'}`}>
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
-              </span>
-            </button>
-            {temNA && (
-              <button type="button" role="radio" aria-checked={na} onClick={onNA} className="flex h-11 items-center px-1.5" aria-label="Não se aplica">
-                <span className={`rounded-full px-2 py-1 text-[0.6875rem] font-medium transition-colors duration-fast ${na ? 'bg-fg-3 text-white' : 'text-fg-3 hover:text-fg-2'}`}>N/A</span>
-              </button>
-            )}
-          </div>
+          <BotoesResposta resposta={resposta} positivo={positivo} temNA={temNA} nome={item.nome} onOk={onOk} onNao={onNao} onNA={onNA} />
         </div>
 
         {/* Pendências e evidências, só quando existem */}
         {pendente && (
           nao ? (
             <Link to={detalhe} onClick={onAbrir} className="inline-flex min-h-9 items-center gap-1.5 self-start rounded-full text-[0.75rem] font-medium text-error">
-              <Icon icon="solar:danger-circle-linear" width={14} aria-hidden="true" /> Detalhar problema: foto e observação <Icon icon="solar:alt-arrow-right-linear" width={14} aria-hidden="true" />
+              <Icon icon="solar:danger-circle-linear" width={14} aria-hidden="true" /> Detalhar problema: gravidade e foto <Icon icon="solar:alt-arrow-right-linear" width={14} aria-hidden="true" />
             </Link>
           ) : (
             <button type="button" onClick={onFoto} className="inline-flex min-h-9 items-center gap-1.5 self-start rounded-full bg-warning-bg px-3 text-[0.75rem] font-medium text-warning">

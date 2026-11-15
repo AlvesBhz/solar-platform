@@ -7,53 +7,13 @@ Módulo isolado: consome o Design System em [`../design-system`](../design-syste
 ## Documentação
 
 - [Especificação técnica (Markdown)](./docs/ESPECIFICACAO.md) — fonte de verdade do que precisa ser feito.
-- [Especificação técnica (PDF original)](./docs/Especificacao_Tecnica_App_Vistorias_Solar_do_Espinhaco.pdf)
+- [Especificação técnica (PDF, versão 3)](./docs/Especificacao_Tecnica_App_Vistorias_Solar_do_Espinhaco.pdf)
 
-## O que precisa ser feito — catálogo de telas
+## Estado
 
-Use os IDs (T01–T34) em rotas, histórias, protótipos, testes e pull requests. Detalhes de cada tela na [seção 10 da especificação](./docs/ESPECIFICACAO.md#10-especificação-resumida-das-telas).
+As 34 telas (T01–T34) estão prototipadas em [`../solar-inspect`](../solar-inspect) com dados fictícios e sem banco de dados. A [especificação v3](./docs/ESPECIFICACAO.md) descreve o comportamento atual, os critérios de aceite e o que ainda depende do Supabase (RLS, autenticação real, PDF no servidor, sincronização real).
 
-### Acesso
-- [ ] T01 Inicialização
-- [ ] T02 Login — `/login`
-- [ ] T03 Permissão de localização
-- [ ] T04 Acesso indisponível
-
-### Assessor
-- [ ] T05 Minhas unidades — `/app/unidades`
-- [ ] T06 Detalhe da unidade — `/app/unidades/:id`
-- [ ] T07 Tipo de vistoria — `/app/vistorias/nova/:unidadeId`
-- [ ] T08 Validação de presença
-- [ ] T09 Leitor QR
-- [ ] T10 Checklist
-- [ ] T11 Detalhe do item
-- [ ] T12 Captura de evidência
-- [ ] T13 Comparação entrada × saída
-- [ ] T14 Ocorrência
-- [ ] T15 Resumo
-- [ ] T16 Assinatura
-- [ ] T17 Confirmação
-- [ ] T18 Sincronização — `/app/sincronizacao`
-- [ ] T19 Meu histórico — `/app/historico`
-
-### Gestão
-- [ ] T20 Dashboard — `/gestao`
-- [ ] T21 Gestão de unidades — `/gestao/unidades`
-- [ ] T22 Detalhe da unidade
-- [ ] T23 Lista de vistorias — `/gestao/vistorias`
-- [ ] T24 Detalhe da vistoria
-- [ ] T25 Lista de ocorrências — `/gestao/ocorrencias`
-- [ ] T26 Tratamento da ocorrência
-- [ ] T27 Relatório (PDF)
-
-### Administração
-- [ ] T28 Propriedades — `/admin/propriedades`
-- [ ] T29 Formulário de propriedade
-- [ ] T30 Ambientes e itens — `/admin/checklists`
-- [ ] T31 Tipos de vistoria
-- [ ] T32 Usuários e permissões — `/admin/usuarios`
-- [ ] T33 Configuração GPS/QR — `/admin/presenca`
-- [ ] T34 Auditoria — `/admin/auditoria`
+Próximos passos (ordem técnica): schema e RLS, autenticação, cadastros, presença no servidor, fotos e armazenamento, envio imutável e ocorrências, fila offline, painel e PDF, testes. Antes, resolver as decisões em aberto da seção 13 da especificação.
 
 ## Stack
 

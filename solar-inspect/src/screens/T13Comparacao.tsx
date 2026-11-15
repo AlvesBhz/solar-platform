@@ -87,7 +87,7 @@ export default function T13Comparacao() {
 
             {divergente(resposta) && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
 
-            <CampoObservacao valor={obs} onChange={observar} obrigatoria={divergente(resposta)} />
+            <CampoObservacao valor={obs} onChange={observar} obrigatoria={false} />
 
             {fotos.length > 0 && (
               <section className="flex flex-col gap-2">

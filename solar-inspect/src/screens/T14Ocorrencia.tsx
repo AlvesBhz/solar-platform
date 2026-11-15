@@ -45,9 +45,9 @@ export default function T14Ocorrencia() {
         <SeletorGravidade valor={g} onChange={setGrav} />
 
         <label className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Descrição</span>
+          <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Descrição (opcional)</span>
           <textarea rows={4} maxLength={500} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="O que aconteceu, onde e o que precisa ser feito."
-            className={`w-full rounded-md border bg-white p-3 text-fg-1 shadow-sm placeholder:text-fg-4 focus:border-pine focus:outline-none ${desc.trim() ? 'border-line-2' : 'border-warning'}`} />
+            className={`w-full rounded-md border bg-white p-3 text-fg-1 shadow-sm placeholder:text-fg-4 focus:border-pine focus:outline-none border-line-2`} />
         </label>
 
         <section className="flex flex-col gap-2">
@@ -56,7 +56,7 @@ export default function T14Ocorrencia() {
         </section>
       </main>
       <BottomBar>
-        <button type="button" className={btnPrimary} disabled={!desc.trim() || fotos.length === 0} onClick={salvar}>
+        <button type="button" className={btnPrimary} disabled={fotos.length === 0} onClick={salvar}>
           <Icon icon="solar:check-circle-linear" width={18} aria-hidden="true" /> Salvar ocorrência
         </button>
       </BottomBar>

@@ -1,17 +1,20 @@
 import { Icon } from '@iconify/react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorGravidade, SeletorResposta } from '../components/Evidencia';
+import { BotoesResposta, CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorGravidade } from '../components/Evidencia';
 import { btnPrimary } from '../components/ScreenShell';
 import { divergente, requisitos } from '../lib/evidencia';
 import { useItem } from '../lib/useItem';
+import { RESPOSTAS_OK } from '../mocks/checklist';
 
-/** T11 — Detalhe do item: referência, resposta e observação. Divergência exige evidência. */
+/** T11 — Detalhe do item: referência e evidências. Se for problema, só gravidade e foto (observação é opcional). */
 export default function T11DetalheItem() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
   const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade } = useItem(unidadeId, itemId);
+  const [obsAberta, setObsAberta] = useState(false);
   const base = `/app/vistorias/nova/${unidadeId}`;
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
@@ -20,8 +23,10 @@ export default function T11DetalheItem() {
   if (u && !ctx) return <Navigate to={`${base}/checklist`} replace />;
 
   const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length) : [];
-  const completo = reqs.every((r) => r.ok);
+  const completo = !!resposta && reqs.every((r) => r.ok);
   const div = divergente(resposta);
+  const positivo = tipo?.respostas.find((x) => RESPOSTAS_OK.includes(x) && x !== 'N/A') ?? 'OK';
+  const negativo = tipo?.respostas.find((x) => divergente(x)) ?? 'Problema';
 
   return (
     <div className="screen flex flex-col bg-cream">
@@ -44,27 +49,43 @@ export default function T11DetalheItem() {
               )}
             </div>
 
-            <section className="flex flex-col gap-2">
-              <h2 className="text-xs uppercase tracking-[0.08em] text-fg-2">Resposta</h2>
-              <SeletorResposta opcoes={tipo.respostas} valor={resposta} onChange={responder} rotulo={`Resposta para ${ctx.item.nome}`} />
-              {div && ctx.item.critico && (
-                <p className="flex items-start gap-2 rounded-md bg-warning-bg p-3 text-[0.8125rem] text-warning">
-                  <Icon icon="solar:danger-triangle-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />
-                  Item crítico: esta divergência gera ocorrência e pode bloquear a unidade.
-                </p>
-              )}
-            </section>
+            {div ? (
+              <div className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-error px-3 py-1.5 text-[0.75rem] font-medium text-error">
+                  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
+                  {resposta}
+                </span>
+                <button type="button" onClick={() => responder(positivo)} className="min-h-11 text-[0.75rem] text-pine underline underline-offset-4">Não é problema: marcar {positivo}</button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-line-1 bg-white py-1 pl-4 pr-2">
+                <span className="text-[0.8125rem] text-fg-2">Como está este item?</span>
+                <BotoesResposta resposta={resposta} positivo={positivo} temNA={tipo.respostas.includes('N/A')} nome={ctx.item.nome} onOk={() => responder(positivo)} onNao={() => responder(negativo)} onNA={() => responder('N/A')} />
+              </div>
+            )}
 
             {div && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
-
-            <CampoObservacao valor={obs} onChange={observar} obrigatoria={div} />
+            {div && ctx.item.critico && (
+              <p className="-mt-3 flex items-start gap-2 rounded-md bg-warning-bg p-3 text-[0.8125rem] text-warning">
+                <Icon icon="solar:danger-triangle-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />
+                Item crítico: pode bloquear a unidade.
+              </p>
+            )}
 
             <section className="flex flex-col gap-2">
-              <h2 className="flex items-center justify-between text-xs uppercase tracking-[0.08em] text-fg-2">
-                Evidências <span className="font-mono text-fg-3">{fotos.length}</span>
+              <h2 className="flex items-center justify-between font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">
+                {div ? 'Fotos do problema' : 'Evidências'} <span className="font-mono text-fg-3">{fotos.length}</span>
               </h2>
               <GradeEvidencias fotos={fotos} novaFoto={`${base}/item/${itemId}/foto`} onRemover={remover} />
             </section>
+
+            {obsAberta || obs ? (
+              <CampoObservacao valor={obs} onChange={observar} obrigatoria={false} />
+            ) : (
+              <button type="button" onClick={() => setObsAberta(true)} className="inline-flex min-h-11 items-center gap-1.5 self-start text-[0.8125rem] text-pine">
+                <Icon icon="solar:add-circle-linear" width={16} aria-hidden="true" /> Adicionar observação (opcional)
+              </button>
+            )}
 
             {resposta && <ListaRequisitos itens={reqs} />}
           </>
@@ -72,7 +93,7 @@ export default function T11DetalheItem() {
       </main>
 
       <BottomBar>
-        <button type="button" className={btnPrimary} disabled={!completo || !resposta} onClick={() => navigate(`${base}/checklist`)}>
+        <button type="button" className={btnPrimary} disabled={!completo} onClick={() => navigate(`${base}/checklist`)}>
           <Icon icon="solar:check-circle-linear" width={18} aria-hidden="true" /> Concluir item
         </button>
       </BottomBar>
