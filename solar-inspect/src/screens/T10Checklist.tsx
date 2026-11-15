@@ -36,6 +36,25 @@ export default function T10Checklist() {
   const pct = todos.length ? Math.round((respondidos / todos.length) * 100) : 0;
 
   // Volta do detalhe do item: reabre o ambiente e a posição em que o usuário estava.
+  // A aba do ambiente selecionado fica sempre visível: a faixa rola até centralizá-la (e recentraliza quando os ícones carregam).
+  const abas = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const n = abas.current;
+    if (!n) return;
+    const reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const centralizar = (suave: boolean) => {
+      const a = n.querySelector<HTMLElement>('[role=tab][aria-selected=true]');
+      if (!a) return;
+      n.scrollTo({ left: Math.max(0, a.offsetLeft - (n.clientWidth - a.offsetWidth) / 2), behavior: suave && !reduz ? 'smooth' : 'auto' });
+    };
+    centralizar(true);
+    let largura = n.scrollWidth;
+    const ro = new ResizeObserver(() => { if (n.scrollWidth !== largura) { largura = n.scrollWidth; centralizar(false); } });
+    n.querySelectorAll('[role=tab]').forEach((a) => ro.observe(a));
+    const t = setTimeout(() => ro.disconnect(), 2000);
+    return () => { ro.disconnect(); clearTimeout(t); };
+  }, [idx, ambientes]);
+
   const restaurou = useRef(false);
   useEffect(() => {
     if (!ambientes.length || restaurou.current) return;
@@ -122,7 +141,7 @@ export default function T10Checklist() {
           <div className="h-1 overflow-hidden rounded-full bg-line-1" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Progresso da vistoria">
             <div className="h-full origin-left rounded-full bg-pine transition-transform duration-base" style={{ transform: `scaleX(${pct / 100})` }} />
           </div>
-          <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div ref={abas} className="relative -mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex w-max gap-2" role="tablist" aria-label="Ambientes">
               {ambientes.map((a, i) => {
                 const ok = feitos(a.itens) === a.itens.length;
