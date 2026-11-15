@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
+import { Seletor } from '../components/Filtros';
 import { useOnline } from '../components/NetworkBadge';
 import { btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, formatarData } from '../components/Status';
@@ -84,18 +85,8 @@ export default function T05MinhasUnidades() {
             />
           </label>
           {propriedades.length > 1 && (
-            <label className="relative sm:w-56">
-              <span className="sr-only">Propriedade</span>
-              <Icon icon="solar:buildings-2-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
-              <select
-                value={propriedade}
-                onChange={(e) => setPropriedade(e.target.value)}
-                className="min-h-12 w-full appearance-none rounded-md border border-line-2 bg-white py-3 pl-11 pr-3 text-fg-1 shadow-sm focus:border-pine focus:outline-none"
-              >
-                <option value="todas">Todas as propriedades</option>
-                {propriedades.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </label>
+            <Seletor rotulo="Propriedade" grande icone="solar:buildings-2-linear" valor={propriedade} onChange={setPropriedade} className="sm:w-60"
+              opcoes={[{ valor: 'todas', label: 'Todas as propriedades' }, ...propriedades.map((p) => ({ valor: p, label: p }))]} />
           )}
         </div>
 

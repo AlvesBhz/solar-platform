@@ -195,6 +195,7 @@ Telas responsivas: menu lateral no computador e no tablet; barra superior roláv
 - **Assessor:** mobile-first a partir de 320 px; alvos de toque de pelo menos 44 × 44 px; campos de texto com 16 px (evita zoom no iPhone). **Gestão:** responsiva para desktop, tablet e celular.
 - **Sem rolagem horizontal** em nenhuma largura (verificado de 280 a 2560 px, inclusive celular deitado); conteúdo largo fica contido no próprio bloco.
 - Toda consulta prevê carregando, vazio, sucesso, erro e sem permissão. A operação informa online, offline, salvo no aparelho, sincronizando e falha.
+- **Filtros e escolhas:** o app não usa o combo nativo do navegador. Poucas opções de filtro (propriedade, estado, status) aparecem como **chips** que rolam na horizontal, com o selecionado sempre à vista. Listas maiores e campos de formulário usam um **seletor próprio**: no celular abre uma folha que sobe do rodapé; no computador, um menu suspenso. Ambos têm área de toque de 44 px, marca de selecionado e teclado (setas, Enter e Esc).
 - Ações irreversíveis exigem confirmação. Validação no cliente e novamente no servidor **[servidor]**.
 - **Identidade:** tokens do Design System do Solar (Pine #2C3E35, Pine Deep #1C2922, Pine Mid #3D5547, Cream #FAFAF9; sucesso #059669, atenção #B45309, erro #B91C1C), consumidos sem alterar a pasta `design-system/`. Títulos em Cormorant Garamond e corpo em Inter; ícones da coleção Solar (linear), embutidos no aplicativo para funcionar offline.
 - **Logos:** selo SE na abertura (T01) e no painel lateral do login em telas largas; selo SE menor com "Vistorias" no login do celular; logo horizontal "Solar do Espinhaço" no menu da gestão.
@@ -302,7 +303,7 @@ Motivos da T04: `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-l
 - **Checklist (T10):** linhas compactas com ✓ ✗ N/A, deslizar para responder, Tudo OK, etiquetas de pendência, abas por ambiente e avanço automático para o próximo ambiente com pendência.
 - **Evidência:** item com foto obrigatória abre a câmera; voltar do detalhe reposiciona no item avaliado.
 - **Problema (T11):** apenas gravidade e foto; **observação passou a ser opcional** (antes era obrigatória).
-- **Gestão e administração:** menu superior centraliza o item selecionado; tabelas viram cartões no celular; T30 permite criar ambiente; T22 permite alterar o estado com justificativa.
+- **Filtros e seletores:** chips e seletor próprio no lugar do combo nativo em todas as telas; **gestão e administração:** menu superior centraliza o item selecionado; tabelas viram cartões no celular; T30 permite criar ambiente; T22 permite alterar o estado com justificativa.
 - **Protótipo:** link navegável com menu de simulação, câmera e GPS reais no celular em modo HTTPS e correções de responsividade.
 
 ## 13. Pendências e decisões em aberto

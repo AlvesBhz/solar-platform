@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Seletor } from '../components/Filtros';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { checklistDa, type Ambiente } from '../mocks/checklist';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
@@ -113,8 +114,8 @@ export function T29FormPropriedade() {
     <GestaoShell eyebrow="Administração" titulo="Nova propriedade">
       <form className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} onSubmit={(e) => { e.preventDefault(); if (!erros.length) salvar(); }} noValidate>
         <label className={`${rot} sm:col-span-2`}>Nome<input id="p-nome" className={campo} value={f.nome} onChange={set('nome')} placeholder="Ex.: Chalés da Serra" /></label>
-        <label className={rot}>Tipo<select id="p-tipo" className={campo} value={f.tipo} onChange={set('tipo')}><option>Pousada</option><option>Hotel</option><option>Chalés</option></select></label>
-        <label className={rot}>Validação padrão<select id="p-val" className={campo} value={f.validacao} onChange={set('validacao')}>{Object.entries(VALIDACAO).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></label>
+        <label className={rot}>Tipo<Seletor rotulo="Tipo" valor={f.tipo} onChange={(v) => setF({ ...f, tipo: v })} opcoes={['Pousada', 'Hotel', 'Chalés'].map((t) => ({ valor: t, label: t }))} /></label>
+        <label className={rot}>Validação padrão<Seletor rotulo="Validação padrão" valor={f.validacao} onChange={(v) => setF({ ...f, validacao: v })} opcoes={Object.entries(VALIDACAO).map(([k, v]) => ({ valor: k, label: v.label, icone: v.icon }))} /></label>
         <label className={rot}>Latitude<input id="p-lat" inputMode="decimal" className={campo} value={f.lat} onChange={set('lat')} /></label>
         <label className={rot}>Longitude<input id="p-lng" inputMode="decimal" className={campo} value={f.lng} onChange={set('lng')} /></label>
         <label className={rot}>Raio (m)<input id="p-raio" inputMode="numeric" className={campo} value={f.raio} onChange={set('raio')} /></label>
@@ -149,7 +150,7 @@ export function T30Ambientes() {
   const add = (ai: number) => { const n = novo[arv[ai].id]?.trim(); if (!n) return; setArv(arv.map((a, x) => x !== ai ? a : { ...a, itens: [...a.itens, { id: `novo-${Date.now()}`, nome: n }] })); setNovo({ ...novo, [arv[ai].id]: '' }); setSalvo(false); };
   return (
     <GestaoShell eyebrow="Administração" titulo="Ambientes e itens" acoes={
-      <select aria-label="Unidade" className={`${campo} w-auto`} value={uid} onChange={(e) => setUid(e.target.value)}>{us.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}</select>}>
+      <Seletor rotulo="Unidade" icone="solar:home-2-linear" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: u.id, label: u.nome }))} className="min-w-[11rem]" />}>
       <p className="text-[0.8125rem] text-fg-2">Ordem física do percurso. As mudanças valem para novas vistorias; as já enviadas preservam o checklist original.</p>
       <ol className="flex flex-col gap-3">
         {arv.map((a, ai) => (
@@ -222,7 +223,7 @@ export function T31Tipos() {
             </div>
             <p className="text-[0.8125rem] text-fg-2">{t.descricao}</p>
             <label className={rot}>Periodicidade
-              <select className={campo} value={t.periodo} onChange={(e) => setTs(ts.map((x, j) => j === i ? { ...x, periodo: e.target.value } : x))}>{PERIODOS.map((p) => <option key={p}>{p}</option>)}</select>
+              <Seletor rotulo="Periodicidade" valor={t.periodo} onChange={(v) => setTs(ts.map((x, j) => (j === i ? { ...x, periodo: v } : x)))} opcoes={PERIODOS.map((p) => ({ valor: p, label: p }))} />
             </label>
           </li>
         ))}
@@ -245,7 +246,7 @@ export function T33Presenca() {
   const raioOk = +raio >= 10 && +raio <= 500;
   return (
     <GestaoShell eyebrow="Administração" titulo="Configuração de presença" acoes={
-      <select aria-label="Unidade" className={`${campo} w-auto`} value={uid} onChange={(e) => setUid(e.target.value)}>{us.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select>}>
+      <Seletor rotulo="Unidade" icone="solar:home-2-linear" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: u.id, label: u.nome }))} className="min-w-[11rem]" />}>
       <div className="grid max-w-3xl gap-4 md:grid-cols-2">
         <section className={`${card} flex flex-col gap-4 p-5`}>
           <h2 className="flex items-center gap-2 font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2"><Icon icon="solar:gps-linear" width={16} aria-hidden="true" />Validação</h2>

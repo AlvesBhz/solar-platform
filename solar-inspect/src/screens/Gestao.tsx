@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
@@ -37,10 +38,8 @@ export function T20Dashboard() {
   const hoje = envios.filter((e) => e.fim.slice(0, 10) === new Date().toISOString().slice(0, 10)).length;
 
   return (
-    <GestaoShell eyebrow="Gestão" titulo="Visão operacional" acoes={
-      <select aria-label="Propriedade" value={prop} onChange={(e) => setProp(e.target.value)} className="min-h-11 min-w-0 max-w-full rounded-md border border-line-2 bg-white px-3 text-fg-1">
-        <option value="">Todas as propriedades</option>{props.map((p) => <option key={p}>{p}</option>)}
-      </select>}>
+    <GestaoShell eyebrow="Gestão" titulo="Visão operacional">
+      <Chips rotulo="Propriedade" valor={prop} onChange={setProp} opcoes={[{ valor: '', label: 'Todas' }, ...props.map((p) => ({ valor: p, label: p, icone: 'solar:buildings-2-linear' }))]} />
       {!us || !ocs ? <Carregando /> : (
         <>
           <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -89,11 +88,9 @@ export function T21Unidades() {
   const nOc = (id: string) => (ocs ?? []).filter((o) => o.unidadeId === id && abertas(o)).length;
   return (
     <GestaoShell eyebrow="Gestão" titulo="Unidades">
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input type="search" placeholder="Buscar unidade ou propriedade" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 flex-1 rounded-md border border-line-2 bg-white px-3 text-fg-1 placeholder:text-fg-4" aria-label="Buscar" />
-        <select value={est} onChange={(e) => setEst(e.target.value)} className="min-h-11 rounded-md border border-line-2 bg-white px-3 text-fg-1" aria-label="Estado">
-          <option value="">Todos os estados</option>{(Object.keys(ESTADOS) as EstadoUnidade[]).map((e) => <option key={e} value={e}>{ESTADOS[e].label}</option>)}
-        </select>
+      <div className="flex flex-col gap-3">
+        <input type="search" placeholder="Buscar unidade ou propriedade" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-fg-1 placeholder:text-fg-4" aria-label="Buscar" />
+        <Chips rotulo="Estado" valor={est} onChange={setEst} opcoes={[{ valor: '', label: 'Todos' }, ...(Object.keys(ESTADOS) as EstadoUnidade[]).map((e) => ({ valor: e as string, label: ESTADOS[e].label, icone: ESTADOS[e].icon }))]} />
       </div>
       {!us ? <Carregando /> : (
         <TabelaResp rows={lista} cols={[
@@ -153,9 +150,8 @@ export function T22DetalheUnidade() {
             </dl>
             <div className={`${card} flex flex-col gap-3 p-4`}>
               <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Alterar estado</h2>
-              <select value={novo} onChange={(e) => setNovo(e.target.value as EstadoUnidade)} className="min-h-11 rounded-md border border-line-2 bg-white px-3" aria-label="Novo estado">
-                <option value="">Selecione…</option>{(Object.keys(ESTADOS) as EstadoUnidade[]).filter((e) => e !== u.estado).map((e) => <option key={e} value={e}>{ESTADOS[e].label}</option>)}
-              </select>
+              <Seletor rotulo="Novo estado" placeholder="Selecione o novo estado" valor={novo} onChange={(v) => setNovo(v as EstadoUnidade | '')}
+                opcoes={(Object.keys(ESTADOS) as EstadoUnidade[]).filter((e) => e !== u.estado).map((e) => ({ valor: e, label: ESTADOS[e].label, icone: ESTADOS[e].icon }))} />
               <textarea rows={2} value={just} onChange={(e) => setJust(e.target.value)} placeholder="Justificativa (obrigatória)" className="rounded-md border border-line-2 bg-white p-3" aria-label="Justificativa" />
               <button type="button" className={btnPrimary} disabled={!novo || just.trim().length < 5} onClick={aplicar}>Aplicar</button>
             </div>
@@ -180,9 +176,7 @@ export function T23Vistorias() {
   }
   return (
     <GestaoShell eyebrow="Gestão" titulo="Vistorias" acoes={<button type="button" onClick={exportar} className={`${btnSecondary} w-auto`}><Icon icon="solar:documents-linear" width={18} aria-hidden="true" />{copiado ? 'CSV copiado' : 'Copiar CSV'}</button>}>
-      <select value={st} onChange={(e) => { setSt(e.target.value); setPag(0); }} className="min-h-11 w-full rounded-md border border-line-2 bg-white px-3 sm:w-56" aria-label="Status">
-        <option value="">Todos os status</option><option value="enviada">Enviada</option><option value="sinalizada">Sinalizada</option><option value="pendente">Pendente</option>
-      </select>
+      <Chips rotulo="Status" valor={st} onChange={(v) => { setSt(v); setPag(0); }} opcoes={[{ valor: '', label: 'Todos' }, { valor: 'enviada', label: 'Enviada' }, { valor: 'sinalizada', label: 'Sinalizada' }, { valor: 'pendente', label: 'Pendente' }]} />
       <TabelaResp rows={lista.slice(pag * POR, pag * POR + POR)} cols={[
         { h: 'Unidade', r: (e) => <Link to={`/gestao/vistorias/${e.id}`} className="font-medium text-pine hover:underline">{e.unidade}</Link> },
         { h: 'Tipo', r: (e) => e.tipo },
@@ -228,9 +222,7 @@ export function T25Ocorrencias() {
   const lista = useMemo(() => (ocs ?? []).filter((o) => !st || (st === 'abertas' ? abertas(o) : o.status === st)).sort((a, b) => ORD[a.gravidade] - ORD[b.gravidade] || a.prazo.localeCompare(b.prazo)), [ocs, st]);
   return (
     <GestaoShell eyebrow="Gestão" titulo="Ocorrências">
-      <select value={st} onChange={(e) => setSt(e.target.value as typeof st)} className="min-h-11 w-full rounded-md border border-line-2 bg-white px-3 sm:w-56" aria-label="Status">
-        <option value="abertas">Abertas e em tratamento</option><option value="">Todas</option>{(Object.keys(STATUS_OC) as StatusOc[]).map((s) => <option key={s} value={s}>{STATUS_OC[s].label}</option>)}
-      </select>
+      <Chips rotulo="Status" valor={st} onChange={setSt} opcoes={[{ valor: 'abertas', label: 'Em aberto' }, { valor: '', label: 'Todas' }, ...(Object.keys(STATUS_OC) as StatusOc[]).map((x) => ({ valor: x as typeof st, label: STATUS_OC[x].label }))]} />
       {!ocs ? <Carregando /> : (
         <ul className="flex flex-col gap-2">
           {lista.map((o) => (
@@ -280,11 +272,10 @@ export function T26Tratamento() {
           </section>
           <aside className={`${card} flex flex-col gap-3 p-4`}>
             <GravidadeTag g={o.gravidade} />
-            <label className="flex flex-col gap-1 text-[0.75rem] text-fg-3">Responsável
-              <select disabled={fechada} value={o.responsavel ?? ''} onChange={(e) => mudar({ responsavel: e.target.value, status: o.status === 'aberta' ? 'em_tratamento' : o.status }, `Atribuída a ${e.target.value}`)} className="min-h-11 rounded-md border border-line-2 bg-white px-3 text-fg-1">
-                <option value="" disabled>Selecione…</option>{RESPONSAVEIS.map((r) => <option key={r}>{r}</option>)}
-              </select>
-            </label>
+            <div className="flex flex-col gap-1 text-[0.75rem] text-fg-3">Responsável
+              <Seletor rotulo="Responsável" desabilitado={fechada} valor={o.responsavel ?? ''} onChange={(v) => mudar({ responsavel: v, status: o.status === 'aberta' ? 'em_tratamento' : o.status }, `Atribuída a ${v}`)}
+                opcoes={RESPONSAVEIS.map((r) => ({ valor: r, label: r }))} />
+            </div>
             <label className="flex flex-col gap-1 text-[0.75rem] text-fg-3">Prazo
               <input type="date" disabled={fechada} value={o.prazo} onChange={(e) => e.target.value && mudar({ prazo: e.target.value }, `Prazo alterado para ${dia(e.target.value)}`)} className="min-h-11 rounded-md border border-line-2 bg-white px-3 text-fg-1" />
             </label>
