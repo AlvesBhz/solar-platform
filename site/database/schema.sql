@@ -25,7 +25,7 @@ create table propriedades (
   id                 bigint generated always as identity primary key,
   nome               text not null,
   fuso_horario       text not null default 'America/Sao_Paulo',
-  horario_checkin    time not null default '14:00',
+  horario_checkin    time not null default '15:00',
   horario_checkout   time not null default '12:00',
   idade_max_crianca  smallint not null default 12,   -- crianças pagantes: 2 a 12 anos (abaixo de 2 não contam)
   max_noites         smallint not null default 30 check (max_noites between 1 and 365),
@@ -63,9 +63,9 @@ create table tarifas (
   prioridade           smallint not null default 0,
   valor_noite          numeric(10,2) not null check (valor_noite >= 0),       -- dom a qui
   valor_noite_fds      numeric(10,2) check (valor_noite_fds >= 0),            -- noites de sex e sáb; vazio = valor_noite
-  hospedes_inclusos    smallint not null default 2 check (hospedes_inclusos >= 1),
-  valor_adulto_extra   numeric(10,2) not null default 0 check (valor_adulto_extra >= 0),   -- por noite
-  valor_crianca_extra  numeric(10,2) not null default 0 check (valor_crianca_extra >= 0),  -- por noite
+  adultos_inclusos     smallint not null default 2 check (adultos_inclusos >= 1),        -- adultos cobertos pelo valor da noite
+  valor_adulto_extra   numeric(10,2) not null default 0 check (valor_adulto_extra >= 0),  -- por adulto além dos inclusos, por noite
+  valor_crianca        numeric(10,2) not null default 0 check (valor_crianca >= 0),       -- por criança (2 a 12 anos), por noite
   min_noites           smallint not null default 1 check (min_noites >= 1),
   ativa                boolean not null default true,
   criado_em            timestamptz not null default now(),
@@ -138,6 +138,27 @@ create table reservas (
 create index reservas_hospede_id_idx on reservas (hospede_id);
 create index reservas_unidade_periodo_idx on reservas using gist (unidade_id, periodo);
 create index reservas_pendentes_expira_idx on reservas (expira_em) where status = 'pendente';
+
+-- Pagamentos via Mercado Pago (Pix ou cartão). Uma reserva pode ter mais
+-- de uma tentativa (ex.: Pix expirou e o hóspede gerou outro). O status é
+-- atualizado pelo aviso (webhook) que o Mercado Pago envia à Edge Function.
+-- 'manual' = Pix recebido direto na conta e confirmado à mão pela equipe.
+create table pagamentos (
+  id                bigint generated always as identity primary key,
+  reserva_id        bigint not null references reservas (id),
+  provedor          text not null default 'mercado_pago' check (provedor in ('mercado_pago', 'manual')),
+  metodo            text not null check (metodo in ('pix', 'cartao_credito')),
+  valor             numeric(10,2) not null check (valor > 0),
+  status            text not null default 'pendente'
+                    check (status in ('pendente', 'aprovado', 'recusado', 'cancelado', 'estornado')),
+  id_externo        text unique,          -- número do pagamento no Mercado Pago
+  pix_copia_e_cola  text,                 -- código Pix que o hóspede cola no app do banco
+  expira_em         timestamptz,          -- validade do código Pix
+  pago_em           timestamptz,
+  criado_em         timestamptz not null default now(),
+  constraint pagamentos_aprovado_data check (status <> 'aprovado' or pago_em is not null)
+);
+create index pagamentos_reserva_id_idx on pagamentos (reserva_id);
 
 
 -- ── Bloqueios e calendários externos (Airbnb / Booking) ─────────────
@@ -261,9 +282,9 @@ begin
                   then coalesce(t.valor_noite_fds, t.valor_noite)
                   else t.valor_noite end
            ) as valor_base,
-           -- hóspedes além dos inclusos: adultos ocupam primeiro as vagas incluídas
-           greatest(p_adultos - t.hospedes_inclusos, 0) * t.valor_adulto_extra
-           + greatest(p_criancas - greatest(t.hospedes_inclusos - p_adultos, 0), 0) * t.valor_crianca_extra
+           -- o valor da noite cobre os adultos inclusos; cada criança paga à parte
+           greatest(p_adultos - t.adultos_inclusos, 0) * t.valor_adulto_extra
+           + p_criancas * t.valor_crianca
              as extras,
            t.id is null as sem_tarifa
     from noites n
@@ -440,6 +461,7 @@ alter table tarifas              enable row level security;
 alter table ajustes_diarios      enable row level security;
 alter table hospedes             enable row level security;
 alter table reservas             enable row level security;
+alter table pagamentos           enable row level security;
 alter table calendarios_externos enable row level security;
 alter table bloqueios            enable row level security;
 

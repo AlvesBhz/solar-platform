@@ -4,8 +4,9 @@ set role anon;
 select 'ok  anon consulta disponibilidade: ' || count(*) || ' unidade(s)' from consultar_disponibilidade('2027-03-02','2027-03-04',2,0);
 select 'ok  anon lê reservas: ' || count(*) || ' linhas (RLS)' from reservas;
 select 'ok  anon lê hóspedes: ' || count(*) || ' linhas (RLS)' from hospedes;
+select 'ok  anon lê pagamentos: ' || count(*) || ' linhas (RLS)' from pagamentos;
 do $$ begin
-  perform criar_pre_reserva('chale-solar','2027-08-10','2027-08-12',2,0);
+  perform criar_pre_reserva('chale-solar','2027-09-21','2027-09-23',2,0);
   raise exception 'FALHOU: anon conseguiu criar pré-reserva';
 exception when insufficient_privilege then raise notice 'ok  anon não pode criar pré-reserva (só a Edge Function)';
 end $$;
