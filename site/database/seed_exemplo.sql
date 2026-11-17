@@ -5,9 +5,11 @@
 -- ════════════════════════════════════════════════════════════════════
 
 insert into PROPRIEDADE (NM_PROPRIEDADE, HR_CHECKIN, HR_CHECKOUT, NO_IDADE_MAX_CRIANCA,
-                         QTDE_MAX_NOITES, VL_PERCENTUAL_SINAL, QTDE_MINUTOS_PRE_RESERVA)
+                         QTDE_MAX_NOITES, VL_PERCENTUAL_SINAL, QTDE_MINUTOS_PRE_RESERVA,
+                         QTDE_DIAS_LIMITE_REMARCACAO, QTDE_MESES_VALIDADE_CREDITO)
 values ('Solar do Espinhaço', '15:00', '12:00', 13,
-        7, 50, 30);   -- percentual do sinal a confirmar
+        7, 50, 30,
+        7, 12);   -- regra de remarcação: proposta, aguardando aprovação
 
 -- 1 chalé: 2 adultos na suíte + 2 crianças ou bebês no sofá-cama
 insert into UNIDADE (ID_PROPRIEDADE, CD_UNIDADE, NM_UNIDADE, TP_UNIDADE,
@@ -16,8 +18,8 @@ select ID_PROPRIEDADE, 'casa-do-mirante', 'Casa do Mirante', 'CHALE', 4, 2, 2, 0
 
 -- Tarifa padrão: R$ 1.700 a noite para o casal, R$ 300 por criança (2 a 13 anos) por noite.
 -- Vale para todas as noites até o fim de 2027. Réveillon, Carnaval e feriados
--- terão preço próprio: entram como tarifas de prioridade maior quando os
--- valores e as datas forem definidos.
+-- terão preço próprio e mínimo de 2 noites: entram como tarifas de prioridade
+-- maior (QTDE_MIN_NOITES = 2) quando as datas e os valores forem definidos.
 insert into TARIFA (ID_UNIDADE, NM_TARIFA, DT_INI, DT_FIM, NO_PRIORIDADE, VL_NOITE, VL_NOITE_FDS,
                     QTDE_ADULTOS_INCLUSOS, VL_ADULTO_EXTRA, VL_CRIANCA, QTDE_MIN_NOITES)
 select ID_UNIDADE, 'Tarifa padrão', '2026-11-01', '2028-01-01', 0, 1700.00, null, 2, 0.00, 300.00, 1

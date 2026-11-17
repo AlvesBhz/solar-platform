@@ -203,6 +203,7 @@ const Booking = (() => {
     checkout:  null,
     adults:    2,
     children:  1,
+    babies:    0,
     active:    null,
     selecting: false,
     start:     null,
@@ -227,11 +228,10 @@ const Booking = (() => {
     co.textContent = fmt(s.checkout) || I18N.t('Selecionar data');
     const g = document.getElementById('guestsDisplay');
     if (g) {
-      const aw = I18N.t(s.adults   === 1 ? 'Adulto'  : 'Adultos');
-      const cw = I18N.t(s.children === 1 ? 'Criança' : 'Crianças');
-      g.textContent = s.children === 0
-        ? `${s.adults} ${aw}`
-        : `${s.adults} ${aw}, ${s.children} ${cw}`;
+      const parts = [`${s.adults} ${I18N.t(s.adults === 1 ? 'Adulto' : 'Adultos')}`];
+      if (s.children) parts.push(`${s.children} ${I18N.t(s.children === 1 ? 'Criança' : 'Crianças')}`);
+      if (s.babies)   parts.push(`${s.babies} ${I18N.t(s.babies === 1 ? 'Bebê' : 'Bebês')}`);
+      g.textContent = parts.join(', ');
     }
   }
 
@@ -418,11 +418,30 @@ const Booking = (() => {
     });
   }
 
-  /* ── Hóspedes ── */
+  /* ── Hóspedes ──
+     Capacidade da Casa do Mirante (mesmas regras do banco, tabela UNIDADE):
+     até 2 adultos (14+ anos) e até 2 crianças e bebês somados (sofá-cama).
+     Bebês (até 1 ano) não pagam, mas ocupam vaga. */
+  const CAPACIDADE = { adultos: 2, criancasEBebes: 2 };
   function buildGuests() {
     const pop = document.createElement('div');
     pop.className = 'bk-pop bk-pop-guests';
-    function row(label, sub, key, min) {
+    const rows = {};
+    const limite = {
+      adults:   () => ({ min: 1, max: CAPACIDADE.adultos }),
+      children: () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.babies }),
+      babies:   () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.children }),
+    };
+    function sync() {
+      Object.keys(rows).forEach(key => {
+        const { min, max } = limite[key]();
+        rows[key].querySelector(`#gn-${key}`).textContent = s[key];
+        rows[key].querySelector(`#gm-${key}`).disabled = s[key] <= min;
+        rows[key].querySelector(`#gp-${key}`).disabled = s[key] >= max;
+      });
+      updateDisplays();
+    }
+    function row(label, sub, key) {
       const r = document.createElement('div'); r.className = 'gst-row';
       r.innerHTML = `
         <div>
@@ -430,22 +449,28 @@ const Booking = (() => {
           <div class="gst-sub">${sub}</div>
         </div>
         <div class="gst-ctrl">
-          <button class="gst-btn" id="gm-${key}" type="button" ${s[key]<=min?'disabled':''}>−</button>
+          <button class="gst-btn" id="gm-${key}" type="button" aria-label="−">−</button>
           <span class="gst-n" id="gn-${key}">${s[key]}</span>
-          <button class="gst-btn" id="gp-${key}" type="button">+</button>
+          <button class="gst-btn" id="gp-${key}" type="button" aria-label="+">+</button>
         </div>`;
       r.querySelector(`#gm-${key}`).addEventListener('click', e => {
         e.stopPropagation();
-        if (s[key] > min) { s[key]--; r.querySelector(`#gn-${key}`).textContent=s[key]; r.querySelector(`#gm-${key}`).disabled=s[key]<=min; updateDisplays(); }
+        if (s[key] > limite[key]().min) { s[key]--; sync(); }
       });
       r.querySelector(`#gp-${key}`).addEventListener('click', e => {
         e.stopPropagation();
-        s[key]++; r.querySelector(`#gn-${key}`).textContent=s[key]; r.querySelector(`#gm-${key}`).disabled=false; updateDisplays();
+        if (s[key] < limite[key]().max) { s[key]++; sync(); }
       });
+      rows[key] = r;
       return r;
     }
-    pop.appendChild(row(I18N.t('Adultos'), I18N.t('14+ anos'), 'adults', 1));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children', 0));
+    pop.appendChild(row(I18N.t('Adultos'),  I18N.t('14+ anos'),  'adults'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children'));
+    pop.appendChild(row(I18N.t('Bebês'),    I18N.t('até 1 ano'), 'babies'));
+    const nota = document.createElement('div'); nota.className = 'gst-note';
+    nota.textContent = I18N.t('Até 2 adultos e 2 crianças ou bebês. Bebês não pagam.');
+    pop.appendChild(nota);
+    sync();
     return pop;
   }
 

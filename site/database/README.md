@@ -42,12 +42,12 @@ erDiagram
 
 | Tabela | Para que serve |
 |---|---|
-| `PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de criança, estadia máxima, percentual do sinal e minutos para pagar |
+| `PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de criança, estadia máxima, percentual do sinal, minutos para pagar e regra de remarcação |
 | `UNIDADE` | Cada chalé: capacidade (hóspedes, adultos, crianças + bebês) e taxa de limpeza |
 | `TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, valor por criança, mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
 | `AJUSTE_DIARIO` | Exceção de um dia (`DT_REF`): preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída |
-| `RESERVA` | Reservas do site, telefone ou contato direto, com o preço e o sinal gravados no momento da reserva |
-| `PAGAMENTO` | Tentativas de pagamento: Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
+| `RESERVA` | Reservas do site, telefone ou contato direto, com o preço, o sinal (pago no site) e o saldo (pago no check-in) gravados no momento da reserva |
+| `PAGAMENTO` | Tentativas de pagamento de cada parcela (`TP_PARCELA`: SINAL no site, SALDO no check-in): Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
 | `BLOQUEIO` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas do Airbnb/Booking |
 | `CALENDARIO_EXTERNO` | Links iCal do Airbnb e do Booking, importados periodicamente para `BLOQUEIO` |
 | `HOSPEDE` | Nome, e-mail e telefone; só o necessário (LGPD) |
@@ -143,9 +143,13 @@ O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de ve
 
 ## Decisões
 
-Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê abaixo de 2 anos não paga, mas ocupa uma das 2 vagas de criança; até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; sinal não reembolsável, com possibilidade de remarcação; pagamento por Pix e Mercado Pago; 30 minutos para pagar.
+Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê até 1 ano não paga, mas ocupa uma das 2 vagas de criança; até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; datas especiais com mínimo de 2 noites; sinal de 50% pago no site (Pix ou Mercado Pago), não reembolsável, com possibilidade de remarcação; saldo pago no check-in, antes de entrar; 30 minutos para pagar o sinal.
 
-Ainda em aberto (detalhados no dicionário de dados): datas e preços de Réveillon, Carnaval e feriados; percentual do sinal; quando o saldo é pago; regras da remarcação; confirmação de que "7" são noites; direito de arrependimento do CDC (art. 49); campo de bebês no seletor do site.
+Proposta aguardando aprovação: remarcar até 7 dias antes do check-in (`QTDE_DIAS_LIMITE_REMARCACAO`), crédito válido por 12 meses (`QTDE_MESES_VALIDADE_CREDITO`), diferença paga se a nova data for mais cara e não devolvida se for mais barata.
+
+Ainda em aberto: datas, preços e tipos das datas especiais; meio de pagamento do saldo no check-in; consulta jurídica sobre o art. 49 do CDC.
+
+Diagrama: `der.html` nesta pasta (abre no navegador).
 
 ## Como testar localmente
 

@@ -106,7 +106,17 @@ do $$ begin
 exception when check_violation then raise notice 'ok  Pagamento aprovado exige a data do pagamento';
 end $$;
 update PAGAMENTO set TP_STATUS = 'APROVADO', DT_PAGAMENTO = now() where CD_EXTERNO = 'MP-TESTE-1';
-select 'ok  Pagamento registrado: ' || TP_METODO || ' · R$ ' || VL_PAGAMENTO || ' · ' || TP_STATUS from PAGAMENTO;
+select 'ok  Pagamento registrado: ' || TP_PARCELA || ' · ' || TP_METODO || ' · R$ ' || VL_PAGAMENTO || ' · ' || TP_STATUS from PAGAMENTO;
+select 'ok  Saldo a pagar no check-in: R$ ' || VL_SALDO || ' (total R$ ' || VL_TOTAL || ' − sinal R$ ' || VL_SINAL || ')' from RESERVA where DT_CHECKIN = '2027-04-06';
+-- saldo pago no check-in, direto na pousada
+insert into PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, DT_PAGAMENTO)
+select ID_RESERVA, 'SALDO', 'MANUAL', 'PIX', VL_SALDO, 'APROVADO', now() from RESERVA where DT_CHECKIN = '2027-04-06';
+select 'ok  Total quitado: R$ ' || sum(VL_PAGAMENTO) || ' em ' || count(*) || ' parcelas (sinal + saldo)' from PAGAMENTO where TP_STATUS = 'APROVADO';
+do $$ begin
+  insert into PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_METODO, VL_PAGAMENTO) select ID_RESERVA, 'ENTRADA', 'PIX', 1 from RESERVA limit 1;
+  raise exception 'FALHOU: parcela fora da lista foi aceita';
+exception when check_violation then raise notice 'ok  Parcela só aceita SINAL ou SALDO';
+end $$;
 -- simula o vencimento da pré-reserva de outra estadia
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-08-10', '2027-08-12', 2, 0);
 update RESERVA set DT_EXPIRA = now() - interval '1 minute' where TP_STATUS = 'PENDENTE' and DT_CHECKIN = '2027-08-10';
@@ -125,8 +135,8 @@ insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULT
 select ID_UNIDADE, ID_HOSPEDE, '2027-05-18', '2027-05-20', QTDE_ADULTOS, QTDE_CRIANCAS, 'CONFIRMADA', VL_HOSPEDAGEM, VL_SINAL, ID_RESERVA from antiga;
 select pg_temp.ok ('Datas antigas liberadas após a remarcação',         '2027-04-06','2027-04-08', 2,0, 3400, 3400);
 select pg_temp.nao('Novas datas ocupadas pela reserva remarcada',       '2027-05-18','2027-05-20', 2,0, 'ocupado');
-select 'ok  Crédito na nova reserva: R$ ' || sum(pg.VL_PAGAMENTO) || ' pagos na reserva original'
-from RESERVA nova join PAGAMENTO pg on pg.ID_RESERVA = nova.ID_RESERVA_ORIGINAL and pg.TP_STATUS = 'APROVADO'
+select 'ok  Crédito na nova reserva: R$ ' || sum(pg.VL_PAGAMENTO) || ' de sinal pago na reserva original'
+from RESERVA nova join PAGAMENTO pg on pg.ID_RESERVA = nova.ID_RESERVA_ORIGINAL and pg.TP_STATUS = 'APROVADO' and pg.TP_PARCELA = 'SINAL'
 where nova.DT_CHECKIN = '2027-05-18';
 
 \echo '── Proteção contra overbooking no próprio banco'
