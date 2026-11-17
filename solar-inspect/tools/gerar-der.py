@@ -388,6 +388,19 @@ p {{ max-width:68ch; margin:0 0 0.75rem; }} code {{ font-family:var(--mono); fon
 .zoom {{ display:flex; gap:0.375rem; }}
 .zoom button {{ min-height:44px; min-width:44px; padding:0 0.875rem; border:1px solid var(--s300); border-radius:8px; background:var(--white); color:var(--s900); font:500 0.8125rem var(--sans); cursor:pointer; }}
 .zoom button:hover {{ border-color:var(--s500); }} button:focus-visible, a:focus-visible, summary:focus-visible {{ outline:2px solid var(--pine); outline-offset:2px; }}
+.zoom button.cheia {{ display:inline-flex; align-items:center; gap:0.375rem; background:var(--pine); border-color:var(--pine); color:#FFFFFF; }}
+.zoom button.cheia:hover {{ background:var(--pine-deep); }}
+html.travado, html.travado body {{ overflow:hidden; }}
+.tela-cheia {{ position:fixed; inset:0; z-index:100; display:flex; flex-direction:column; background:var(--cream); }}
+.tela-cheia[hidden] {{ display:none; }}
+.tc-barra {{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.5rem 1rem; padding:max(0.5rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) 0.5rem max(1rem, env(safe-area-inset-left)); background:var(--white); border-bottom:1px solid var(--s200); }}
+.tc-titulo {{ font-family:var(--serif); font-weight:500; font-size:1.25rem; color:var(--s900); }}
+.tc-titulo small {{ font:400 0.75rem var(--sans); color:var(--s500); margin-left:0.5rem; }}
+.tc-palco {{ position:relative; flex:1; overflow:hidden; touch-action:none; cursor:grab; }}
+.tc-palco.arrastando {{ cursor:grabbing; }}
+.tc-palco svg {{ position:absolute; left:0; top:0; transform-origin:0 0; }}
+.tc-dica {{ max-width:none; margin:0; padding:0.5rem max(1rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom)); font-size:0.75rem; color:var(--s500); text-align:center; background:var(--white); border-top:1px solid var(--s200); }}
+@media (max-width: 640px) {{ .tc-titulo small {{ display:none; }} }}
 .der-area {{ overflow:auto; max-height:80svh; background:var(--cream); border-radius:0 0 16px 16px; }}
 #der {{ display:block; height:auto; }}
 .caixa {{ fill:var(--white); stroke:var(--s300); }} .div {{ stroke:var(--s100); }}
@@ -436,11 +449,19 @@ footer {{ margin-top:3rem; font-size:0.75rem; color:var(--s500); }}
 <section class="painel" aria-label="Diagrama entidade-relacionamento">
   <div class="der-barra">
     <ul class="legenda">{legenda_grupos}<li><b class="chip">PK</b> chave primária</li><li><b class="chip">FK</b> chave estrangeira</li><li><b class="chip">UQ</b> único</li><li>● obrigatório</li><li>pé de galinha = muitos · traço duplo = um · círculo = opcional</li></ul>
-    <div class="zoom" role="group" aria-label="Zoom do diagrama"><button type="button" data-z="-1" aria-label="Diminuir">−</button><button type="button" data-z="0">Ajustar</button><button type="button" data-z="1" aria-label="Aumentar">+</button></div>
+    <div class="zoom" role="group" aria-label="Zoom do diagrama"><button type="button" class="cheia" id="abrir-cheia"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tela cheia</button><button type="button" data-z="-1" aria-label="Diminuir">−</button><button type="button" data-z="0">Ajustar</button><button type="button" data-z="1" aria-label="Aumentar">+</button></div>
   </div>
   <div class="der-area" id="area">{svg()}</div>
 </section>
-<p style="margin-top:0.75rem;font-size:0.8125rem">Toque numa tabela do diagrama para ir à sua descrição. Nas linhas, o lado com pé de galinha é a tabela filha (que guarda a chave estrangeira).</p>
+<div class="tela-cheia" id="tela-cheia" role="dialog" aria-modal="true" aria-label="Diagrama em tela cheia" hidden>
+  <div class="tc-barra">
+    <span class="tc-titulo">Modelo de dados <small>Arraste para mover · pinça ou roda para aproximar</small></span>
+    <div class="zoom" role="group" aria-label="Zoom"><button type="button" data-tz="-1" aria-label="Diminuir">−</button><button type="button" data-tz="0">Ajustar</button><button type="button" data-tz="1" aria-label="Aumentar">+</button><button type="button" class="cheia" id="fechar-cheia">Fechar</button></div>
+  </div>
+  <div class="tc-palco" id="palco"></div>
+  <p class="tc-dica">Toque numa tabela para ver os campos no dicionário · Esc fecha</p>
+</div>
+<p style="margin-top:0.75rem;font-size:0.8125rem">Use <b>Tela cheia</b> para navegar pelo diagrama ocupando a tela toda. Toque numa tabela para ir à sua descrição. Nas linhas, o lado com pé de galinha é a tabela filha (que guarda a chave estrangeira).</p>
 
 <h2>Convenções de nomenclatura</h2>
 <p>Segue o padrão da planilha de referência (esquema IBP, SQL Server), adaptado ao PostgreSQL: os mesmos prefixos e nomes em <b>MAIÚSCULAS</b>. No SQL os nomes são escritos sem aspas (<code>SELECT ID_UNIDADE FROM INSPECT.UNIDADE</code>): o Postgres aceita e guarda internamente em minúsculas, que é como o painel do Supabase vai exibi-los. Não usar aspas, para não ter de repeti-las em toda consulta.</p>
@@ -469,14 +490,66 @@ footer {{ margin-top:3rem; font-size:0.75rem; color:var(--s500); }}
 </div>
 <script>
 (() => {{
-  const svg = document.getElementById('der'), area = document.getElementById('area'), base = {LARG};
+  const svg = document.getElementById('der'), area = document.getElementById('area'), W = {LARG}, A = {ALT};
+  // Zoom do diagrama dentro da página
   let z = 1;
-  const ajustar = () => {{ z = Math.min(1, (area.clientWidth - 8) / base); aplicar(); }};
-  const aplicar = () => {{ svg.setAttribute('width', Math.round(base * z)); svg.setAttribute('height', Math.round({ALT} * z)); }};
-  document.querySelectorAll('.zoom button').forEach((b) => b.addEventListener('click', () => {{
-    const d = +b.dataset.z; if (!d) return ajustar(); z = Math.max(0.3, Math.min(2, z * (d > 0 ? 1.25 : 0.8))); aplicar();
+  const aplicar = () => {{ svg.setAttribute('width', Math.round(W * z)); svg.setAttribute('height', Math.round(A * z)); }};
+  const ajustarPagina = () => {{ z = Math.min(1, (area.clientWidth - 8) / W); aplicar(); }};
+  document.querySelectorAll('[data-z]').forEach((b) => b.addEventListener('click', () => {{
+    const d = +b.dataset.z; if (!d) return ajustarPagina(); z = Math.max(0.3, Math.min(2, z * (d > 0 ? 1.25 : 0.8))); aplicar();
   }}));
-  ajustar();
+  ajustarPagina();
+
+  // Tela cheia: o diagrama ocupa a tela; arrastar move, pinça/roda/botões aproximam
+  const tela = document.getElementById('tela-cheia'), palco = document.getElementById('palco');
+  const btAbrir = document.getElementById('abrir-cheia'), btFechar = document.getElementById('fechar-cheia');
+  let s = 1, tx = 0, ty = 0, aberto = false, arrastou = false, pinca = null;
+  const toques = new Map();
+  const desenhar = () => {{ svg.style.transform = `translate(${{tx}}px, ${{ty}}px) scale(${{s}})`; }};
+  const encaixar = () => {{ const r = palco.getBoundingClientRect(); s = Math.min(r.width / W, r.height / A) * 0.96; tx = (r.width - W * s) / 2; ty = (r.height - A * s) / 2; desenhar(); }};
+  const zoomEm = (f, cx, cy) => {{ const n = Math.max(0.15, Math.min(4, s * f)); tx = cx - (cx - tx) * n / s; ty = cy - (cy - ty) * n / s; s = n; desenhar(); }};
+  const abrir = () => {{
+    aberto = true; tela.hidden = false; document.documentElement.classList.add('travado');
+    svg.setAttribute('width', W); svg.setAttribute('height', A); palco.appendChild(svg); encaixar();
+    const fs = document.documentElement.requestFullscreen; if (fs) fs.call(document.documentElement).catch(() => {{}});
+    btFechar.focus();
+  }};
+  const fechar = () => {{
+    if (!aberto) return; aberto = false; svg.style.transform = ''; area.appendChild(svg); ajustarPagina();
+    tela.hidden = true; document.documentElement.classList.remove('travado');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {{}});
+    btAbrir.focus();
+  }};
+  btAbrir.addEventListener('click', abrir); btFechar.addEventListener('click', fechar);
+  document.addEventListener('keydown', (e) => {{ if (aberto && e.key === 'Escape') fechar(); }});
+  document.addEventListener('fullscreenchange', () => {{ if (aberto) setTimeout(encaixar, 60); }});
+  window.addEventListener('resize', () => {{ if (aberto) encaixar(); }});
+  document.querySelectorAll('[data-tz]').forEach((b) => b.addEventListener('click', () => {{
+    const d = +b.dataset.tz; if (!d) return encaixar(); const r = palco.getBoundingClientRect(); zoomEm(d > 0 ? 1.3 : 1 / 1.3, r.width / 2, r.height / 2);
+  }}));
+  palco.addEventListener('wheel', (e) => {{ e.preventDefault(); const r = palco.getBoundingClientRect(); zoomEm(Math.exp(-e.deltaY * 0.0015), e.clientX - r.left, e.clientY - r.top); }}, {{ passive: false }});
+  palco.addEventListener('pointerdown', (e) => {{ toques.set(e.pointerId, {{ x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY }}); if (toques.size === 1) arrastou = false; pinca = null; }});
+  palco.addEventListener('pointermove', (e) => {{
+    const t = toques.get(e.pointerId); if (!t) return;
+    // Só "pega" o ponteiro depois de mover: um toque parado continua sendo clique na tabela
+    if (!arrastou && Math.hypot(e.clientX - t.x0, e.clientY - t.y0) > 6) {{ arrastou = true; palco.classList.add('arrastando'); }}
+    if (arrastou && !palco.hasPointerCapture(e.pointerId)) palco.setPointerCapture(e.pointerId);
+    const dx = e.clientX - t.x, dy = e.clientY - t.y; t.x = e.clientX; t.y = e.clientY;
+    if (toques.size === 1 && arrastou) {{ tx += dx; ty += dy; desenhar(); }}
+    if (toques.size === 2) {{
+      const [a, b] = [...toques.values()], r = palco.getBoundingClientRect(), d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinca) zoomEm(d / pinca, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top); pinca = d;
+    }}
+  }});
+  const soltar = (e) => {{ toques.delete(e.pointerId); if (toques.size < 2) pinca = null; if (!toques.size) palco.classList.remove('arrastando'); }};
+  palco.addEventListener('pointerup', soltar); palco.addEventListener('pointercancel', soltar);
+  palco.addEventListener('click', (e) => {{
+    if (arrastou) {{ e.preventDefault(); return; }}
+    const a = e.target.closest('a'); if (!a) return;
+    e.preventDefault(); const alvo = a.getAttribute('href'); fechar();
+    requestAnimationFrame(() => document.querySelector(alvo)?.scrollIntoView({{ block: 'start' }}));
+  }}, true);
+  if (location.hash === '#tela-cheia') abrir();
 }})();
 </script>
 </body></html>'''
