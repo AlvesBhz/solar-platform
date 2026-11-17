@@ -9,7 +9,7 @@
     "whatsapp": "5531997555245",
     "email": "reservas@solardoespinhaco.com.br",
     "instagram": "solardoespinhaco",
-    "checkin": "14h00",
+    "checkin": "15h00",
     "checkout": "12h00"
   },
   "wifi": {
@@ -30,7 +30,7 @@
     },
     {
       "id": "checkin", "group": "01", "kind": "pinned", "icon": "solar:clock-circle-linear",
-      "label": "Estadia", "value": "14h — 12h", "foot": "Check-in / out →"
+      "label": "Estadia", "value": "15h — 12h", "foot": "Check-in / out →"
     },
     {
       "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear",

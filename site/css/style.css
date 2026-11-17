@@ -1776,3 +1776,10 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
   #heroScroll { bottom: 0.75rem !important; }
   #heroScroll .h-8 { height: 1.25rem; }
 }
+
+/* nota de capacidade no seletor de hóspedes */
+.gst-note {
+  margin-top: 0.7rem;
+  font-size: var(--fs-label); line-height: 1.45;
+  color: rgba(255,255,255,0.45);
+}
