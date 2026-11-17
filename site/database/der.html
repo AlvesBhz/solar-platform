@@ -91,9 +91,9 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v2, 17/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
     </div>
-    <div class="stats"><span><b>9</b> tabelas</span><span><b>100</b> campos</span><span><b>10</b> ligações</span><span><b>36</b> regras</span></div>
+    <div class="stats"><span><b>9</b> tabelas</span><span><b>105</b> campos</span><span><b>10</b> ligações</span><span><b>41</b> regras</span></div>
   </header>
 
   <div class="legend" aria-label="Legenda">
@@ -206,7 +206,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="ctype" x="340" y="320.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-cad" data-t="PROPRIEDADE" tabindex="0" role="button" aria-label="Tabela PROPRIEDADE">
-<rect class="box" x="20" y="379" width="330" height="268" rx="6"/>
+<rect class="box" x="20" y="379" width="330" height="306" rx="6"/>
 <path class="head" d="M20,419 V385 Q20,379 26,379 H344 Q350,379 350,385 V419 Z"/>
 <text class="tname" x="32" y="404">PROPRIEDADE</text>
 <text class="tgroup" x="338" y="404" text-anchor="end">CADASTRO</text>
@@ -239,8 +239,13 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="cname" x="64" y="622.5">QTDE_MESES_VALIDADE_CREDITO</text>
 <text class="ctype" x="340" y="622.5" text-anchor="end">smallint</text>
 <rect class="zebra" x="21" y="628" width="328" height="19"/>
-<text class="cname" x="64" y="641.5">DT_CRIACAO</text>
-<text class="ctype" x="340" y="641.5" text-anchor="end">timestamptz</text>
+<text class="cname" x="64" y="641.5">QTDE_DIAS_ARREPENDIMENTO</text>
+<text class="ctype" x="340" y="641.5" text-anchor="end">smallint</text>
+<text class="cname" x="64" y="660.5">NO_VERSAO_POLITICA</text>
+<text class="ctype" x="340" y="660.5" text-anchor="end">smallint</text>
+<rect class="zebra" x="21" y="666" width="328" height="19"/>
+<text class="cname" x="64" y="679.5">DT_CRIACAO</text>
+<text class="ctype" x="340" y="679.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-cad" data-t="UNIDADE" tabindex="0" role="button" aria-label="Tabela UNIDADE">
 <rect class="box" x="440" y="360" width="330" height="268" rx="6"/>
@@ -309,7 +314,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="ctype" x="760" y="866.5" text-anchor="end">text</text>
 </g>
 <g class="tbl g-ven" data-t="RESERVA" tabindex="0" role="button" aria-label="Tabela RESERVA">
-<rect class="box" x="860" y="40" width="330" height="439" rx="6"/>
+<rect class="box" x="860" y="40" width="330" height="496" rx="6"/>
 <path class="head" d="M860,80 V46 Q860,40 866,40 H1184 Q1190,40 1190,46 V80 Z"/>
 <text class="tname" x="872" y="65">RESERVA</text>
 <text class="tgroup" x="1178" y="65" text-anchor="end">VENDA</text>
@@ -365,10 +370,18 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="cname opt" x="904" y="435.5">ID_RESERVA_ORIGINAL?</text>
 <text class="ctype" x="1180" y="435.5" text-anchor="end">bigint</text>
 <rect class="zebra" x="861" y="441" width="328" height="19"/>
-<text class="cname" x="904" y="454.5">DT_CRIACAO</text>
-<text class="ctype" x="1180" y="454.5" text-anchor="end">timestamptz</text>
-<text class="cname" x="904" y="473.5">DT_ATUALIZACAO</text>
-<text class="ctype" x="1180" y="473.5" text-anchor="end">timestamptz</text>
+<text class="cname opt" x="904" y="454.5">TP_MOTIVO_CANCELAMENTO?</text>
+<text class="ctype" x="1180" y="454.5" text-anchor="end">text</text>
+<text class="cname opt" x="904" y="473.5">NO_VERSAO_POLITICA?</text>
+<text class="ctype" x="1180" y="473.5" text-anchor="end">smallint</text>
+<rect class="zebra" x="861" y="479" width="328" height="19"/>
+<text class="cname opt" x="904" y="492.5">DT_ACEITE_POLITICA?</text>
+<text class="ctype" x="1180" y="492.5" text-anchor="end">timestamptz</text>
+<text class="cname" x="904" y="511.5">DT_CRIACAO</text>
+<text class="ctype" x="1180" y="511.5" text-anchor="end">timestamptz</text>
+<rect class="zebra" x="861" y="517" width="328" height="19"/>
+<text class="cname" x="904" y="530.5">DT_ATUALIZACAO</text>
+<text class="ctype" x="1180" y="530.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-can" data-t="BLOQUEIO" tabindex="0" role="button" aria-label="Tabela BLOQUEIO">
 <rect class="box" x="860" y="560" width="330" height="211" rx="6"/>
@@ -492,9 +505,9 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
   <div class="cards">
 <article class="tcard g-cad" id="t-PROPRIEDADE" data-t="PROPRIEDADE">
   <header><h3>PROPRIEDADE</h3><span class="chip">CADASTRO</span></header>
-  <p class="purpose">A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar e regra de remarcação.</p>
-  <p class="meta">12 campos · ligada a UNIDADE</p>
-  <ul><li>Estadia máxima entre 1 e 365 noites (hoje 7).</li><li>Sinal entre 0% e 100% (hoje 50%).</li><li>Pré-reserva entre 5 e 1.440 minutos (hoje 30).</li><li>Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.</li></ul>
+  <p class="purpose">A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.</p>
+  <p class="meta">14 campos · ligada a UNIDADE</p>
+  <ul><li>Estadia máxima entre 1 e 365 noites (hoje 7).</li><li>Sinal entre 0% e 100% (hoje 50%).</li><li>Pré-reserva entre 5 e 1.440 minutos (hoje 30).</li><li>Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.</li><li>Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).</li></ul>
 </article>
 <article class="tcard g-cad" id="t-UNIDADE" data-t="UNIDADE">
   <header><h3>UNIDADE</h3><span class="chip">CADASTRO</span></header>
@@ -517,8 +530,8 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <article class="tcard g-ven" id="t-RESERVA" data-t="RESERVA">
   <header><h3>RESERVA</h3><span class="chip">VENDA</span></header>
   <p class="purpose">Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.</p>
-  <p class="meta">21 campos · ligada a HOSPEDE, PAGAMENTO, RESERVA, UNIDADE</p>
-  <ul><li>CD_RESERVA único.</li><li>DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.</li><li>TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.</li><li>TP_CANAL: SITE, DIRETO ou TELEFONE.</li><li>Sinal ≤ total.</li><li>PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.</li><li>Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).</li></ul>
+  <p class="meta">24 campos · ligada a HOSPEDE, PAGAMENTO, RESERVA, UNIDADE</p>
+  <ul><li>CD_RESERVA único.</li><li>DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.</li><li>TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.</li><li>TP_CANAL: SITE, DIRETO ou TELEFONE.</li><li>Sinal ≤ total.</li><li>PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.</li><li>Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).</li><li>CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.</li><li>Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).</li></ul>
 </article>
 <article class="tcard g-ven" id="t-HOSPEDE" data-t="HOSPEDE">
   <header><h3>HOSPEDE</h3><span class="chip">VENDA</span></header>
@@ -528,9 +541,9 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </article>
 <article class="tcard g-ven" id="t-PAGAMENTO" data-t="PAGAMENTO">
   <header><h3>PAGAMENTO</h3><span class="chip">VENDA</span></header>
-  <p class="purpose">Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in.</p>
+  <p class="purpose">Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).</p>
   <p class="meta">12 campos · ligada a RESERVA</p>
-  <ul><li>TP_PARCELA: SINAL ou SALDO.</li><li>TP_PROVEDOR: MERCADO_PAGO ou MANUAL.</li><li>TP_METODO: PIX ou CARTAO_CREDITO.</li><li>TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.</li><li>Valor &gt; 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.</li></ul>
+  <ul><li>TP_PARCELA: SINAL ou SALDO.</li><li>TP_PROVEDOR: MERCADO_PAGO ou MANUAL.</li><li>TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.</li><li>TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.</li><li>Valor &gt; 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.</li></ul>
 </article>
 <article class="tcard g-can" id="t-CALENDARIO_EXTERNO" data-t="CALENDARIO_EXTERNO">
   <header><h3>CALENDARIO_EXTERNO</h3><span class="chip">CANAIS</span></header>

@@ -1,4 +1,4 @@
-# Banco de dados de reservas — proposta v2
+# Banco de dados de reservas — proposta v3
 
 Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chalé está livre nas datas escolhidas e quanto custa a estadia, noite a noite.
 
@@ -143,11 +143,11 @@ O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de ve
 
 ## Decisões
 
-Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê até 1 ano não paga, mas ocupa uma das 2 vagas de criança; até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; datas especiais com mínimo de 2 noites; sinal de 50% pago no site (Pix ou Mercado Pago), não reembolsável, com possibilidade de remarcação; saldo pago no check-in, antes de entrar; 30 minutos para pagar o sinal.
+Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê até 1 ano não paga, mas ocupa uma das 2 vagas de criança; até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; datas especiais com mínimo de 2 noites; sinal de 50% pago no site (Pix ou Mercado Pago), não reembolsável, com possibilidade de remarcação; saldo pago no check-in, antes de entrar, por Pix ou dinheiro; 30 minutos para pagar o sinal; aceite da política e motivo do cancelamento registrados em cada reserva; prazo de arrependimento de 7 dias (CDC art. 49).
 
 Proposta aguardando aprovação: remarcar até 7 dias antes do check-in (`QTDE_DIAS_LIMITE_REMARCACAO`), crédito válido por 12 meses (`QTDE_MESES_VALIDADE_CREDITO`), diferença paga se a nova data for mais cara e não devolvida se for mais barata.
 
-Ainda em aberto: datas, preços e tipos das datas especiais; meio de pagamento do saldo no check-in; consulta jurídica sobre o art. 49 do CDC.
+Propostas aguardando aprovação (detalhadas no dicionário de dados, com fontes): política de cancelamento (devolução integral em até 7 dias da reserva, remarcação sem custo com 7+ dias de antecedência, retenção do sinal ou de 20% do total na desistência sem remarcar) e tarifa dinâmica por regras (fator por tipo de data, desconto de antecedência, piso e teto; tabelas TIPO_DATA, DATA_ESPECIAL e REGRA_ANTECEDENCIA ainda não criadas).
 
 Diagrama: `der.html` nesta pasta (abre no navegador).
 

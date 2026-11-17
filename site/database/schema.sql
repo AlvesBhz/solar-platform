@@ -46,9 +46,12 @@ create table PROPRIEDADE (
   QTDE_MINUTOS_PRE_RESERVA smallint not null default 30,          -- tempo para pagar o sinal
   QTDE_DIAS_LIMITE_REMARCACAO smallint not null default 7,        -- remarcar até N dias antes do check-in (proposta)
   QTDE_MESES_VALIDADE_CREDITO smallint not null default 12,       -- prazo para usar o crédito do sinal (proposta)
+  QTDE_DIAS_ARREPENDIMENTO smallint not null default 7,           -- CDC art. 49: desistência com reembolso integral
+  NO_VERSAO_POLITICA       smallint not null default 1,           -- versão vigente da política de cancelamento
   DT_CRIACAO               timestamptz not null default now(),
   constraint PK_PROPRIEDADE primary key (ID_PROPRIEDADE),
   constraint CK_PROPRIEDADE_REMARCACAO check (QTDE_DIAS_LIMITE_REMARCACAO >= 0 and QTDE_MESES_VALIDADE_CREDITO >= 1),
+  constraint CK_PROPRIEDADE_ARREPENDIMENTO check (QTDE_DIAS_ARREPENDIMENTO >= 7),     -- o mínimo é o da lei
   constraint CK_PROPRIEDADE_MAX_NOITES check (QTDE_MAX_NOITES between 1 and 365),
   constraint CK_PROPRIEDADE_SINAL check (VL_PERCENTUAL_SINAL between 0 and 100),
   constraint CK_PROPRIEDADE_PRE_RESERVA check (QTDE_MINUTOS_PRE_RESERVA between 5 and 1440)
@@ -169,6 +172,9 @@ create table RESERVA (
   DS_DETALHE_PRECOS    jsonb not null default '[]',        -- cálculo noite a noite no momento da reserva
   DT_EXPIRA            timestamptz,                         -- só para PENDENTE
   ID_RESERVA_ORIGINAL  bigint,
+  TP_MOTIVO_CANCELAMENTO text,                       -- só quando CANCELADA
+  NO_VERSAO_POLITICA   smallint,                     -- versão da política aceita
+  DT_ACEITE_POLITICA   timestamptz,                  -- quando o hóspede aceitou a política
   DT_CRIACAO           timestamptz not null default now(),
   DT_ATUALIZACAO       timestamptz not null default now(),
   constraint PK_RESERVA primary key (ID_RESERVA),
@@ -184,6 +190,12 @@ create table RESERVA (
                                        and VL_SINAL <= VL_HOSPEDAGEM + VL_TAXA_LIMPEZA),
   constraint CK_RESERVA_PENDENTE_EXPIRA check (TP_STATUS <> 'PENDENTE' or DT_EXPIRA is not null),
   constraint CK_RESERVA_CONFIRMADA_HOSPEDE check (TP_STATUS <> 'CONFIRMADA' or ID_HOSPEDE is not null),
+  constraint CK_RESERVA_TP_MOTIVO_CANCELAMENTO check (TP_MOTIVO_CANCELAMENTO in
+    ('ARREPENDIMENTO', 'DESISTENCIA', 'FORCA_MAIOR', 'NAO_COMPARECIMENTO', 'POUSADA')),
+  constraint CK_RESERVA_CANCELADA_MOTIVO check ((TP_STATUS = 'CANCELADA') = (TP_MOTIVO_CANCELAMENTO is not null)),
+  -- reserva do site só é confirmada com a política aceita (dever de informação, CDC)
+  constraint CK_RESERVA_SITE_ACEITE check (TP_CANAL <> 'SITE' or TP_STATUS <> 'CONFIRMADA'
+                                           or (DT_ACEITE_POLITICA is not null and NO_VERSAO_POLITICA is not null)),
   -- Última barreira contra overbooking: duas reservas ativas da mesma
   -- unidade nunca ocupam a mesma noite, mesmo com acessos simultâneos.
   constraint EX_RESERVA_SEM_CONFLITO exclude using gist
@@ -198,7 +210,7 @@ create index IX_RESERVA_PENDENTE_EXPIRA on RESERVA (DT_EXPIRA) where TP_STATUS =
 
 -- ── PAGAMENTO: Pix e Mercado Pago ───────────────────────────────────
 -- Duas parcelas por reserva: o SINAL, pago no site para confirmar, e o
--- SALDO, pago no check-in, antes de entrar. Cada parcela pode ter mais de
+-- SALDO, pago no check-in, antes de entrar (Pix ou dinheiro). Cada parcela pode ter mais de
 -- uma tentativa (ex.: o Pix venceu e o hóspede gerou outro). O status é
 -- atualizado pelo aviso (webhook) que o Mercado Pago envia.
 -- MANUAL = Pix recebido direto e conferido pela equipe.
@@ -221,7 +233,8 @@ create table PAGAMENTO (
   constraint UQ_PAGAMENTO_CD_EXTERNO unique (CD_EXTERNO),
   constraint CK_PAGAMENTO_TP_PARCELA check (TP_PARCELA in ('SINAL', 'SALDO')),
   constraint CK_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MERCADO_PAGO', 'MANUAL')),
-  constraint CK_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO')),
+  constraint CK_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO', 'DINHEIRO')),
+  constraint CK_PAGAMENTO_DINHEIRO_MANUAL check (TP_METODO <> 'DINHEIRO' or TP_PROVEDOR = 'MANUAL'),
   constraint CK_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'APROVADO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
   constraint CK_PAGAMENTO_VALOR check (VL_PAGAMENTO > 0),
   constraint CK_PAGAMENTO_APROVADO_DATA check (TP_STATUS <> 'APROVADO' or DT_PAGAMENTO is not null)

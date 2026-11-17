@@ -129,24 +129,24 @@ for name, (x, y) in POS.items():
 svg.append('</svg>')
 
 PURPOSE = {
- 'PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar e regra de remarcação.',
+ 'PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
  'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade e taxa de limpeza.',
  'TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
  'HOSPEDE': 'Quem reserva: só nome, e-mail e telefone (LGPD).',
  'RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
- 'PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in.',
+ 'PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
  'CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
  'BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
 }
 RULES = {
- 'PROPRIEDADE': ['Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.'],
+ 'PROPRIEDADE': ['Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
  'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0.', 'Taxa de limpeza ≥ 0.'],
  'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
  'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
  'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.'],
- 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],
- 'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX ou CARTAO_CREDITO.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
+ 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],
+ 'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
  'CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
  'BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
@@ -249,7 +249,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v2, 17/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>
