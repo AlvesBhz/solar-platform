@@ -70,7 +70,7 @@ footer { margin-top:3rem; font-size:0.75rem; color:var(--s500); }
   <span class="eyebrow">Solar Inspect · Banco de dados</span>
   <h1>Modelo de dados</h1>
   <p>Proposta enxuta para o Supabase (PostgreSQL), feita a partir da especificação v3 e das telas T01–T34 do protótipo. Atende a aplicação com o mínimo de tabelas; cada campo está descrito no dicionário abaixo.</p>
-  <ul class="resumo"><li>Esquema <b><code>inspect</code></b></li><li><b>14</b> tabelas</li><li><b>122</b> campos</li><li><b>18</b> relações</li><li>Versão <b>1</b> · proposta</li></ul>
+  <ul class="resumo"><li>Esquema <b><code>INSPECT</code></b></li><li><b>14</b> tabelas</li><li><b>122</b> campos</li><li><b>18</b> relações</li><li>Versão <b>1</b> · proposta</li></ul>
 </header>
 
 <h2>Diagrama</h2>
@@ -85,647 +85,647 @@ footer { margin-top:3rem; font-size:0.75rem; color:var(--s500); }
 <marker id="zero-um" viewBox="-24 -10 28 20" refX="0" refY="0" markerWidth="28" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto"><path d="M-6 -7V7" class="mk"/><circle cx="-14" cy="0" r="4" class="mk-c"/></marker>
 <marker id="muitos" viewBox="-24 -10 28 20" refX="0" refY="0" markerWidth="28" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M-12 0L0 -7M-12 0L0 7M-12 0H0" class="mk"/><circle cx="-17" cy="0" r="4" class="mk-c"/></marker>
 </defs>
-<path d="M185.0 370.0 L185.0 315.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>usuario_propriedade.id_usuario → usuario</title></path>
-<path d="M185.0 469.0 L185.0 520.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>usuario_propriedade.id_propriedade → propriedade</title></path>
-<path d="M185.0 820.0 L185.0 766.0" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>log_evento.id_propriedade → propriedade</title></path>
-<path d="M40.0 887.5 L18.0 887.5 L18.0 141.5 L40.0 141.5" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>log_evento.id_usuario → usuario</title></path>
-<path d="M440.0 547.5 L395.0 547.5 L395.0 571.5 L330.0 571.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>unidade.id_propriedade → propriedade</title></path>
-<path d="M585.0 880.0 L585.0 831.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>ambiente.id_unidade → unidade</title></path>
-<path d="M585.0 1090.0 L585.0 1042.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>item.id_ambiente → ambiente</title></path>
-<path d="M840.0 178.5 L790.0 178.5 L790.0 520.5 L730.0 520.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>vistoria.id_unidade → unidade</title></path>
-<path d="M1130.0 199.5 L1185.0 199.5 L1185.0 136.5 L1240.0 136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>vistoria.id_tipo_vistoria → tipo_vistoria</title></path>
-<path d="M840.0 220.5 L380.0 220.5 L380.0 131.5 L330.0 131.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>vistoria.id_usuario → usuario</title></path>
-<path d="M1130.0 157.5 L1150.0 157.5 L1150.0 136.5 L1130.0 136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>vistoria.id_vistoria_entrada → vistoria</title></path>
-<path d="M985.0 560.0 L985.0 504.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>resposta.id_vistoria → vistoria</title></path>
-<path d="M840.0 627.5 L760.0 627.5 L760.0 1136.5 L730.0 1136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>resposta.id_item → item</title></path>
-<path d="M1240.0 617.0 L1130.0 617.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>foto.id_vistoria, id_item → resposta</title></path>
-<path d="M985.0 780.0 L985.0 722.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>ocorrencia.id_vistoria, id_item → resposta</title></path>
-<path d="M840.0 889.5 L780.0 889.5 L780.0 532.5 L730.0 532.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>ocorrencia.id_unidade → unidade</title></path>
-<path d="M1385.0 370.0 L1385.0 315.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>tipo_vistoria_item.id_tipo_vistoria → tipo_vistoria</title></path>
-<path d="M1530.0 437.5 L1570.0 437.5 L1570.0 1330.0 L585.0 1330.0 L585.0 1294.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>tipo_vistoria_item.id_item → item</title></path>
+<path d="M185.0 370.0 L185.0 315.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>USUARIO_PROPRIEDADE.ID_USUARIO → USUARIO</title></path>
+<path d="M185.0 469.0 L185.0 520.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>USUARIO_PROPRIEDADE.ID_PROPRIEDADE → PROPRIEDADE</title></path>
+<path d="M185.0 820.0 L185.0 766.0" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>LOG_EVENTO.ID_PROPRIEDADE → PROPRIEDADE</title></path>
+<path d="M40.0 887.5 L18.0 887.5 L18.0 141.5 L40.0 141.5" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>LOG_EVENTO.ID_USUARIO → USUARIO</title></path>
+<path d="M440.0 547.5 L395.0 547.5 L395.0 571.5 L330.0 571.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>UNIDADE.ID_PROPRIEDADE → PROPRIEDADE</title></path>
+<path d="M585.0 880.0 L585.0 831.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>AMBIENTE.ID_UNIDADE → UNIDADE</title></path>
+<path d="M585.0 1090.0 L585.0 1042.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>ITEM.ID_AMBIENTE → AMBIENTE</title></path>
+<path d="M840.0 178.5 L790.0 178.5 L790.0 520.5 L730.0 520.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>VISTORIA.ID_UNIDADE → UNIDADE</title></path>
+<path d="M1130.0 199.5 L1185.0 199.5 L1185.0 136.5 L1240.0 136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>VISTORIA.ID_TIPO_VISTORIA → TIPO_VISTORIA</title></path>
+<path d="M840.0 220.5 L380.0 220.5 L380.0 131.5 L330.0 131.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>VISTORIA.ID_USUARIO → USUARIO</title></path>
+<path d="M1130.0 157.5 L1150.0 157.5 L1150.0 136.5 L1130.0 136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#zero-um)"><title>VISTORIA.ID_VISTORIA_ENTRADA → VISTORIA</title></path>
+<path d="M985.0 560.0 L985.0 504.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>RESPOSTA.ID_VISTORIA → VISTORIA</title></path>
+<path d="M840.0 627.5 L760.0 627.5 L760.0 1136.5 L730.0 1136.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>RESPOSTA.ID_ITEM → ITEM</title></path>
+<path d="M1240.0 617.0 L1130.0 617.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>FOTO.ID_VISTORIA, ID_ITEM → RESPOSTA</title></path>
+<path d="M985.0 780.0 L985.0 722.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>OCORRENCIA.ID_VISTORIA, ID_ITEM → RESPOSTA</title></path>
+<path d="M840.0 889.5 L780.0 889.5 L780.0 532.5 L730.0 532.5" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>OCORRENCIA.ID_UNIDADE → UNIDADE</title></path>
+<path d="M1385.0 370.0 L1385.0 315.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>TIPO_VISTORIA_ITEM.ID_TIPO_VISTORIA → TIPO_VISTORIA</title></path>
+<path d="M1530.0 437.5 L1570.0 437.5 L1570.0 1330.0 L585.0 1330.0 L585.0 1294.0" class="rel" marker-start="url(#muitos)" marker-end="url(#um)"><title>TIPO_VISTORIA_ITEM.ID_ITEM → ITEM</title></path>
 <g class="tab" id="svg-usuario"><a href="#t-usuario">
 <rect x="40" y="90" width="290" height="225" rx="10" class="caixa"/>
 <path d="M40 126V100Q40 90 50 90H320Q330 90 330 100V126Z" fill="#3D5547"/>
-<text x="54" y="113" class="t-nome">usuario</text>
+<text x="54" y="113" class="t-nome">USUARIO</text>
 <text x="316" y="113" class="t-grupo" text-anchor="end">Acesso</text>
 <text x="52" y="140.5" class="t-ch pk">PK·FK</text>
-<text x="90" y="140.5" class="t-campo b">id_usuario</text>
+<text x="90" y="140.5" class="t-campo b">ID_USUARIO</text>
 <text x="318" y="140.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="50" y1="147" x2="320" y2="147" class="div"/>
-<text x="90" y="161.5" class="t-campo ">nm_usuario</text>
+<text x="90" y="161.5" class="t-campo ">NM_USUARIO</text>
 <text x="318" y="161.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="168" x2="320" y2="168" class="div"/>
 <text x="52" y="182.5" class="t-ch ">UQ</text>
-<text x="90" y="182.5" class="t-campo ">cd_login</text>
+<text x="90" y="182.5" class="t-campo ">CD_LOGIN</text>
 <text x="318" y="182.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="189" x2="320" y2="189" class="div"/>
 <text x="52" y="203.5" class="t-ch ">UQ</text>
-<text x="90" y="203.5" class="t-campo ">cd_cpf</text>
+<text x="90" y="203.5" class="t-campo ">CD_CPF</text>
 <text x="318" y="203.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="50" y1="210" x2="320" y2="210" class="div"/>
-<text x="90" y="224.5" class="t-campo ">tp_perfil</text>
+<text x="90" y="224.5" class="t-campo ">TP_PERFIL</text>
 <text x="318" y="224.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="231" x2="320" y2="231" class="div"/>
-<text x="90" y="245.5" class="t-campo ">fl_ativo</text>
+<text x="90" y="245.5" class="t-campo ">FL_ATIVO</text>
 <text x="318" y="245.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="50" y1="252" x2="320" y2="252" class="div"/>
-<text x="90" y="266.5" class="t-campo ">dt_aceite_lgpd</text>
+<text x="90" y="266.5" class="t-campo ">DT_ACEITE_LGPD</text>
 <text x="318" y="266.5" class="t-tipo" text-anchor="end">timestamptz</text>
 <line x1="50" y1="273" x2="320" y2="273" class="div"/>
-<text x="90" y="287.5" class="t-campo ">dt_criacao</text>
+<text x="90" y="287.5" class="t-campo ">DT_CRIACAO</text>
 <text x="318" y="287.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="50" y1="294" x2="320" y2="294" class="div"/>
-<text x="90" y="308.5" class="t-campo ">dt_atualizacao</text>
+<text x="90" y="308.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="318" y="308.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-usuario_propriedade"><a href="#t-usuario_propriedade">
 <rect x="40" y="370" width="290" height="99" rx="10" class="caixa"/>
 <path d="M40 406V380Q40 370 50 370H320Q330 370 330 380V406Z" fill="#3D5547"/>
-<text x="54" y="393" class="t-nome">usuario_propriedade</text>
+<text x="54" y="393" class="t-nome">USUARIO_PROPRIEDADE</text>
 <text x="316" y="393" class="t-grupo" text-anchor="end">Acesso</text>
 <text x="52" y="420.5" class="t-ch pk">PK·FK</text>
-<text x="90" y="420.5" class="t-campo b">id_usuario</text>
+<text x="90" y="420.5" class="t-campo b">ID_USUARIO</text>
 <text x="318" y="420.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="50" y1="427" x2="320" y2="427" class="div"/>
 <text x="52" y="441.5" class="t-ch pk">PK·FK</text>
-<text x="90" y="441.5" class="t-campo b">id_propriedade</text>
+<text x="90" y="441.5" class="t-campo b">ID_PROPRIEDADE</text>
 <text x="318" y="441.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="50" y1="448" x2="320" y2="448" class="div"/>
-<text x="90" y="462.5" class="t-campo ">dt_criacao</text>
+<text x="90" y="462.5" class="t-campo ">DT_CRIACAO</text>
 <text x="318" y="462.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-propriedade"><a href="#t-propriedade">
 <rect x="40" y="520" width="290" height="246" rx="10" class="caixa"/>
 <path d="M40 556V530Q40 520 50 520H320Q330 520 330 530V556Z" fill="#2C3E35"/>
-<text x="54" y="543" class="t-nome">propriedade</text>
+<text x="54" y="543" class="t-nome">PROPRIEDADE</text>
 <text x="316" y="543" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="52" y="570.5" class="t-ch pk">PK</text>
-<text x="90" y="570.5" class="t-campo b">id_propriedade</text>
+<text x="90" y="570.5" class="t-campo b">ID_PROPRIEDADE</text>
 <text x="318" y="570.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="50" y1="577" x2="320" y2="577" class="div"/>
 <text x="52" y="591.5" class="t-ch ">UQ</text>
-<text x="90" y="591.5" class="t-campo ">nm_propriedade</text>
+<text x="90" y="591.5" class="t-campo ">NM_PROPRIEDADE</text>
 <text x="318" y="591.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="598" x2="320" y2="598" class="div"/>
-<text x="90" y="612.5" class="t-campo ">tp_propriedade</text>
+<text x="90" y="612.5" class="t-campo ">TP_PROPRIEDADE</text>
 <text x="318" y="612.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="619" x2="320" y2="619" class="div"/>
-<text x="90" y="633.5" class="t-campo ">tp_validacao</text>
+<text x="90" y="633.5" class="t-campo ">TP_VALIDACAO</text>
 <text x="318" y="633.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="640" x2="320" y2="640" class="div"/>
-<text x="90" y="654.5" class="t-campo ">vl_latitude</text>
+<text x="90" y="654.5" class="t-campo ">VL_LATITUDE</text>
 <text x="318" y="654.5" class="t-tipo" text-anchor="end">numeric(9,6) ●</text>
 <line x1="50" y1="661" x2="320" y2="661" class="div"/>
-<text x="90" y="675.5" class="t-campo ">vl_longitude</text>
+<text x="90" y="675.5" class="t-campo ">VL_LONGITUDE</text>
 <text x="318" y="675.5" class="t-tipo" text-anchor="end">numeric(9,6) ●</text>
 <line x1="50" y1="682" x2="320" y2="682" class="div"/>
-<text x="90" y="696.5" class="t-campo ">vl_raio_m</text>
+<text x="90" y="696.5" class="t-campo ">VL_RAIO_M</text>
 <text x="318" y="696.5" class="t-tipo" text-anchor="end">integer ●</text>
 <line x1="50" y1="703" x2="320" y2="703" class="div"/>
-<text x="90" y="717.5" class="t-campo ">fl_ativo</text>
+<text x="90" y="717.5" class="t-campo ">FL_ATIVO</text>
 <text x="318" y="717.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="50" y1="724" x2="320" y2="724" class="div"/>
-<text x="90" y="738.5" class="t-campo ">dt_criacao</text>
+<text x="90" y="738.5" class="t-campo ">DT_CRIACAO</text>
 <text x="318" y="738.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="50" y1="745" x2="320" y2="745" class="div"/>
-<text x="90" y="759.5" class="t-campo ">dt_atualizacao</text>
+<text x="90" y="759.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="318" y="759.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-log_evento"><a href="#t-log_evento">
 <rect x="40" y="820" width="290" height="225" rx="10" class="caixa"/>
 <path d="M40 856V830Q40 820 50 820H320Q330 820 330 830V856Z" fill="#44403C"/>
-<text x="54" y="843" class="t-nome">log_evento</text>
+<text x="54" y="843" class="t-nome">LOG_EVENTO</text>
 <text x="316" y="843" class="t-grupo" text-anchor="end">Apoio</text>
 <text x="52" y="870.5" class="t-ch pk">PK</text>
-<text x="90" y="870.5" class="t-campo b">id_log_evento</text>
+<text x="90" y="870.5" class="t-campo b">ID_LOG_EVENTO</text>
 <text x="318" y="870.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="50" y1="877" x2="320" y2="877" class="div"/>
 <text x="52" y="891.5" class="t-ch ">FK</text>
-<text x="90" y="891.5" class="t-campo ">id_usuario</text>
+<text x="90" y="891.5" class="t-campo ">ID_USUARIO</text>
 <text x="318" y="891.5" class="t-tipo" text-anchor="end">uuid</text>
 <line x1="50" y1="898" x2="320" y2="898" class="div"/>
 <text x="52" y="912.5" class="t-ch ">FK</text>
-<text x="90" y="912.5" class="t-campo ">id_propriedade</text>
+<text x="90" y="912.5" class="t-campo ">ID_PROPRIEDADE</text>
 <text x="318" y="912.5" class="t-tipo" text-anchor="end">bigint</text>
 <line x1="50" y1="919" x2="320" y2="919" class="div"/>
-<text x="90" y="933.5" class="t-campo ">tp_evento</text>
+<text x="90" y="933.5" class="t-campo ">TP_EVENTO</text>
 <text x="318" y="933.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="940" x2="320" y2="940" class="div"/>
-<text x="90" y="954.5" class="t-campo ">nm_entidade</text>
+<text x="90" y="954.5" class="t-campo ">NM_ENTIDADE</text>
 <text x="318" y="954.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="961" x2="320" y2="961" class="div"/>
-<text x="90" y="975.5" class="t-campo ">cd_registro</text>
+<text x="90" y="975.5" class="t-campo ">CD_REGISTRO</text>
 <text x="318" y="975.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="982" x2="320" y2="982" class="div"/>
-<text x="90" y="996.5" class="t-campo ">ds_evento</text>
+<text x="90" y="996.5" class="t-campo ">DS_EVENTO</text>
 <text x="318" y="996.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="1003" x2="320" y2="1003" class="div"/>
-<text x="90" y="1017.5" class="t-campo ">ds_dados</text>
+<text x="90" y="1017.5" class="t-campo ">DS_DADOS</text>
 <text x="318" y="1017.5" class="t-tipo" text-anchor="end">jsonb ●</text>
 <line x1="50" y1="1024" x2="320" y2="1024" class="div"/>
-<text x="90" y="1038.5" class="t-campo ">dt_evento</text>
+<text x="90" y="1038.5" class="t-campo ">DT_EVENTO</text>
 <text x="318" y="1038.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-configuracao"><a href="#t-configuracao">
 <rect x="40" y="1100" width="290" height="120" rx="10" class="caixa"/>
 <path d="M40 1136V1110Q40 1100 50 1100H320Q330 1100 330 1110V1136Z" fill="#44403C"/>
-<text x="54" y="1123" class="t-nome">configuracao</text>
+<text x="54" y="1123" class="t-nome">CONFIGURACAO</text>
 <text x="316" y="1123" class="t-grupo" text-anchor="end">Apoio</text>
 <text x="52" y="1150.5" class="t-ch pk">PK</text>
-<text x="90" y="1150.5" class="t-campo b">cd_configuracao</text>
+<text x="90" y="1150.5" class="t-campo b">CD_CONFIGURACAO</text>
 <text x="318" y="1150.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="1157" x2="320" y2="1157" class="div"/>
-<text x="90" y="1171.5" class="t-campo ">vl_configuracao</text>
+<text x="90" y="1171.5" class="t-campo ">VL_CONFIGURACAO</text>
 <text x="318" y="1171.5" class="t-tipo" text-anchor="end">numeric ●</text>
 <line x1="50" y1="1178" x2="320" y2="1178" class="div"/>
-<text x="90" y="1192.5" class="t-campo ">ds_configuracao</text>
+<text x="90" y="1192.5" class="t-campo ">DS_CONFIGURACAO</text>
 <text x="318" y="1192.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="50" y1="1199" x2="320" y2="1199" class="div"/>
-<text x="90" y="1213.5" class="t-campo ">dt_atualizacao</text>
+<text x="90" y="1213.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="318" y="1213.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-unidade"><a href="#t-unidade">
 <rect x="440" y="480" width="290" height="351" rx="10" class="caixa"/>
 <path d="M440 516V490Q440 480 450 480H720Q730 480 730 490V516Z" fill="#2C3E35"/>
-<text x="454" y="503" class="t-nome">unidade</text>
+<text x="454" y="503" class="t-nome">UNIDADE</text>
 <text x="716" y="503" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="452" y="530.5" class="t-ch pk">PK</text>
-<text x="490" y="530.5" class="t-campo b">id_unidade</text>
+<text x="490" y="530.5" class="t-campo b">ID_UNIDADE</text>
 <text x="718" y="530.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="537" x2="720" y2="537" class="div"/>
 <text x="452" y="551.5" class="t-ch ">FK</text>
-<text x="490" y="551.5" class="t-campo ">id_propriedade</text>
+<text x="490" y="551.5" class="t-campo ">ID_PROPRIEDADE</text>
 <text x="718" y="551.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="558" x2="720" y2="558" class="div"/>
-<text x="490" y="572.5" class="t-campo ">nm_unidade</text>
+<text x="490" y="572.5" class="t-campo ">NM_UNIDADE</text>
 <text x="718" y="572.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="450" y1="579" x2="720" y2="579" class="div"/>
-<text x="490" y="593.5" class="t-campo ">tp_unidade</text>
+<text x="490" y="593.5" class="t-campo ">TP_UNIDADE</text>
 <text x="718" y="593.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="450" y1="600" x2="720" y2="600" class="div"/>
-<text x="490" y="614.5" class="t-campo ">ds_andar</text>
+<text x="490" y="614.5" class="t-campo ">DS_ANDAR</text>
 <text x="718" y="614.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="450" y1="621" x2="720" y2="621" class="div"/>
-<text x="490" y="635.5" class="t-campo ">tp_validacao</text>
+<text x="490" y="635.5" class="t-campo ">TP_VALIDACAO</text>
 <text x="718" y="635.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="450" y1="642" x2="720" y2="642" class="div"/>
-<text x="490" y="656.5" class="t-campo ">vl_latitude</text>
+<text x="490" y="656.5" class="t-campo ">VL_LATITUDE</text>
 <text x="718" y="656.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="450" y1="663" x2="720" y2="663" class="div"/>
-<text x="490" y="677.5" class="t-campo ">vl_longitude</text>
+<text x="490" y="677.5" class="t-campo ">VL_LONGITUDE</text>
 <text x="718" y="677.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="450" y1="684" x2="720" y2="684" class="div"/>
-<text x="490" y="698.5" class="t-campo ">vl_raio_m</text>
+<text x="490" y="698.5" class="t-campo ">VL_RAIO_M</text>
 <text x="718" y="698.5" class="t-tipo" text-anchor="end">integer</text>
 <line x1="450" y1="705" x2="720" y2="705" class="div"/>
-<text x="490" y="719.5" class="t-campo ">st_unidade</text>
+<text x="490" y="719.5" class="t-campo ">ST_UNIDADE</text>
 <text x="718" y="719.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="450" y1="726" x2="720" y2="726" class="div"/>
-<text x="490" y="740.5" class="t-campo ">cd_hash_qr</text>
+<text x="490" y="740.5" class="t-campo ">CD_HASH_QR</text>
 <text x="718" y="740.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="450" y1="747" x2="720" y2="747" class="div"/>
-<text x="490" y="761.5" class="t-campo ">nr_versao_qr</text>
+<text x="490" y="761.5" class="t-campo ">NR_VERSAO_QR</text>
 <text x="718" y="761.5" class="t-tipo" text-anchor="end">integer ●</text>
 <line x1="450" y1="768" x2="720" y2="768" class="div"/>
-<text x="490" y="782.5" class="t-campo ">fl_ativo</text>
+<text x="490" y="782.5" class="t-campo ">FL_ATIVO</text>
 <text x="718" y="782.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="450" y1="789" x2="720" y2="789" class="div"/>
-<text x="490" y="803.5" class="t-campo ">dt_criacao</text>
+<text x="490" y="803.5" class="t-campo ">DT_CRIACAO</text>
 <text x="718" y="803.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="450" y1="810" x2="720" y2="810" class="div"/>
-<text x="490" y="824.5" class="t-campo ">dt_atualizacao</text>
+<text x="490" y="824.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="718" y="824.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-ambiente"><a href="#t-ambiente">
 <rect x="440" y="880" width="290" height="162" rx="10" class="caixa"/>
 <path d="M440 916V890Q440 880 450 880H720Q730 880 730 890V916Z" fill="#2C3E35"/>
-<text x="454" y="903" class="t-nome">ambiente</text>
+<text x="454" y="903" class="t-nome">AMBIENTE</text>
 <text x="716" y="903" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="452" y="930.5" class="t-ch pk">PK</text>
-<text x="490" y="930.5" class="t-campo b">id_ambiente</text>
+<text x="490" y="930.5" class="t-campo b">ID_AMBIENTE</text>
 <text x="718" y="930.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="937" x2="720" y2="937" class="div"/>
 <text x="452" y="951.5" class="t-ch ">FK</text>
-<text x="490" y="951.5" class="t-campo ">id_unidade</text>
+<text x="490" y="951.5" class="t-campo ">ID_UNIDADE</text>
 <text x="718" y="951.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="958" x2="720" y2="958" class="div"/>
-<text x="490" y="972.5" class="t-campo ">nm_ambiente</text>
+<text x="490" y="972.5" class="t-campo ">NM_AMBIENTE</text>
 <text x="718" y="972.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="450" y1="979" x2="720" y2="979" class="div"/>
-<text x="490" y="993.5" class="t-campo ">nr_ordem</text>
+<text x="490" y="993.5" class="t-campo ">NR_ORDEM</text>
 <text x="718" y="993.5" class="t-tipo" text-anchor="end">integer ●</text>
 <line x1="450" y1="1000" x2="720" y2="1000" class="div"/>
-<text x="490" y="1014.5" class="t-campo ">ds_foto_referencia</text>
+<text x="490" y="1014.5" class="t-campo ">DS_FOTO_REFERENCIA</text>
 <text x="718" y="1014.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="450" y1="1021" x2="720" y2="1021" class="div"/>
-<text x="490" y="1035.5" class="t-campo ">fl_ativo</text>
+<text x="490" y="1035.5" class="t-campo ">FL_ATIVO</text>
 <text x="718" y="1035.5" class="t-tipo" text-anchor="end">boolean ●</text>
 </a></g>
 <g class="tab" id="svg-item"><a href="#t-item">
 <rect x="440" y="1090" width="290" height="204" rx="10" class="caixa"/>
 <path d="M440 1126V1100Q440 1090 450 1090H720Q730 1090 730 1100V1126Z" fill="#2C3E35"/>
-<text x="454" y="1113" class="t-nome">item</text>
+<text x="454" y="1113" class="t-nome">ITEM</text>
 <text x="716" y="1113" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="452" y="1140.5" class="t-ch pk">PK</text>
-<text x="490" y="1140.5" class="t-campo b">id_item</text>
+<text x="490" y="1140.5" class="t-campo b">ID_ITEM</text>
 <text x="718" y="1140.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="1147" x2="720" y2="1147" class="div"/>
 <text x="452" y="1161.5" class="t-ch ">FK</text>
-<text x="490" y="1161.5" class="t-campo ">id_ambiente</text>
+<text x="490" y="1161.5" class="t-campo ">ID_AMBIENTE</text>
 <text x="718" y="1161.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="450" y1="1168" x2="720" y2="1168" class="div"/>
-<text x="490" y="1182.5" class="t-campo ">nm_item</text>
+<text x="490" y="1182.5" class="t-campo ">NM_ITEM</text>
 <text x="718" y="1182.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="450" y1="1189" x2="720" y2="1189" class="div"/>
-<text x="490" y="1203.5" class="t-campo ">nr_ordem</text>
+<text x="490" y="1203.5" class="t-campo ">NR_ORDEM</text>
 <text x="718" y="1203.5" class="t-tipo" text-anchor="end">integer ●</text>
 <line x1="450" y1="1210" x2="720" y2="1210" class="div"/>
-<text x="490" y="1224.5" class="t-campo ">fl_critico</text>
+<text x="490" y="1224.5" class="t-campo ">FL_CRITICO</text>
 <text x="718" y="1224.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="450" y1="1231" x2="720" y2="1231" class="div"/>
-<text x="490" y="1245.5" class="t-campo ">fl_foto_obrigatoria</text>
+<text x="490" y="1245.5" class="t-campo ">FL_FOTO_OBRIGATORIA</text>
 <text x="718" y="1245.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="450" y1="1252" x2="720" y2="1252" class="div"/>
-<text x="490" y="1266.5" class="t-campo ">qt_esperada</text>
+<text x="490" y="1266.5" class="t-campo ">QT_ESPERADA</text>
 <text x="718" y="1266.5" class="t-tipo" text-anchor="end">integer</text>
 <line x1="450" y1="1273" x2="720" y2="1273" class="div"/>
-<text x="490" y="1287.5" class="t-campo ">fl_ativo</text>
+<text x="490" y="1287.5" class="t-campo ">FL_ATIVO</text>
 <text x="718" y="1287.5" class="t-tipo" text-anchor="end">boolean ●</text>
 </a></g>
 <g class="tab" id="svg-vistoria"><a href="#t-vistoria">
 <rect x="840" y="90" width="290" height="414" rx="10" class="caixa"/>
 <path d="M840 126V100Q840 90 850 90H1120Q1130 90 1130 100V126Z" fill="#1C2922"/>
-<text x="854" y="113" class="t-nome">vistoria</text>
+<text x="854" y="113" class="t-nome">VISTORIA</text>
 <text x="1116" y="113" class="t-grupo" text-anchor="end">Operação</text>
 <text x="852" y="140.5" class="t-ch pk">PK</text>
-<text x="890" y="140.5" class="t-campo b">id_vistoria</text>
+<text x="890" y="140.5" class="t-campo b">ID_VISTORIA</text>
 <text x="1118" y="140.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="850" y1="147" x2="1120" y2="147" class="div"/>
 <text x="852" y="161.5" class="t-ch ">FK</text>
-<text x="890" y="161.5" class="t-campo ">id_vistoria_entrada</text>
+<text x="890" y="161.5" class="t-campo ">ID_VISTORIA_ENTRADA</text>
 <text x="1118" y="161.5" class="t-tipo" text-anchor="end">uuid</text>
 <line x1="850" y1="168" x2="1120" y2="168" class="div"/>
 <text x="852" y="182.5" class="t-ch ">FK</text>
-<text x="890" y="182.5" class="t-campo ">id_unidade</text>
+<text x="890" y="182.5" class="t-campo ">ID_UNIDADE</text>
 <text x="1118" y="182.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="189" x2="1120" y2="189" class="div"/>
 <text x="852" y="203.5" class="t-ch ">FK</text>
-<text x="890" y="203.5" class="t-campo ">id_tipo_vistoria</text>
+<text x="890" y="203.5" class="t-campo ">ID_TIPO_VISTORIA</text>
 <text x="1118" y="203.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="210" x2="1120" y2="210" class="div"/>
 <text x="852" y="224.5" class="t-ch ">FK</text>
-<text x="890" y="224.5" class="t-campo ">id_usuario</text>
+<text x="890" y="224.5" class="t-campo ">ID_USUARIO</text>
 <text x="1118" y="224.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="850" y1="231" x2="1120" y2="231" class="div"/>
-<text x="890" y="245.5" class="t-campo ">tp_validacao</text>
+<text x="890" y="245.5" class="t-campo ">TP_VALIDACAO</text>
 <text x="1118" y="245.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="252" x2="1120" y2="252" class="div"/>
-<text x="890" y="266.5" class="t-campo ">dt_inicio</text>
+<text x="890" y="266.5" class="t-campo ">DT_INICIO</text>
 <text x="1118" y="266.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="850" y1="273" x2="1120" y2="273" class="div"/>
-<text x="890" y="287.5" class="t-campo ">dt_fim</text>
+<text x="890" y="287.5" class="t-campo ">DT_FIM</text>
 <text x="1118" y="287.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="850" y1="294" x2="1120" y2="294" class="div"/>
-<text x="890" y="308.5" class="t-campo ">dt_recebimento</text>
+<text x="890" y="308.5" class="t-campo ">DT_RECEBIMENTO</text>
 <text x="1118" y="308.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="850" y1="315" x2="1120" y2="315" class="div"/>
-<text x="890" y="329.5" class="t-campo ">vl_latitude</text>
+<text x="890" y="329.5" class="t-campo ">VL_LATITUDE</text>
 <text x="1118" y="329.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="850" y1="336" x2="1120" y2="336" class="div"/>
-<text x="890" y="350.5" class="t-campo ">vl_longitude</text>
+<text x="890" y="350.5" class="t-campo ">VL_LONGITUDE</text>
 <text x="1118" y="350.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="850" y1="357" x2="1120" y2="357" class="div"/>
-<text x="890" y="371.5" class="t-campo ">vl_precisao_m</text>
+<text x="890" y="371.5" class="t-campo ">VL_PRECISAO_M</text>
 <text x="1118" y="371.5" class="t-tipo" text-anchor="end">numeric(6,1)</text>
 <line x1="850" y1="378" x2="1120" y2="378" class="div"/>
-<text x="890" y="392.5" class="t-campo ">vl_distancia_m</text>
+<text x="890" y="392.5" class="t-campo ">VL_DISTANCIA_M</text>
 <text x="1118" y="392.5" class="t-tipo" text-anchor="end">numeric(7,1)</text>
 <line x1="850" y1="399" x2="1120" y2="399" class="div"/>
-<text x="890" y="413.5" class="t-campo ">fl_fora_raio</text>
+<text x="890" y="413.5" class="t-campo ">FL_FORA_RAIO</text>
 <text x="1118" y="413.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="850" y1="420" x2="1120" y2="420" class="div"/>
-<text x="890" y="434.5" class="t-campo ">st_vistoria</text>
+<text x="890" y="434.5" class="t-campo ">ST_VISTORIA</text>
 <text x="1118" y="434.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="441" x2="1120" y2="441" class="div"/>
-<text x="890" y="455.5" class="t-campo ">ds_sinalizacoes</text>
+<text x="890" y="455.5" class="t-campo ">DS_SINALIZACOES</text>
 <text x="1118" y="455.5" class="t-tipo" text-anchor="end">text[] ●</text>
 <line x1="850" y1="462" x2="1120" y2="462" class="div"/>
-<text x="890" y="476.5" class="t-campo ">ds_assinatura</text>
+<text x="890" y="476.5" class="t-campo ">DS_ASSINATURA</text>
 <text x="1118" y="476.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="850" y1="483" x2="1120" y2="483" class="div"/>
-<text x="890" y="497.5" class="t-campo ">st_unidade_resultante</text>
+<text x="890" y="497.5" class="t-campo ">ST_UNIDADE_RESULTANTE</text>
 <text x="1118" y="497.5" class="t-tipo" text-anchor="end">text</text>
 </a></g>
 <g class="tab" id="svg-resposta"><a href="#t-resposta">
 <rect x="840" y="560" width="290" height="162" rx="10" class="caixa"/>
 <path d="M840 596V570Q840 560 850 560H1120Q1130 560 1130 570V596Z" fill="#1C2922"/>
-<text x="854" y="583" class="t-nome">resposta</text>
+<text x="854" y="583" class="t-nome">RESPOSTA</text>
 <text x="1116" y="583" class="t-grupo" text-anchor="end">Operação</text>
 <text x="852" y="610.5" class="t-ch pk">PK·FK</text>
-<text x="890" y="610.5" class="t-campo b">id_vistoria</text>
+<text x="890" y="610.5" class="t-campo b">ID_VISTORIA</text>
 <text x="1118" y="610.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="850" y1="617" x2="1120" y2="617" class="div"/>
 <text x="852" y="631.5" class="t-ch pk">PK·FK</text>
-<text x="890" y="631.5" class="t-campo b">id_item</text>
+<text x="890" y="631.5" class="t-campo b">ID_ITEM</text>
 <text x="1118" y="631.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="638" x2="1120" y2="638" class="div"/>
-<text x="890" y="652.5" class="t-campo ">nm_item</text>
+<text x="890" y="652.5" class="t-campo ">NM_ITEM</text>
 <text x="1118" y="652.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="659" x2="1120" y2="659" class="div"/>
-<text x="890" y="673.5" class="t-campo ">tp_resposta</text>
+<text x="890" y="673.5" class="t-campo ">TP_RESPOSTA</text>
 <text x="1118" y="673.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="680" x2="1120" y2="680" class="div"/>
-<text x="890" y="694.5" class="t-campo ">ds_observacao</text>
+<text x="890" y="694.5" class="t-campo ">DS_OBSERVACAO</text>
 <text x="1118" y="694.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="850" y1="701" x2="1120" y2="701" class="div"/>
-<text x="890" y="715.5" class="t-campo ">dt_resposta</text>
+<text x="890" y="715.5" class="t-campo ">DT_RESPOSTA</text>
 <text x="1118" y="715.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-ocorrencia"><a href="#t-ocorrencia">
 <rect x="840" y="780" width="290" height="288" rx="10" class="caixa"/>
 <path d="M840 816V790Q840 780 850 780H1120Q1130 780 1130 790V816Z" fill="#1C2922"/>
-<text x="854" y="803" class="t-nome">ocorrencia</text>
+<text x="854" y="803" class="t-nome">OCORRENCIA</text>
 <text x="1116" y="803" class="t-grupo" text-anchor="end">Operação</text>
 <text x="852" y="830.5" class="t-ch pk">PK</text>
-<text x="890" y="830.5" class="t-campo b">id_ocorrencia</text>
+<text x="890" y="830.5" class="t-campo b">ID_OCORRENCIA</text>
 <text x="1118" y="830.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="837" x2="1120" y2="837" class="div"/>
 <text x="852" y="851.5" class="t-ch ">FK</text>
-<text x="890" y="851.5" class="t-campo ">id_vistoria</text>
+<text x="890" y="851.5" class="t-campo ">ID_VISTORIA</text>
 <text x="1118" y="851.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="850" y1="858" x2="1120" y2="858" class="div"/>
 <text x="852" y="872.5" class="t-ch ">FK</text>
-<text x="890" y="872.5" class="t-campo ">id_item</text>
+<text x="890" y="872.5" class="t-campo ">ID_ITEM</text>
 <text x="1118" y="872.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="879" x2="1120" y2="879" class="div"/>
 <text x="852" y="893.5" class="t-ch ">FK</text>
-<text x="890" y="893.5" class="t-campo ">id_unidade</text>
+<text x="890" y="893.5" class="t-campo ">ID_UNIDADE</text>
 <text x="1118" y="893.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="850" y1="900" x2="1120" y2="900" class="div"/>
-<text x="890" y="914.5" class="t-campo ">tp_gravidade</text>
+<text x="890" y="914.5" class="t-campo ">TP_GRAVIDADE</text>
 <text x="1118" y="914.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="921" x2="1120" y2="921" class="div"/>
-<text x="890" y="935.5" class="t-campo ">ds_ocorrencia</text>
+<text x="890" y="935.5" class="t-campo ">DS_OCORRENCIA</text>
 <text x="1118" y="935.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="850" y1="942" x2="1120" y2="942" class="div"/>
-<text x="890" y="956.5" class="t-campo ">nm_responsavel</text>
+<text x="890" y="956.5" class="t-campo ">NM_RESPONSAVEL</text>
 <text x="1118" y="956.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="850" y1="963" x2="1120" y2="963" class="div"/>
-<text x="890" y="977.5" class="t-campo ">dt_prazo</text>
+<text x="890" y="977.5" class="t-campo ">DT_PRAZO</text>
 <text x="1118" y="977.5" class="t-tipo" text-anchor="end">date</text>
 <line x1="850" y1="984" x2="1120" y2="984" class="div"/>
-<text x="890" y="998.5" class="t-campo ">st_ocorrencia</text>
+<text x="890" y="998.5" class="t-campo ">ST_OCORRENCIA</text>
 <text x="1118" y="998.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="850" y1="1005" x2="1120" y2="1005" class="div"/>
-<text x="890" y="1019.5" class="t-campo ">dt_resolucao</text>
+<text x="890" y="1019.5" class="t-campo ">DT_RESOLUCAO</text>
 <text x="1118" y="1019.5" class="t-tipo" text-anchor="end">timestamptz</text>
 <line x1="850" y1="1026" x2="1120" y2="1026" class="div"/>
-<text x="890" y="1040.5" class="t-campo ">dt_criacao</text>
+<text x="890" y="1040.5" class="t-campo ">DT_CRIACAO</text>
 <text x="1118" y="1040.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="850" y1="1047" x2="1120" y2="1047" class="div"/>
-<text x="890" y="1061.5" class="t-campo ">dt_atualizacao</text>
+<text x="890" y="1061.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="1118" y="1061.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-tipo_vistoria"><a href="#t-tipo_vistoria">
 <rect x="1240" y="90" width="290" height="225" rx="10" class="caixa"/>
 <path d="M1240 126V100Q1240 90 1250 90H1520Q1530 90 1530 100V126Z" fill="#2C3E35"/>
-<text x="1254" y="113" class="t-nome">tipo_vistoria</text>
+<text x="1254" y="113" class="t-nome">TIPO_VISTORIA</text>
 <text x="1516" y="113" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="1252" y="140.5" class="t-ch pk">PK</text>
-<text x="1290" y="140.5" class="t-campo b">id_tipo_vistoria</text>
+<text x="1290" y="140.5" class="t-campo b">ID_TIPO_VISTORIA</text>
 <text x="1518" y="140.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="1250" y1="147" x2="1520" y2="147" class="div"/>
 <text x="1252" y="161.5" class="t-ch ">UQ</text>
-<text x="1290" y="161.5" class="t-campo ">nm_tipo_vistoria</text>
+<text x="1290" y="161.5" class="t-campo ">NM_TIPO_VISTORIA</text>
 <text x="1518" y="161.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="1250" y1="168" x2="1520" y2="168" class="div"/>
-<text x="1290" y="182.5" class="t-campo ">ds_tipo_vistoria</text>
+<text x="1290" y="182.5" class="t-campo ">DS_TIPO_VISTORIA</text>
 <text x="1518" y="182.5" class="t-tipo" text-anchor="end">text</text>
 <line x1="1250" y1="189" x2="1520" y2="189" class="div"/>
-<text x="1290" y="203.5" class="t-campo ">tp_comportamento</text>
+<text x="1290" y="203.5" class="t-campo ">TP_COMPORTAMENTO</text>
 <text x="1518" y="203.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="1250" y1="210" x2="1520" y2="210" class="div"/>
-<text x="1290" y="224.5" class="t-campo ">tp_periodicidade</text>
+<text x="1290" y="224.5" class="t-campo ">TP_PERIODICIDADE</text>
 <text x="1518" y="224.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="1250" y1="231" x2="1520" y2="231" class="div"/>
-<text x="1290" y="245.5" class="t-campo ">fl_exige_entrada</text>
+<text x="1290" y="245.5" class="t-campo ">FL_EXIGE_ENTRADA</text>
 <text x="1518" y="245.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="1250" y1="252" x2="1520" y2="252" class="div"/>
-<text x="1290" y="266.5" class="t-campo ">fl_exige_assinatura</text>
+<text x="1290" y="266.5" class="t-campo ">FL_EXIGE_ASSINATURA</text>
 <text x="1518" y="266.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="1250" y1="273" x2="1520" y2="273" class="div"/>
-<text x="1290" y="287.5" class="t-campo ">fl_ativo</text>
+<text x="1290" y="287.5" class="t-campo ">FL_ATIVO</text>
 <text x="1518" y="287.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="1250" y1="294" x2="1520" y2="294" class="div"/>
-<text x="1290" y="308.5" class="t-campo ">dt_atualizacao</text>
+<text x="1290" y="308.5" class="t-campo ">DT_ATUALIZACAO</text>
 <text x="1518" y="308.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
 <g class="tab" id="svg-tipo_vistoria_item"><a href="#t-tipo_vistoria_item">
 <rect x="1240" y="370" width="290" height="99" rx="10" class="caixa"/>
 <path d="M1240 406V380Q1240 370 1250 370H1520Q1530 370 1530 380V406Z" fill="#2C3E35"/>
-<text x="1254" y="393" class="t-nome">tipo_vistoria_item</text>
+<text x="1254" y="393" class="t-nome">TIPO_VISTORIA_ITEM</text>
 <text x="1516" y="393" class="t-grupo" text-anchor="end">Cadastro</text>
 <text x="1252" y="420.5" class="t-ch pk">PK·FK</text>
-<text x="1290" y="420.5" class="t-campo b">id_tipo_vistoria</text>
+<text x="1290" y="420.5" class="t-campo b">ID_TIPO_VISTORIA</text>
 <text x="1518" y="420.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="1250" y1="427" x2="1520" y2="427" class="div"/>
 <text x="1252" y="441.5" class="t-ch pk">PK·FK</text>
-<text x="1290" y="441.5" class="t-campo b">id_item</text>
+<text x="1290" y="441.5" class="t-campo b">ID_ITEM</text>
 <text x="1518" y="441.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="1250" y1="448" x2="1520" y2="448" class="div"/>
-<text x="1290" y="462.5" class="t-campo ">nr_ordem</text>
+<text x="1290" y="462.5" class="t-campo ">NR_ORDEM</text>
 <text x="1518" y="462.5" class="t-tipo" text-anchor="end">integer</text>
 </a></g>
 <g class="tab" id="svg-foto"><a href="#t-foto">
 <rect x="1240" y="560" width="290" height="246" rx="10" class="caixa"/>
 <path d="M1240 596V570Q1240 560 1250 560H1520Q1530 560 1530 570V596Z" fill="#1C2922"/>
-<text x="1254" y="583" class="t-nome">foto</text>
+<text x="1254" y="583" class="t-nome">FOTO</text>
 <text x="1516" y="583" class="t-grupo" text-anchor="end">Operação</text>
 <text x="1252" y="610.5" class="t-ch pk">PK</text>
-<text x="1290" y="610.5" class="t-campo b">id_foto</text>
+<text x="1290" y="610.5" class="t-campo b">ID_FOTO</text>
 <text x="1518" y="610.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="1250" y1="617" x2="1520" y2="617" class="div"/>
 <text x="1252" y="631.5" class="t-ch ">FK</text>
-<text x="1290" y="631.5" class="t-campo ">id_vistoria</text>
+<text x="1290" y="631.5" class="t-campo ">ID_VISTORIA</text>
 <text x="1518" y="631.5" class="t-tipo" text-anchor="end">uuid ●</text>
 <line x1="1250" y1="638" x2="1520" y2="638" class="div"/>
 <text x="1252" y="652.5" class="t-ch ">FK</text>
-<text x="1290" y="652.5" class="t-campo ">id_item</text>
+<text x="1290" y="652.5" class="t-campo ">ID_ITEM</text>
 <text x="1518" y="652.5" class="t-tipo" text-anchor="end">bigint ●</text>
 <line x1="1250" y1="659" x2="1520" y2="659" class="div"/>
 <text x="1252" y="673.5" class="t-ch ">UQ</text>
-<text x="1290" y="673.5" class="t-campo ">ds_caminho</text>
+<text x="1290" y="673.5" class="t-campo ">DS_CAMINHO</text>
 <text x="1518" y="673.5" class="t-tipo" text-anchor="end">text ●</text>
 <line x1="1250" y1="680" x2="1520" y2="680" class="div"/>
-<text x="1290" y="694.5" class="t-campo ">dt_captura</text>
+<text x="1290" y="694.5" class="t-campo ">DT_CAPTURA</text>
 <text x="1518" y="694.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 <line x1="1250" y1="701" x2="1520" y2="701" class="div"/>
-<text x="1290" y="715.5" class="t-campo ">vl_latitude</text>
+<text x="1290" y="715.5" class="t-campo ">VL_LATITUDE</text>
 <text x="1518" y="715.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="1250" y1="722" x2="1520" y2="722" class="div"/>
-<text x="1290" y="736.5" class="t-campo ">vl_longitude</text>
+<text x="1290" y="736.5" class="t-campo ">VL_LONGITUDE</text>
 <text x="1518" y="736.5" class="t-tipo" text-anchor="end">numeric(9,6)</text>
 <line x1="1250" y1="743" x2="1520" y2="743" class="div"/>
-<text x="1290" y="757.5" class="t-campo ">vl_precisao_m</text>
+<text x="1290" y="757.5" class="t-campo ">VL_PRECISAO_M</text>
 <text x="1518" y="757.5" class="t-tipo" text-anchor="end">numeric(6,1)</text>
 <line x1="1250" y1="764" x2="1520" y2="764" class="div"/>
-<text x="1290" y="778.5" class="t-campo ">fl_fora_raio</text>
+<text x="1290" y="778.5" class="t-campo ">FL_FORA_RAIO</text>
 <text x="1518" y="778.5" class="t-tipo" text-anchor="end">boolean ●</text>
 <line x1="1250" y1="785" x2="1520" y2="785" class="div"/>
-<text x="1290" y="799.5" class="t-campo ">dt_criacao</text>
+<text x="1290" y="799.5" class="t-campo ">DT_CRIACAO</text>
 <text x="1518" y="799.5" class="t-tipo" text-anchor="end">timestamptz ●</text>
 </a></g>
-<text x="54" y="80" class="t-ext">id_usuario → auth.users (Supabase Auth)</text>
+<text x="54" y="80" class="t-ext">ID_USUARIO → AUTH.USERS (Supabase Auth)</text>
 </svg></div>
 </section>
 <p style="margin-top:0.75rem;font-size:0.8125rem">Toque numa tabela do diagrama para ir à sua descrição. Nas linhas, o lado com pé de galinha é a tabela filha (que guarda a chave estrangeira).</p>
 
 <h2>Convenções de nomenclatura</h2>
-<p>Segue o padrão da planilha de referência (esquema IBP, SQL Server), adaptado ao PostgreSQL: os mesmos prefixos, porém em <b>minúsculas</b>, porque o Postgres converte nomes sem aspas para minúsculas e nomes em maiúsculas obrigariam o uso de aspas em toda consulta.</p>
-<div class="painel" style="padding:0.25rem 0.75rem"><table><thead><tr><th>Prefixo</th><th>Significado</th><th>Tipo no Postgres</th><th>Na planilha</th></tr></thead><tbody><tr><td data-l='Prefixo'><code>id_</code></td><td data-l='Significado'>Identificador (chave primária ou estrangeira)</td><td data-l='Tipo no Postgres'><code>bigint ou uuid</code></td><td data-l='Na planilha'>ID_ (190 colunas)</td></tr><tr><td data-l='Prefixo'><code>nm_</code></td><td data-l='Significado'>Nome</td><td data-l='Tipo no Postgres'><code>text</code></td><td data-l='Na planilha'>NM_ (37)</td></tr><tr><td data-l='Prefixo'><code>ds_</code></td><td data-l='Significado'>Descrição, texto livre ou caminho de arquivo</td><td data-l='Tipo no Postgres'><code>text, text[] ou jsonb</code></td><td data-l='Na planilha'>DS_ (18)</td></tr><tr><td data-l='Prefixo'><code>cd_</code></td><td data-l='Significado'>Código (login, CPF, chave, hash)</td><td data-l='Tipo no Postgres'><code>text</code></td><td data-l='Na planilha'>CD_ (8)</td></tr><tr><td data-l='Prefixo'><code>tp_</code></td><td data-l='Significado'>Tipo ou categoria de uma lista fechada</td><td data-l='Tipo no Postgres'><code>text + check</code></td><td data-l='Na planilha'>TP_ (6)</td></tr><tr><td data-l='Prefixo'><code>dt_</code></td><td data-l='Significado'>Data ou data e hora</td><td data-l='Tipo no Postgres'><code>timestamptz ou date</code></td><td data-l='Na planilha'>DT_ (86)</td></tr><tr><td data-l='Prefixo'><code>vl_</code></td><td data-l='Significado'>Valor numérico medido (coordenada, raio, precisão)</td><td data-l='Tipo no Postgres'><code>numeric ou integer</code></td><td data-l='Na planilha'>VL_ (104)</td></tr><tr><td data-l='Prefixo'><code>st_</code></td><td data-l='Significado'>Estado ou situação (muda ao longo do tempo)</td><td data-l='Tipo no Postgres'><code>text + check</code></td><td data-l='Na planilha'>novo; a planilha usa STATUS sem prefixo</td></tr><tr><td data-l='Prefixo'><code>fl_</code></td><td data-l='Significado'>Sim ou não</td><td data-l='Tipo no Postgres'><code>boolean</code></td><td data-l='Na planilha'>novo; a planilha usa varchar(1) S/N em 16 colunas</td></tr><tr><td data-l='Prefixo'><code>nr_</code></td><td data-l='Significado'>Número de ordem ou versão</td><td data-l='Tipo no Postgres'><code>integer</code></td><td data-l='Na planilha'>novo</td></tr><tr><td data-l='Prefixo'><code>qt_</code></td><td data-l='Significado'>Quantidade</td><td data-l='Tipo no Postgres'><code>integer</code></td><td data-l='Na planilha'>novo</td></tr></tbody></table></div>
+<p>Segue o padrão da planilha de referência (esquema IBP, SQL Server), adaptado ao PostgreSQL: os mesmos prefixos e nomes em <b>MAIÚSCULAS</b>. No SQL os nomes são escritos sem aspas (<code>SELECT ID_UNIDADE FROM INSPECT.UNIDADE</code>): o Postgres aceita e guarda internamente em minúsculas, que é como o painel do Supabase vai exibi-los. Não usar aspas, para não ter de repeti-las em toda consulta.</p>
+<div class="painel" style="padding:0.25rem 0.75rem"><table><thead><tr><th>Prefixo</th><th>Significado</th><th>Tipo no Postgres</th><th>Na planilha</th></tr></thead><tbody><tr><td data-l='Prefixo'><code>ID_</code></td><td data-l='Significado'>Identificador (chave primária ou estrangeira)</td><td data-l='Tipo no Postgres'><code>bigint ou uuid</code></td><td data-l='Na planilha'>ID_ (190 colunas)</td></tr><tr><td data-l='Prefixo'><code>NM_</code></td><td data-l='Significado'>Nome</td><td data-l='Tipo no Postgres'><code>text</code></td><td data-l='Na planilha'>NM_ (37)</td></tr><tr><td data-l='Prefixo'><code>DS_</code></td><td data-l='Significado'>Descrição, texto livre ou caminho de arquivo</td><td data-l='Tipo no Postgres'><code>text, text[] ou jsonb</code></td><td data-l='Na planilha'>DS_ (18)</td></tr><tr><td data-l='Prefixo'><code>CD_</code></td><td data-l='Significado'>Código (login, CPF, chave, hash)</td><td data-l='Tipo no Postgres'><code>text</code></td><td data-l='Na planilha'>CD_ (8)</td></tr><tr><td data-l='Prefixo'><code>TP_</code></td><td data-l='Significado'>Tipo ou categoria de uma lista fechada</td><td data-l='Tipo no Postgres'><code>text + check</code></td><td data-l='Na planilha'>TP_ (6)</td></tr><tr><td data-l='Prefixo'><code>DT_</code></td><td data-l='Significado'>Data ou data e hora</td><td data-l='Tipo no Postgres'><code>timestamptz ou date</code></td><td data-l='Na planilha'>DT_ (86)</td></tr><tr><td data-l='Prefixo'><code>VL_</code></td><td data-l='Significado'>Valor numérico medido (coordenada, raio, precisão)</td><td data-l='Tipo no Postgres'><code>numeric ou integer</code></td><td data-l='Na planilha'>VL_ (104)</td></tr><tr><td data-l='Prefixo'><code>ST_</code></td><td data-l='Significado'>Estado ou situação (muda ao longo do tempo)</td><td data-l='Tipo no Postgres'><code>text + check</code></td><td data-l='Na planilha'>novo; a planilha usa STATUS sem prefixo</td></tr><tr><td data-l='Prefixo'><code>FL_</code></td><td data-l='Significado'>Sim ou não</td><td data-l='Tipo no Postgres'><code>boolean</code></td><td data-l='Na planilha'>novo; a planilha usa varchar(1) S/N em 16 colunas</td></tr><tr><td data-l='Prefixo'><code>NR_</code></td><td data-l='Significado'>Número de ordem ou versão</td><td data-l='Tipo no Postgres'><code>integer</code></td><td data-l='Na planilha'>novo</td></tr><tr><td data-l='Prefixo'><code>QT_</code></td><td data-l='Significado'>Quantidade</td><td data-l='Tipo no Postgres'><code>integer</code></td><td data-l='Na planilha'>novo</td></tr></tbody></table></div>
 <div class="notas">
-  <div class="painel nota"><h3>Tabelas e esquema</h3><p>Nomes no singular e em português (<code>unidade</code>, <code>vistoria</code>), como <code>OPERACAO</code> e <code>SISTEMA</code> na planilha. Tabela associativa leva o nome das duas (<code>usuario_propriedade</code>). Registro de eventos usa o prefixo <code>log_</code>, como <code>LOG_*</code>. Um esquema por sistema, como <code>IBP</code>: aqui, <code>inspect</code>.</p></div>
-  <div class="painel nota"><h3>Chaves e índices</h3><p>Mesmo padrão da planilha: <code>pk_&lt;tabela&gt;</code>, <code>fk_&lt;filha&gt;_&lt;pai&gt;</code> e <code>ix_&lt;tabela&gt;_&lt;colunas&gt;</code>, mais <code>uq_</code> (único) e <code>ck_</code> (regra de valores).</p></div>
+  <div class="painel nota"><h3>Tabelas e esquema</h3><p>Nomes no singular e em português (<code>UNIDADE</code>, <code>VISTORIA</code>), como <code>OPERACAO</code> e <code>SISTEMA</code> na planilha. Tabela associativa leva o nome das duas (<code>USUARIO_PROPRIEDADE</code>). Registro de eventos usa o prefixo <code>LOG_</code>, como <code>LOG_*</code>. Um esquema por sistema, como <code>IBP</code>: aqui, <code>INSPECT</code>.</p></div>
+  <div class="painel nota"><h3>Chaves e índices</h3><p>Mesmo padrão da planilha: <code>PK_&lt;TABELA&gt;</code>, <code>FK_&lt;FILHA&gt;_&lt;PAI&gt;</code> e <code>IX_&lt;TABELA&gt;_&lt;COLUNAS&gt;</code>, mais <code>UQ_</code> (único) e <code>CK_</code> (regra de valores).</p></div>
   <div class="painel nota"><h3>O que não repetir da referência</h3><ul><li>20 tabelas sem chave primária → aqui todas têm.</li><li>49 chaves estrangeiras sem índice → aqui todas têm índice.</li><li>40 chaves estrangeiras não confiáveis e 160 ligações implícitas → aqui todas as relações são declaradas e validadas.</li></ul></div>
 </div>
 
 <h2>Decisões</h2>
 <div class="notas">
-  <div class="painel nota"><h3>Identificadores</h3><p>Cadastros usam <code>bigint</code> gerado pelo banco. Vistoria e foto usam <code>uuid</code> v7 gerado no celular, porque nascem offline e o mesmo envio pode chegar mais de uma vez sem duplicar. <code>usuario</code> reaproveita o id do Supabase Auth.</p></div>
-  <div class="painel nota"><h3>Tipos</h3><p><code>text</code> com regra <code>ck_</code> no lugar de <code>varchar(n)</code> e de tipos enum (mais fácil de evoluir); <code>timestamptz</code> para data e hora; <code>numeric</code> para coordenadas e medidas; <code>boolean</code> para sim ou não.</p></div>
-  <div class="painel nota"><h3>Acesso (RLS)</h3><p>RLS ligado em todas as tabelas. A regra base: o usuário só enxerga as propriedades em <code>usuario_propriedade</code>; o admin enxerga tudo. Vistoria, resposta e foto não aceitam alteração nem exclusão. A verificação de vínculo fica numa função em esquema privado, para não repetir subconsultas em cada política.</p></div>
+  <div class="painel nota"><h3>Identificadores</h3><p>Cadastros usam <code>bigint</code> gerado pelo banco. Vistoria e foto usam <code>uuid</code> v7 gerado no celular, porque nascem offline e o mesmo envio pode chegar mais de uma vez sem duplicar. <code>USUARIO</code> reaproveita o id do Supabase Auth.</p></div>
+  <div class="painel nota"><h3>Tipos</h3><p><code>text</code> com regra <code>CK_</code> no lugar de <code>varchar(n)</code> e de tipos enum (mais fácil de evoluir); <code>timestamptz</code> para data e hora; <code>numeric</code> para coordenadas e medidas; <code>boolean</code> para sim ou não.</p></div>
+  <div class="painel nota"><h3>Acesso (RLS)</h3><p>RLS ligado em todas as tabelas. A regra base: o usuário só enxerga as propriedades em <code>USUARIO_PROPRIEDADE</code>; o admin enxerga tudo. Vistoria, resposta e foto não aceitam alteração nem exclusão. A verificação de vínculo fica numa função em esquema privado, para não repetir subconsultas em cada política.</p></div>
   <div class="painel nota"><h3>Envio e presença no servidor</h3><p>O envio entra por uma função do servidor que valida a presença (distância por Haversine, precisão, QR), grava vistoria, respostas e fotos de uma vez, cria as ocorrências e atualiza o estado da unidade. Repetir o envio com o mesmo id não duplica nada.</p></div>
   <div class="painel nota"><h3>Arquivos</h3><p>Fotos e assinaturas ficam no Storage, em bucket privado <code>vistorias</code> (acesso por URL assinada); fotos de referência no bucket <code>referencias</code>. O banco guarda só o caminho.</p></div>
-  <div class="painel nota"><h3>Fora desta versão (enxuto)</h3><ul><li>Tabela de estadia: a Saída se liga à Entrada por <code>id_vistoria_entrada</code> (decisão em aberto na especificação).</li><li>Histórico de ocorrência separado: fica em <code>log_evento</code>.</li><li>Notificações, reservas e cobrança.</li><li>Segundo fator do login (definir antes da implementação).</li></ul></div>
+  <div class="painel nota"><h3>Fora desta versão (enxuto)</h3><ul><li>Tabela de estadia: a Saída se liga à Entrada por <code>ID_VISTORIA_ENTRADA</code> (decisão em aberto na especificação).</li><li>Histórico de ocorrência separado: fica em <code>LOG_EVENTO</code>.</li><li>Notificações, reservas e cobrança.</li><li>Segundo fator do login (definir antes da implementação).</li></ul></div>
 </div>
 
 <h2>Dicionário de dados</h2>
-<nav class="indice" aria-label="Tabelas"><a href="#t-usuario"><code>usuario</code></a><a href="#t-usuario_propriedade"><code>usuario_propriedade</code></a><a href="#t-propriedade"><code>propriedade</code></a><a href="#t-log_evento"><code>log_evento</code></a><a href="#t-configuracao"><code>configuracao</code></a><a href="#t-unidade"><code>unidade</code></a><a href="#t-ambiente"><code>ambiente</code></a><a href="#t-item"><code>item</code></a><a href="#t-vistoria"><code>vistoria</code></a><a href="#t-resposta"><code>resposta</code></a><a href="#t-ocorrencia"><code>ocorrencia</code></a><a href="#t-tipo_vistoria"><code>tipo_vistoria</code></a><a href="#t-tipo_vistoria_item"><code>tipo_vistoria_item</code></a><a href="#t-foto"><code>foto</code></a></nav>
+<nav class="indice" aria-label="Tabelas"><a href="#t-usuario"><code>USUARIO</code></a><a href="#t-usuario_propriedade"><code>USUARIO_PROPRIEDADE</code></a><a href="#t-propriedade"><code>PROPRIEDADE</code></a><a href="#t-log_evento"><code>LOG_EVENTO</code></a><a href="#t-configuracao"><code>CONFIGURACAO</code></a><a href="#t-unidade"><code>UNIDADE</code></a><a href="#t-ambiente"><code>AMBIENTE</code></a><a href="#t-item"><code>ITEM</code></a><a href="#t-vistoria"><code>VISTORIA</code></a><a href="#t-resposta"><code>RESPOSTA</code></a><a href="#t-ocorrencia"><code>OCORRENCIA</code></a><a href="#t-tipo_vistoria"><code>TIPO_VISTORIA</code></a><a href="#t-tipo_vistoria_item"><code>TIPO_VISTORIA_ITEM</code></a><a href="#t-foto"><code>FOTO</code></a></nav>
 <article class="tabela" id="t-usuario">
-  <header><span class="grupo" style="--g:#3D5547">Acesso</span><h3><code>inspect.usuario</code></h3></header>
+  <header><span class="grupo" style="--g:#3D5547">Acesso</span><h3><code>INSPECT.USUARIO</code></h3></header>
   <p>Pessoas que usam o app. Cada linha corresponde a uma conta do Supabase Auth.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T02, T32</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Cada usuário lê a própria linha; admin lê e altera todas.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_usuario</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Identificador; é o mesmo id da conta em auth.users (Supabase Auth).</td></tr><tr><td data-l="Campo"><code>nm_usuario</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome completo exibido no app e nos relatórios.</td></tr><tr><td data-l="Campo"><code>cd_login</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome de usuário para entrar: minúsculas, 3 a 30 caracteres (letras, números, ponto, hífen, sublinhado).</td></tr><tr><td data-l="Campo"><code>cd_cpf</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">CPF com os 11 dígitos, validado pelos dígitos verificadores; alternativa ao login. Sempre exibido mascarado (LGPD).</td></tr><tr><td data-l="Campo"><code>tp_perfil</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;assessor&#x27;</code></td><td data-l="Descrição">Perfil: assessor (campo), gestor (gestão) ou admin (gestão e administração).</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Pode entrar no app. Desativar bloqueia o acesso sem apagar o histórico.</td></tr><tr><td data-l="Campo"><code>dt_aceite_lgpd</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quando aceitou o termo de uso de localização e dados (primeiro acesso).</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
+  <tr><td data-l="Campo"><code>ID_USUARIO</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Identificador; é o mesmo id da conta em AUTH.USERS (Supabase Auth).</td></tr><tr><td data-l="Campo"><code>NM_USUARIO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome completo exibido no app e nos relatórios.</td></tr><tr><td data-l="Campo"><code>CD_LOGIN</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome de usuário para entrar: minúsculas, 3 a 30 caracteres (letras, números, ponto, hífen, sublinhado).</td></tr><tr><td data-l="Campo"><code>CD_CPF</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">CPF com os 11 dígitos, validado pelos dígitos verificadores; alternativa ao login. Sempre exibido mascarado (LGPD).</td></tr><tr><td data-l="Campo"><code>TP_PERFIL</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;assessor&#x27;</code></td><td data-l="Descrição">Perfil: assessor (campo), gestor (gestão) ou admin (gestão e administração).</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Pode entrar no app. Desativar bloqueia o acesso sem apagar o histórico.</td></tr><tr><td data-l="Campo"><code>DT_ACEITE_LGPD</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quando aceitou o termo de uso de localização e dados (primeiro acesso).</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_usuario</code> (id_usuario)</li><li><code>uq_usuario_cd_login</code> (cd_login)</li><li><code>uq_usuario_cd_cpf</code> (cd_cpf)</li><li><code>ck_usuario_tp_perfil:</code> assessor | gestor | admin</li><li><code>ck_usuario_cd_cpf:</code> 11 dígitos</li><li><code>fk_usuario_auth_users:</code> id_usuario → auth.users(id), on delete cascade</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_USUARIO</code> (ID_USUARIO)</li><li><code>UQ_USUARIO_CD_LOGIN</code> (CD_LOGIN)</li><li><code>UQ_USUARIO_CD_CPF</code> (CD_CPF)</li><li><code>CK_USUARIO_TP_PERFIL:</code> assessor | gestor | admin</li><li><code>CK_USUARIO_CD_CPF:</code> 11 dígitos</li><li><code>FK_USUARIO_AUTH_USERS:</code> ID_USUARIO → AUTH.USERS(id), on delete cascade</li></ul></details>
 </article>
 <article class="tabela" id="t-usuario_propriedade">
-  <header><span class="grupo" style="--g:#3D5547">Acesso</span><h3><code>inspect.usuario_propriedade</code></h3></header>
+  <header><span class="grupo" style="--g:#3D5547">Acesso</span><h3><code>INSPECT.USUARIO_PROPRIEDADE</code></h3></header>
   <p>Quais propriedades cada usuário pode ver e vistoriar. É a base das regras de acesso (RLS) de todas as tabelas.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T32</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Cada usuário lê os próprios vínculos; admin gerencia.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_usuario</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Usuário vinculado.</td></tr><tr><td data-l="Campo"><code>id_propriedade</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade liberada para o usuário.</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o vínculo foi criado.</td></tr>
+  <tr><td data-l="Campo"><code>ID_USUARIO</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Usuário vinculado.</td></tr><tr><td data-l="Campo"><code>ID_PROPRIEDADE</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade liberada para o usuário.</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o vínculo foi criado.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_usuario_propriedade</code> (id_usuario, id_propriedade)</li><li><code>ix_usuario_propriedade_id_propriedade</code> (id_propriedade)</li><li><code>fk_usuario_propriedade_usuario,</code> fk_usuario_propriedade_propriedade (on delete cascade)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_USUARIO_PROPRIEDADE</code> (ID_USUARIO, ID_PROPRIEDADE)</li><li><code>IX_USUARIO_PROPRIEDADE_ID_PROPRIEDADE</code> (ID_PROPRIEDADE)</li><li><code>FK_USUARIO_PROPRIEDADE_USUARIO,</code> FK_USUARIO_PROPRIEDADE_PROPRIEDADE (on delete cascade)</li></ul></details>
 </article>
 <article class="tabela" id="t-propriedade">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.propriedade</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.PROPRIEDADE</code></h3></header>
   <p>Hotéis, pousadas e conjuntos de chalés. Define o padrão de presença herdado pelas unidades.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T20, T28, T29, T33</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por quem tem vínculo; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_propriedade</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>nm_propriedade</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome da propriedade (ex.: Pousada Solar do Espinhaço).</td></tr><tr><td data-l="Campo"><code>tp_propriedade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo: pousada, hotel ou chales.</td></tr><tr><td data-l="Campo"><code>tp_validacao</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;gps_qr&#x27;</code></td><td data-l="Descrição">Presença padrão das unidades: gps, qr ou gps_qr.</td></tr><tr><td data-l="Campo"><code>vl_latitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Latitude do centro da propriedade, em graus decimais (-90 a 90).</td></tr><tr><td data-l="Campo"><code>vl_longitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Longitude do centro, em graus decimais (-180 a 180).</td></tr><tr><td data-l="Campo"><code>vl_raio_m</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>40</code></td><td data-l="Descrição">Raio padrão aceito para a presença por GPS, em metros (10 a 500).</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar esconde a propriedade sem apagar unidades nem histórico.</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
+  <tr><td data-l="Campo"><code>ID_PROPRIEDADE</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>NM_PROPRIEDADE</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome da propriedade (ex.: Pousada Solar do Espinhaço).</td></tr><tr><td data-l="Campo"><code>TP_PROPRIEDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo: pousada, hotel ou chales.</td></tr><tr><td data-l="Campo"><code>TP_VALIDACAO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;gps_qr&#x27;</code></td><td data-l="Descrição">Presença padrão das unidades: gps, qr ou gps_qr.</td></tr><tr><td data-l="Campo"><code>VL_LATITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Latitude do centro da propriedade, em graus decimais (-90 a 90).</td></tr><tr><td data-l="Campo"><code>VL_LONGITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Longitude do centro, em graus decimais (-180 a 180).</td></tr><tr><td data-l="Campo"><code>VL_RAIO_M</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>40</code></td><td data-l="Descrição">Raio padrão aceito para a presença por GPS, em metros (10 a 500).</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar esconde a propriedade sem apagar unidades nem histórico.</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_propriedade</code> (id_propriedade)</li><li><code>uq_propriedade_nm_propriedade</code> (nm_propriedade)</li><li><code>ck_propriedade_tp_propriedade:</code> pousada | hotel | chales</li><li><code>ck_propriedade_tp_validacao:</code> gps | qr | gps_qr</li><li><code>ck_propriedade_vl_raio_m:</code> 10 a 500</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_PROPRIEDADE</code> (ID_PROPRIEDADE)</li><li><code>UQ_PROPRIEDADE_NM_PROPRIEDADE</code> (NM_PROPRIEDADE)</li><li><code>CK_PROPRIEDADE_TP_PROPRIEDADE:</code> pousada | hotel | chales</li><li><code>CK_PROPRIEDADE_TP_VALIDACAO:</code> gps | qr | gps_qr</li><li><code>CK_PROPRIEDADE_VL_RAIO_M:</code> 10 a 500</li></ul></details>
 </article>
 <article class="tabela" id="t-log_evento">
-  <header><span class="grupo" style="--g:#44403C">Apoio</span><h3><code>inspect.log_evento</code></h3></header>
+  <header><span class="grupo" style="--g:#44403C">Apoio</span><h3><code>INSPECT.LOG_EVENTO</code></h3></header>
   <p>Registro de auditoria e histórico. Guarda as tentativas de presença, os envios, as mudanças de estado, o histórico de cada ocorrência (atribuição, prazo, comentários, cancelamento) e as alterações administrativas. Só recebe inclusões.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T08, T26, T34</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Inclusão só por funções do servidor; leitura pelo admin e, para ocorrências, pelo gestor da propriedade.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_log_evento</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>id_usuario</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quem executou; vazio para eventos automáticos.</td></tr><tr><td data-l="Campo"><code>id_propriedade</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade relacionada; usada nas regras de acesso.</td></tr><tr><td data-l="Campo"><code>tp_evento</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">presenca_gps, presenca_qr, vistoria_enviada, estado_alterado, ocorrencia_atribuida, ocorrencia_comentada, ocorrencia_resolvida, ocorrencia_cancelada, cadastro_alterado, qr_rotacionado, usuario_alterado.</td></tr><tr><td data-l="Campo"><code>nm_entidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tabela afetada (unidade, vistoria, ocorrencia...).</td></tr><tr><td data-l="Campo"><code>cd_registro</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Identificador do registro afetado, em texto (aceita bigint e uuid).</td></tr><tr><td data-l="Campo"><code>ds_evento</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Frase legível, ex.: &quot;Atribuída a Governança&quot;.</td></tr><tr><td data-l="Campo"><code>ds_dados</code></td><td data-l="Tipo"><code>jsonb</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;{}&#x27;</code></td><td data-l="Descrição">Detalhes sem segredos: coordenadas, precisão, valor anterior e novo, justificativa.</td></tr><tr><td data-l="Campo"><code>dt_evento</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando aconteceu.</td></tr>
+  <tr><td data-l="Campo"><code>ID_LOG_EVENTO</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>ID_USUARIO</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quem executou; vazio para eventos automáticos.</td></tr><tr><td data-l="Campo"><code>ID_PROPRIEDADE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade relacionada; usada nas regras de acesso.</td></tr><tr><td data-l="Campo"><code>TP_EVENTO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">presenca_gps, presenca_qr, vistoria_enviada, estado_alterado, ocorrencia_atribuida, ocorrencia_comentada, ocorrencia_resolvida, ocorrencia_cancelada, cadastro_alterado, qr_rotacionado, usuario_alterado.</td></tr><tr><td data-l="Campo"><code>NM_ENTIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tabela afetada (unidade, vistoria, ocorrencia...).</td></tr><tr><td data-l="Campo"><code>CD_REGISTRO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Identificador do registro afetado, em texto (aceita bigint e uuid).</td></tr><tr><td data-l="Campo"><code>DS_EVENTO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Frase legível, ex.: &quot;Atribuída a Governança&quot;.</td></tr><tr><td data-l="Campo"><code>DS_DADOS</code></td><td data-l="Tipo"><code>jsonb</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;{}&#x27;</code></td><td data-l="Descrição">Detalhes sem segredos: coordenadas, precisão, valor anterior e novo, justificativa.</td></tr><tr><td data-l="Campo"><code>DT_EVENTO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando aconteceu.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_log_evento</code> (id_log_evento)</li><li><code>ix_log_evento_entidade</code> (nm_entidade, cd_registro)</li><li><code>ix_log_evento_dt_evento</code> (dt_evento desc)</li><li><code>ix_log_evento_id_usuario,</code> ix_log_evento_id_propriedade</li><li><code>Sem</code> UPDATE e sem DELETE (gatilho e ausência de políticas)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_LOG_EVENTO</code> (ID_LOG_EVENTO)</li><li><code>IX_LOG_EVENTO_ENTIDADE</code> (NM_ENTIDADE, CD_REGISTRO)</li><li><code>IX_LOG_EVENTO_DT_EVENTO</code> (DT_EVENTO desc)</li><li><code>IX_LOG_EVENTO_ID_USUARIO,</code> IX_LOG_EVENTO_ID_PROPRIEDADE</li><li><code>Sem</code> UPDATE e sem DELETE (gatilho e ausência de políticas)</li></ul></details>
 </article>
 <article class="tabela" id="t-configuracao">
-  <header><span class="grupo" style="--g:#44403C">Apoio</span><h3><code>inspect.configuracao</code></h3></header>
+  <header><span class="grupo" style="--g:#44403C">Apoio</span><h3><code>INSPECT.CONFIGURACAO</code></h3></header>
   <p>Parâmetros que a especificação pede configuráveis no banco, em vez de fixos no app.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T08, T12, T15</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por usuários autenticados; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>cd_configuracao</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Chave: duracao_minima_min, precisao_max_m, foto_lado_max_px, foto_qualidade, retencao_fotos_dias.</td></tr><tr><td data-l="Campo"><code>vl_configuracao</code></td><td data-l="Tipo"><code>numeric</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Valor numérico (ex.: 4, 50, 1600, 0.8).</td></tr><tr><td data-l="Campo"><code>ds_configuracao</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Para que serve e a unidade de medida.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração.</td></tr>
+  <tr><td data-l="Campo"><code>CD_CONFIGURACAO</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Chave: duracao_minima_min, precisao_max_m, foto_lado_max_px, foto_qualidade, retencao_fotos_dias.</td></tr><tr><td data-l="Campo"><code>VL_CONFIGURACAO</code></td><td data-l="Tipo"><code>numeric</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Valor numérico (ex.: 4, 50, 1600, 0.8).</td></tr><tr><td data-l="Campo"><code>DS_CONFIGURACAO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Para que serve e a unidade de medida.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_configuracao</code> (cd_configuracao)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_CONFIGURACAO</code> (CD_CONFIGURACAO)</li></ul></details>
 </article>
 <article class="tabela" id="t-unidade">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.unidade</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.UNIDADE</code></h3></header>
   <p>Chalés, quartos e suítes. Guarda o estado atual e a configuração de presença própria, quando diferente da propriedade.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T05, T06, T08, T09, T21, T22, T33</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por quem tem vínculo com a propriedade; estado alterado pelo envio da vistoria ou pela gestão; cadastro só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_unidade</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>id_propriedade</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade a que pertence.</td></tr><tr><td data-l="Campo"><code>nm_unidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Chalé Ipê, Quarto 101). Único dentro da propriedade.</td></tr><tr><td data-l="Campo"><code>tp_unidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo: chale, quarto ou suite.</td></tr><tr><td data-l="Campo"><code>ds_andar</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Andar ou localização (ex.: Térreo, 1º andar).</td></tr><tr><td data-l="Campo"><code>tp_validacao</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença própria (gps, qr, gps_qr); vazio herda da propriedade.</td></tr><tr><td data-l="Campo"><code>vl_latitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Coordenada própria; vazia herda a da propriedade.</td></tr><tr><td data-l="Campo"><code>vl_longitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Coordenada própria; vazia herda a da propriedade.</td></tr><tr><td data-l="Campo"><code>vl_raio_m</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Raio próprio em metros; vazio herda o da propriedade.</td></tr><tr><td data-l="Campo"><code>st_unidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;em_limpeza&#x27;</code></td><td data-l="Descrição">Estado atual: em_limpeza, liberado, ocupado, bloqueado ou manutencao.</td></tr><tr><td data-l="Campo"><code>cd_hash_qr</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Hash SHA-256 do segredo vigente do QR Code. O segredo nunca é gravado nem enviado ao app.</td></tr><tr><td data-l="Campo"><code>nr_versao_qr</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>1</code></td><td data-l="Descrição">Versão do QR; aumenta a cada rotação, invalidando as anteriores.</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira a unidade das listas sem apagar o histórico.</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
+  <tr><td data-l="Campo"><code>ID_UNIDADE</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>ID_PROPRIEDADE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Propriedade a que pertence.</td></tr><tr><td data-l="Campo"><code>NM_UNIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Chalé Ipê, Quarto 101). Único dentro da propriedade.</td></tr><tr><td data-l="Campo"><code>TP_UNIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo: chale, quarto ou suite.</td></tr><tr><td data-l="Campo"><code>DS_ANDAR</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Andar ou localização (ex.: Térreo, 1º andar).</td></tr><tr><td data-l="Campo"><code>TP_VALIDACAO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença própria (gps, qr, gps_qr); vazio herda da propriedade.</td></tr><tr><td data-l="Campo"><code>VL_LATITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Coordenada própria; vazia herda a da propriedade.</td></tr><tr><td data-l="Campo"><code>VL_LONGITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Coordenada própria; vazia herda a da propriedade.</td></tr><tr><td data-l="Campo"><code>VL_RAIO_M</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Raio próprio em metros; vazio herda o da propriedade.</td></tr><tr><td data-l="Campo"><code>ST_UNIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;em_limpeza&#x27;</code></td><td data-l="Descrição">Estado atual: em_limpeza, liberado, ocupado, bloqueado ou manutencao.</td></tr><tr><td data-l="Campo"><code>CD_HASH_QR</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Hash SHA-256 do segredo vigente do QR Code. O segredo nunca é gravado nem enviado ao app.</td></tr><tr><td data-l="Campo"><code>NR_VERSAO_QR</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>1</code></td><td data-l="Descrição">Versão do QR; aumenta a cada rotação, invalidando as anteriores.</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira a unidade das listas sem apagar o histórico.</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_unidade</code> (id_unidade)</li><li><code>uq_unidade_nome</code> (id_propriedade, nm_unidade)</li><li><code>ix_unidade_id_propriedade</code> (id_propriedade)</li><li><code>ck_unidade_tp_unidade:</code> chale | quarto | suite</li><li><code>ck_unidade_st_unidade:</code> em_limpeza | liberado | ocupado | bloqueado | manutencao</li><li><code>ck_unidade_tp_validacao:</code> gps | qr | gps_qr</li><li><code>fk_unidade_propriedade</code> (on delete restrict)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_UNIDADE</code> (ID_UNIDADE)</li><li><code>UQ_UNIDADE_NOME</code> (ID_PROPRIEDADE, NM_UNIDADE)</li><li><code>IX_UNIDADE_ID_PROPRIEDADE</code> (ID_PROPRIEDADE)</li><li><code>CK_UNIDADE_TP_UNIDADE:</code> chale | quarto | suite</li><li><code>CK_UNIDADE_ST_UNIDADE:</code> em_limpeza | liberado | ocupado | bloqueado | manutencao</li><li><code>CK_UNIDADE_TP_VALIDACAO:</code> gps | qr | gps_qr</li><li><code>FK_UNIDADE_PROPRIEDADE</code> (on delete restrict)</li></ul></details>
 </article>
 <article class="tabela" id="t-ambiente">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.ambiente</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.AMBIENTE</code></h3></header>
   <p>Cômodos da unidade, na ordem física do percurso da vistoria.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T10, T11, T12, T30</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por quem tem vínculo; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_ambiente</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>id_unidade</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Unidade a que pertence.</td></tr><tr><td data-l="Campo"><code>nm_ambiente</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Varanda, Sala, Copa, Quarto, Banheiro).</td></tr><tr><td data-l="Campo"><code>nr_ordem</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição no percurso (1 = primeiro).</td></tr><tr><td data-l="Campo"><code>ds_foto_referencia</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho da foto de referência no Storage (bucket referencias).</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira o ambiente das próximas vistorias sem apagar o histórico.</td></tr>
+  <tr><td data-l="Campo"><code>ID_AMBIENTE</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>ID_UNIDADE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Unidade a que pertence.</td></tr><tr><td data-l="Campo"><code>NM_AMBIENTE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Varanda, Sala, Copa, Quarto, Banheiro).</td></tr><tr><td data-l="Campo"><code>NR_ORDEM</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição no percurso (1 = primeiro).</td></tr><tr><td data-l="Campo"><code>DS_FOTO_REFERENCIA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho da foto de referência no Storage (bucket referencias).</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira o ambiente das próximas vistorias sem apagar o histórico.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_ambiente</code> (id_ambiente)</li><li><code>ix_ambiente_id_unidade</code> (id_unidade, nr_ordem)</li><li><code>fk_ambiente_unidade</code> (on delete cascade)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_AMBIENTE</code> (ID_AMBIENTE)</li><li><code>IX_AMBIENTE_ID_UNIDADE</code> (ID_UNIDADE, NR_ORDEM)</li><li><code>FK_AMBIENTE_UNIDADE</code> (on delete cascade)</li></ul></details>
 </article>
 <article class="tabela" id="t-item">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.item</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.ITEM</code></h3></header>
   <p>O que é conferido em cada ambiente.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T10, T11, T30</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por quem tem vínculo; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_item</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>id_ambiente</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Ambiente a que pertence.</td></tr><tr><td data-l="Campo"><code>nm_item</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Cama arrumada e roupa de cama).</td></tr><tr><td data-l="Campo"><code>nr_ordem</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição dentro do ambiente.</td></tr><tr><td data-l="Campo"><code>fl_critico</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Problema neste item sugere gravidade crítica e pode bloquear a unidade.</td></tr><tr><td data-l="Campo"><code>fl_foto_obrigatoria</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Exige foto mesmo com resposta positiva (exceto N/A).</td></tr><tr><td data-l="Campo"><code>qt_esperada</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quantidade esperada, quando o item é contado (ex.: 4 toalhas).</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira o item das próximas vistorias sem apagar o histórico.</td></tr>
+  <tr><td data-l="Campo"><code>ID_ITEM</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>ID_AMBIENTE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Ambiente a que pertence.</td></tr><tr><td data-l="Campo"><code>NM_ITEM</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome (ex.: Cama arrumada e roupa de cama).</td></tr><tr><td data-l="Campo"><code>NR_ORDEM</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição dentro do ambiente.</td></tr><tr><td data-l="Campo"><code>FL_CRITICO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Problema neste item sugere gravidade crítica e pode bloquear a unidade.</td></tr><tr><td data-l="Campo"><code>FL_FOTO_OBRIGATORIA</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Exige foto mesmo com resposta positiva (exceto N/A).</td></tr><tr><td data-l="Campo"><code>QT_ESPERADA</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quantidade esperada, quando o item é contado (ex.: 4 toalhas).</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Desativar retira o item das próximas vistorias sem apagar o histórico.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_item</code> (id_item)</li><li><code>ix_item_id_ambiente</code> (id_ambiente, nr_ordem)</li><li><code>fk_item_ambiente</code> (on delete cascade)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_ITEM</code> (ID_ITEM)</li><li><code>IX_ITEM_ID_AMBIENTE</code> (ID_AMBIENTE, NR_ORDEM)</li><li><code>FK_ITEM_AMBIENTE</code> (on delete cascade)</li></ul></details>
 </article>
 <article class="tabela" id="t-vistoria">
-  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>inspect.vistoria</code></h3></header>
+  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>INSPECT.VISTORIA</code></h3></header>
   <p>Registro final de cada vistoria enviada. É imutável: depois de gravada não pode ser alterada nem excluída.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T08 a T17, T19, T23, T24, T27</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Inclusão pelo assessor com vínculo, via função de envio; leitura por quem tem vínculo; sem UPDATE e sem DELETE.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_vistoria</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Gerado no celular antes da primeira gravação (UUID v7, ordenado pelo tempo). Permite reenviar sem duplicar.</td></tr><tr><td data-l="Campo"><code>id_vistoria_entrada</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Na Saída, a vistoria de Entrada da estadia; base da comparação (T13).</td></tr><tr><td data-l="Campo"><code>id_unidade</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Unidade vistoriada.</td></tr><tr><td data-l="Campo"><code>id_tipo_vistoria</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo de vistoria (Entrada, Saída, Preventiva…).</td></tr><tr><td data-l="Campo"><code>id_usuario</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Assessor que executou.</td></tr><tr><td data-l="Campo"><code>tp_validacao</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença exigida no momento (gps, qr, gps_qr), congelada para o histórico.</td></tr><tr><td data-l="Campo"><code>dt_inicio</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença validada e checklist aberto.</td></tr><tr><td data-l="Campo"><code>dt_fim</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Envio confirmado no celular.</td></tr><tr><td data-l="Campo"><code>dt_recebimento</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Chegada ao servidor; difere de dt_fim quando enviada offline.</td></tr><tr><td data-l="Campo"><code>vl_latitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na validação de presença.</td></tr><tr><td data-l="Campo"><code>vl_longitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na validação de presença.</td></tr><tr><td data-l="Campo"><code>vl_precisao_m</code></td><td data-l="Tipo"><code>numeric(6,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Precisão informada pelo GPS, em metros.</td></tr><tr><td data-l="Campo"><code>vl_distancia_m</code></td><td data-l="Tipo"><code>numeric(7,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Distância até a unidade, calculada no servidor (Haversine).</td></tr><tr><td data-l="Campo"><code>fl_fora_raio</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Envio fora do raio ou sem localização; gera sinalização.</td></tr><tr><td data-l="Campo"><code>st_vistoria</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">enviada ou sinalizada. Rascunho e pendente existem só no celular.</td></tr><tr><td data-l="Campo"><code>ds_sinalizacoes</code></td><td data-l="Tipo"><code>text[]</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;{}&#x27;</code></td><td data-l="Descrição">Motivos da sinalização (ex.: duracao_menor_4min, envio_fora_raio).</td></tr><tr><td data-l="Campo"><code>ds_assinatura</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho da assinatura (PNG) no Storage.</td></tr><tr><td data-l="Campo"><code>st_unidade_resultante</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Estado em que a unidade ficou após este envio.</td></tr>
+  <tr><td data-l="Campo"><code>ID_VISTORIA</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Gerado no celular antes da primeira gravação (UUID v7, ordenado pelo tempo). Permite reenviar sem duplicar.</td></tr><tr><td data-l="Campo"><code>ID_VISTORIA_ENTRADA</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Na Saída, a vistoria de Entrada da estadia; base da comparação (T13).</td></tr><tr><td data-l="Campo"><code>ID_UNIDADE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Unidade vistoriada.</td></tr><tr><td data-l="Campo"><code>ID_TIPO_VISTORIA</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo de vistoria (Entrada, Saída, Preventiva…).</td></tr><tr><td data-l="Campo"><code>ID_USUARIO</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Assessor que executou.</td></tr><tr><td data-l="Campo"><code>TP_VALIDACAO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença exigida no momento (gps, qr, gps_qr), congelada para o histórico.</td></tr><tr><td data-l="Campo"><code>DT_INICIO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Presença validada e checklist aberto.</td></tr><tr><td data-l="Campo"><code>DT_FIM</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Envio confirmado no celular.</td></tr><tr><td data-l="Campo"><code>DT_RECEBIMENTO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Chegada ao servidor; difere de DT_FIM quando enviada offline.</td></tr><tr><td data-l="Campo"><code>VL_LATITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na validação de presença.</td></tr><tr><td data-l="Campo"><code>VL_LONGITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na validação de presença.</td></tr><tr><td data-l="Campo"><code>VL_PRECISAO_M</code></td><td data-l="Tipo"><code>numeric(6,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Precisão informada pelo GPS, em metros.</td></tr><tr><td data-l="Campo"><code>VL_DISTANCIA_M</code></td><td data-l="Tipo"><code>numeric(7,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Distância até a unidade, calculada no servidor (Haversine).</td></tr><tr><td data-l="Campo"><code>FL_FORA_RAIO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Envio fora do raio ou sem localização; gera sinalização.</td></tr><tr><td data-l="Campo"><code>ST_VISTORIA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">enviada ou sinalizada. Rascunho e pendente existem só no celular.</td></tr><tr><td data-l="Campo"><code>DS_SINALIZACOES</code></td><td data-l="Tipo"><code>text[]</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;{}&#x27;</code></td><td data-l="Descrição">Motivos da sinalização (ex.: duracao_menor_4min, envio_fora_raio).</td></tr><tr><td data-l="Campo"><code>DS_ASSINATURA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho da assinatura (PNG) no Storage.</td></tr><tr><td data-l="Campo"><code>ST_UNIDADE_RESULTANTE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Estado em que a unidade ficou após este envio.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_vistoria</code> (id_vistoria)</li><li><code>ix_vistoria_unidade_dt_fim</code> (id_unidade, dt_fim desc)</li><li><code>ix_vistoria_id_tipo_vistoria,</code> ix_vistoria_id_usuario, ix_vistoria_id_vistoria_entrada</li><li><code>ck_vistoria_st_vistoria:</code> enviada | sinalizada</li><li><code>ck_vistoria_periodo:</code> dt_fim &gt;= dt_inicio</li><li><code>Gatilho</code> impede UPDATE e DELETE (registro imutável)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_VISTORIA</code> (ID_VISTORIA)</li><li><code>IX_VISTORIA_UNIDADE_DT_FIM</code> (ID_UNIDADE, DT_FIM desc)</li><li><code>IX_VISTORIA_ID_TIPO_VISTORIA,</code> IX_VISTORIA_ID_USUARIO, IX_VISTORIA_ID_VISTORIA_ENTRADA</li><li><code>CK_VISTORIA_ST_VISTORIA:</code> enviada | sinalizada</li><li><code>CK_VISTORIA_PERIODO:</code> DT_FIM &gt;= DT_INICIO</li><li><code>Gatilho</code> impede UPDATE e DELETE (registro imutável)</li></ul></details>
 </article>
 <article class="tabela" id="t-resposta">
-  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>inspect.resposta</code></h3></header>
+  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>INSPECT.RESPOSTA</code></h3></header>
   <p>Resposta de cada item em uma vistoria. Uma por item.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T10, T11, T13</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Inclusão junto com a vistoria (função de envio); leitura por quem tem vínculo; imutável.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_vistoria</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria a que pertence.</td></tr><tr><td data-l="Campo"><code>id_item</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item respondido.</td></tr><tr><td data-l="Campo"><code>nm_item</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome do item no momento da vistoria; preserva o histórico se o cadastro mudar.</td></tr><tr><td data-l="Campo"><code>tp_resposta</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">ok, problema, na, igual, danificado, faltando, com_defeito ou precisa_intervencao (conforme o tipo).</td></tr><tr><td data-l="Campo"><code>ds_observacao</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Observação opcional.</td></tr><tr><td data-l="Campo"><code>dt_resposta</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Última alteração da resposta no celular.</td></tr>
+  <tr><td data-l="Campo"><code>ID_VISTORIA</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria a que pertence.</td></tr><tr><td data-l="Campo"><code>ID_ITEM</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item respondido.</td></tr><tr><td data-l="Campo"><code>NM_ITEM</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome do item no momento da vistoria; preserva o histórico se o cadastro mudar.</td></tr><tr><td data-l="Campo"><code>TP_RESPOSTA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">ok, problema, na, igual, danificado, faltando, com_defeito ou precisa_intervencao (conforme o tipo).</td></tr><tr><td data-l="Campo"><code>DS_OBSERVACAO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Observação opcional.</td></tr><tr><td data-l="Campo"><code>DT_RESPOSTA</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Última alteração da resposta no celular.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_resposta</code> (id_vistoria, id_item)</li><li><code>ix_resposta_id_item</code> (id_item)</li><li><code>ck_resposta_tp_resposta:</code> lista acima</li><li><code>fk_resposta_vistoria</code> (on delete cascade), fk_resposta_item (on delete restrict)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_RESPOSTA</code> (ID_VISTORIA, ID_ITEM)</li><li><code>IX_RESPOSTA_ID_ITEM</code> (ID_ITEM)</li><li><code>CK_RESPOSTA_TP_RESPOSTA:</code> lista acima</li><li><code>FK_RESPOSTA_VISTORIA</code> (on delete cascade), FK_RESPOSTA_ITEM (on delete restrict)</li></ul></details>
 </article>
 <article class="tabela" id="t-ocorrencia">
-  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>inspect.ocorrencia</code></h3></header>
-  <p>Divergência que precisa de tratamento. Nasce de uma resposta negativa no envio e é tratada pela gestão. O histórico fica em log_evento.</p>
+  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>INSPECT.OCORRENCIA</code></h3></header>
+  <p>Divergência que precisa de tratamento. Nasce de uma resposta negativa no envio e é tratada pela gestão. O histórico fica em LOG_EVENTO.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T14, T15, T20, T22, T25, T26</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Inclusão pela função de envio; leitura por quem tem vínculo; gestor e admin alteram responsável, prazo e status.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_ocorrencia</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>id_vistoria</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria em que foi registrada (FK composta com id_item → resposta).</td></tr><tr><td data-l="Campo"><code>id_item</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item com problema (FK composta com id_vistoria → resposta).</td></tr><tr><td data-l="Campo"><code>id_unidade</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Repetido da vistoria para as consultas e as regras de acesso.</td></tr><tr><td data-l="Campo"><code>tp_gravidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">baixa, media ou critica. Crítica pode bloquear a unidade.</td></tr><tr><td data-l="Campo"><code>ds_ocorrencia</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Descrição opcional; o padrão é a observação da resposta.</td></tr><tr><td data-l="Campo"><code>nm_responsavel</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Pessoa ou equipe responsável (ex.: Governança).</td></tr><tr><td data-l="Campo"><code>dt_prazo</code></td><td data-l="Tipo"><code>date</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Prazo para resolver.</td></tr><tr><td data-l="Campo"><code>st_ocorrencia</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;aberta&#x27;</code></td><td data-l="Descrição">aberta, em_tratamento, resolvida ou cancelada. Resolver não muda o estado da unidade.</td></tr><tr><td data-l="Campo"><code>dt_resolucao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quando foi resolvida ou cancelada.</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
+  <tr><td data-l="Campo"><code>ID_OCORRENCIA</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>ID_VISTORIA</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria em que foi registrada (FK composta com ID_ITEM → RESPOSTA).</td></tr><tr><td data-l="Campo"><code>ID_ITEM</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item com problema (FK composta com ID_VISTORIA → RESPOSTA).</td></tr><tr><td data-l="Campo"><code>ID_UNIDADE</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Repetido da vistoria para as consultas e as regras de acesso.</td></tr><tr><td data-l="Campo"><code>TP_GRAVIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">baixa, media ou critica. Crítica pode bloquear a unidade.</td></tr><tr><td data-l="Campo"><code>DS_OCORRENCIA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Descrição opcional; o padrão é a observação da resposta.</td></tr><tr><td data-l="Campo"><code>NM_RESPONSAVEL</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Pessoa ou equipe responsável (ex.: Governança).</td></tr><tr><td data-l="Campo"><code>DT_PRAZO</code></td><td data-l="Tipo"><code>date</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Prazo para resolver.</td></tr><tr><td data-l="Campo"><code>ST_OCORRENCIA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;aberta&#x27;</code></td><td data-l="Descrição">aberta, em_tratamento, resolvida ou cancelada. Resolver não muda o estado da unidade.</td></tr><tr><td data-l="Campo"><code>DT_RESOLUCAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Quando foi resolvida ou cancelada.</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Quando o registro foi criado.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração; atualizada por gatilho.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_ocorrencia</code> (id_ocorrencia)</li><li><code>uq_ocorrencia_resposta</code> (id_vistoria, id_item): uma por item, sem duplicidade</li><li><code>ix_ocorrencia_abertas</code> (id_unidade, tp_gravidade) where st_ocorrencia in (aberta, em_tratamento)</li><li><code>ck_ocorrencia_tp_gravidade,</code> ck_ocorrencia_st_ocorrencia</li><li><code>fk_ocorrencia_resposta,</code> fk_ocorrencia_unidade</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_OCORRENCIA</code> (ID_OCORRENCIA)</li><li><code>UQ_OCORRENCIA_RESPOSTA</code> (ID_VISTORIA, ID_ITEM): uma por item, sem duplicidade</li><li><code>IX_OCORRENCIA_ABERTAS</code> (ID_UNIDADE, TP_GRAVIDADE) where ST_OCORRENCIA in (aberta, em_tratamento)</li><li><code>CK_OCORRENCIA_TP_GRAVIDADE,</code> CK_OCORRENCIA_ST_OCORRENCIA</li><li><code>FK_OCORRENCIA_RESPOSTA,</code> FK_OCORRENCIA_UNIDADE</li></ul></details>
 </article>
 <article class="tabela" id="t-tipo_vistoria">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.tipo_vistoria</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.TIPO_VISTORIA</code></h3></header>
   <p>Tipos de vistoria e suas regras (Entrada, Saída, Manutenção preventiva e personalizados).</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T07, T31</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por usuários autenticados; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_tipo_vistoria</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>nm_tipo_vistoria</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome exibido (ex.: Entrada, Conferência de enxoval).</td></tr><tr><td data-l="Campo"><code>ds_tipo_vistoria</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Descrição mostrada na escolha do tipo (T07).</td></tr><tr><td data-l="Campo"><code>tp_comportamento</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">entrada, saida, preventiva ou personalizada: define as respostas e a regra de estado da unidade.</td></tr><tr><td data-l="Campo"><code>tp_periodicidade</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;por_estadia&#x27;</code></td><td data-l="Descrição">por_estadia, semanal, mensal, trimestral ou sob_demanda.</td></tr><tr><td data-l="Campo"><code>fl_exige_entrada</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Só pode ser feita com vistoria de Entrada vinculada (caso da Saída).</td></tr><tr><td data-l="Campo"><code>fl_exige_assinatura</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Exige assinatura antes do envio.</td></tr><tr><td data-l="Campo"><code>fl_ativo</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Só tipos ativos aparecem; um tipo sem itens não pode ser ativado.</td></tr><tr><td data-l="Campo"><code>dt_atualizacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração.</td></tr>
+  <tr><td data-l="Campo"><code>ID_TIPO_VISTORIA</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>identity</code></td><td data-l="Descrição">Identificador gerado pelo banco.</td></tr><tr><td data-l="Campo"><code>NM_TIPO_VISTORIA</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Nome exibido (ex.: Entrada, Conferência de enxoval).</td></tr><tr><td data-l="Campo"><code>DS_TIPO_VISTORIA</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Descrição mostrada na escolha do tipo (T07).</td></tr><tr><td data-l="Campo"><code>TP_COMPORTAMENTO</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">entrada, saida, preventiva ou personalizada: define as respostas e a regra de estado da unidade.</td></tr><tr><td data-l="Campo"><code>TP_PERIODICIDADE</code></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>&#x27;por_estadia&#x27;</code></td><td data-l="Descrição">por_estadia, semanal, mensal, trimestral ou sob_demanda.</td></tr><tr><td data-l="Campo"><code>FL_EXIGE_ENTRADA</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Só pode ser feita com vistoria de Entrada vinculada (caso da Saída).</td></tr><tr><td data-l="Campo"><code>FL_EXIGE_ASSINATURA</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Exige assinatura antes do envio.</td></tr><tr><td data-l="Campo"><code>FL_ATIVO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>true</code></td><td data-l="Descrição">Só tipos ativos aparecem; um tipo sem itens não pode ser ativado.</td></tr><tr><td data-l="Campo"><code>DT_ATUALIZACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Última alteração.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_tipo_vistoria</code> (id_tipo_vistoria)</li><li><code>uq_tipo_vistoria_nm</code> (nm_tipo_vistoria)</li><li><code>ck_tipo_vistoria_tp_comportamento,</code> ck_tipo_vistoria_tp_periodicidade</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_TIPO_VISTORIA</code> (ID_TIPO_VISTORIA)</li><li><code>UQ_TIPO_VISTORIA_NM</code> (NM_TIPO_VISTORIA)</li><li><code>CK_TIPO_VISTORIA_TP_COMPORTAMENTO,</code> CK_TIPO_VISTORIA_TP_PERIODICIDADE</li></ul></details>
 </article>
 <article class="tabela" id="t-tipo_vistoria_item">
-  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>inspect.tipo_vistoria_item</code></h3></header>
+  <header><span class="grupo" style="--g:#2C3E35">Cadastro</span><h3><code>INSPECT.TIPO_VISTORIA_ITEM</code></h3></header>
   <p>Itens que compõem cada tipo. Para manter simples: se um tipo não tiver linhas aqui, todos os itens ativos da unidade se aplicam (caso de Entrada e Saída).</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T10, T31</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Leitura por usuários autenticados; alteração só pelo admin.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_tipo_vistoria</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo de vistoria.</td></tr><tr><td data-l="Campo"><code>id_item</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item incluído no tipo.</td></tr><tr><td data-l="Campo"><code>nr_ordem</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Ordem própria no tipo; vazio segue a ordem do ambiente.</td></tr>
+  <tr><td data-l="Campo"><code>ID_TIPO_VISTORIA</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Tipo de vistoria.</td></tr><tr><td data-l="Campo"><code>ID_ITEM</code> <span class=chip>PK</span> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item incluído no tipo.</td></tr><tr><td data-l="Campo"><code>NR_ORDEM</code></td><td data-l="Tipo"><code>integer</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Ordem própria no tipo; vazio segue a ordem do ambiente.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_tipo_vistoria_item</code> (id_tipo_vistoria, id_item)</li><li><code>ix_tipo_vistoria_item_id_item</code> (id_item)</li><li><code>fk_tipo_vistoria_item_tipo_vistoria,</code> fk_tipo_vistoria_item_item (on delete cascade)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_TIPO_VISTORIA_ITEM</code> (ID_TIPO_VISTORIA, ID_ITEM)</li><li><code>IX_TIPO_VISTORIA_ITEM_ID_ITEM</code> (ID_ITEM)</li><li><code>FK_TIPO_VISTORIA_ITEM_TIPO_VISTORIA,</code> FK_TIPO_VISTORIA_ITEM_ITEM (on delete cascade)</li></ul></details>
 </article>
 <article class="tabela" id="t-foto">
-  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>inspect.foto</code></h3></header>
+  <header><span class="grupo" style="--g:#1C2922">Operação</span><h3><code>INSPECT.FOTO</code></h3></header>
   <p>Evidências fotográficas com o carimbo de local e hora. O arquivo fica no Storage; aqui ficam o caminho e os metadados.</p>
   <dl class="meta"><div><dt>Telas</dt><dd>T11, T12, T13, T24, T27</dd></div><div><dt>Quem acessa (RLS)</dt><dd>Inclusão junto com a vistoria; leitura por quem tem vínculo; imutável. Arquivos em bucket privado com URL assinada.</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-  <tr><td data-l="Campo"><code>id_foto</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Gerado no celular (UUID v7); permite reenviar sem duplicar.</td></tr><tr><td data-l="Campo"><code>id_vistoria</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria (FK composta com id_item → resposta).</td></tr><tr><td data-l="Campo"><code>id_item</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item fotografado (FK composta com id_vistoria → resposta).</td></tr><tr><td data-l="Campo"><code>ds_caminho</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho no bucket privado vistorias: {id_propriedade}/{id_vistoria}/{id_foto}.jpg.</td></tr><tr><td data-l="Campo"><code>dt_captura</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Data e hora do carimbo.</td></tr><tr><td data-l="Campo"><code>vl_latitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na captura.</td></tr><tr><td data-l="Campo"><code>vl_longitude</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na captura.</td></tr><tr><td data-l="Campo"><code>vl_precisao_m</code></td><td data-l="Tipo"><code>numeric(6,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Precisão do GPS na captura, em metros.</td></tr><tr><td data-l="Campo"><code>fl_fora_raio</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Posição revalidada fora do raio na captura.</td></tr><tr><td data-l="Campo"><code>dt_criacao</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Chegada ao servidor.</td></tr>
+  <tr><td data-l="Campo"><code>ID_FOTO</code> <span class=chip>PK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Gerado no celular (UUID v7); permite reenviar sem duplicar.</td></tr><tr><td data-l="Campo"><code>ID_VISTORIA</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>uuid</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Vistoria (FK composta com ID_ITEM → RESPOSTA).</td></tr><tr><td data-l="Campo"><code>ID_ITEM</code> <span class=chip>FK</span></td><td data-l="Tipo"><code>bigint</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Item fotografado (FK composta com ID_VISTORIA → RESPOSTA).</td></tr><tr><td data-l="Campo"><code>DS_CAMINHO</code> <span class=chip>UQ</span></td><td data-l="Tipo"><code>text</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Caminho no bucket privado vistorias: {ID_PROPRIEDADE}/{ID_VISTORIA}/{ID_FOTO}.jpg.</td></tr><tr><td data-l="Campo"><code>DT_CAPTURA</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão">—</td><td data-l="Descrição">Data e hora do carimbo.</td></tr><tr><td data-l="Campo"><code>VL_LATITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na captura.</td></tr><tr><td data-l="Campo"><code>VL_LONGITUDE</code></td><td data-l="Tipo"><code>numeric(9,6)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Posição na captura.</td></tr><tr><td data-l="Campo"><code>VL_PRECISAO_M</code></td><td data-l="Tipo"><code>numeric(6,1)</code></td><td data-l="Obrigatório">não</td><td data-l="Padrão">—</td><td data-l="Descrição">Precisão do GPS na captura, em metros.</td></tr><tr><td data-l="Campo"><code>FL_FORA_RAIO</code></td><td data-l="Tipo"><code>boolean</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>false</code></td><td data-l="Descrição">Posição revalidada fora do raio na captura.</td></tr><tr><td data-l="Campo"><code>DT_CRIACAO</code></td><td data-l="Tipo"><code>timestamptz</code></td><td data-l="Obrigatório">sim</td><td data-l="Padrão"><code>now()</code></td><td data-l="Descrição">Chegada ao servidor.</td></tr>
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul><li><code>pk_foto</code> (id_foto)</li><li><code>uq_foto_ds_caminho</code> (ds_caminho)</li><li><code>ix_foto_resposta</code> (id_vistoria, id_item)</li><li><code>fk_foto_resposta</code> (on delete cascade)</li></ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul><li><code>PK_FOTO</code> (ID_FOTO)</li><li><code>UQ_FOTO_DS_CAMINHO</code> (DS_CAMINHO)</li><li><code>IX_FOTO_RESPOSTA</code> (ID_VISTORIA, ID_ITEM)</li><li><code>FK_FOTO_RESPOSTA</code> (on delete cascade)</li></ul></details>
 </article>
 
 <footer>Gerado por <code>solar-inspect/tools/gerar-der.py</code> a partir de uma definição única (DER e dicionário sempre iguais). Proposta para revisão; o SQL das migrations vem na próxima etapa.</footer>

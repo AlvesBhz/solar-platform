@@ -234,6 +234,19 @@ tabela("foto", "operacao", 1240, 560,
     ["pk_foto (id_foto)", "uq_foto_ds_caminho (ds_caminho)", "ix_foto_resposta (id_vistoria, id_item)",
      "fk_foto_resposta (on delete cascade)"])
 
+import re
+_IDS = sorted({n for n in T} | {c[0] for t in T.values() for c in t["campos"]}, key=len, reverse=True)
+_RX_ID = re.compile(r"\b(" + "|".join(i for i in _IDS if "_" in i) + r")\b")
+_RX_CONST = re.compile(r"\b(pk|fk|uq|ix|ck)_[a-z0-9_]+")
+_RX_TAB = re.compile(r"→ (resposta|vistoria|unidade|usuario|propriedade|item|ambiente)\b")
+
+def U(s):
+    """Identificadores em MAIÚSCULAS, como na planilha de referência."""
+    s = _RX_CONST.sub(lambda m: m.group(0).upper(), s)
+    s = _RX_ID.sub(lambda m: m.group(1).upper(), s)
+    s = _RX_TAB.sub(lambda m: "→ " + m.group(1).upper(), s)
+    return s.replace("auth.users", "AUTH.USERS")
+
 # Relações: (filha, pai, rótulo, pontos da linha [filha → pai], pai_opcional)
 W, H, RH = 290, 36, 21
 
@@ -294,14 +307,14 @@ def svg():
          '</defs>']
     for f, p, rot, pts, opc in R:
         d = "M" + " L".join(f"{x:.1f} {y:.1f}" for x, y in pts)
-        o.append(f'<path d="{d}" class="rel" marker-start="url(#muitos)" marker-end="url(#{"zero-um" if opc else "um"})"><title>{f}.{rot} → {p}</title></path>')
+        o.append(f'<path d="{d}" class="rel" marker-start="url(#muitos)" marker-end="url(#{"zero-um" if opc else "um"})"><title>{f.upper()}.{rot.upper()} → {p.upper()}</title></path>')
     for n, t in T.items():
         x, y, h = t["x"], t["y"], altura(n)
         cor = GRUPOS[t["grupo"]][1]
         o.append(f'<g class="tab" id="svg-{n}"><a href="#t-{n}">')
         o.append(f'<rect x="{x}" y="{y}" width="{W}" height="{h}" rx="10" class="caixa"/>')
         o.append(f'<path d="M{x} {y + H}V{y + 10}Q{x} {y} {x + 10} {y}H{x + W - 10}Q{x + W} {y} {x + W} {y + 10}V{y + H}Z" fill="{cor}"/>')
-        o.append(f'<text x="{x + 14}" y="{y + 23}" class="t-nome">{n}</text>')
+        o.append(f'<text x="{x + 14}" y="{y + 23}" class="t-nome">{n.upper()}</text>')
         o.append(f'<text x="{x + W - 14}" y="{y + 23}" class="t-grupo" text-anchor="end">{GRUPOS[t["grupo"]][0]}</text>')
         for i, (cn, tp, nulo, _pad, ch, _d) in enumerate(t["campos"]):
             cy = y + H + RH * i
@@ -309,10 +322,10 @@ def svg():
             badge = ch.replace(" ", "·")
             if badge:
                 o.append(f'<text x="{x + 12}" y="{cy + 14.5}" class="t-ch {"pk" if "PK" in ch else ""}">{badge}</text>')
-            o.append(f'<text x="{x + 50}" y="{cy + 14.5}" class="t-campo {"b" if "PK" in ch else ""}">{cn}</text>')
+            o.append(f'<text x="{x + 50}" y="{cy + 14.5}" class="t-campo {"b" if "PK" in ch else ""}">{cn.upper()}</text>')
             o.append(f'<text x="{x + W - 12}" y="{cy + 14.5}" class="t-tipo" text-anchor="end">{tp}{"" if nulo else " ●"}</text>')
         o.append('</a></g>')
-    o.append(f'<text x="{esq("usuario") + 14}" y="{topo("usuario") - 10}" class="t-ext">id_usuario → auth.users (Supabase Auth)</text>')
+    o.append(f'<text x="{esq("usuario") + 14}" y="{topo("usuario") - 10}" class="t-ext">ID_USUARIO → AUTH.USERS (Supabase Auth)</text>')
     o.append('</svg>')
     return "\n".join(o)
 
@@ -324,26 +337,26 @@ def dicionario_html():
         linhas = []
         for cn, tp, nulo, pad, ch, d in t["campos"]:
             linhas.append(
-                f'<tr><td data-l="Campo"><code>{cn}</code>{"".join(f" <span class=chip>{escape(c)}</span>" for c in ch.split())}</td>'
+                f'<tr><td data-l="Campo"><code>{cn.upper()}</code>{"".join(f" <span class=chip>{escape(c)}</span>" for c in ch.split())}</td>'
                 f'<td data-l="Tipo"><code>{escape(tp)}</code></td><td data-l="Obrigatório">{"não" if nulo else "sim"}</td>'
-                f'<td data-l="Padrão">{f"<code>{escape(pad)}</code>" if pad else "—"}</td><td data-l="Descrição">{escape(d)}</td></tr>')
+                f'<td data-l="Padrão">{f"<code>{escape(pad)}</code>" if pad else "—"}</td><td data-l="Descrição">{escape(U(d))}</td></tr>')
         out.append(f'''<article class="tabela" id="t-{n}">
-  <header><span class="grupo" style="--g:{cor}">{nome_g}</span><h3><code>{ESQUEMA}.{n}</code></h3></header>
-  <p>{escape(t["desc"])}</p>
-  <dl class="meta"><div><dt>Telas</dt><dd>{escape(t["telas"])}</dd></div><div><dt>Quem acessa (RLS)</dt><dd>{escape(t["acesso"])}</dd></div></dl>
+  <header><span class="grupo" style="--g:{cor}">{nome_g}</span><h3><code>{ESQUEMA.upper()}.{n.upper()}</code></h3></header>
+  <p>{escape(U(t["desc"]))}</p>
+  <dl class="meta"><div><dt>Telas</dt><dd>{escape(t["telas"])}</dd></div><div><dt>Quem acessa (RLS)</dt><dd>{escape(U(t["acesso"]))}</dd></div></dl>
   <table class="campos"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
   {"".join(linhas)}
   </tbody></table>
-  <details><summary>Chaves, índices e restrições</summary><ul>{"".join(f"<li><code>{escape(i.split(' ')[0])}</code> {escape(' '.join(i.split(' ')[1:]))}</li>" for i in t["indices"])}</ul></details>
+  <details><summary>Chaves, índices e restrições</summary><ul>{"".join(f"<li><code>{escape(i.split(' ')[0])}</code> {escape(' '.join(i.split(' ')[1:]))}</li>" for i in map(U, t["indices"]))}</ul></details>
 </article>''')
     return "\n".join(out)
 
 
 def pagina():
     ncampos = sum(len(t["campos"]) for t in T.values())
-    prefixos = "".join(f"<tr><td data-l='Prefixo'><code>{p}</code></td><td data-l='Significado'>{escape(s)}</td><td data-l='Tipo no Postgres'><code>{escape(tp)}</code></td><td data-l='Na planilha'>{escape(ev)}</td></tr>" for p, s, tp, ev in PREFIXOS)
+    prefixos = "".join(f"<tr><td data-l='Prefixo'><code>{p.upper()}</code></td><td data-l='Significado'>{escape(s)}</td><td data-l='Tipo no Postgres'><code>{escape(tp)}</code></td><td data-l='Na planilha'>{escape(ev)}</td></tr>" for p, s, tp, ev in PREFIXOS)
     legenda_grupos = "".join(f'<li><span class="sw" style="background:{c}"></span>{g}</li>' for g, c in GRUPOS.values())
-    indice = "".join(f'<a href="#t-{n}"><code>{n}</code></a>' for n in T)
+    indice = "".join(f'<a href="#t-{n}"><code>{n.upper()}</code></a>' for n in T)
     return f'''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modelo de dados Solar Inspect</title>
@@ -416,7 +429,7 @@ footer {{ margin-top:3rem; font-size:0.75rem; color:var(--s500); }}
   <span class="eyebrow">Solar Inspect · Banco de dados</span>
   <h1>Modelo de dados</h1>
   <p>Proposta enxuta para o Supabase (PostgreSQL), feita a partir da especificação v3 e das telas T01–T34 do protótipo. Atende a aplicação com o mínimo de tabelas; cada campo está descrito no dicionário abaixo.</p>
-  <ul class="resumo"><li>Esquema <b><code>{ESQUEMA}</code></b></li><li><b>{len(T)}</b> tabelas</li><li><b>{ncampos}</b> campos</li><li><b>{len(R)}</b> relações</li><li>Versão <b>1</b> · proposta</li></ul>
+  <ul class="resumo"><li>Esquema <b><code>{ESQUEMA.upper()}</code></b></li><li><b>{len(T)}</b> tabelas</li><li><b>{ncampos}</b> campos</li><li><b>{len(R)}</b> relações</li><li>Versão <b>1</b> · proposta</li></ul>
 </header>
 
 <h2>Diagrama</h2>
@@ -430,22 +443,22 @@ footer {{ margin-top:3rem; font-size:0.75rem; color:var(--s500); }}
 <p style="margin-top:0.75rem;font-size:0.8125rem">Toque numa tabela do diagrama para ir à sua descrição. Nas linhas, o lado com pé de galinha é a tabela filha (que guarda a chave estrangeira).</p>
 
 <h2>Convenções de nomenclatura</h2>
-<p>Segue o padrão da planilha de referência (esquema IBP, SQL Server), adaptado ao PostgreSQL: os mesmos prefixos, porém em <b>minúsculas</b>, porque o Postgres converte nomes sem aspas para minúsculas e nomes em maiúsculas obrigariam o uso de aspas em toda consulta.</p>
+<p>Segue o padrão da planilha de referência (esquema IBP, SQL Server), adaptado ao PostgreSQL: os mesmos prefixos e nomes em <b>MAIÚSCULAS</b>. No SQL os nomes são escritos sem aspas (<code>SELECT ID_UNIDADE FROM INSPECT.UNIDADE</code>): o Postgres aceita e guarda internamente em minúsculas, que é como o painel do Supabase vai exibi-los. Não usar aspas, para não ter de repeti-las em toda consulta.</p>
 <div class="painel" style="padding:0.25rem 0.75rem"><table><thead><tr><th>Prefixo</th><th>Significado</th><th>Tipo no Postgres</th><th>Na planilha</th></tr></thead><tbody>{prefixos}</tbody></table></div>
 <div class="notas">
-  <div class="painel nota"><h3>Tabelas e esquema</h3><p>Nomes no singular e em português (<code>unidade</code>, <code>vistoria</code>), como <code>OPERACAO</code> e <code>SISTEMA</code> na planilha. Tabela associativa leva o nome das duas (<code>usuario_propriedade</code>). Registro de eventos usa o prefixo <code>log_</code>, como <code>LOG_*</code>. Um esquema por sistema, como <code>IBP</code>: aqui, <code>{ESQUEMA}</code>.</p></div>
-  <div class="painel nota"><h3>Chaves e índices</h3><p>Mesmo padrão da planilha: <code>pk_&lt;tabela&gt;</code>, <code>fk_&lt;filha&gt;_&lt;pai&gt;</code> e <code>ix_&lt;tabela&gt;_&lt;colunas&gt;</code>, mais <code>uq_</code> (único) e <code>ck_</code> (regra de valores).</p></div>
+  <div class="painel nota"><h3>Tabelas e esquema</h3><p>Nomes no singular e em português (<code>UNIDADE</code>, <code>VISTORIA</code>), como <code>OPERACAO</code> e <code>SISTEMA</code> na planilha. Tabela associativa leva o nome das duas (<code>USUARIO_PROPRIEDADE</code>). Registro de eventos usa o prefixo <code>LOG_</code>, como <code>LOG_*</code>. Um esquema por sistema, como <code>IBP</code>: aqui, <code>{ESQUEMA.upper()}</code>.</p></div>
+  <div class="painel nota"><h3>Chaves e índices</h3><p>Mesmo padrão da planilha: <code>PK_&lt;TABELA&gt;</code>, <code>FK_&lt;FILHA&gt;_&lt;PAI&gt;</code> e <code>IX_&lt;TABELA&gt;_&lt;COLUNAS&gt;</code>, mais <code>UQ_</code> (único) e <code>CK_</code> (regra de valores).</p></div>
   <div class="painel nota"><h3>O que não repetir da referência</h3><ul><li>20 tabelas sem chave primária → aqui todas têm.</li><li>49 chaves estrangeiras sem índice → aqui todas têm índice.</li><li>40 chaves estrangeiras não confiáveis e 160 ligações implícitas → aqui todas as relações são declaradas e validadas.</li></ul></div>
 </div>
 
 <h2>Decisões</h2>
 <div class="notas">
-  <div class="painel nota"><h3>Identificadores</h3><p>Cadastros usam <code>bigint</code> gerado pelo banco. Vistoria e foto usam <code>uuid</code> v7 gerado no celular, porque nascem offline e o mesmo envio pode chegar mais de uma vez sem duplicar. <code>usuario</code> reaproveita o id do Supabase Auth.</p></div>
-  <div class="painel nota"><h3>Tipos</h3><p><code>text</code> com regra <code>ck_</code> no lugar de <code>varchar(n)</code> e de tipos enum (mais fácil de evoluir); <code>timestamptz</code> para data e hora; <code>numeric</code> para coordenadas e medidas; <code>boolean</code> para sim ou não.</p></div>
-  <div class="painel nota"><h3>Acesso (RLS)</h3><p>RLS ligado em todas as tabelas. A regra base: o usuário só enxerga as propriedades em <code>usuario_propriedade</code>; o admin enxerga tudo. Vistoria, resposta e foto não aceitam alteração nem exclusão. A verificação de vínculo fica numa função em esquema privado, para não repetir subconsultas em cada política.</p></div>
+  <div class="painel nota"><h3>Identificadores</h3><p>Cadastros usam <code>bigint</code> gerado pelo banco. Vistoria e foto usam <code>uuid</code> v7 gerado no celular, porque nascem offline e o mesmo envio pode chegar mais de uma vez sem duplicar. <code>USUARIO</code> reaproveita o id do Supabase Auth.</p></div>
+  <div class="painel nota"><h3>Tipos</h3><p><code>text</code> com regra <code>CK_</code> no lugar de <code>varchar(n)</code> e de tipos enum (mais fácil de evoluir); <code>timestamptz</code> para data e hora; <code>numeric</code> para coordenadas e medidas; <code>boolean</code> para sim ou não.</p></div>
+  <div class="painel nota"><h3>Acesso (RLS)</h3><p>RLS ligado em todas as tabelas. A regra base: o usuário só enxerga as propriedades em <code>USUARIO_PROPRIEDADE</code>; o admin enxerga tudo. Vistoria, resposta e foto não aceitam alteração nem exclusão. A verificação de vínculo fica numa função em esquema privado, para não repetir subconsultas em cada política.</p></div>
   <div class="painel nota"><h3>Envio e presença no servidor</h3><p>O envio entra por uma função do servidor que valida a presença (distância por Haversine, precisão, QR), grava vistoria, respostas e fotos de uma vez, cria as ocorrências e atualiza o estado da unidade. Repetir o envio com o mesmo id não duplica nada.</p></div>
   <div class="painel nota"><h3>Arquivos</h3><p>Fotos e assinaturas ficam no Storage, em bucket privado <code>vistorias</code> (acesso por URL assinada); fotos de referência no bucket <code>referencias</code>. O banco guarda só o caminho.</p></div>
-  <div class="painel nota"><h3>Fora desta versão (enxuto)</h3><ul><li>Tabela de estadia: a Saída se liga à Entrada por <code>id_vistoria_entrada</code> (decisão em aberto na especificação).</li><li>Histórico de ocorrência separado: fica em <code>log_evento</code>.</li><li>Notificações, reservas e cobrança.</li><li>Segundo fator do login (definir antes da implementação).</li></ul></div>
+  <div class="painel nota"><h3>Fora desta versão (enxuto)</h3><ul><li>Tabela de estadia: a Saída se liga à Entrada por <code>ID_VISTORIA_ENTRADA</code> (decisão em aberto na especificação).</li><li>Histórico de ocorrência separado: fica em <code>LOG_EVENTO</code>.</li><li>Notificações, reservas e cobrança.</li><li>Segundo fator do login (definir antes da implementação).</li></ul></div>
 </div>
 
 <h2>Dicionário de dados</h2>
@@ -471,19 +484,19 @@ footer {{ margin-top:3rem; font-size:0.75rem; color:var(--s500); }}
 
 def markdown():
     l = [f"# Dicionário de dados — Solar Inspect\n",
-         f"Proposta enxuta para o Supabase (PostgreSQL), esquema `{ESQUEMA}`: {len(T)} tabelas, {sum(len(t['campos']) for t in T.values())} campos e {len(R)} relações. O diagrama está em [`der.html`](./der.html).\n",
+         f"Proposta enxuta para o Supabase (PostgreSQL), esquema `{ESQUEMA.upper()}`: {len(T)} tabelas, {sum(len(t['campos']) for t in T.values())} campos e {len(R)} relações. O diagrama está em [`der.html`](./der.html).\n",
          "Gerado por `tools/gerar-der.py` (fonte única do DER e deste dicionário).\n",
          "## Convenções\n", "| Prefixo | Significado | Tipo no Postgres | Na planilha de referência |", "|---|---|---|---|"]
-    l += [f"| `{p}` | {s} | `{tp}` | {ev} |" for p, s, tp, ev in PREFIXOS]
-    l += ["", "Restrições: `pk_<tabela>`, `fk_<filha>_<pai>`, `ix_<tabela>_<colunas>`, `uq_` (único) e `ck_` (regra de valores). Nomes em minúsculas (o Postgres converte nomes sem aspas).\n"]
+    l += [f"| `{p.upper()}` | {s} | `{tp}` | {ev} |" for p, s, tp, ev in PREFIXOS]
+    l += ["", "Restrições: `PK_<TABELA>`, `FK_<FILHA>_<PAI>`, `IX_<TABELA>_<COLUNAS>`, `UQ_` (único) e `CK_` (regra de valores). Nomes em MAIÚSCULAS, escritos sem aspas no SQL (o Postgres guarda em minúsculas internamente, como o painel do Supabase exibe).\n"]
     for n, t in T.items():
-        l += [f"## `{ESQUEMA}.{n}` ({GRUPOS[t['grupo']][0]})\n", t["desc"] + "\n", f"- **Telas:** {t['telas']}", f"- **Quem acessa (RLS):** {t['acesso']}\n",
+        l += [f"## `{ESQUEMA.upper()}.{n.upper()}` ({GRUPOS[t['grupo']][0]})\n", U(t["desc"]) + "\n", f"- **Telas:** {t['telas']}", f"- **Quem acessa (RLS):** {U(t['acesso'])}\n",
               "| Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |", "|---|---|---|---|---|---|"]
-        l += [f"| `{cn}` | `{tp}` | {'não' if nulo else 'sim'} | {f'`{pad}`' if pad else '—'} | {ch or '—'} | {d} |" for cn, tp, nulo, pad, ch, d in t["campos"]]
-        l += ["", "**Chaves, índices e restrições:** " + "; ".join(f"`{i.split(' ')[0]}` {' '.join(i.split(' ')[1:])}".strip() for i in t["indices"]) + "\n"]
+        l += [f"| `{cn.upper()}` | `{tp}` | {'não' if nulo else 'sim'} | {f'`{pad}`' if pad else '—'} | {ch or '—'} | {U(d)} |" for cn, tp, nulo, pad, ch, d in t["campos"]]
+        l += ["", "**Chaves, índices e restrições:** " + "; ".join(f"`{i.split(' ')[0]}` {' '.join(i.split(' ')[1:])}".strip() for i in map(U, t["indices"])) + "\n"]
     l += ["## Relações\n", "| Filha | Campo(s) | Pai | Obrigatória |", "|---|---|---|---|"]
-    l += [f"| `{f}` | `{rot}` | `{p}` | {'não' if opc else 'sim'} |" for f, p, rot, _pts, opc in R]
-    l += ["| `usuario` | `id_usuario` | `auth.users` (Supabase Auth) | sim |", ""]
+    l += [f"| `{f.upper()}` | `{rot.upper()}` | `{p.upper()}` | {'não' if opc else 'sim'} |" for f, p, rot, _pts, opc in R]
+    l += ["| `USUARIO` | `ID_USUARIO` | `AUTH.USERS` (Supabase Auth) | sim |", ""]
     return "\n".join(l)
 
 

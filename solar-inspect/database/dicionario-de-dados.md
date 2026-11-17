@@ -1,6 +1,6 @@
 # Dicionário de dados — Solar Inspect
 
-Proposta enxuta para o Supabase (PostgreSQL), esquema `inspect`: 14 tabelas, 122 campos e 18 relações. O diagrama está em [`der.html`](./der.html).
+Proposta enxuta para o Supabase (PostgreSQL), esquema `INSPECT`: 14 tabelas, 122 campos e 18 relações. O diagrama está em [`der.html`](./der.html).
 
 Gerado por `tools/gerar-der.py` (fonte única do DER e deste dicionário).
 
@@ -8,21 +8,21 @@ Gerado por `tools/gerar-der.py` (fonte única do DER e deste dicionário).
 
 | Prefixo | Significado | Tipo no Postgres | Na planilha de referência |
 |---|---|---|---|
-| `id_` | Identificador (chave primária ou estrangeira) | `bigint ou uuid` | ID_ (190 colunas) |
-| `nm_` | Nome | `text` | NM_ (37) |
-| `ds_` | Descrição, texto livre ou caminho de arquivo | `text, text[] ou jsonb` | DS_ (18) |
-| `cd_` | Código (login, CPF, chave, hash) | `text` | CD_ (8) |
-| `tp_` | Tipo ou categoria de uma lista fechada | `text + check` | TP_ (6) |
-| `dt_` | Data ou data e hora | `timestamptz ou date` | DT_ (86) |
-| `vl_` | Valor numérico medido (coordenada, raio, precisão) | `numeric ou integer` | VL_ (104) |
-| `st_` | Estado ou situação (muda ao longo do tempo) | `text + check` | novo; a planilha usa STATUS sem prefixo |
-| `fl_` | Sim ou não | `boolean` | novo; a planilha usa varchar(1) S/N em 16 colunas |
-| `nr_` | Número de ordem ou versão | `integer` | novo |
-| `qt_` | Quantidade | `integer` | novo |
+| `ID_` | Identificador (chave primária ou estrangeira) | `bigint ou uuid` | ID_ (190 colunas) |
+| `NM_` | Nome | `text` | NM_ (37) |
+| `DS_` | Descrição, texto livre ou caminho de arquivo | `text, text[] ou jsonb` | DS_ (18) |
+| `CD_` | Código (login, CPF, chave, hash) | `text` | CD_ (8) |
+| `TP_` | Tipo ou categoria de uma lista fechada | `text + check` | TP_ (6) |
+| `DT_` | Data ou data e hora | `timestamptz ou date` | DT_ (86) |
+| `VL_` | Valor numérico medido (coordenada, raio, precisão) | `numeric ou integer` | VL_ (104) |
+| `ST_` | Estado ou situação (muda ao longo do tempo) | `text + check` | novo; a planilha usa STATUS sem prefixo |
+| `FL_` | Sim ou não | `boolean` | novo; a planilha usa varchar(1) S/N em 16 colunas |
+| `NR_` | Número de ordem ou versão | `integer` | novo |
+| `QT_` | Quantidade | `integer` | novo |
 
-Restrições: `pk_<tabela>`, `fk_<filha>_<pai>`, `ix_<tabela>_<colunas>`, `uq_` (único) e `ck_` (regra de valores). Nomes em minúsculas (o Postgres converte nomes sem aspas).
+Restrições: `PK_<TABELA>`, `FK_<FILHA>_<PAI>`, `IX_<TABELA>_<COLUNAS>`, `UQ_` (único) e `CK_` (regra de valores). Nomes em MAIÚSCULAS, escritos sem aspas no SQL (o Postgres guarda em minúsculas internamente, como o painel do Supabase exibe).
 
-## `inspect.usuario` (Acesso)
+## `INSPECT.USUARIO` (Acesso)
 
 Pessoas que usam o app. Cada linha corresponde a uma conta do Supabase Auth.
 
@@ -31,19 +31,19 @@ Pessoas que usam o app. Cada linha corresponde a uma conta do Supabase Auth.
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_usuario` | `uuid` | sim | — | PK FK | Identificador; é o mesmo id da conta em auth.users (Supabase Auth). |
-| `nm_usuario` | `text` | sim | — | — | Nome completo exibido no app e nos relatórios. |
-| `cd_login` | `text` | sim | — | UQ | Nome de usuário para entrar: minúsculas, 3 a 30 caracteres (letras, números, ponto, hífen, sublinhado). |
-| `cd_cpf` | `text` | não | — | UQ | CPF com os 11 dígitos, validado pelos dígitos verificadores; alternativa ao login. Sempre exibido mascarado (LGPD). |
-| `tp_perfil` | `text` | sim | `'assessor'` | — | Perfil: assessor (campo), gestor (gestão) ou admin (gestão e administração). |
-| `fl_ativo` | `boolean` | sim | `true` | — | Pode entrar no app. Desativar bloqueia o acesso sem apagar o histórico. |
-| `dt_aceite_lgpd` | `timestamptz` | não | — | — | Quando aceitou o termo de uso de localização e dados (primeiro acesso). |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
+| `ID_USUARIO` | `uuid` | sim | — | PK FK | Identificador; é o mesmo id da conta em AUTH.USERS (Supabase Auth). |
+| `NM_USUARIO` | `text` | sim | — | — | Nome completo exibido no app e nos relatórios. |
+| `CD_LOGIN` | `text` | sim | — | UQ | Nome de usuário para entrar: minúsculas, 3 a 30 caracteres (letras, números, ponto, hífen, sublinhado). |
+| `CD_CPF` | `text` | não | — | UQ | CPF com os 11 dígitos, validado pelos dígitos verificadores; alternativa ao login. Sempre exibido mascarado (LGPD). |
+| `TP_PERFIL` | `text` | sim | `'assessor'` | — | Perfil: assessor (campo), gestor (gestão) ou admin (gestão e administração). |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Pode entrar no app. Desativar bloqueia o acesso sem apagar o histórico. |
+| `DT_ACEITE_LGPD` | `timestamptz` | não | — | — | Quando aceitou o termo de uso de localização e dados (primeiro acesso). |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
 
-**Chaves, índices e restrições:** `pk_usuario` (id_usuario); `uq_usuario_cd_login` (cd_login); `uq_usuario_cd_cpf` (cd_cpf); `ck_usuario_tp_perfil:` assessor | gestor | admin; `ck_usuario_cd_cpf:` 11 dígitos; `fk_usuario_auth_users:` id_usuario → auth.users(id), on delete cascade
+**Chaves, índices e restrições:** `PK_USUARIO` (ID_USUARIO); `UQ_USUARIO_CD_LOGIN` (CD_LOGIN); `UQ_USUARIO_CD_CPF` (CD_CPF); `CK_USUARIO_TP_PERFIL:` assessor | gestor | admin; `CK_USUARIO_CD_CPF:` 11 dígitos; `FK_USUARIO_AUTH_USERS:` ID_USUARIO → AUTH.USERS(id), on delete cascade
 
-## `inspect.usuario_propriedade` (Acesso)
+## `INSPECT.USUARIO_PROPRIEDADE` (Acesso)
 
 Quais propriedades cada usuário pode ver e vistoriar. É a base das regras de acesso (RLS) de todas as tabelas.
 
@@ -52,13 +52,13 @@ Quais propriedades cada usuário pode ver e vistoriar. É a base das regras de a
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_usuario` | `uuid` | sim | — | PK FK | Usuário vinculado. |
-| `id_propriedade` | `bigint` | sim | — | PK FK | Propriedade liberada para o usuário. |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Quando o vínculo foi criado. |
+| `ID_USUARIO` | `uuid` | sim | — | PK FK | Usuário vinculado. |
+| `ID_PROPRIEDADE` | `bigint` | sim | — | PK FK | Propriedade liberada para o usuário. |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Quando o vínculo foi criado. |
 
-**Chaves, índices e restrições:** `pk_usuario_propriedade` (id_usuario, id_propriedade); `ix_usuario_propriedade_id_propriedade` (id_propriedade); `fk_usuario_propriedade_usuario,` fk_usuario_propriedade_propriedade (on delete cascade)
+**Chaves, índices e restrições:** `PK_USUARIO_PROPRIEDADE` (ID_USUARIO, ID_PROPRIEDADE); `IX_USUARIO_PROPRIEDADE_ID_PROPRIEDADE` (ID_PROPRIEDADE); `FK_USUARIO_PROPRIEDADE_USUARIO,` FK_USUARIO_PROPRIEDADE_PROPRIEDADE (on delete cascade)
 
-## `inspect.propriedade` (Cadastro)
+## `INSPECT.PROPRIEDADE` (Cadastro)
 
 Hotéis, pousadas e conjuntos de chalés. Define o padrão de presença herdado pelas unidades.
 
@@ -67,20 +67,20 @@ Hotéis, pousadas e conjuntos de chalés. Define o padrão de presença herdado 
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_propriedade` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `nm_propriedade` | `text` | sim | — | UQ | Nome da propriedade (ex.: Pousada Solar do Espinhaço). |
-| `tp_propriedade` | `text` | sim | — | — | Tipo: pousada, hotel ou chales. |
-| `tp_validacao` | `text` | sim | `'gps_qr'` | — | Presença padrão das unidades: gps, qr ou gps_qr. |
-| `vl_latitude` | `numeric(9,6)` | sim | — | — | Latitude do centro da propriedade, em graus decimais (-90 a 90). |
-| `vl_longitude` | `numeric(9,6)` | sim | — | — | Longitude do centro, em graus decimais (-180 a 180). |
-| `vl_raio_m` | `integer` | sim | `40` | — | Raio padrão aceito para a presença por GPS, em metros (10 a 500). |
-| `fl_ativo` | `boolean` | sim | `true` | — | Desativar esconde a propriedade sem apagar unidades nem histórico. |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
+| `ID_PROPRIEDADE` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `NM_PROPRIEDADE` | `text` | sim | — | UQ | Nome da propriedade (ex.: Pousada Solar do Espinhaço). |
+| `TP_PROPRIEDADE` | `text` | sim | — | — | Tipo: pousada, hotel ou chales. |
+| `TP_VALIDACAO` | `text` | sim | `'gps_qr'` | — | Presença padrão das unidades: gps, qr ou gps_qr. |
+| `VL_LATITUDE` | `numeric(9,6)` | sim | — | — | Latitude do centro da propriedade, em graus decimais (-90 a 90). |
+| `VL_LONGITUDE` | `numeric(9,6)` | sim | — | — | Longitude do centro, em graus decimais (-180 a 180). |
+| `VL_RAIO_M` | `integer` | sim | `40` | — | Raio padrão aceito para a presença por GPS, em metros (10 a 500). |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Desativar esconde a propriedade sem apagar unidades nem histórico. |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
 
-**Chaves, índices e restrições:** `pk_propriedade` (id_propriedade); `uq_propriedade_nm_propriedade` (nm_propriedade); `ck_propriedade_tp_propriedade:` pousada | hotel | chales; `ck_propriedade_tp_validacao:` gps | qr | gps_qr; `ck_propriedade_vl_raio_m:` 10 a 500
+**Chaves, índices e restrições:** `PK_PROPRIEDADE` (ID_PROPRIEDADE); `UQ_PROPRIEDADE_NM_PROPRIEDADE` (NM_PROPRIEDADE); `CK_PROPRIEDADE_TP_PROPRIEDADE:` pousada | hotel | chales; `CK_PROPRIEDADE_TP_VALIDACAO:` gps | qr | gps_qr; `CK_PROPRIEDADE_VL_RAIO_M:` 10 a 500
 
-## `inspect.log_evento` (Apoio)
+## `INSPECT.LOG_EVENTO` (Apoio)
 
 Registro de auditoria e histórico. Guarda as tentativas de presença, os envios, as mudanças de estado, o histórico de cada ocorrência (atribuição, prazo, comentários, cancelamento) e as alterações administrativas. Só recebe inclusões.
 
@@ -89,19 +89,19 @@ Registro de auditoria e histórico. Guarda as tentativas de presença, os envios
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_log_evento` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `id_usuario` | `uuid` | não | — | FK | Quem executou; vazio para eventos automáticos. |
-| `id_propriedade` | `bigint` | não | — | FK | Propriedade relacionada; usada nas regras de acesso. |
-| `tp_evento` | `text` | sim | — | — | presenca_gps, presenca_qr, vistoria_enviada, estado_alterado, ocorrencia_atribuida, ocorrencia_comentada, ocorrencia_resolvida, ocorrencia_cancelada, cadastro_alterado, qr_rotacionado, usuario_alterado. |
-| `nm_entidade` | `text` | sim | — | — | Tabela afetada (unidade, vistoria, ocorrencia...). |
-| `cd_registro` | `text` | sim | — | — | Identificador do registro afetado, em texto (aceita bigint e uuid). |
-| `ds_evento` | `text` | sim | — | — | Frase legível, ex.: "Atribuída a Governança". |
-| `ds_dados` | `jsonb` | sim | `'{}'` | — | Detalhes sem segredos: coordenadas, precisão, valor anterior e novo, justificativa. |
-| `dt_evento` | `timestamptz` | sim | `now()` | — | Quando aconteceu. |
+| `ID_LOG_EVENTO` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `ID_USUARIO` | `uuid` | não | — | FK | Quem executou; vazio para eventos automáticos. |
+| `ID_PROPRIEDADE` | `bigint` | não | — | FK | Propriedade relacionada; usada nas regras de acesso. |
+| `TP_EVENTO` | `text` | sim | — | — | presenca_gps, presenca_qr, vistoria_enviada, estado_alterado, ocorrencia_atribuida, ocorrencia_comentada, ocorrencia_resolvida, ocorrencia_cancelada, cadastro_alterado, qr_rotacionado, usuario_alterado. |
+| `NM_ENTIDADE` | `text` | sim | — | — | Tabela afetada (unidade, vistoria, ocorrencia...). |
+| `CD_REGISTRO` | `text` | sim | — | — | Identificador do registro afetado, em texto (aceita bigint e uuid). |
+| `DS_EVENTO` | `text` | sim | — | — | Frase legível, ex.: "Atribuída a Governança". |
+| `DS_DADOS` | `jsonb` | sim | `'{}'` | — | Detalhes sem segredos: coordenadas, precisão, valor anterior e novo, justificativa. |
+| `DT_EVENTO` | `timestamptz` | sim | `now()` | — | Quando aconteceu. |
 
-**Chaves, índices e restrições:** `pk_log_evento` (id_log_evento); `ix_log_evento_entidade` (nm_entidade, cd_registro); `ix_log_evento_dt_evento` (dt_evento desc); `ix_log_evento_id_usuario,` ix_log_evento_id_propriedade; `Sem` UPDATE e sem DELETE (gatilho e ausência de políticas)
+**Chaves, índices e restrições:** `PK_LOG_EVENTO` (ID_LOG_EVENTO); `IX_LOG_EVENTO_ENTIDADE` (NM_ENTIDADE, CD_REGISTRO); `IX_LOG_EVENTO_DT_EVENTO` (DT_EVENTO desc); `IX_LOG_EVENTO_ID_USUARIO,` IX_LOG_EVENTO_ID_PROPRIEDADE; `Sem` UPDATE e sem DELETE (gatilho e ausência de políticas)
 
-## `inspect.configuracao` (Apoio)
+## `INSPECT.CONFIGURACAO` (Apoio)
 
 Parâmetros que a especificação pede configuráveis no banco, em vez de fixos no app.
 
@@ -110,14 +110,14 @@ Parâmetros que a especificação pede configuráveis no banco, em vez de fixos 
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `cd_configuracao` | `text` | sim | — | PK | Chave: duracao_minima_min, precisao_max_m, foto_lado_max_px, foto_qualidade, retencao_fotos_dias. |
-| `vl_configuracao` | `numeric` | sim | — | — | Valor numérico (ex.: 4, 50, 1600, 0.8). |
-| `ds_configuracao` | `text` | sim | — | — | Para que serve e a unidade de medida. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração. |
+| `CD_CONFIGURACAO` | `text` | sim | — | PK | Chave: duracao_minima_min, precisao_max_m, foto_lado_max_px, foto_qualidade, retencao_fotos_dias. |
+| `VL_CONFIGURACAO` | `numeric` | sim | — | — | Valor numérico (ex.: 4, 50, 1600, 0.8). |
+| `DS_CONFIGURACAO` | `text` | sim | — | — | Para que serve e a unidade de medida. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração. |
 
-**Chaves, índices e restrições:** `pk_configuracao` (cd_configuracao)
+**Chaves, índices e restrições:** `PK_CONFIGURACAO` (CD_CONFIGURACAO)
 
-## `inspect.unidade` (Cadastro)
+## `INSPECT.UNIDADE` (Cadastro)
 
 Chalés, quartos e suítes. Guarda o estado atual e a configuração de presença própria, quando diferente da propriedade.
 
@@ -126,25 +126,25 @@ Chalés, quartos e suítes. Guarda o estado atual e a configuração de presenç
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_unidade` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `id_propriedade` | `bigint` | sim | — | FK | Propriedade a que pertence. |
-| `nm_unidade` | `text` | sim | — | — | Nome (ex.: Chalé Ipê, Quarto 101). Único dentro da propriedade. |
-| `tp_unidade` | `text` | sim | — | — | Tipo: chale, quarto ou suite. |
-| `ds_andar` | `text` | não | — | — | Andar ou localização (ex.: Térreo, 1º andar). |
-| `tp_validacao` | `text` | não | — | — | Presença própria (gps, qr, gps_qr); vazio herda da propriedade. |
-| `vl_latitude` | `numeric(9,6)` | não | — | — | Coordenada própria; vazia herda a da propriedade. |
-| `vl_longitude` | `numeric(9,6)` | não | — | — | Coordenada própria; vazia herda a da propriedade. |
-| `vl_raio_m` | `integer` | não | — | — | Raio próprio em metros; vazio herda o da propriedade. |
-| `st_unidade` | `text` | sim | `'em_limpeza'` | — | Estado atual: em_limpeza, liberado, ocupado, bloqueado ou manutencao. |
-| `cd_hash_qr` | `text` | não | — | — | Hash SHA-256 do segredo vigente do QR Code. O segredo nunca é gravado nem enviado ao app. |
-| `nr_versao_qr` | `integer` | sim | `1` | — | Versão do QR; aumenta a cada rotação, invalidando as anteriores. |
-| `fl_ativo` | `boolean` | sim | `true` | — | Desativar retira a unidade das listas sem apagar o histórico. |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
+| `ID_UNIDADE` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `ID_PROPRIEDADE` | `bigint` | sim | — | FK | Propriedade a que pertence. |
+| `NM_UNIDADE` | `text` | sim | — | — | Nome (ex.: Chalé Ipê, Quarto 101). Único dentro da propriedade. |
+| `TP_UNIDADE` | `text` | sim | — | — | Tipo: chale, quarto ou suite. |
+| `DS_ANDAR` | `text` | não | — | — | Andar ou localização (ex.: Térreo, 1º andar). |
+| `TP_VALIDACAO` | `text` | não | — | — | Presença própria (gps, qr, gps_qr); vazio herda da propriedade. |
+| `VL_LATITUDE` | `numeric(9,6)` | não | — | — | Coordenada própria; vazia herda a da propriedade. |
+| `VL_LONGITUDE` | `numeric(9,6)` | não | — | — | Coordenada própria; vazia herda a da propriedade. |
+| `VL_RAIO_M` | `integer` | não | — | — | Raio próprio em metros; vazio herda o da propriedade. |
+| `ST_UNIDADE` | `text` | sim | `'em_limpeza'` | — | Estado atual: em_limpeza, liberado, ocupado, bloqueado ou manutencao. |
+| `CD_HASH_QR` | `text` | não | — | — | Hash SHA-256 do segredo vigente do QR Code. O segredo nunca é gravado nem enviado ao app. |
+| `NR_VERSAO_QR` | `integer` | sim | `1` | — | Versão do QR; aumenta a cada rotação, invalidando as anteriores. |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Desativar retira a unidade das listas sem apagar o histórico. |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
 
-**Chaves, índices e restrições:** `pk_unidade` (id_unidade); `uq_unidade_nome` (id_propriedade, nm_unidade); `ix_unidade_id_propriedade` (id_propriedade); `ck_unidade_tp_unidade:` chale | quarto | suite; `ck_unidade_st_unidade:` em_limpeza | liberado | ocupado | bloqueado | manutencao; `ck_unidade_tp_validacao:` gps | qr | gps_qr; `fk_unidade_propriedade` (on delete restrict)
+**Chaves, índices e restrições:** `PK_UNIDADE` (ID_UNIDADE); `UQ_UNIDADE_NOME` (ID_PROPRIEDADE, NM_UNIDADE); `IX_UNIDADE_ID_PROPRIEDADE` (ID_PROPRIEDADE); `CK_UNIDADE_TP_UNIDADE:` chale | quarto | suite; `CK_UNIDADE_ST_UNIDADE:` em_limpeza | liberado | ocupado | bloqueado | manutencao; `CK_UNIDADE_TP_VALIDACAO:` gps | qr | gps_qr; `FK_UNIDADE_PROPRIEDADE` (on delete restrict)
 
-## `inspect.ambiente` (Cadastro)
+## `INSPECT.AMBIENTE` (Cadastro)
 
 Cômodos da unidade, na ordem física do percurso da vistoria.
 
@@ -153,16 +153,16 @@ Cômodos da unidade, na ordem física do percurso da vistoria.
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_ambiente` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `id_unidade` | `bigint` | sim | — | FK | Unidade a que pertence. |
-| `nm_ambiente` | `text` | sim | — | — | Nome (ex.: Varanda, Sala, Copa, Quarto, Banheiro). |
-| `nr_ordem` | `integer` | sim | — | — | Posição no percurso (1 = primeiro). |
-| `ds_foto_referencia` | `text` | não | — | — | Caminho da foto de referência no Storage (bucket referencias). |
-| `fl_ativo` | `boolean` | sim | `true` | — | Desativar retira o ambiente das próximas vistorias sem apagar o histórico. |
+| `ID_AMBIENTE` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `ID_UNIDADE` | `bigint` | sim | — | FK | Unidade a que pertence. |
+| `NM_AMBIENTE` | `text` | sim | — | — | Nome (ex.: Varanda, Sala, Copa, Quarto, Banheiro). |
+| `NR_ORDEM` | `integer` | sim | — | — | Posição no percurso (1 = primeiro). |
+| `DS_FOTO_REFERENCIA` | `text` | não | — | — | Caminho da foto de referência no Storage (bucket referencias). |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Desativar retira o ambiente das próximas vistorias sem apagar o histórico. |
 
-**Chaves, índices e restrições:** `pk_ambiente` (id_ambiente); `ix_ambiente_id_unidade` (id_unidade, nr_ordem); `fk_ambiente_unidade` (on delete cascade)
+**Chaves, índices e restrições:** `PK_AMBIENTE` (ID_AMBIENTE); `IX_AMBIENTE_ID_UNIDADE` (ID_UNIDADE, NR_ORDEM); `FK_AMBIENTE_UNIDADE` (on delete cascade)
 
-## `inspect.item` (Cadastro)
+## `INSPECT.ITEM` (Cadastro)
 
 O que é conferido em cada ambiente.
 
@@ -171,18 +171,18 @@ O que é conferido em cada ambiente.
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_item` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `id_ambiente` | `bigint` | sim | — | FK | Ambiente a que pertence. |
-| `nm_item` | `text` | sim | — | — | Nome (ex.: Cama arrumada e roupa de cama). |
-| `nr_ordem` | `integer` | sim | — | — | Posição dentro do ambiente. |
-| `fl_critico` | `boolean` | sim | `false` | — | Problema neste item sugere gravidade crítica e pode bloquear a unidade. |
-| `fl_foto_obrigatoria` | `boolean` | sim | `false` | — | Exige foto mesmo com resposta positiva (exceto N/A). |
-| `qt_esperada` | `integer` | não | — | — | Quantidade esperada, quando o item é contado (ex.: 4 toalhas). |
-| `fl_ativo` | `boolean` | sim | `true` | — | Desativar retira o item das próximas vistorias sem apagar o histórico. |
+| `ID_ITEM` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `ID_AMBIENTE` | `bigint` | sim | — | FK | Ambiente a que pertence. |
+| `NM_ITEM` | `text` | sim | — | — | Nome (ex.: Cama arrumada e roupa de cama). |
+| `NR_ORDEM` | `integer` | sim | — | — | Posição dentro do ambiente. |
+| `FL_CRITICO` | `boolean` | sim | `false` | — | Problema neste item sugere gravidade crítica e pode bloquear a unidade. |
+| `FL_FOTO_OBRIGATORIA` | `boolean` | sim | `false` | — | Exige foto mesmo com resposta positiva (exceto N/A). |
+| `QT_ESPERADA` | `integer` | não | — | — | Quantidade esperada, quando o item é contado (ex.: 4 toalhas). |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Desativar retira o item das próximas vistorias sem apagar o histórico. |
 
-**Chaves, índices e restrições:** `pk_item` (id_item); `ix_item_id_ambiente` (id_ambiente, nr_ordem); `fk_item_ambiente` (on delete cascade)
+**Chaves, índices e restrições:** `PK_ITEM` (ID_ITEM); `IX_ITEM_ID_AMBIENTE` (ID_AMBIENTE, NR_ORDEM); `FK_ITEM_AMBIENTE` (on delete cascade)
 
-## `inspect.vistoria` (Operação)
+## `INSPECT.VISTORIA` (Operação)
 
 Registro final de cada vistoria enviada. É imutável: depois de gravada não pode ser alterada nem excluída.
 
@@ -191,28 +191,28 @@ Registro final de cada vistoria enviada. É imutável: depois de gravada não po
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_vistoria` | `uuid` | sim | — | PK | Gerado no celular antes da primeira gravação (UUID v7, ordenado pelo tempo). Permite reenviar sem duplicar. |
-| `id_vistoria_entrada` | `uuid` | não | — | FK | Na Saída, a vistoria de Entrada da estadia; base da comparação (T13). |
-| `id_unidade` | `bigint` | sim | — | FK | Unidade vistoriada. |
-| `id_tipo_vistoria` | `bigint` | sim | — | FK | Tipo de vistoria (Entrada, Saída, Preventiva…). |
-| `id_usuario` | `uuid` | sim | — | FK | Assessor que executou. |
-| `tp_validacao` | `text` | sim | — | — | Presença exigida no momento (gps, qr, gps_qr), congelada para o histórico. |
-| `dt_inicio` | `timestamptz` | sim | — | — | Presença validada e checklist aberto. |
-| `dt_fim` | `timestamptz` | sim | — | — | Envio confirmado no celular. |
-| `dt_recebimento` | `timestamptz` | sim | `now()` | — | Chegada ao servidor; difere de dt_fim quando enviada offline. |
-| `vl_latitude` | `numeric(9,6)` | não | — | — | Posição na validação de presença. |
-| `vl_longitude` | `numeric(9,6)` | não | — | — | Posição na validação de presença. |
-| `vl_precisao_m` | `numeric(6,1)` | não | — | — | Precisão informada pelo GPS, em metros. |
-| `vl_distancia_m` | `numeric(7,1)` | não | — | — | Distância até a unidade, calculada no servidor (Haversine). |
-| `fl_fora_raio` | `boolean` | sim | `false` | — | Envio fora do raio ou sem localização; gera sinalização. |
-| `st_vistoria` | `text` | sim | — | — | enviada ou sinalizada. Rascunho e pendente existem só no celular. |
-| `ds_sinalizacoes` | `text[]` | sim | `'{}'` | — | Motivos da sinalização (ex.: duracao_menor_4min, envio_fora_raio). |
-| `ds_assinatura` | `text` | não | — | — | Caminho da assinatura (PNG) no Storage. |
-| `st_unidade_resultante` | `text` | não | — | — | Estado em que a unidade ficou após este envio. |
+| `ID_VISTORIA` | `uuid` | sim | — | PK | Gerado no celular antes da primeira gravação (UUID v7, ordenado pelo tempo). Permite reenviar sem duplicar. |
+| `ID_VISTORIA_ENTRADA` | `uuid` | não | — | FK | Na Saída, a vistoria de Entrada da estadia; base da comparação (T13). |
+| `ID_UNIDADE` | `bigint` | sim | — | FK | Unidade vistoriada. |
+| `ID_TIPO_VISTORIA` | `bigint` | sim | — | FK | Tipo de vistoria (Entrada, Saída, Preventiva…). |
+| `ID_USUARIO` | `uuid` | sim | — | FK | Assessor que executou. |
+| `TP_VALIDACAO` | `text` | sim | — | — | Presença exigida no momento (gps, qr, gps_qr), congelada para o histórico. |
+| `DT_INICIO` | `timestamptz` | sim | — | — | Presença validada e checklist aberto. |
+| `DT_FIM` | `timestamptz` | sim | — | — | Envio confirmado no celular. |
+| `DT_RECEBIMENTO` | `timestamptz` | sim | `now()` | — | Chegada ao servidor; difere de DT_FIM quando enviada offline. |
+| `VL_LATITUDE` | `numeric(9,6)` | não | — | — | Posição na validação de presença. |
+| `VL_LONGITUDE` | `numeric(9,6)` | não | — | — | Posição na validação de presença. |
+| `VL_PRECISAO_M` | `numeric(6,1)` | não | — | — | Precisão informada pelo GPS, em metros. |
+| `VL_DISTANCIA_M` | `numeric(7,1)` | não | — | — | Distância até a unidade, calculada no servidor (Haversine). |
+| `FL_FORA_RAIO` | `boolean` | sim | `false` | — | Envio fora do raio ou sem localização; gera sinalização. |
+| `ST_VISTORIA` | `text` | sim | — | — | enviada ou sinalizada. Rascunho e pendente existem só no celular. |
+| `DS_SINALIZACOES` | `text[]` | sim | `'{}'` | — | Motivos da sinalização (ex.: duracao_menor_4min, envio_fora_raio). |
+| `DS_ASSINATURA` | `text` | não | — | — | Caminho da assinatura (PNG) no Storage. |
+| `ST_UNIDADE_RESULTANTE` | `text` | não | — | — | Estado em que a unidade ficou após este envio. |
 
-**Chaves, índices e restrições:** `pk_vistoria` (id_vistoria); `ix_vistoria_unidade_dt_fim` (id_unidade, dt_fim desc); `ix_vistoria_id_tipo_vistoria,` ix_vistoria_id_usuario, ix_vistoria_id_vistoria_entrada; `ck_vistoria_st_vistoria:` enviada | sinalizada; `ck_vistoria_periodo:` dt_fim >= dt_inicio; `Gatilho` impede UPDATE e DELETE (registro imutável)
+**Chaves, índices e restrições:** `PK_VISTORIA` (ID_VISTORIA); `IX_VISTORIA_UNIDADE_DT_FIM` (ID_UNIDADE, DT_FIM desc); `IX_VISTORIA_ID_TIPO_VISTORIA,` IX_VISTORIA_ID_USUARIO, IX_VISTORIA_ID_VISTORIA_ENTRADA; `CK_VISTORIA_ST_VISTORIA:` enviada | sinalizada; `CK_VISTORIA_PERIODO:` DT_FIM >= DT_INICIO; `Gatilho` impede UPDATE e DELETE (registro imutável)
 
-## `inspect.resposta` (Operação)
+## `INSPECT.RESPOSTA` (Operação)
 
 Resposta de cada item em uma vistoria. Uma por item.
 
@@ -221,40 +221,40 @@ Resposta de cada item em uma vistoria. Uma por item.
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_vistoria` | `uuid` | sim | — | PK FK | Vistoria a que pertence. |
-| `id_item` | `bigint` | sim | — | PK FK | Item respondido. |
-| `nm_item` | `text` | sim | — | — | Nome do item no momento da vistoria; preserva o histórico se o cadastro mudar. |
-| `tp_resposta` | `text` | sim | — | — | ok, problema, na, igual, danificado, faltando, com_defeito ou precisa_intervencao (conforme o tipo). |
-| `ds_observacao` | `text` | não | — | — | Observação opcional. |
-| `dt_resposta` | `timestamptz` | sim | — | — | Última alteração da resposta no celular. |
+| `ID_VISTORIA` | `uuid` | sim | — | PK FK | Vistoria a que pertence. |
+| `ID_ITEM` | `bigint` | sim | — | PK FK | Item respondido. |
+| `NM_ITEM` | `text` | sim | — | — | Nome do item no momento da vistoria; preserva o histórico se o cadastro mudar. |
+| `TP_RESPOSTA` | `text` | sim | — | — | ok, problema, na, igual, danificado, faltando, com_defeito ou precisa_intervencao (conforme o tipo). |
+| `DS_OBSERVACAO` | `text` | não | — | — | Observação opcional. |
+| `DT_RESPOSTA` | `timestamptz` | sim | — | — | Última alteração da resposta no celular. |
 
-**Chaves, índices e restrições:** `pk_resposta` (id_vistoria, id_item); `ix_resposta_id_item` (id_item); `ck_resposta_tp_resposta:` lista acima; `fk_resposta_vistoria` (on delete cascade), fk_resposta_item (on delete restrict)
+**Chaves, índices e restrições:** `PK_RESPOSTA` (ID_VISTORIA, ID_ITEM); `IX_RESPOSTA_ID_ITEM` (ID_ITEM); `CK_RESPOSTA_TP_RESPOSTA:` lista acima; `FK_RESPOSTA_VISTORIA` (on delete cascade), FK_RESPOSTA_ITEM (on delete restrict)
 
-## `inspect.ocorrencia` (Operação)
+## `INSPECT.OCORRENCIA` (Operação)
 
-Divergência que precisa de tratamento. Nasce de uma resposta negativa no envio e é tratada pela gestão. O histórico fica em log_evento.
+Divergência que precisa de tratamento. Nasce de uma resposta negativa no envio e é tratada pela gestão. O histórico fica em LOG_EVENTO.
 
 - **Telas:** T14, T15, T20, T22, T25, T26
 - **Quem acessa (RLS):** Inclusão pela função de envio; leitura por quem tem vínculo; gestor e admin alteram responsável, prazo e status.
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_ocorrencia` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `id_vistoria` | `uuid` | sim | — | FK | Vistoria em que foi registrada (FK composta com id_item → resposta). |
-| `id_item` | `bigint` | sim | — | FK | Item com problema (FK composta com id_vistoria → resposta). |
-| `id_unidade` | `bigint` | sim | — | FK | Repetido da vistoria para as consultas e as regras de acesso. |
-| `tp_gravidade` | `text` | sim | — | — | baixa, media ou critica. Crítica pode bloquear a unidade. |
-| `ds_ocorrencia` | `text` | não | — | — | Descrição opcional; o padrão é a observação da resposta. |
-| `nm_responsavel` | `text` | não | — | — | Pessoa ou equipe responsável (ex.: Governança). |
-| `dt_prazo` | `date` | não | — | — | Prazo para resolver. |
-| `st_ocorrencia` | `text` | sim | `'aberta'` | — | aberta, em_tratamento, resolvida ou cancelada. Resolver não muda o estado da unidade. |
-| `dt_resolucao` | `timestamptz` | não | — | — | Quando foi resolvida ou cancelada. |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
+| `ID_OCORRENCIA` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `ID_VISTORIA` | `uuid` | sim | — | FK | Vistoria em que foi registrada (FK composta com ID_ITEM → RESPOSTA). |
+| `ID_ITEM` | `bigint` | sim | — | FK | Item com problema (FK composta com ID_VISTORIA → RESPOSTA). |
+| `ID_UNIDADE` | `bigint` | sim | — | FK | Repetido da vistoria para as consultas e as regras de acesso. |
+| `TP_GRAVIDADE` | `text` | sim | — | — | baixa, media ou critica. Crítica pode bloquear a unidade. |
+| `DS_OCORRENCIA` | `text` | não | — | — | Descrição opcional; o padrão é a observação da resposta. |
+| `NM_RESPONSAVEL` | `text` | não | — | — | Pessoa ou equipe responsável (ex.: Governança). |
+| `DT_PRAZO` | `date` | não | — | — | Prazo para resolver. |
+| `ST_OCORRENCIA` | `text` | sim | `'aberta'` | — | aberta, em_tratamento, resolvida ou cancelada. Resolver não muda o estado da unidade. |
+| `DT_RESOLUCAO` | `timestamptz` | não | — | — | Quando foi resolvida ou cancelada. |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Quando o registro foi criado. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração; atualizada por gatilho. |
 
-**Chaves, índices e restrições:** `pk_ocorrencia` (id_ocorrencia); `uq_ocorrencia_resposta` (id_vistoria, id_item): uma por item, sem duplicidade; `ix_ocorrencia_abertas` (id_unidade, tp_gravidade) where st_ocorrencia in (aberta, em_tratamento); `ck_ocorrencia_tp_gravidade,` ck_ocorrencia_st_ocorrencia; `fk_ocorrencia_resposta,` fk_ocorrencia_unidade
+**Chaves, índices e restrições:** `PK_OCORRENCIA` (ID_OCORRENCIA); `UQ_OCORRENCIA_RESPOSTA` (ID_VISTORIA, ID_ITEM): uma por item, sem duplicidade; `IX_OCORRENCIA_ABERTAS` (ID_UNIDADE, TP_GRAVIDADE) where ST_OCORRENCIA in (aberta, em_tratamento); `CK_OCORRENCIA_TP_GRAVIDADE,` CK_OCORRENCIA_ST_OCORRENCIA; `FK_OCORRENCIA_RESPOSTA,` FK_OCORRENCIA_UNIDADE
 
-## `inspect.tipo_vistoria` (Cadastro)
+## `INSPECT.TIPO_VISTORIA` (Cadastro)
 
 Tipos de vistoria e suas regras (Entrada, Saída, Manutenção preventiva e personalizados).
 
@@ -263,19 +263,19 @@ Tipos de vistoria e suas regras (Entrada, Saída, Manutenção preventiva e pers
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_tipo_vistoria` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
-| `nm_tipo_vistoria` | `text` | sim | — | UQ | Nome exibido (ex.: Entrada, Conferência de enxoval). |
-| `ds_tipo_vistoria` | `text` | não | — | — | Descrição mostrada na escolha do tipo (T07). |
-| `tp_comportamento` | `text` | sim | — | — | entrada, saida, preventiva ou personalizada: define as respostas e a regra de estado da unidade. |
-| `tp_periodicidade` | `text` | sim | `'por_estadia'` | — | por_estadia, semanal, mensal, trimestral ou sob_demanda. |
-| `fl_exige_entrada` | `boolean` | sim | `false` | — | Só pode ser feita com vistoria de Entrada vinculada (caso da Saída). |
-| `fl_exige_assinatura` | `boolean` | sim | `true` | — | Exige assinatura antes do envio. |
-| `fl_ativo` | `boolean` | sim | `true` | — | Só tipos ativos aparecem; um tipo sem itens não pode ser ativado. |
-| `dt_atualizacao` | `timestamptz` | sim | `now()` | — | Última alteração. |
+| `ID_TIPO_VISTORIA` | `bigint` | sim | `identity` | PK | Identificador gerado pelo banco. |
+| `NM_TIPO_VISTORIA` | `text` | sim | — | UQ | Nome exibido (ex.: Entrada, Conferência de enxoval). |
+| `DS_TIPO_VISTORIA` | `text` | não | — | — | Descrição mostrada na escolha do tipo (T07). |
+| `TP_COMPORTAMENTO` | `text` | sim | — | — | entrada, saida, preventiva ou personalizada: define as respostas e a regra de estado da unidade. |
+| `TP_PERIODICIDADE` | `text` | sim | `'por_estadia'` | — | por_estadia, semanal, mensal, trimestral ou sob_demanda. |
+| `FL_EXIGE_ENTRADA` | `boolean` | sim | `false` | — | Só pode ser feita com vistoria de Entrada vinculada (caso da Saída). |
+| `FL_EXIGE_ASSINATURA` | `boolean` | sim | `true` | — | Exige assinatura antes do envio. |
+| `FL_ATIVO` | `boolean` | sim | `true` | — | Só tipos ativos aparecem; um tipo sem itens não pode ser ativado. |
+| `DT_ATUALIZACAO` | `timestamptz` | sim | `now()` | — | Última alteração. |
 
-**Chaves, índices e restrições:** `pk_tipo_vistoria` (id_tipo_vistoria); `uq_tipo_vistoria_nm` (nm_tipo_vistoria); `ck_tipo_vistoria_tp_comportamento,` ck_tipo_vistoria_tp_periodicidade
+**Chaves, índices e restrições:** `PK_TIPO_VISTORIA` (ID_TIPO_VISTORIA); `UQ_TIPO_VISTORIA_NM` (NM_TIPO_VISTORIA); `CK_TIPO_VISTORIA_TP_COMPORTAMENTO,` CK_TIPO_VISTORIA_TP_PERIODICIDADE
 
-## `inspect.tipo_vistoria_item` (Cadastro)
+## `INSPECT.TIPO_VISTORIA_ITEM` (Cadastro)
 
 Itens que compõem cada tipo. Para manter simples: se um tipo não tiver linhas aqui, todos os itens ativos da unidade se aplicam (caso de Entrada e Saída).
 
@@ -284,13 +284,13 @@ Itens que compõem cada tipo. Para manter simples: se um tipo não tiver linhas 
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_tipo_vistoria` | `bigint` | sim | — | PK FK | Tipo de vistoria. |
-| `id_item` | `bigint` | sim | — | PK FK | Item incluído no tipo. |
-| `nr_ordem` | `integer` | não | — | — | Ordem própria no tipo; vazio segue a ordem do ambiente. |
+| `ID_TIPO_VISTORIA` | `bigint` | sim | — | PK FK | Tipo de vistoria. |
+| `ID_ITEM` | `bigint` | sim | — | PK FK | Item incluído no tipo. |
+| `NR_ORDEM` | `integer` | não | — | — | Ordem própria no tipo; vazio segue a ordem do ambiente. |
 
-**Chaves, índices e restrições:** `pk_tipo_vistoria_item` (id_tipo_vistoria, id_item); `ix_tipo_vistoria_item_id_item` (id_item); `fk_tipo_vistoria_item_tipo_vistoria,` fk_tipo_vistoria_item_item (on delete cascade)
+**Chaves, índices e restrições:** `PK_TIPO_VISTORIA_ITEM` (ID_TIPO_VISTORIA, ID_ITEM); `IX_TIPO_VISTORIA_ITEM_ID_ITEM` (ID_ITEM); `FK_TIPO_VISTORIA_ITEM_TIPO_VISTORIA,` FK_TIPO_VISTORIA_ITEM_ITEM (on delete cascade)
 
-## `inspect.foto` (Operação)
+## `INSPECT.FOTO` (Operação)
 
 Evidências fotográficas com o carimbo de local e hora. O arquivo fica no Storage; aqui ficam o caminho e os metadados.
 
@@ -299,39 +299,39 @@ Evidências fotográficas com o carimbo de local e hora. O arquivo fica no Stora
 
 | Campo | Tipo | Obrigatório | Padrão | Chave | Descrição |
 |---|---|---|---|---|---|
-| `id_foto` | `uuid` | sim | — | PK | Gerado no celular (UUID v7); permite reenviar sem duplicar. |
-| `id_vistoria` | `uuid` | sim | — | FK | Vistoria (FK composta com id_item → resposta). |
-| `id_item` | `bigint` | sim | — | FK | Item fotografado (FK composta com id_vistoria → resposta). |
-| `ds_caminho` | `text` | sim | — | UQ | Caminho no bucket privado vistorias: {id_propriedade}/{id_vistoria}/{id_foto}.jpg. |
-| `dt_captura` | `timestamptz` | sim | — | — | Data e hora do carimbo. |
-| `vl_latitude` | `numeric(9,6)` | não | — | — | Posição na captura. |
-| `vl_longitude` | `numeric(9,6)` | não | — | — | Posição na captura. |
-| `vl_precisao_m` | `numeric(6,1)` | não | — | — | Precisão do GPS na captura, em metros. |
-| `fl_fora_raio` | `boolean` | sim | `false` | — | Posição revalidada fora do raio na captura. |
-| `dt_criacao` | `timestamptz` | sim | `now()` | — | Chegada ao servidor. |
+| `ID_FOTO` | `uuid` | sim | — | PK | Gerado no celular (UUID v7); permite reenviar sem duplicar. |
+| `ID_VISTORIA` | `uuid` | sim | — | FK | Vistoria (FK composta com ID_ITEM → RESPOSTA). |
+| `ID_ITEM` | `bigint` | sim | — | FK | Item fotografado (FK composta com ID_VISTORIA → RESPOSTA). |
+| `DS_CAMINHO` | `text` | sim | — | UQ | Caminho no bucket privado vistorias: {ID_PROPRIEDADE}/{ID_VISTORIA}/{ID_FOTO}.jpg. |
+| `DT_CAPTURA` | `timestamptz` | sim | — | — | Data e hora do carimbo. |
+| `VL_LATITUDE` | `numeric(9,6)` | não | — | — | Posição na captura. |
+| `VL_LONGITUDE` | `numeric(9,6)` | não | — | — | Posição na captura. |
+| `VL_PRECISAO_M` | `numeric(6,1)` | não | — | — | Precisão do GPS na captura, em metros. |
+| `FL_FORA_RAIO` | `boolean` | sim | `false` | — | Posição revalidada fora do raio na captura. |
+| `DT_CRIACAO` | `timestamptz` | sim | `now()` | — | Chegada ao servidor. |
 
-**Chaves, índices e restrições:** `pk_foto` (id_foto); `uq_foto_ds_caminho` (ds_caminho); `ix_foto_resposta` (id_vistoria, id_item); `fk_foto_resposta` (on delete cascade)
+**Chaves, índices e restrições:** `PK_FOTO` (ID_FOTO); `UQ_FOTO_DS_CAMINHO` (DS_CAMINHO); `IX_FOTO_RESPOSTA` (ID_VISTORIA, ID_ITEM); `FK_FOTO_RESPOSTA` (on delete cascade)
 
 ## Relações
 
 | Filha | Campo(s) | Pai | Obrigatória |
 |---|---|---|---|
-| `usuario_propriedade` | `id_usuario` | `usuario` | sim |
-| `usuario_propriedade` | `id_propriedade` | `propriedade` | sim |
-| `log_evento` | `id_propriedade` | `propriedade` | não |
-| `log_evento` | `id_usuario` | `usuario` | não |
-| `unidade` | `id_propriedade` | `propriedade` | sim |
-| `ambiente` | `id_unidade` | `unidade` | sim |
-| `item` | `id_ambiente` | `ambiente` | sim |
-| `vistoria` | `id_unidade` | `unidade` | sim |
-| `vistoria` | `id_tipo_vistoria` | `tipo_vistoria` | sim |
-| `vistoria` | `id_usuario` | `usuario` | sim |
-| `vistoria` | `id_vistoria_entrada` | `vistoria` | não |
-| `resposta` | `id_vistoria` | `vistoria` | sim |
-| `resposta` | `id_item` | `item` | sim |
-| `foto` | `id_vistoria, id_item` | `resposta` | sim |
-| `ocorrencia` | `id_vistoria, id_item` | `resposta` | sim |
-| `ocorrencia` | `id_unidade` | `unidade` | sim |
-| `tipo_vistoria_item` | `id_tipo_vistoria` | `tipo_vistoria` | sim |
-| `tipo_vistoria_item` | `id_item` | `item` | sim |
-| `usuario` | `id_usuario` | `auth.users` (Supabase Auth) | sim |
+| `USUARIO_PROPRIEDADE` | `ID_USUARIO` | `USUARIO` | sim |
+| `USUARIO_PROPRIEDADE` | `ID_PROPRIEDADE` | `PROPRIEDADE` | sim |
+| `LOG_EVENTO` | `ID_PROPRIEDADE` | `PROPRIEDADE` | não |
+| `LOG_EVENTO` | `ID_USUARIO` | `USUARIO` | não |
+| `UNIDADE` | `ID_PROPRIEDADE` | `PROPRIEDADE` | sim |
+| `AMBIENTE` | `ID_UNIDADE` | `UNIDADE` | sim |
+| `ITEM` | `ID_AMBIENTE` | `AMBIENTE` | sim |
+| `VISTORIA` | `ID_UNIDADE` | `UNIDADE` | sim |
+| `VISTORIA` | `ID_TIPO_VISTORIA` | `TIPO_VISTORIA` | sim |
+| `VISTORIA` | `ID_USUARIO` | `USUARIO` | sim |
+| `VISTORIA` | `ID_VISTORIA_ENTRADA` | `VISTORIA` | não |
+| `RESPOSTA` | `ID_VISTORIA` | `VISTORIA` | sim |
+| `RESPOSTA` | `ID_ITEM` | `ITEM` | sim |
+| `FOTO` | `ID_VISTORIA, ID_ITEM` | `RESPOSTA` | sim |
+| `OCORRENCIA` | `ID_VISTORIA, ID_ITEM` | `RESPOSTA` | sim |
+| `OCORRENCIA` | `ID_UNIDADE` | `UNIDADE` | sim |
+| `TIPO_VISTORIA_ITEM` | `ID_TIPO_VISTORIA` | `TIPO_VISTORIA` | sim |
+| `TIPO_VISTORIA_ITEM` | `ID_ITEM` | `ITEM` | sim |
+| `USUARIO` | `ID_USUARIO` | `AUTH.USERS` (Supabase Auth) | sim |
