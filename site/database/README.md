@@ -1,4 +1,4 @@
-# Banco de dados de reservas — proposta v1
+# Banco de dados de reservas — proposta v2
 
 Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chalé está livre nas datas escolhidas e quanto custa a estadia, noite a noite.
 
