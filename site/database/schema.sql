@@ -1,206 +1,270 @@
 -- ════════════════════════════════════════════════════════════════════
 --  Solar do Espinhaço · Reservas — disponibilidade e preços
---  PostgreSQL 15+ (Supabase). Proposta v1 — ver README.md desta pasta.
+--  PostgreSQL 15+ (Supabase). Proposta v2 — ver README.md desta pasta.
 --
---  Convenções
---  • Estadia = intervalo de NOITES [check-in, check-out): o dia do
---    check-out não é cobrado nem ocupado, então uma reserva que sai no
---    dia 10 não conflita com outra que entra no dia 10.
---  • Datas são `date` no fuso da propriedade (America/Sao_Paulo).
---  • Dinheiro em numeric(10,2); identificadores bigint identity.
+--  Padrão de nomes (o mesmo dos outros projetos, ex.: IBP)
+--  • Tabelas e campos em MAIÚSCULAS, em português, tabelas no singular.
+--  • Prefixo pelo tipo do campo:
+--      ID_   identificador          NM_   nome
+--      DS_   descrição / texto      DT_   data ou data e hora
+--      VL_   valor (R$ ou %)        QTDE_ quantidade
+--      NO_   número                 CD_   código
+--      TP_   tipo (lista fixa)      SG_   indicador sim/não
+--      HR_   hora do dia (novo: não havia no IBP)
+--  • Chave primária = ID_<TABELA>, repetida com o mesmo nome nas filhas.
+--  • Restrições: PK_<TABELA>, FK_<FILHA>_<PAI>, UQ_ (única), CK_ (regra),
+--    EX_ (exclusão), IX_ (índice).
+--  • O PostgreSQL guarda nomes sem aspas em minúsculas por dentro; escrever
+--    em maiúsculas nas consultas funciona igual (SELECT VL_TOTAL FROM RESERVA).
+--
+--  Convenções de reserva
+--  • Estadia = noites de DT_CHECKIN até a véspera de DT_CHECKOUT: quem sai
+--    no dia 10 libera o chalé para quem entra no dia 10.
+--  • Datas no fuso da propriedade (America/Sao_Paulo); dinheiro em
+--    numeric(10,2); identificadores bigint gerados pelo banco.
 --  • O site (visitante anônimo) só enxerga a função
 --    consultar_disponibilidade(): nenhuma tabela é exposta.
 -- ════════════════════════════════════════════════════════════════════
 
--- '=' em bigint dentro de constraints EXCLUDE. No Supabase as extensões
--- ficam no schema "extensions" (o comando abaixo também funciona fora dele).
+-- '=' em bigint dentro de restrições EXCLUDE. No Supabase as extensões
+-- ficam no schema "extensions" (o comando também funciona fora dele).
 create schema if not exists extensions;
 create extension if not exists btree_gist with schema extensions;
 
 
--- ── Propriedade e unidades ──────────────────────────────────────────
--- Mesmo modelo do app de vistorias (solar-inspect): Propriedade → Unidade.
+-- ── PROPRIEDADE: a pousada ──────────────────────────────────────────
 
-create table propriedades (
-  id                 bigint generated always as identity primary key,
-  nome               text not null,
-  fuso_horario       text not null default 'America/Sao_Paulo',
-  horario_checkin    time not null default '15:00',
-  horario_checkout   time not null default '12:00',
-  idade_max_crianca  smallint not null default 12,   -- crianças pagantes: 2 a 12 anos (abaixo de 2 não contam)
-  max_noites         smallint not null default 30 check (max_noites between 1 and 365),
-  criado_em          timestamptz not null default now()
-);
-
-create table unidades (
-  id              bigint generated always as identity primary key,
-  propriedade_id  bigint not null references propriedades (id),
-  slug            text not null unique check (slug ~ '^[a-z0-9-]+$'),
-  nome            text not null,
-  tipo            text not null default 'chale' check (tipo in ('chale', 'quarto', 'suite')),
-  hospedes_max    smallint not null check (hospedes_max >= 1),
-  adultos_max     smallint not null check (adultos_max >= 1),
-  criancas_max    smallint not null default 0 check (criancas_max >= 0),
-  taxa_limpeza    numeric(10,2) not null default 0 check (taxa_limpeza >= 0),   -- por estadia
-  ativa           boolean not null default true,
-  ordem           smallint not null default 0,
-  criado_em       timestamptz not null default now()
-);
-create index unidades_propriedade_id_idx on unidades (propriedade_id);
-
-
--- ── Preços ──────────────────────────────────────────────────────────
--- Tarifa = regra de preço para um período de noites (temporada).
--- Períodos podem se sobrepor quando a prioridade é diferente: a de
--- maior prioridade vence. Ex.: "Base 2027" (0) < "Alta temporada" (10)
--- < "Réveillon" (20). Na mesma prioridade, sobreposição é proibida.
-
-create table tarifas (
-  id                   bigint generated always as identity primary key,
-  unidade_id           bigint not null references unidades (id) on delete cascade,
-  nome                 text not null,
-  periodo              daterange not null,             -- noites cobertas [início, fim)
-  prioridade           smallint not null default 0,
-  valor_noite          numeric(10,2) not null check (valor_noite >= 0),       -- dom a qui
-  valor_noite_fds      numeric(10,2) check (valor_noite_fds >= 0),            -- noites de sex e sáb; vazio = valor_noite
-  adultos_inclusos     smallint not null default 2 check (adultos_inclusos >= 1),        -- adultos cobertos pelo valor da noite
-  valor_adulto_extra   numeric(10,2) not null default 0 check (valor_adulto_extra >= 0),  -- por adulto além dos inclusos, por noite
-  valor_crianca        numeric(10,2) not null default 0 check (valor_crianca >= 0),       -- por criança (2 a 12 anos), por noite
-  min_noites           smallint not null default 1 check (min_noites >= 1),
-  ativa                boolean not null default true,
-  criado_em            timestamptz not null default now(),
-  constraint tarifas_periodo_valido
-    check (not isempty(periodo) and not lower_inf(periodo) and not upper_inf(periodo)),
-  constraint tarifas_sem_sobreposicao
-    exclude using gist (unidade_id with =, prioridade with =, periodo with &&) where (ativa)
-);
--- o índice GiST da constraint acima atende a busca "tarifa da noite X"
-
--- Ajuste de uma data específica, por cima da tarifa: preço especial,
--- mínimo de noites, fechar a venda da noite, ou proibir chegada/saída.
-create table ajustes_diarios (
-  unidade_id   bigint not null references unidades (id) on delete cascade,
-  data         date not null,
-  valor_noite  numeric(10,2) check (valor_noite >= 0),   -- vazio = usa a tarifa
-  min_noites   smallint check (min_noites >= 1),
-  fechado      boolean not null default false,           -- noite não vendida
-  sem_chegada  boolean not null default false,           -- não aceita check-in nesta data
-  sem_saida    boolean not null default false,           -- não aceita check-out nesta data
-  observacao   text,
-  primary key (unidade_id, data)
+create table PROPRIEDADE (
+  ID_PROPRIEDADE           bigint generated always as identity,
+  NM_PROPRIEDADE           text not null,
+  DS_FUSO_HORARIO          text not null default 'America/Sao_Paulo',
+  HR_CHECKIN               time not null default '15:00',
+  HR_CHECKOUT              time not null default '12:00',
+  NO_IDADE_MAX_CRIANCA     smallint not null default 13,          -- crianças: 2 a 13 anos; a partir de 14, adulto
+  QTDE_MAX_NOITES          smallint not null default 7,
+  VL_PERCENTUAL_SINAL      numeric(5,2) not null default 50,      -- % do total pago na reserva
+  QTDE_MINUTOS_PRE_RESERVA smallint not null default 30,          -- tempo para pagar o sinal
+  DT_CRIACAO               timestamptz not null default now(),
+  constraint PK_PROPRIEDADE primary key (ID_PROPRIEDADE),
+  constraint CK_PROPRIEDADE_MAX_NOITES check (QTDE_MAX_NOITES between 1 and 365),
+  constraint CK_PROPRIEDADE_SINAL check (VL_PERCENTUAL_SINAL between 0 and 100),
+  constraint CK_PROPRIEDADE_PRE_RESERVA check (QTDE_MINUTOS_PRE_RESERVA between 5 and 1440)
 );
 
 
--- ── Hóspedes e reservas ─────────────────────────────────────────────
+-- ── UNIDADE: cada chalé ─────────────────────────────────────────────
 
-create table hospedes (
-  id         bigint generated always as identity primary key,
-  nome       text not null,
-  email      text not null,
-  telefone   text,
-  criado_em  timestamptz not null default now()
+create table UNIDADE (
+  ID_UNIDADE         bigint generated always as identity,
+  ID_PROPRIEDADE     bigint not null,
+  CD_UNIDADE         text not null,                   -- código curto usado pelo site (ex.: casa-do-mirante)
+  NM_UNIDADE         text not null,
+  TP_UNIDADE         text not null default 'CHALE',
+  QTDE_MAX_HOSPEDES  smallint not null,
+  QTDE_MAX_ADULTOS   smallint not null,
+  QTDE_MAX_CRIANCAS  smallint not null default 0,     -- crianças + bebês
+  VL_TAXA_LIMPEZA    numeric(10,2) not null default 0,
+  SG_ATIVO           boolean not null default true,
+  NO_ORDEM           smallint not null default 0,
+  DT_CRIACAO         timestamptz not null default now(),
+  constraint PK_UNIDADE primary key (ID_UNIDADE),
+  constraint FK_UNIDADE_PROPRIEDADE foreign key (ID_PROPRIEDADE) references PROPRIEDADE (ID_PROPRIEDADE),
+  constraint UQ_UNIDADE_CD_UNIDADE unique (CD_UNIDADE),
+  constraint CK_UNIDADE_CD_UNIDADE check (CD_UNIDADE ~ '^[a-z0-9-]+$'),
+  constraint CK_UNIDADE_TP_UNIDADE check (TP_UNIDADE in ('CHALE', 'QUARTO', 'SUITE')),
+  constraint CK_UNIDADE_CAPACIDADE check (QTDE_MAX_HOSPEDES >= 1 and QTDE_MAX_ADULTOS >= 1 and QTDE_MAX_CRIANCAS >= 0),
+  constraint CK_UNIDADE_TAXA_LIMPEZA check (VL_TAXA_LIMPEZA >= 0)
 );
-create unique index hospedes_email_uidx on hospedes (lower(email));
+create index IX_UNIDADE_ID_PROPRIEDADE on UNIDADE (ID_PROPRIEDADE);
 
-create table reservas (
-  id                bigint generated always as identity primary key,
-  -- código mostrado ao hóspede: não sequencial, para não permitir adivinhar outras reservas
-  codigo            text not null unique
-                    default 'SE-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)),
-  unidade_id        bigint not null references unidades (id),
-  hospede_id        bigint references hospedes (id),
-  periodo           daterange not null,                  -- [check-in, check-out)
-  adultos           smallint not null check (adultos >= 1),
-  criancas          smallint not null default 0 check (criancas >= 0),
-  status            text not null default 'pendente'
-                    check (status in ('pendente', 'confirmada', 'cancelada', 'expirada')),
-  canal             text not null default 'site'
-                    check (canal in ('site', 'direto', 'telefone')),
-  valor_hospedagem  numeric(10,2) not null check (valor_hospedagem >= 0),
-  taxa_limpeza      numeric(10,2) not null default 0 check (taxa_limpeza >= 0),
-  valor_total       numeric(10,2) generated always as (valor_hospedagem + taxa_limpeza) stored,
-  detalhe_precos    jsonb not null default '[]',         -- cálculo noite a noite no momento da reserva
-  expira_em         timestamptz,                         -- só para 'pendente' (pré-reserva aguardando pagamento)
-  criado_em         timestamptz not null default now(),
-  atualizado_em     timestamptz not null default now(),
-  constraint reservas_periodo_valido
-    check (not isempty(periodo) and not lower_inf(periodo) and not upper_inf(periodo)),
-  constraint reservas_pendente_expira
-    check (status <> 'pendente' or expira_em is not null),
-  constraint reservas_confirmada_hospede
-    check (status <> 'confirmada' or hospede_id is not null),
+
+-- ── TARIFA: preço por período ───────────────────────────────────────
+-- Períodos podem se sobrepor quando a prioridade é diferente: vale o
+-- maior NO_PRIORIDADE (ex.: Réveillon por cima da tarifa padrão). Na
+-- mesma prioridade a sobreposição é recusada.
+
+create table TARIFA (
+  ID_TARIFA               bigint generated always as identity,
+  ID_UNIDADE              bigint not null,
+  NM_TARIFA               text not null,
+  DT_INI                  date not null,                -- primeira noite
+  DT_FIM                  date not null,                -- dia seguinte à última noite
+  NO_PRIORIDADE           smallint not null default 0,
+  VL_NOITE                numeric(10,2) not null,       -- cobre os adultos inclusos
+  VL_NOITE_FDS            numeric(10,2),                -- noites de sex e sáb; vazio = VL_NOITE
+  QTDE_ADULTOS_INCLUSOS   smallint not null default 2,
+  VL_ADULTO_EXTRA         numeric(10,2) not null default 0,   -- por adulto além dos inclusos, por noite
+  VL_CRIANCA              numeric(10,2) not null default 0,   -- por criança (2 a 13 anos), por noite
+  QTDE_MIN_NOITES         smallint not null default 1,
+  SG_ATIVO                boolean not null default true,
+  DT_CRIACAO              timestamptz not null default now(),
+  constraint PK_TARIFA primary key (ID_TARIFA),
+  constraint FK_TARIFA_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint CK_TARIFA_PERIODO check (DT_FIM > DT_INI),
+  constraint CK_TARIFA_VALORES check (VL_NOITE >= 0 and coalesce(VL_NOITE_FDS, 0) >= 0
+                                      and VL_ADULTO_EXTRA >= 0 and VL_CRIANCA >= 0),
+  constraint CK_TARIFA_QUANTIDADES check (QTDE_ADULTOS_INCLUSOS >= 1 and QTDE_MIN_NOITES >= 1),
+  constraint EX_TARIFA_SOBREPOSICAO exclude using gist
+    (ID_UNIDADE with =, NO_PRIORIDADE with =, daterange(DT_INI, DT_FIM) with &&) where (SG_ATIVO)
+);
+create index IX_TARIFA_PERIODO on TARIFA using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
+
+
+-- ── AJUSTE_DIARIO: exceção de uma data ──────────────────────────────
+
+create table AJUSTE_DIARIO (
+  ID_UNIDADE       bigint not null,
+  DT_REF           date not null,                 -- a noite ajustada
+  VL_NOITE         numeric(10,2),                 -- vazio = usa a tarifa
+  QTDE_MIN_NOITES  smallint,
+  SG_FECHADO       boolean not null default false,
+  SG_SEM_CHEGADA   boolean not null default false,
+  SG_SEM_SAIDA     boolean not null default false,
+  DS_OBSERVACAO    text,
+  constraint PK_AJUSTE_DIARIO primary key (ID_UNIDADE, DT_REF),
+  constraint FK_AJUSTE_DIARIO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint CK_AJUSTE_DIARIO_VALORES check (coalesce(VL_NOITE, 0) >= 0 and coalesce(QTDE_MIN_NOITES, 1) >= 1)
+);
+
+
+-- ── HOSPEDE: quem reserva ───────────────────────────────────────────
+
+create table HOSPEDE (
+  ID_HOSPEDE   bigint generated always as identity,
+  NM_HOSPEDE   text not null,
+  DS_EMAIL     text not null,
+  DS_TELEFONE  text,
+  DT_CRIACAO   timestamptz not null default now(),
+  constraint PK_HOSPEDE primary key (ID_HOSPEDE)
+);
+create unique index UQ_HOSPEDE_DS_EMAIL on HOSPEDE (lower(DS_EMAIL));
+
+
+-- ── RESERVA: estadias vendidas ──────────────────────────────────────
+-- Política: o sinal não é devolvido; o hóspede pode só remarcar. A
+-- remarcação cria uma reserva nova com ID_RESERVA_ORIGINAL apontando
+-- para a antiga (que fica REMARCADA), e o que foi pago vale como crédito.
+
+create table RESERVA (
+  ID_RESERVA           bigint generated always as identity,
+  CD_RESERVA           text not null                 -- mostrado ao hóspede; aleatório
+                       default 'SE-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)),
+  ID_UNIDADE           bigint not null,
+  ID_HOSPEDE           bigint,
+  DT_CHECKIN           date not null,
+  DT_CHECKOUT          date not null,
+  QTDE_ADULTOS         smallint not null,
+  QTDE_CRIANCAS        smallint not null default 0,  -- 2 a 13 anos
+  QTDE_BEBES           smallint not null default 0,  -- abaixo de 2 anos: não pagam, mas ocupam vaga
+  TP_STATUS            text not null default 'PENDENTE',
+  TP_CANAL             text not null default 'SITE',
+  VL_HOSPEDAGEM        numeric(10,2) not null,
+  VL_TAXA_LIMPEZA      numeric(10,2) not null default 0,
+  VL_TOTAL             numeric(10,2) generated always as (VL_HOSPEDAGEM + VL_TAXA_LIMPEZA) stored,
+  VL_SINAL             numeric(10,2) not null default 0,   -- pago na reserva; não reembolsável
+  DS_DETALHE_PRECOS    jsonb not null default '[]',        -- cálculo noite a noite no momento da reserva
+  DT_EXPIRA            timestamptz,                         -- só para PENDENTE
+  ID_RESERVA_ORIGINAL  bigint,
+  DT_CRIACAO           timestamptz not null default now(),
+  DT_ATUALIZACAO       timestamptz not null default now(),
+  constraint PK_RESERVA primary key (ID_RESERVA),
+  constraint UQ_RESERVA_CD_RESERVA unique (CD_RESERVA),
+  constraint FK_RESERVA_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE),
+  constraint FK_RESERVA_HOSPEDE foreign key (ID_HOSPEDE) references HOSPEDE (ID_HOSPEDE),
+  constraint FK_RESERVA_RESERVA_ORIGINAL foreign key (ID_RESERVA_ORIGINAL) references RESERVA (ID_RESERVA),
+  constraint CK_RESERVA_PERIODO check (DT_CHECKOUT > DT_CHECKIN),
+  constraint CK_RESERVA_OCUPACAO check (QTDE_ADULTOS >= 1 and QTDE_CRIANCAS >= 0 and QTDE_BEBES >= 0),
+  constraint CK_RESERVA_TP_STATUS check (TP_STATUS in ('PENDENTE', 'CONFIRMADA', 'CANCELADA', 'EXPIRADA', 'REMARCADA')),
+  constraint CK_RESERVA_TP_CANAL check (TP_CANAL in ('SITE', 'DIRETO', 'TELEFONE')),
+  constraint CK_RESERVA_VALORES check (VL_HOSPEDAGEM >= 0 and VL_TAXA_LIMPEZA >= 0 and VL_SINAL >= 0),
+  constraint CK_RESERVA_PENDENTE_EXPIRA check (TP_STATUS <> 'PENDENTE' or DT_EXPIRA is not null),
+  constraint CK_RESERVA_CONFIRMADA_HOSPEDE check (TP_STATUS <> 'CONFIRMADA' or ID_HOSPEDE is not null),
   -- Última barreira contra overbooking: duas reservas ativas da mesma
   -- unidade nunca ocupam a mesma noite, mesmo com acessos simultâneos.
-  constraint reservas_sem_conflito
-    exclude using gist (unidade_id with =, periodo with &&)
-    where (status in ('pendente', 'confirmada'))
+  constraint EX_RESERVA_SEM_CONFLITO exclude using gist
+    (ID_UNIDADE with =, daterange(DT_CHECKIN, DT_CHECKOUT) with &&)
+    where (TP_STATUS in ('PENDENTE', 'CONFIRMADA'))
 );
-create index reservas_hospede_id_idx on reservas (hospede_id);
-create index reservas_unidade_periodo_idx on reservas using gist (unidade_id, periodo);
-create index reservas_pendentes_expira_idx on reservas (expira_em) where status = 'pendente';
+create index IX_RESERVA_ID_HOSPEDE on RESERVA (ID_HOSPEDE);
+create index IX_RESERVA_ID_RESERVA_ORIGINAL on RESERVA (ID_RESERVA_ORIGINAL);
+create index IX_RESERVA_PERIODO on RESERVA using gist (ID_UNIDADE, daterange(DT_CHECKIN, DT_CHECKOUT));
+create index IX_RESERVA_PENDENTE_EXPIRA on RESERVA (DT_EXPIRA) where TP_STATUS = 'PENDENTE';
 
--- Pagamentos via Mercado Pago (Pix ou cartão). Uma reserva pode ter mais
--- de uma tentativa (ex.: Pix expirou e o hóspede gerou outro). O status é
--- atualizado pelo aviso (webhook) que o Mercado Pago envia à Edge Function.
--- 'manual' = Pix recebido direto na conta e confirmado à mão pela equipe.
-create table pagamentos (
-  id                bigint generated always as identity primary key,
-  reserva_id        bigint not null references reservas (id),
-  provedor          text not null default 'mercado_pago' check (provedor in ('mercado_pago', 'manual')),
-  metodo            text not null check (metodo in ('pix', 'cartao_credito')),
-  valor             numeric(10,2) not null check (valor > 0),
-  status            text not null default 'pendente'
-                    check (status in ('pendente', 'aprovado', 'recusado', 'cancelado', 'estornado')),
-  id_externo        text unique,          -- número do pagamento no Mercado Pago
-  pix_copia_e_cola  text,                 -- código Pix que o hóspede cola no app do banco
-  expira_em         timestamptz,          -- validade do código Pix
-  pago_em           timestamptz,
-  criado_em         timestamptz not null default now(),
-  constraint pagamentos_aprovado_data check (status <> 'aprovado' or pago_em is not null)
+
+-- ── PAGAMENTO: Pix e Mercado Pago ───────────────────────────────────
+-- Uma reserva pode ter mais de uma tentativa (ex.: o Pix venceu e o
+-- hóspede gerou outro). O status é atualizado pelo aviso (webhook) que o
+-- Mercado Pago envia. MANUAL = Pix recebido direto e conferido pela equipe.
+
+create table PAGAMENTO (
+  ID_PAGAMENTO          bigint generated always as identity,
+  ID_RESERVA            bigint not null,
+  TP_PROVEDOR           text not null default 'MERCADO_PAGO',
+  TP_METODO             text not null,
+  VL_PAGAMENTO          numeric(10,2) not null,
+  TP_STATUS             text not null default 'PENDENTE',
+  CD_EXTERNO            text,                 -- número do pagamento no Mercado Pago
+  DS_PIX_COPIA_E_COLA   text,                 -- código Pix que o hóspede cola no app do banco
+  DT_EXPIRA             timestamptz,          -- validade do código Pix
+  DT_PAGAMENTO          timestamptz,
+  DT_CRIACAO            timestamptz not null default now(),
+  constraint PK_PAGAMENTO primary key (ID_PAGAMENTO),
+  constraint FK_PAGAMENTO_RESERVA foreign key (ID_RESERVA) references RESERVA (ID_RESERVA),
+  constraint UQ_PAGAMENTO_CD_EXTERNO unique (CD_EXTERNO),
+  constraint CK_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MERCADO_PAGO', 'MANUAL')),
+  constraint CK_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO')),
+  constraint CK_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'APROVADO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
+  constraint CK_PAGAMENTO_VALOR check (VL_PAGAMENTO > 0),
+  constraint CK_PAGAMENTO_APROVADO_DATA check (TP_STATUS <> 'APROVADO' or DT_PAGAMENTO is not null)
 );
-create index pagamentos_reserva_id_idx on pagamentos (reserva_id);
+create index IX_PAGAMENTO_ID_RESERVA on PAGAMENTO (ID_RESERVA);
 
 
--- ── Bloqueios e calendários externos (Airbnb / Booking) ─────────────
--- O chalé também é vendido no Airbnb e no Booking. Cada canal publica
--- um calendário iCal; um job importa os eventos como bloqueios.
--- Bloqueios ficam fora da constraint de reservas de propósito: o iCal
--- de um canal costuma devolver também as datas que o próprio site já
--- vendeu, e isso não pode impedir a sincronização.
+-- ── CALENDARIO_EXTERNO e BLOQUEIO: datas fora da venda ──────────────
+-- O chalé também é vendido no Airbnb e no Booking. Um job lê o iCal de
+-- cada canal e grava as datas como BLOQUEIO. Bloqueios ficam fora da
+-- restrição EX_RESERVA_SEM_CONFLITO de propósito: o iCal de um canal
+-- costuma devolver também as datas que o próprio site já vendeu.
 
-create table calendarios_externos (
-  id                    bigint generated always as identity primary key,
-  unidade_id            bigint not null references unidades (id) on delete cascade,
-  canal                 text not null check (canal in ('airbnb', 'booking', 'outro')),
-  url_importacao        text not null,          -- link iCal fornecido pelo canal
-  ativo                 boolean not null default true,
-  ultima_sincronizacao  timestamptz,
-  ultimo_erro           text,
-  unique (unidade_id, canal)
+create table CALENDARIO_EXTERNO (
+  ID_CALENDARIO            bigint generated always as identity,
+  ID_UNIDADE               bigint not null,
+  TP_CANAL                 text not null,
+  DS_URL_IMPORTACAO        text not null,       -- link iCal fornecido pelo canal
+  SG_ATIVO                 boolean not null default true,
+  DT_ULTIMA_SINCRONIZACAO  timestamptz,
+  DS_ULTIMO_ERRO           text,
+  constraint PK_CALENDARIO_EXTERNO primary key (ID_CALENDARIO),
+  constraint FK_CALENDARIO_EXTERNO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint UQ_CALENDARIO_EXTERNO_CANAL unique (ID_UNIDADE, TP_CANAL),
+  constraint CK_CALENDARIO_EXTERNO_TP_CANAL check (TP_CANAL in ('AIRBNB', 'BOOKING', 'OUTRO'))
 );
 
-create table bloqueios (
-  id             bigint generated always as identity primary key,
-  unidade_id     bigint not null references unidades (id) on delete cascade,
-  periodo        daterange not null,
-  motivo         text not null check (motivo in ('canal_externo', 'manutencao', 'uso_proprio', 'outro')),
-  calendario_id  bigint references calendarios_externos (id) on delete cascade,
-  uid_externo    text,                          -- UID do evento iCal: permite atualizar/remover no próximo sync
-  observacao     text,
-  criado_em      timestamptz not null default now(),
-  constraint bloqueios_periodo_valido
-    check (not isempty(periodo) and not lower_inf(periodo) and not upper_inf(periodo)),
-  constraint bloqueios_origem_canal
-    check ((motivo = 'canal_externo') = (calendario_id is not null)),
-  unique (calendario_id, uid_externo)
+create table BLOQUEIO (
+  ID_BLOQUEIO     bigint generated always as identity,
+  ID_UNIDADE      bigint not null,
+  DT_INI          date not null,              -- primeira noite bloqueada
+  DT_FIM          date not null,              -- dia seguinte à última noite
+  TP_MOTIVO       text not null,
+  ID_CALENDARIO   bigint,
+  CD_EXTERNO      text,                       -- UID do evento iCal: permite atualizar/remover no próximo sync
+  DS_OBSERVACAO   text,
+  DT_CRIACAO      timestamptz not null default now(),
+  constraint PK_BLOQUEIO primary key (ID_BLOQUEIO),
+  constraint FK_BLOQUEIO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint FK_BLOQUEIO_CALENDARIO_EXTERNO foreign key (ID_CALENDARIO) references CALENDARIO_EXTERNO (ID_CALENDARIO) on delete cascade,
+  constraint UQ_BLOQUEIO_CD_EXTERNO unique (ID_CALENDARIO, CD_EXTERNO),
+  constraint CK_BLOQUEIO_PERIODO check (DT_FIM > DT_INI),
+  constraint CK_BLOQUEIO_TP_MOTIVO check (TP_MOTIVO in ('CANAL_EXTERNO', 'MANUTENCAO', 'USO_PROPRIO', 'OUTRO')),
+  constraint CK_BLOQUEIO_ORIGEM_CANAL check ((TP_MOTIVO = 'CANAL_EXTERNO') = (ID_CALENDARIO is not null))
 );
-create index bloqueios_unidade_periodo_idx on bloqueios using gist (unidade_id, periodo);
+create index IX_BLOQUEIO_PERIODO on BLOQUEIO using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
 
 
 -- ════════════════════════════════════════════════════════════════════
 --  Cálculo de uma estadia (uso interno)
---  Valida as datas e a ocupação, verifica conflitos e soma o preço
---  noite a noite. Devolve o motivo quando a unidade não está disponível.
+--  Valida datas e ocupação, verifica conflitos e soma o preço noite a
+--  noite. Devolve o motivo quando a unidade não está disponível.
 --
 --  Motivos: datas_invalidas · data_passada · estadia_longa ·
 --  unidade_inativa · capacidade · sem_tarifa · fechado · sem_chegada ·
@@ -208,29 +272,30 @@ create index bloqueios_unidade_periodo_idx on bloqueios using gist (unidade_id, 
 -- ════════════════════════════════════════════════════════════════════
 
 create or replace function calcular_estadia(
-  p_unidade_id bigint,
+  p_id_unidade bigint,
   p_checkin    date,
   p_checkout   date,
   p_adultos    int,
-  p_criancas   int default 0
+  p_criancas   int default 0,
+  p_bebes      int default 0
 )
 returns table (
   disponivel        boolean,
   motivo            text,
-  noites            int,
-  min_noites        int,
-  valor_hospedagem  numeric(10,2),
-  taxa_limpeza      numeric(10,2),
-  valor_total       numeric(10,2),
-  detalhe           jsonb
+  qtde_noites       int,
+  qtde_min_noites   int,
+  vl_hospedagem     numeric(10,2),
+  vl_taxa_limpeza   numeric(10,2),
+  vl_total          numeric(10,2),
+  ds_detalhe        jsonb
 )
 language plpgsql
 stable
 set search_path = public, pg_temp
 as $$
 declare
-  u        unidades%rowtype;
-  p        propriedades%rowtype;
+  u        UNIDADE%rowtype;
+  p        PROPRIEDADE%rowtype;
   v_hoje   date;
   v_noites int;
   v_min    int;
@@ -240,25 +305,27 @@ declare
   v_fechado    boolean;
 begin
   p_criancas := coalesce(p_criancas, 0);
-  select * into u from unidades where id = p_unidade_id;
+  p_bebes    := coalesce(p_bebes, 0);
+  select * into u from UNIDADE where ID_UNIDADE = p_id_unidade;
   if not found then
     return query select false, 'unidade_inativa', 0, 0, 0::numeric(10,2), 0::numeric(10,2), 0::numeric(10,2), '[]'::jsonb;
     return;
   end if;
-  select * into p from propriedades where id = u.propriedade_id;
+  select * into p from PROPRIEDADE where ID_PROPRIEDADE = u.ID_PROPRIEDADE;
 
-  v_hoje   := (now() at time zone p.fuso_horario)::date;
+  v_hoje   := (now() at time zone p.DS_FUSO_HORARIO)::date;
   v_noites := p_checkout - p_checkin;
 
   -- 1 · datas e ocupação
   motivo := case
     when p_checkin is null or p_checkout is null or v_noites < 1          then 'datas_invalidas'
     when p_checkin < v_hoje                                                then 'data_passada'
-    when v_noites > p.max_noites                                           then 'estadia_longa'
-    when not u.ativa                                                       then 'unidade_inativa'
-    when coalesce(p_adultos, 0) < 1 or coalesce(p_criancas, 0) < 0
-      or p_adultos > u.adultos_max or p_criancas > u.criancas_max
-      or p_adultos + p_criancas > u.hospedes_max                           then 'capacidade'
+    when v_noites > p.QTDE_MAX_NOITES                                      then 'estadia_longa'
+    when not u.SG_ATIVO                                                    then 'unidade_inativa'
+    when coalesce(p_adultos, 0) < 1 or p_criancas < 0 or p_bebes < 0
+      or p_adultos > u.QTDE_MAX_ADULTOS
+      or p_criancas + p_bebes > u.QTDE_MAX_CRIANCAS                        -- bebês ocupam vaga de criança
+      or p_adultos + p_criancas + p_bebes > u.QTDE_MAX_HOSPEDES            then 'capacidade'
   end;
   if motivo is not null then
     return query select false, motivo, greatest(coalesce(v_noites, 0), 0), 0,
@@ -273,37 +340,37 @@ begin
   ),
   calc as (
     select n.data,
-           t.nome as tarifa,
-           a.fechado,
-           greatest(coalesce(a.min_noites, t.min_noites, 1), 1) as min_n,
+           t.NM_TARIFA as tarifa,
+           a.SG_FECHADO as fechado,
+           greatest(coalesce(a.QTDE_MIN_NOITES, t.QTDE_MIN_NOITES, 1), 1) as min_n,
            coalesce(
-             a.valor_noite,
+             a.VL_NOITE,
              case when extract(isodow from n.data) in (5, 6)          -- sexta e sábado
-                  then coalesce(t.valor_noite_fds, t.valor_noite)
-                  else t.valor_noite end
+                  then coalesce(t.VL_NOITE_FDS, t.VL_NOITE)
+                  else t.VL_NOITE end
            ) as valor_base,
            -- o valor da noite cobre os adultos inclusos; cada criança paga à parte
-           greatest(p_adultos - t.adultos_inclusos, 0) * t.valor_adulto_extra
-           + p_criancas * t.valor_crianca
-             as extras,
-           t.id is null as sem_tarifa
+           greatest(p_adultos - t.QTDE_ADULTOS_INCLUSOS, 0) * t.VL_ADULTO_EXTRA
+           + p_criancas * t.VL_CRIANCA as extras,
+           t.ID_TARIFA is null as sem_tarifa
     from noites n
     left join lateral (
-      select * from tarifas tr
-      where tr.unidade_id = p_unidade_id and tr.ativa and tr.periodo @> n.data
-      order by tr.prioridade desc
+      select * from TARIFA tr
+      where tr.ID_UNIDADE = p_id_unidade and tr.SG_ATIVO
+        and n.data >= tr.DT_INI and n.data < tr.DT_FIM
+      order by tr.NO_PRIORIDADE desc
       limit 1
     ) t on true
-    left join ajustes_diarios a on a.unidade_id = p_unidade_id and a.data = n.data
+    left join AJUSTE_DIARIO a on a.ID_UNIDADE = p_id_unidade and a.DT_REF = n.data
   )
   select bool_or(c.sem_tarifa),
          bool_or(coalesce(c.fechado, false)),
          max(c.min_n),
          sum(c.valor_base + c.extras),
          jsonb_agg(jsonb_build_object(
-           'data', c.data, 'tarifa', c.tarifa,
-           'valor_base', c.valor_base, 'extras', c.extras,
-           'valor', c.valor_base + c.extras) order by c.data)
+           'dt_ref', c.data, 'nm_tarifa', c.tarifa,
+           'vl_base', c.valor_base, 'vl_extras', c.extras,
+           'vl_noite', c.valor_base + c.extras) order by c.data)
     into v_sem_tarifa, v_fechado, v_min, v_total, v_det
   from calc c;
 
@@ -311,25 +378,25 @@ begin
   motivo := case
     when v_sem_tarifa then 'sem_tarifa'                    -- venda ainda não aberta para alguma noite
     when v_fechado    then 'fechado'
-    when exists (select 1 from ajustes_diarios a
-                 where a.unidade_id = p_unidade_id and a.data = p_checkin and a.sem_chegada)  then 'sem_chegada'
-    when exists (select 1 from ajustes_diarios a
-                 where a.unidade_id = p_unidade_id and a.data = p_checkout and a.sem_saida)   then 'sem_saida'
+    when exists (select 1 from AJUSTE_DIARIO a
+                 where a.ID_UNIDADE = p_id_unidade and a.DT_REF = p_checkin and a.SG_SEM_CHEGADA)   then 'sem_chegada'
+    when exists (select 1 from AJUSTE_DIARIO a
+                 where a.ID_UNIDADE = p_id_unidade and a.DT_REF = p_checkout and a.SG_SEM_SAIDA)    then 'sem_saida'
     when v_noites < v_min then 'min_noites'                -- vale o maior mínimo entre as noites da estadia
     -- 4 · conflitos: reservas ativas (pré-reserva vencida não conta) e bloqueios
-    when exists (select 1 from reservas r
-                 where r.unidade_id = p_unidade_id
-                   and r.periodo && daterange(p_checkin, p_checkout)
-                   and (r.status = 'confirmada' or (r.status = 'pendente' and r.expira_em > now())))
-      or exists (select 1 from bloqueios b
-                 where b.unidade_id = p_unidade_id
-                   and b.periodo && daterange(p_checkin, p_checkout)) then 'ocupado'
+    when exists (select 1 from RESERVA r
+                 where r.ID_UNIDADE = p_id_unidade
+                   and daterange(r.DT_CHECKIN, r.DT_CHECKOUT) && daterange(p_checkin, p_checkout)
+                   and (r.TP_STATUS = 'CONFIRMADA' or (r.TP_STATUS = 'PENDENTE' and r.DT_EXPIRA > now())))
+      or exists (select 1 from BLOQUEIO b
+                 where b.ID_UNIDADE = p_id_unidade
+                   and daterange(b.DT_INI, b.DT_FIM) && daterange(p_checkin, p_checkout)) then 'ocupado'
   end;
 
   return query select motivo is null, motivo, v_noites, coalesce(v_min, 1),
                       coalesce(v_total, 0)::numeric(10,2),
-                      u.taxa_limpeza,
-                      (coalesce(v_total, 0) + u.taxa_limpeza)::numeric(10,2),
+                      u.VL_TAXA_LIMPEZA,
+                      (coalesce(v_total, 0) + u.VL_TAXA_LIMPEZA)::numeric(10,2),
                       coalesce(v_det, '[]'::jsonb);
 end;
 $$;
@@ -345,85 +412,99 @@ create or replace function consultar_disponibilidade(
   p_checkin   date,
   p_checkout  date,
   p_adultos   int,
-  p_criancas  int default 0
+  p_criancas  int default 0,
+  p_bebes     int default 0
 )
 returns table (
-  unidade           text,
-  nome              text,
+  cd_unidade        text,
+  nm_unidade        text,
   disponivel        boolean,
   motivo            text,
-  noites            int,
-  min_noites        int,
-  valor_hospedagem  numeric(10,2),
-  taxa_limpeza      numeric(10,2),
-  valor_total       numeric(10,2),
-  valor_medio_noite numeric(10,2),
-  detalhe           jsonb
+  qtde_noites       int,
+  qtde_min_noites   int,
+  vl_hospedagem     numeric(10,2),
+  vl_taxa_limpeza   numeric(10,2),
+  vl_total          numeric(10,2),
+  vl_medio_noite    numeric(10,2),
+  vl_sinal          numeric(10,2),
+  ds_detalhe        jsonb
 )
 language sql
 stable
 security definer                       -- lê as tabelas sem expô-las ao visitante
 set search_path = public, pg_temp
 as $$
-  select u.slug, u.nome, c.disponivel, c.motivo, c.noites, c.min_noites,
-         case when c.disponivel then c.valor_hospedagem end,
-         case when c.disponivel then c.taxa_limpeza end,
-         case when c.disponivel then c.valor_total end,
-         case when c.disponivel and c.noites > 0 then round(c.valor_hospedagem / c.noites, 2) end,
-         case when c.disponivel then c.detalhe end
-  from unidades u
-  cross join lateral calcular_estadia(u.id, p_checkin, p_checkout, p_adultos, p_criancas) c
-  where u.ativa
-  order by c.disponivel desc, c.valor_total, u.ordem;
+  select u.CD_UNIDADE, u.NM_UNIDADE, c.disponivel, c.motivo, c.qtde_noites, c.qtde_min_noites,
+         case when c.disponivel then c.vl_hospedagem end,
+         case when c.disponivel then c.vl_taxa_limpeza end,
+         case when c.disponivel then c.vl_total end,
+         case when c.disponivel and c.qtde_noites > 0 then round(c.vl_hospedagem / c.qtde_noites, 2) end,
+         case when c.disponivel then round(c.vl_total * p.VL_PERCENTUAL_SINAL / 100, 2) end,
+         case when c.disponivel then c.ds_detalhe end
+  from UNIDADE u
+  join PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
+  cross join lateral calcular_estadia(u.ID_UNIDADE, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes) c
+  where u.SG_ATIVO
+  order by c.disponivel desc, c.vl_total, u.NO_ORDEM;
 $$;
 
 
 -- ════════════════════════════════════════════════════════════════════
---  Pré-reserva: segura as datas por 15 minutos enquanto o hóspede paga
---  Chamar de uma Edge Function (com captcha / limite de tentativas),
---  nunca direto do navegador: por isso só o service_role executa.
+--  Pré-reserva: segura as datas enquanto o hóspede paga o sinal
+--  (PROPRIEDADE.QTDE_MINUTOS_PRE_RESERVA, hoje 30 min). Chamar de uma
+--  Edge Function (com captcha / limite de tentativas), nunca direto do
+--  navegador: por isso só o service_role executa.
 -- ════════════════════════════════════════════════════════════════════
 
 create or replace function criar_pre_reserva(
-  p_unidade   text,          -- slug da unidade
-  p_checkin   date,
-  p_checkout  date,
-  p_adultos   int,
-  p_criancas  int default 0,
-  p_validade  interval default interval '15 minutes'
+  p_cd_unidade text,
+  p_checkin    date,
+  p_checkout   date,
+  p_adultos    int,
+  p_criancas   int default 0,
+  p_bebes      int default 0
 )
-returns table (codigo text, expira_em timestamptz, valor_total numeric(10,2))
+returns table (cd_reserva text, dt_expira timestamptz, vl_total numeric(10,2), vl_sinal numeric(10,2))
 language plpgsql
 volatile
 security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_unidade_id bigint;
+  v_id_unidade bigint;
+  v_minutos    int;
+  v_percentual numeric;
   c record;
 begin
   -- trava a unidade: pedidos simultâneos para o mesmo chalé entram em fila,
-  -- o que também protege os bloqueios (que não estão na constraint EXCLUDE)
-  select id into v_unidade_id from unidades where slug = p_unidade and ativa for update;
-  if v_unidade_id is null then
+  -- o que também protege os bloqueios (que não estão na restrição EXCLUDE)
+  select u.ID_UNIDADE, p.QTDE_MINUTOS_PRE_RESERVA, p.VL_PERCENTUAL_SINAL
+    into v_id_unidade, v_minutos, v_percentual
+  from UNIDADE u join PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
+  where u.CD_UNIDADE = p_cd_unidade and u.SG_ATIVO
+  for update of u;
+  if v_id_unidade is null then
     raise exception 'unidade_inativa' using errcode = 'P0001';
   end if;
 
   -- libera pré-reservas vencidas desta unidade antes de verificar
-  update reservas r set status = 'expirada', atualizado_em = now()
-  where r.unidade_id = v_unidade_id and r.status = 'pendente' and r.expira_em <= now();
+  update RESERVA r set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
+  where r.ID_UNIDADE = v_id_unidade and r.TP_STATUS = 'PENDENTE' and r.DT_EXPIRA <= now();
 
-  select * into c from calcular_estadia(v_unidade_id, p_checkin, p_checkout, p_adultos, p_criancas);
+  select * into c from calcular_estadia(v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes);
   if not c.disponivel then
     raise exception '%', c.motivo using errcode = 'P0001';
   end if;
 
   return query
-  insert into reservas as r (unidade_id, periodo, adultos, criancas, status, canal,
-                             valor_hospedagem, taxa_limpeza, detalhe_precos, expira_em)
-  values (v_unidade_id, daterange(p_checkin, p_checkout), p_adultos, p_criancas, 'pendente', 'site',
-          c.valor_hospedagem, c.taxa_limpeza, c.detalhe, now() + p_validade)
-  returning r.codigo, r.expira_em, r.valor_total;
+  insert into RESERVA as r (ID_UNIDADE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,
+                            TP_STATUS, TP_CANAL, VL_HOSPEDAGEM, VL_TAXA_LIMPEZA, VL_SINAL,
+                            DS_DETALHE_PRECOS, DT_EXPIRA)
+  values (v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes,
+          'PENDENTE', 'SITE', c.vl_hospedagem, c.vl_taxa_limpeza,
+          round(c.vl_total * v_percentual / 100, 2),
+          c.ds_detalhe, now() + make_interval(mins => v_minutos))
+  returning r.CD_RESERVA, r.DT_EXPIRA, r.VL_TOTAL, r.VL_SINAL;
 end;
 $$;
 
@@ -438,8 +519,8 @@ security definer
 set search_path = public, pg_temp
 as $$
   with x as (
-    update reservas set status = 'expirada', atualizado_em = now()
-    where status = 'pendente' and expira_em <= now()
+    update RESERVA set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
+    where TP_STATUS = 'PENDENTE' and DT_EXPIRA <= now()
     returning 1
   )
   select count(*)::int from x;
@@ -455,23 +536,23 @@ $$;
 --  no mesmo modelo de perfis do solar-inspect.
 -- ════════════════════════════════════════════════════════════════════
 
-alter table propriedades         enable row level security;
-alter table unidades             enable row level security;
-alter table tarifas              enable row level security;
-alter table ajustes_diarios      enable row level security;
-alter table hospedes             enable row level security;
-alter table reservas             enable row level security;
-alter table pagamentos           enable row level security;
-alter table calendarios_externos enable row level security;
-alter table bloqueios            enable row level security;
+alter table PROPRIEDADE        enable row level security;
+alter table UNIDADE            enable row level security;
+alter table TARIFA             enable row level security;
+alter table AJUSTE_DIARIO      enable row level security;
+alter table HOSPEDE            enable row level security;
+alter table RESERVA            enable row level security;
+alter table PAGAMENTO          enable row level security;
+alter table CALENDARIO_EXTERNO enable row level security;
+alter table BLOQUEIO           enable row level security;
 
 -- No Supabase as funções do schema public recebem EXECUTE para anon e
 -- authenticated por padrão; por isso a revogação é explícita por papel.
-revoke all on function calcular_estadia(bigint, date, date, int, int)              from public, anon, authenticated;
-revoke all on function consultar_disponibilidade(date, date, int, int)             from public, anon, authenticated;
-revoke all on function criar_pre_reserva(text, date, date, int, int, interval)     from public, anon, authenticated;
-revoke all on function expirar_pre_reservas()                                      from public, anon, authenticated;
+revoke all on function calcular_estadia(bigint, date, date, int, int, int)      from public, anon, authenticated;
+revoke all on function consultar_disponibilidade(date, date, int, int, int)     from public, anon, authenticated;
+revoke all on function criar_pre_reserva(text, date, date, int, int, int)       from public, anon, authenticated;
+revoke all on function expirar_pre_reservas()                                   from public, anon, authenticated;
 
-grant execute on function consultar_disponibilidade(date, date, int, int)          to anon, authenticated;
-grant execute on function criar_pre_reserva(text, date, date, int, int, interval)  to service_role;
-grant execute on function expirar_pre_reservas()                                   to service_role;
+grant execute on function consultar_disponibilidade(date, date, int, int, int)  to anon, authenticated;
+grant execute on function criar_pre_reserva(text, date, date, int, int, int)    to service_role;
+grant execute on function expirar_pre_reservas()                                to service_role;

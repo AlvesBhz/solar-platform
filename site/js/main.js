@@ -444,8 +444,8 @@ const Booking = (() => {
       });
       return r;
     }
-    pop.appendChild(row(I18N.t('Adultos'), I18N.t('13+ anos'), 'adults', 1));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–12 anos'), 'children', 0));
+    pop.appendChild(row(I18N.t('Adultos'), I18N.t('14+ anos'), 'adults', 1));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children', 0));
     return pop;
   }
 

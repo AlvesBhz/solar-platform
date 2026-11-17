@@ -2,7 +2,7 @@
 
 Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chalé está livre nas datas escolhidas e quanto custa a estadia, noite a noite.
 
-**Situação:** proposta em validação, ainda não ligada ao site. O schema roda num PostgreSQL 16 e passou em todos os testes desta pasta. Os dados iniciais já usam os valores definidos em 16/11/2026: check-in 15h, R$ 1.700 a noite para o casal, R$ 3,00 por criança por noite, até 2 adultos e 2 crianças, 1 chalé, pagamento por Pix e Mercado Pago.
+**Situação:** proposta em validação, ainda não ligada ao site. O schema roda num PostgreSQL 16 e passou em todos os testes desta pasta. Os dados iniciais usam os valores definidos em 16 e 17/11/2026: chalé Casa do Mirante, check-in 15h, R$ 1.700 a noite para o casal, R$ 300 por criança (2 a 13 anos) por noite, bebê não paga mas ocupa vaga, até 2 adultos e 2 crianças, até 7 noites, sinal não reembolsável com remarcação, pagamento por Pix e Mercado Pago, 30 minutos para pagar.
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -24,39 +24,42 @@ O Supabase roda **PostgreSQL**, não Microsoft SQL Server. Os dois usam a lingua
 
 ## Modelo
 
+Nomes no mesmo padrão dos outros projetos (esquema IBP): tabelas e campos em MAIÚSCULAS, tabelas no singular e prefixo pelo tipo do campo (`ID_` identificador, `NM_` nome, `DS_` descrição, `DT_` data, `HR_` hora, `VL_` valor, `QTDE_` quantidade, `NO_` número, `CD_` código, `TP_` tipo de lista fixa, `SG_` sim/não). Restrições: `PK_<TABELA>`, `FK_<FILHA>_<PAI>`, `UQ_`, `CK_`, `EX_`, `IX_`. O PostgreSQL guarda os nomes em minúsculas por dentro, mas aceita escrevê-los em maiúsculas nas consultas.
+
 ```mermaid
 erDiagram
-    propriedades ||--o{ unidades : tem
-    unidades ||--o{ tarifas : "preço por temporada"
-    unidades ||--o{ ajustes_diarios : "exceções por data"
-    unidades ||--o{ reservas : recebe
-    unidades ||--o{ bloqueios : tem
-    unidades ||--o{ calendarios_externos : "Airbnb / Booking"
-    calendarios_externos ||--o{ bloqueios : importa
-    hospedes ||--o{ reservas : faz
-    reservas ||--o{ pagamentos : recebe
+    PROPRIEDADE ||--o{ UNIDADE : tem
+    UNIDADE ||--o{ TARIFA : "preço por período"
+    UNIDADE ||--o{ AJUSTE_DIARIO : "exceções por data"
+    UNIDADE ||--o{ RESERVA : recebe
+    UNIDADE ||--o{ BLOQUEIO : tem
+    UNIDADE ||--o{ CALENDARIO_EXTERNO : "Airbnb / Booking"
+    CALENDARIO_EXTERNO ||--o{ BLOQUEIO : importa
+    HOSPEDE ||--o{ RESERVA : faz
+    RESERVA ||--o{ PAGAMENTO : recebe
+    RESERVA ||--o| RESERVA : "remarcada de"
 ```
 
 | Tabela | Para que serve |
 |---|---|
-| `propriedades` | A pousada: fuso, horários de check-in/out, idade máxima de criança pagante, estadia máxima |
-| `unidades` | Cada chalé: capacidade (hóspedes, adultos, crianças) e taxa de limpeza. O site mostra um chalé hoje; o modelo aceita vários |
-| `tarifas` | Preço por temporada: valor da noite em dia de semana e em sexta/sábado, adultos inclusos no valor, valor de adulto extra e de cada criança, mínimo de noites. Temporadas podem se sobrepor; a de **maior prioridade** vence (ex.: Réveillon por cima da Alta temporada, que fica por cima da Base) |
-| `ajustes_diarios` | Exceção de um dia: preço especial (feriado), mínimo de noites, noite fechada, sem chegada ou sem saída naquela data |
-| `reservas` | Reservas do site, telefone ou contato direto. Guarda o preço calculado no momento da reserva, para que mudanças de tarifa não alterem reservas já feitas |
-| `bloqueios` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas vindas do Airbnb/Booking |
-| `calendarios_externos` | Links iCal do Airbnb e do Booking, importados periodicamente para `bloqueios` |
-| `hospedes` | Nome, e-mail e telefone; só o necessário (LGPD) |
-| `pagamentos` | Tentativas de pagamento de cada reserva: Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
+| `PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de criança, estadia máxima, percentual do sinal e minutos para pagar |
+| `UNIDADE` | Cada chalé: capacidade (hóspedes, adultos, crianças + bebês) e taxa de limpeza |
+| `TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, valor por criança, mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
+| `AJUSTE_DIARIO` | Exceção de um dia (`DT_REF`): preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída |
+| `RESERVA` | Reservas do site, telefone ou contato direto, com o preço e o sinal gravados no momento da reserva |
+| `PAGAMENTO` | Tentativas de pagamento: Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
+| `BLOQUEIO` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas do Airbnb/Booking |
+| `CALENDARIO_EXTERNO` | Links iCal do Airbnb e do Booking, importados periodicamente para `BLOQUEIO` |
+| `HOSPEDE` | Nome, e-mail e telefone; só o necessário (LGPD) |
 
 ## Como a disponibilidade e o preço são calculados
 
-A estadia é o intervalo de **noites** `[check-in, check-out)`. A noite do dia de saída não é cobrada nem ocupada, então quem sai no dia 21 libera o chalé para quem entra no dia 21.
+A estadia são as **noites** de `DT_CHECKIN` até a véspera de `DT_CHECKOUT`. A noite do dia de saída não é cobrada nem ocupada, então quem sai no dia 21 libera o chalé para quem entra no dia 21.
 
 Para cada noite da estadia:
 
 1. **Preço da noite:** o ajuste do dia, se houver. Senão, a tarifa de maior prioridade que cobre a noite: valor de sexta/sábado nas noites de sexta e sábado, valor normal nas demais.
-2. **Hóspedes:** o valor da noite cobre os adultos inclusos (o casal). Cada criança de 2 a 12 anos soma o valor de criança por noite, e cada adulto além dos inclusos soma o valor de adulto extra. Crianças abaixo de 2 anos não pagam e não são informadas na busca.
+2. **Hóspedes:** o valor da noite cobre os adultos inclusos (o casal). Cada criança de 2 a 13 anos soma o valor de criança por noite, e cada adulto além dos inclusos soma o valor de adulto extra. Bebês abaixo de 2 anos não pagam, mas ocupam uma vaga de criança.
 3. **Total:** soma das noites + taxa de limpeza (uma vez por estadia).
 
 A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que voltam para o site mostrar a mensagem certa:
@@ -65,8 +68,8 @@ A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que v
 |---|---|
 | `datas_invalidas` | Check-out igual ou anterior ao check-in |
 | `data_passada` | Check-in antes de hoje (fuso de São Paulo) |
-| `estadia_longa` | Mais noites que o máximo da propriedade (exemplo: 30) |
-| `capacidade` | Mais hóspedes, adultos ou crianças que o chalé comporta |
+| `estadia_longa` | Mais noites que o máximo da propriedade (7) |
+| `capacidade` | Mais hóspedes, adultos ou crianças + bebês que o chalé comporta |
 | `sem_tarifa` | Alguma noite sem tarifa cadastrada (venda ainda não aberta) |
 | `fechado` | Alguma noite marcada como fechada |
 | `sem_chegada` / `sem_saida` | Check-in ou check-out numa data que não permite |
@@ -77,7 +80,7 @@ A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que v
 
 ### 1. Consultar (botão "Ver disponibilidade")
 
-Função pública `consultar_disponibilidade(check-in, check-out, adultos, crianças)`, chamada direto do navegador:
+Função pública `consultar_disponibilidade(check-in, check-out, adultos, crianças, bebês)`, chamada direto do navegador:
 
 ```js
 const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`, {
@@ -87,7 +90,7 @@ const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`
     Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     'Content-Type': 'application/json',
   },
-  body: JSON.stringify({ p_checkin: '2027-03-04', p_checkout: '2027-03-07', p_adultos: 2, p_criancas: 1 }),
+  body: JSON.stringify({ p_checkin: '2027-03-04', p_checkout: '2027-03-07', p_adultos: 2, p_criancas: 1, p_bebes: 0 }),
 });
 const [chale] = await resp.json();
 ```
@@ -96,23 +99,23 @@ Resposta de exemplo, gerada pelos testes (casal + 1 criança, 3 noites de qui a 
 
 ```json
 {
-  "unidade": "chale-solar", "nome": "Chalé Solar",
-  "disponivel": true, "motivo": null, "noites": 3, "min_noites": 1,
-  "valor_hospedagem": 5109.00, "taxa_limpeza": 0.00,
-  "valor_total": 5109.00, "valor_medio_noite": 1703.00,
-  "detalhe": [
-    { "data": "2027-03-04", "tarifa": "Tarifa padrão", "valor_base": 1700.00, "extras": 3.00, "valor": 1703.00 },
-    { "data": "2027-03-05", "tarifa": "Tarifa padrão", "valor_base": 1700.00, "extras": 3.00, "valor": 1703.00 },
-    { "data": "2027-03-06", "tarifa": "Tarifa padrão", "valor_base": 1700.00, "extras": 3.00, "valor": 1703.00 }
+  "cd_unidade": "casa-do-mirante", "nm_unidade": "Casa do Mirante",
+  "disponivel": true, "motivo": null, "qtde_noites": 3, "qtde_min_noites": 1,
+  "vl_hospedagem": 6000.00, "vl_taxa_limpeza": 0.00, "vl_total": 6000.00,
+  "vl_medio_noite": 2000.00, "vl_sinal": 3000.00,
+  "ds_detalhe": [
+    { "dt_ref": "2027-03-04", "nm_tarifa": "Tarifa padrão", "vl_base": 1700.00, "vl_extras": 300.00, "vl_noite": 2000.00 },
+    { "dt_ref": "2027-03-05", "nm_tarifa": "Tarifa padrão", "vl_base": 1700.00, "vl_extras": 300.00, "vl_noite": 2000.00 },
+    { "dt_ref": "2027-03-06", "nm_tarifa": "Tarifa padrão", "vl_base": 1700.00, "vl_extras": 300.00, "vl_noite": 2000.00 }
   ]
 }
 ```
 
-Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica o porquê. A chave `anon` do Supabase é pública por natureza; a proteção está no banco (ver Segurança).
+Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica o porquê. A API devolve os nomes em minúsculas (é assim que o PostgreSQL os guarda). A chave `anon` do Supabase é pública por natureza; a proteção está no banco (ver Segurança).
 
 ### 2. Reservar
 
-`criar_pre_reserva(unidade, check-in, check-out, adultos, crianças)` segura as datas por **15 minutos** enquanto o hóspede paga, e devolve o código da reserva (ex.: `SE-C1D82CDD`) e o valor. Ela é chamada por uma **Edge Function** do Supabase, nunca direto do navegador, para que a função possa aplicar captcha e limite de tentativas antes de segurar datas. O pagamento é feito pelo Mercado Pago (Pix ou cartão) e registrado em `pagamentos`; quando o Mercado Pago avisa a aprovação (webhook), a Edge Function grava o hóspede e muda a reserva para `confirmada`.
+`criar_pre_reserva(unidade, check-in, check-out, adultos, crianças, bebês)` segura as datas por **30 minutos** enquanto o hóspede paga o **sinal** (50% do total, a confirmar), e devolve o código da reserva (ex.: `SE-C1D82CDD`), o total e o sinal. Ela é chamada por uma **Edge Function** do Supabase, nunca direto do navegador, para que a função possa aplicar captcha e limite de tentativas antes de segurar datas. O pagamento é feito pelo Mercado Pago (Pix ou cartão) e registrado em `PAGAMENTO`; quando o Mercado Pago avisa a aprovação (webhook), a Edge Function grava o hóspede e muda a reserva para `confirmada`.
 
 Se o pagamento não acontecer, a pré-reserva vence sozinha: a consulta já ignora pré-reservas vencidas, e um job (`expirar_pre_reservas`, via pg_cron) só atualiza o status.
 
@@ -120,7 +123,7 @@ Se o pagamento não acontecer, a pré-reserva vence sozinha: a consulta já igno
 
 O chalé também é vendido nesses canais, então os três calendários precisam conversar:
 
-- **Entrada:** um job (Edge Function agendada, a cada 15–30 min) lê o iCal de cada canal em `calendarios_externos` e grava as datas em `bloqueios`. O UID de cada evento permite atualizar ou remover o bloqueio quando o canal cancela.
+- **Entrada:** um job (Edge Function agendada, a cada 15–30 min) lê o iCal de cada canal em `CALENDARIO_EXTERNO` e grava as datas em `BLOQUEIO`. O UID de cada evento permite atualizar ou remover o bloqueio quando o canal cancela.
 - **Saída:** o site publica o próprio iCal (reservas confirmadas + bloqueios manuais) para ser importado no Airbnb e no Booking.
 
 O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de vender a mesma data em dois canais nesse intervalo. Eliminar esse risco por completo exige um channel manager (integração por API).
@@ -133,16 +136,16 @@ O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de ve
 
 ## Segurança
 
-- **RLS em todas as tabelas,** sem nenhuma política para visitante: o navegador não lê nem grava tabela alguma. Testado como `anon`: 0 linhas em `reservas` e `hospedes`, inserção recusada.
+- **RLS em todas as tabelas,** sem nenhuma política para visitante: o navegador não lê nem grava tabela alguma. Testado como `anon`: 0 linhas em `RESERVA`, `HOSPEDE` e `PAGAMENTO`, inserção recusada.
 - **Uma única porta para o visitante:** `consultar_disponibilidade`, que não devolve dados de hóspedes nem de outras reservas.
 - **Revogação explícita:** no Supabase as funções novas recebem permissão de execução para `anon` e `authenticated` por padrão, então o schema revoga essa permissão papel a papel. A pré-reserva e a função interna de cálculo só rodam com `service_role`.
 - **Equipe:** as políticas de acesso do painel (para cadastrar tarifas e ver reservas) entram junto com o login do Supabase, no mesmo modelo de perfis do `solar-inspect`.
 
 ## Decisões
 
-Definidas em 16/11/2026 e já aplicadas: check-in às 15h; R$ 1.700 a noite para o casal; R$ 3,00 por criança (2 a 12 anos) por noite; abaixo de 2 anos não paga; até 2 adultos e 2 crianças (sofá-cama); 1 chalé; pagamento por Pix e Mercado Pago.
+Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê abaixo de 2 anos não paga, mas ocupa uma das 2 vagas de criança; até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; sinal não reembolsável, com possibilidade de remarcação; pagamento por Pix e Mercado Pago; 30 minutos para pagar.
 
-Ainda em aberto (detalhados no dicionário de dados enviado para validação): confirmação do valor por criança, taxa de limpeza, preço e mínimo de noites em datas especiais, sinal ou valor integral e política de cancelamento, prazo para pagar o Pix, regra para adolescentes e bebês, estadia máxima e nome do chalé.
+Ainda em aberto (detalhados no dicionário de dados): datas e preços de Réveillon, Carnaval e feriados; percentual do sinal; quando o saldo é pago; regras da remarcação; confirmação de que "7" são noites; direito de arrependimento do CDC (art. 49); campo de bebês no seletor do site.
 
 ## Como testar localmente
 
