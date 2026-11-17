@@ -40,6 +40,7 @@ create table PROPRIEDADE (
   DS_FUSO_HORARIO          text not null default 'America/Sao_Paulo',
   HR_CHECKIN               time not null default '15:00',
   HR_CHECKOUT              time not null default '12:00',
+  NO_IDADE_MAX_BEBE        smallint not null default 1,           -- bebês: até 1 ano (abaixo de 2); não pagam, mas ocupam vaga de criança
   NO_IDADE_MAX_CRIANCA     smallint not null default 13,          -- crianças: 2 a 13 anos; a partir de 14, adulto
   QTDE_MAX_NOITES          smallint not null default 7,
   VL_PERCENTUAL_SINAL      numeric(5,2) not null default 50,      -- % do total pago na reserva
@@ -53,6 +54,7 @@ create table PROPRIEDADE (
   constraint CK_PROPRIEDADE_REMARCACAO check (QTDE_DIAS_LIMITE_REMARCACAO >= 0 and QTDE_MESES_VALIDADE_CREDITO >= 1),
   constraint CK_PROPRIEDADE_ARREPENDIMENTO check (QTDE_DIAS_ARREPENDIMENTO >= 7),     -- o mínimo é o da lei
   constraint CK_PROPRIEDADE_MAX_NOITES check (QTDE_MAX_NOITES between 1 and 365),
+  constraint CK_PROPRIEDADE_IDADES check (NO_IDADE_MAX_BEBE >= 0 and NO_IDADE_MAX_BEBE < NO_IDADE_MAX_CRIANCA),
   constraint CK_PROPRIEDADE_SINAL check (VL_PERCENTUAL_SINAL between 0 and 100),
   constraint CK_PROPRIEDADE_PRE_RESERVA check (QTDE_MINUTOS_PRE_RESERVA between 5 and 1440)
 );
@@ -101,6 +103,7 @@ create table TARIFA (
   QTDE_ADULTOS_INCLUSOS   smallint not null default 2,
   VL_ADULTO_EXTRA         numeric(10,2) not null default 0,   -- por adulto além dos inclusos, por noite
   VL_CRIANCA              numeric(10,2) not null default 0,   -- por criança (2 a 13 anos), por noite
+  VL_BEBE                 numeric(10,2) not null default 0,   -- por bebê (até 1 ano), por noite: R$ 0, bebê não paga
   QTDE_MIN_NOITES         smallint not null default 1,
   SG_ATIVO                boolean not null default true,
   DT_CRIACAO              timestamptz not null default now(),
@@ -108,7 +111,7 @@ create table TARIFA (
   constraint FK_TARIFA_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
   constraint CK_TARIFA_PERIODO check (DT_FIM > DT_INI),
   constraint CK_TARIFA_VALORES check (VL_NOITE >= 0 and coalesce(VL_NOITE_FDS, 0) >= 0
-                                      and VL_ADULTO_EXTRA >= 0 and VL_CRIANCA >= 0),
+                                      and VL_ADULTO_EXTRA >= 0 and VL_CRIANCA >= 0 and VL_BEBE >= 0),
   constraint CK_TARIFA_QUANTIDADES check (QTDE_ADULTOS_INCLUSOS >= 1 and QTDE_MIN_NOITES >= 1),
   constraint EX_TARIFA_SOBREPOSICAO exclude using gist
     (ID_UNIDADE with =, NO_PRIORIDADE with =, daterange(DT_INI, DT_FIM) with &&) where (SG_ATIVO)
@@ -371,9 +374,13 @@ begin
                   then coalesce(t.VL_NOITE_FDS, t.VL_NOITE)
                   else t.VL_NOITE end
            ) as valor_base,
-           -- o valor da noite cobre os adultos inclusos; cada criança paga à parte
+           -- o valor da noite cobre os adultos inclusos; cada criança paga à parte;
+           -- bebês ocupam vaga de criança (checado acima) mas pagam VL_BEBE, hoje R$ 0
+           greatest(p_adultos - t.QTDE_ADULTOS_INCLUSOS, 0) * t.VL_ADULTO_EXTRA as vl_adultos_extra,
+           p_criancas * t.VL_CRIANCA as vl_criancas,
+           p_bebes * t.VL_BEBE as vl_bebes,
            greatest(p_adultos - t.QTDE_ADULTOS_INCLUSOS, 0) * t.VL_ADULTO_EXTRA
-           + p_criancas * t.VL_CRIANCA as extras,
+           + p_criancas * t.VL_CRIANCA + p_bebes * t.VL_BEBE as extras,
            t.ID_TARIFA is null as sem_tarifa
     from noites n
     left join lateral (
@@ -391,7 +398,11 @@ begin
          sum(c.valor_base + c.extras),
          jsonb_agg(jsonb_build_object(
            'dt_ref', c.data, 'nm_tarifa', c.tarifa,
-           'vl_base', c.valor_base, 'vl_extras', c.extras,
+           'vl_base', c.valor_base,
+           'qtde_criancas', p_criancas, 'vl_criancas', c.vl_criancas,
+           'qtde_bebes', p_bebes, 'vl_bebes', c.vl_bebes,
+           'vl_adultos_extra', c.vl_adultos_extra,
+           'vl_extras', c.extras,
            'vl_noite', c.valor_base + c.extras) order by c.data)
     into v_sem_tarifa, v_fechado, v_min, v_total, v_det
   from calc c;

@@ -1779,8 +1779,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 
 /* nota de capacidade no seletor de hóspedes */
 .gst-note {
-  margin-top: 0.6rem; padding-top: 0.6rem;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  margin-top: 0.7rem;
   font-size: var(--fs-label); line-height: 1.45;
   color: rgba(255,255,255,0.45);
 }

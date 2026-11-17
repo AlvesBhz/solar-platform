@@ -77,6 +77,17 @@ do $$ declare r record; begin
   select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 1, 1);
   if not r.disponivel or r.vl_total <> 4000 then raise exception 'FALHOU: casal + 1 criança + 1 bebê = %', r.vl_total; end if;
   raise notice 'ok  Casal + 1 criança + 1 bebê (bebê não paga)                       R$ %', r.vl_total;
+  if (r.ds_detalhe->0->>'qtde_bebes')::int <> 1 or (r.ds_detalhe->0->>'vl_bebes')::numeric <> 0
+     or (r.ds_detalhe->0->>'vl_criancas')::numeric <> 300 then
+    raise exception 'FALHOU: detalhe da noite não separa criança e bebê: %', r.ds_detalhe->0;
+  end if;
+  raise notice 'ok  Detalhe da noite: 1 criança R$ %, 1 bebê R$ %', r.ds_detalhe->0->>'vl_criancas', r.ds_detalhe->0->>'vl_bebes';
+  select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 0, 2);
+  if not r.disponivel or r.vl_total <> 3400 then raise exception 'FALHOU: casal + 2 bebês = %', r.vl_total; end if;
+  raise notice 'ok  Casal + 2 bebês (ocupam as 2 vagas de criança, não pagam)        R$ %', r.vl_total;
+  select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 0, 3);
+  if r.disponivel or r.motivo <> 'capacidade' then raise exception 'FALHOU: 3 bebês aceitos'; end if;
+  raise notice 'ok  Casal + 3 bebês                                                 indisponível: capacidade';
 end $$;
 
 \echo '── Ocupação'

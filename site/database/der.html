@@ -93,7 +93,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
       <h1>DER das Reservas</h1>
       <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
     </div>
-    <div class="stats"><span><b>9</b> tabelas</span><span><b>105</b> campos</span><span><b>10</b> ligações</span><span><b>41</b> regras</span></div>
+    <div class="stats"><span><b>9</b> tabelas</span><span><b>107</b> campos</span><span><b>10</b> ligações</span><span><b>42</b> regras</span></div>
   </header>
 
   <div class="legend" aria-label="Legenda">
@@ -163,7 +163,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </g>
 </g>
 <g class="tbl g-pre" data-t="TARIFA" tabindex="0" role="button" aria-label="Tabela TARIFA">
-<rect class="box" x="20" y="20" width="330" height="306" rx="6"/>
+<rect class="box" x="20" y="20" width="330" height="325" rx="6"/>
 <path class="head" d="M20,60 V26 Q20,20 26,20 H344 Q350,20 350,26 V60 Z"/>
 <text class="tname" x="32" y="45">TARIFA</text>
 <text class="tgroup" x="338" y="45" text-anchor="end">PREÇO</text>
@@ -197,16 +197,18 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="cname" x="64" y="263.5">VL_CRIANCA</text>
 <text class="ctype" x="340" y="263.5" text-anchor="end">numeric(10,2)</text>
 <rect class="zebra" x="21" y="269" width="328" height="19"/>
-<text class="cname" x="64" y="282.5">QTDE_MIN_NOITES</text>
-<text class="ctype" x="340" y="282.5" text-anchor="end">smallint</text>
-<text class="cname" x="64" y="301.5">SG_ATIVO</text>
-<text class="ctype" x="340" y="301.5" text-anchor="end">boolean</text>
+<text class="cname" x="64" y="282.5">VL_BEBE</text>
+<text class="ctype" x="340" y="282.5" text-anchor="end">numeric(10,2)</text>
+<text class="cname" x="64" y="301.5">QTDE_MIN_NOITES</text>
+<text class="ctype" x="340" y="301.5" text-anchor="end">smallint</text>
 <rect class="zebra" x="21" y="307" width="328" height="19"/>
-<text class="cname" x="64" y="320.5">DT_CRIACAO</text>
-<text class="ctype" x="340" y="320.5" text-anchor="end">timestamptz</text>
+<text class="cname" x="64" y="320.5">SG_ATIVO</text>
+<text class="ctype" x="340" y="320.5" text-anchor="end">boolean</text>
+<text class="cname" x="64" y="339.5">DT_CRIACAO</text>
+<text class="ctype" x="340" y="339.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-cad" data-t="PROPRIEDADE" tabindex="0" role="button" aria-label="Tabela PROPRIEDADE">
-<rect class="box" x="20" y="379" width="330" height="306" rx="6"/>
+<rect class="box" x="20" y="379" width="330" height="325" rx="6"/>
 <path class="head" d="M20,419 V385 Q20,379 26,379 H344 Q350,379 350,385 V419 Z"/>
 <text class="tname" x="32" y="404">PROPRIEDADE</text>
 <text class="tgroup" x="338" y="404" text-anchor="end">CADASTRO</text>
@@ -224,28 +226,30 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="cname" x="64" y="508.5">HR_CHECKOUT</text>
 <text class="ctype" x="340" y="508.5" text-anchor="end">time</text>
 <rect class="zebra" x="21" y="514" width="328" height="19"/>
-<text class="cname" x="64" y="527.5">NO_IDADE_MAX_CRIANCA</text>
+<text class="cname" x="64" y="527.5">NO_IDADE_MAX_BEBE</text>
 <text class="ctype" x="340" y="527.5" text-anchor="end">smallint</text>
-<text class="cname" x="64" y="546.5">QTDE_MAX_NOITES</text>
+<text class="cname" x="64" y="546.5">NO_IDADE_MAX_CRIANCA</text>
 <text class="ctype" x="340" y="546.5" text-anchor="end">smallint</text>
 <rect class="zebra" x="21" y="552" width="328" height="19"/>
-<text class="cname" x="64" y="565.5">VL_PERCENTUAL_SINAL</text>
-<text class="ctype" x="340" y="565.5" text-anchor="end">numeric(5,2)</text>
-<text class="cname" x="64" y="584.5">QTDE_MINUTOS_PRE_RESERVA</text>
-<text class="ctype" x="340" y="584.5" text-anchor="end">smallint</text>
+<text class="cname" x="64" y="565.5">QTDE_MAX_NOITES</text>
+<text class="ctype" x="340" y="565.5" text-anchor="end">smallint</text>
+<text class="cname" x="64" y="584.5">VL_PERCENTUAL_SINAL</text>
+<text class="ctype" x="340" y="584.5" text-anchor="end">numeric(5,2)</text>
 <rect class="zebra" x="21" y="590" width="328" height="19"/>
-<text class="cname" x="64" y="603.5">QTDE_DIAS_LIMITE_REMARCACAO</text>
+<text class="cname" x="64" y="603.5">QTDE_MINUTOS_PRE_RESERVA</text>
 <text class="ctype" x="340" y="603.5" text-anchor="end">smallint</text>
-<text class="cname" x="64" y="622.5">QTDE_MESES_VALIDADE_CREDITO</text>
+<text class="cname" x="64" y="622.5">QTDE_DIAS_LIMITE_REMARCACAO</text>
 <text class="ctype" x="340" y="622.5" text-anchor="end">smallint</text>
 <rect class="zebra" x="21" y="628" width="328" height="19"/>
-<text class="cname" x="64" y="641.5">QTDE_DIAS_ARREPENDIMENTO</text>
+<text class="cname" x="64" y="641.5">QTDE_MESES_VALIDADE_CREDITO</text>
 <text class="ctype" x="340" y="641.5" text-anchor="end">smallint</text>
-<text class="cname" x="64" y="660.5">NO_VERSAO_POLITICA</text>
+<text class="cname" x="64" y="660.5">QTDE_DIAS_ARREPENDIMENTO</text>
 <text class="ctype" x="340" y="660.5" text-anchor="end">smallint</text>
 <rect class="zebra" x="21" y="666" width="328" height="19"/>
-<text class="cname" x="64" y="679.5">DT_CRIACAO</text>
-<text class="ctype" x="340" y="679.5" text-anchor="end">timestamptz</text>
+<text class="cname" x="64" y="679.5">NO_VERSAO_POLITICA</text>
+<text class="ctype" x="340" y="679.5" text-anchor="end">smallint</text>
+<text class="cname" x="64" y="698.5">DT_CRIACAO</text>
+<text class="ctype" x="340" y="698.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-cad" data-t="UNIDADE" tabindex="0" role="button" aria-label="Tabela UNIDADE">
 <rect class="box" x="440" y="360" width="330" height="268" rx="6"/>
@@ -506,20 +510,20 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <article class="tcard g-cad" id="t-PROPRIEDADE" data-t="PROPRIEDADE">
   <header><h3>PROPRIEDADE</h3><span class="chip">CADASTRO</span></header>
   <p class="purpose">A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.</p>
-  <p class="meta">14 campos · ligada a UNIDADE</p>
-  <ul><li>Estadia máxima entre 1 e 365 noites (hoje 7).</li><li>Sinal entre 0% e 100% (hoje 50%).</li><li>Pré-reserva entre 5 e 1.440 minutos (hoje 30).</li><li>Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.</li><li>Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).</li></ul>
+  <p class="meta">15 campos · ligada a UNIDADE</p>
+  <ul><li>Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).</li><li>Estadia máxima entre 1 e 365 noites (hoje 7).</li><li>Sinal entre 0% e 100% (hoje 50%).</li><li>Pré-reserva entre 5 e 1.440 minutos (hoje 30).</li><li>Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.</li><li>Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).</li></ul>
 </article>
 <article class="tcard g-cad" id="t-UNIDADE" data-t="UNIDADE">
   <header><h3>UNIDADE</h3><span class="chip">CADASTRO</span></header>
-  <p class="purpose">Cada chalé (hoje, só a Casa do Mirante): capacidade e taxa de limpeza.</p>
+  <p class="purpose">Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.</p>
   <p class="meta">12 campos · ligada a AJUSTE_DIARIO, BLOQUEIO, CALENDARIO_EXTERNO, PROPRIEDADE, RESERVA, TARIFA</p>
-  <ul><li>CD_UNIDADE único, só letras minúsculas, números e hífen.</li><li>TP_UNIDADE: CHALE, QUARTO ou SUITE.</li><li>Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0.</li><li>Taxa de limpeza ≥ 0.</li></ul>
+  <ul><li>CD_UNIDADE único, só letras minúsculas, números e hífen.</li><li>TP_UNIDADE: CHALE, QUARTO ou SUITE.</li><li>Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.</li><li>Taxa de limpeza ≥ 0.</li></ul>
 </article>
 <article class="tcard g-pre" id="t-TARIFA" data-t="TARIFA">
   <header><h3>TARIFA</h3><span class="chip">PREÇO</span></header>
   <p class="purpose">Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.</p>
-  <p class="meta">14 campos · ligada a UNIDADE</p>
-  <ul><li>DT_FIM depois de DT_INI.</li><li>Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.</li><li>Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).</li></ul>
+  <p class="meta">15 campos · ligada a UNIDADE</p>
+  <ul><li>DT_FIM depois de DT_INI.</li><li>Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.</li><li>VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.</li><li>Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).</li></ul>
 </article>
 <article class="tcard g-pre" id="t-AJUSTE_DIARIO" data-t="AJUSTE_DIARIO">
   <header><h3>AJUSTE_DIARIO</h3><span class="chip">PREÇO</span></header>

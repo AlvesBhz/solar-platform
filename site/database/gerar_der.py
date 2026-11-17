@@ -130,7 +130,7 @@ svg.append('</svg>')
 
 PURPOSE = {
  'PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
- 'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade e taxa de limpeza.',
+ 'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
  'TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
  'HOSPEDE': 'Quem reserva: só nome, e-mail e telefone (LGPD).',
@@ -140,9 +140,9 @@ PURPOSE = {
  'BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
 }
 RULES = {
- 'PROPRIEDADE': ['Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
- 'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0.', 'Taxa de limpeza ≥ 0.'],
- 'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
+ 'PROPRIEDADE': ['Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
+ 'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
+ 'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
  'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
  'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.'],
  'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],

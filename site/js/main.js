@@ -466,9 +466,9 @@ const Booking = (() => {
     }
     pop.appendChild(row(I18N.t('Adultos'),  I18N.t('14+ anos'),  'adults'));
     pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children'));
-    pop.appendChild(row(I18N.t('Bebês'),    I18N.t('até 1 ano'), 'babies'));
+    pop.appendChild(row(I18N.t('Bebês'),    I18N.t('até 1 ano · não paga'), 'babies'));
     const nota = document.createElement('div'); nota.className = 'gst-note';
-    nota.textContent = I18N.t('Até 2 adultos e 2 crianças ou bebês. Bebês não pagam.');
+    nota.textContent = I18N.t('Bebês contam como criança na ocupação, mas não pagam. Máximo: 2 adultos e 2 crianças ou bebês.');
     pop.appendChild(nota);
     sync();
     return pop;
