@@ -12,12 +12,12 @@ W, HDR, RH = 330, 40, 19
 C0, C1, C2, C3 = 20, 440, 860, 1280
 
 POS = {
-  'TARIFA': (C0, 20), 'PROPRIEDADE': (C0, 379), 'UNIDADE': (C1, 360), 'AJUSTE_DIARIO': (C1, 680),
-  'RESERVA': (C2, 40), 'BLOQUEIO': (C2, 595),
-  'PAGAMENTO': (C3, 21), 'HOSPEDE': (C3, 420), 'CALENDARIO_EXTERNO': (C3, 690),
+  'SIT_TARIFA': (C0, 20), 'SIT_PROPRIEDADE': (C0, 379), 'SIT_UNIDADE': (C1, 360), 'SIT_AJUSTE_DIARIO': (C1, 680),
+  'SIT_RESERVA': (C2, 40), 'SIT_BLOQUEIO': (C2, 595),
+  'SIT_PAGAMENTO': (C3, 21), 'SIT_HOSPEDE': (C3, 420), 'SIT_CALENDARIO_EXTERNO': (C3, 690),
 }
-GROUP = {'PROPRIEDADE': 'cad', 'UNIDADE': 'cad', 'TARIFA': 'pre', 'AJUSTE_DIARIO': 'pre',
-         'RESERVA': 'ven', 'HOSPEDE': 'ven', 'PAGAMENTO': 'ven', 'CALENDARIO_EXTERNO': 'can', 'BLOQUEIO': 'can'}
+GROUP = {'SIT_PROPRIEDADE': 'cad', 'SIT_UNIDADE': 'cad', 'SIT_TARIFA': 'pre', 'SIT_AJUSTE_DIARIO': 'pre',
+         'SIT_RESERVA': 'ven', 'SIT_HOSPEDE': 'ven', 'SIT_PAGAMENTO': 'ven', 'SIT_CALENDARIO_EXTERNO': 'can', 'SIT_BLOQUEIO': 'can'}
 GNAME = {'cad': 'CADASTRO', 'pre': 'PREÇO', 'ven': 'VENDA', 'can': 'CANAIS'}
 
 def idx(t, c):
@@ -29,26 +29,26 @@ def bottom(t):
 
 # ligações: filho.campo -> pai.campo, pontos (porta do filho primeiro), rótulo e posição do rótulo
 L = [
-  dict(c='UNIDADE', f='ID_PROPRIEDADE', p='PROPRIEDADE', pk='ID_PROPRIEDADE', lbl='pertence a', lp=(370, None, 'mid'),
-       pts=lambda: [(C1, ry('UNIDADE','ID_PROPRIEDADE')), (C0+W, ry('UNIDADE','ID_PROPRIEDADE'))]),
-  dict(c='TARIFA', f='ID_UNIDADE', p='UNIDADE', pk='ID_UNIDADE', lbl='preço de',
-       pts=lambda: [(C0+W, ry('TARIFA','ID_UNIDADE')), (C1-30, ry('TARIFA','ID_UNIDADE')), (C1-30, ry('UNIDADE','ID_UNIDADE')), (C1, ry('UNIDADE','ID_UNIDADE'))]),
-  dict(c='AJUSTE_DIARIO', f='ID_UNIDADE', p='UNIDADE', pk='ID_UNIDADE', lbl='exceção de',
-       pts=lambda: [(C1+W, ry('AJUSTE_DIARIO','ID_UNIDADE')), (C1+W+16, ry('AJUSTE_DIARIO','ID_UNIDADE')), (C1+W+16, ry('UNIDADE','ID_UNIDADE')), (C1+W, ry('UNIDADE','ID_UNIDADE'))]),
-  dict(c='RESERVA', f='ID_UNIDADE', p='UNIDADE', pk='ID_UNIDADE', lbl='reserva',
-       pts=lambda: [(C2, ry('RESERVA','ID_UNIDADE')), (C2-26, ry('RESERVA','ID_UNIDADE')), (C2-26, ry('UNIDADE','ID_UNIDADE')), (C1+W, ry('UNIDADE','ID_UNIDADE'))]),
-  dict(c='BLOQUEIO', f='ID_UNIDADE', p='UNIDADE', pk='ID_UNIDADE', lbl='bloqueia',
-       pts=lambda: [(C2, ry('BLOQUEIO','ID_UNIDADE')), (C2-46, ry('BLOQUEIO','ID_UNIDADE')), (C2-46, ry('UNIDADE','ID_UNIDADE')), (C1+W, ry('UNIDADE','ID_UNIDADE'))]),
-  dict(c='CALENDARIO_EXTERNO', f='ID_UNIDADE', p='UNIDADE', pk='ID_UNIDADE', lbl='canal de',
-       pts=lambda: [(C3, ry('CALENDARIO_EXTERNO','ID_UNIDADE')), (C3-40, ry('CALENDARIO_EXTERNO','ID_UNIDADE')), (C3-40, 852), (C1+W+31, 852), (C1+W+31, ry('UNIDADE','ID_UNIDADE')), (C1+W, ry('UNIDADE','ID_UNIDADE'))]),
-  dict(c='BLOQUEIO', f='ID_CALENDARIO', p='CALENDARIO_EXTERNO', pk='ID_CALENDARIO', lbl='importado de',
-       pts=lambda: [(C2+W, ry('BLOQUEIO','ID_CALENDARIO')), (C3, ry('BLOQUEIO','ID_CALENDARIO'))]),
-  dict(c='RESERVA', f='ID_HOSPEDE', p='HOSPEDE', pk='ID_HOSPEDE', lbl='feita por', bridge='SELF',
-       pts=lambda: [(C2+W, ry('RESERVA','ID_HOSPEDE')), (C3-40, ry('RESERVA','ID_HOSPEDE')), (C3-40, ry('HOSPEDE','ID_HOSPEDE')), (C3, ry('HOSPEDE','ID_HOSPEDE'))]),
-  dict(c='PAGAMENTO', f='ID_RESERVA', p='RESERVA', pk='ID_RESERVA', lbl='paga',
-       pts=lambda: [(C3, ry('PAGAMENTO','ID_RESERVA')), (C2+W, ry('PAGAMENTO','ID_RESERVA'))]),
-  dict(c='RESERVA', f='ID_RESERVA_ORIGINAL', p='RESERVA', pk='ID_RESERVA', lbl='remarcada de',
-       pts=lambda: [(C2+W, ry('RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('RESERVA','ID_RESERVA')), (C2+W, ry('RESERVA','ID_RESERVA'))]),
+  dict(c='SIT_UNIDADE', f='ID_PROPRIEDADE', p='SIT_PROPRIEDADE', pk='ID_PROPRIEDADE', lbl='pertence a', lp=(370, None, 'mid'),
+       pts=lambda: [(C1, ry('SIT_UNIDADE','ID_PROPRIEDADE')), (C0+W, ry('SIT_UNIDADE','ID_PROPRIEDADE'))]),
+  dict(c='SIT_TARIFA', f='ID_UNIDADE', p='SIT_UNIDADE', pk='ID_UNIDADE', lbl='preço de',
+       pts=lambda: [(C0+W, ry('SIT_TARIFA','ID_UNIDADE')), (C1-30, ry('SIT_TARIFA','ID_UNIDADE')), (C1-30, ry('SIT_UNIDADE','ID_UNIDADE')), (C1, ry('SIT_UNIDADE','ID_UNIDADE'))]),
+  dict(c='SIT_AJUSTE_DIARIO', f='ID_UNIDADE', p='SIT_UNIDADE', pk='ID_UNIDADE', lbl='exceção de',
+       pts=lambda: [(C1+W, ry('SIT_AJUSTE_DIARIO','ID_UNIDADE')), (C1+W+16, ry('SIT_AJUSTE_DIARIO','ID_UNIDADE')), (C1+W+16, ry('SIT_UNIDADE','ID_UNIDADE')), (C1+W, ry('SIT_UNIDADE','ID_UNIDADE'))]),
+  dict(c='SIT_RESERVA', f='ID_UNIDADE', p='SIT_UNIDADE', pk='ID_UNIDADE', lbl='reserva',
+       pts=lambda: [(C2, ry('SIT_RESERVA','ID_UNIDADE')), (C2-26, ry('SIT_RESERVA','ID_UNIDADE')), (C2-26, ry('SIT_UNIDADE','ID_UNIDADE')), (C1+W, ry('SIT_UNIDADE','ID_UNIDADE'))]),
+  dict(c='SIT_BLOQUEIO', f='ID_UNIDADE', p='SIT_UNIDADE', pk='ID_UNIDADE', lbl='bloqueia',
+       pts=lambda: [(C2, ry('SIT_BLOQUEIO','ID_UNIDADE')), (C2-46, ry('SIT_BLOQUEIO','ID_UNIDADE')), (C2-46, ry('SIT_UNIDADE','ID_UNIDADE')), (C1+W, ry('SIT_UNIDADE','ID_UNIDADE'))]),
+  dict(c='SIT_CALENDARIO_EXTERNO', f='ID_UNIDADE', p='SIT_UNIDADE', pk='ID_UNIDADE', lbl='canal de',
+       pts=lambda: [(C3, ry('SIT_CALENDARIO_EXTERNO','ID_UNIDADE')), (C3-40, ry('SIT_CALENDARIO_EXTERNO','ID_UNIDADE')), (C3-40, 852), (C1+W+31, 852), (C1+W+31, ry('SIT_UNIDADE','ID_UNIDADE')), (C1+W, ry('SIT_UNIDADE','ID_UNIDADE'))]),
+  dict(c='SIT_BLOQUEIO', f='ID_CALENDARIO', p='SIT_CALENDARIO_EXTERNO', pk='ID_CALENDARIO', lbl='importado de',
+       pts=lambda: [(C2+W, ry('SIT_BLOQUEIO','ID_CALENDARIO')), (C3, ry('SIT_BLOQUEIO','ID_CALENDARIO'))]),
+  dict(c='SIT_RESERVA', f='ID_HOSPEDE', p='SIT_HOSPEDE', pk='ID_HOSPEDE', lbl='feita por', bridge='SELF',
+       pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_HOSPEDE','ID_HOSPEDE')), (C3, ry('SIT_HOSPEDE','ID_HOSPEDE'))]),
+  dict(c='SIT_PAGAMENTO', f='ID_RESERVA', p='SIT_RESERVA', pk='ID_RESERVA', lbl='paga',
+       pts=lambda: [(C3, ry('SIT_PAGAMENTO','ID_RESERVA')), (C2+W, ry('SIT_PAGAMENTO','ID_RESERVA'))]),
+  dict(c='SIT_RESERVA', f='ID_RESERVA_ORIGINAL', p='SIT_RESERVA', pk='ID_RESERVA', lbl='remarcada de',
+       pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA')), (C2+W, ry('SIT_RESERVA','ID_RESERVA'))]),
 ]
 # confere com as FKs reais do banco
 real = {(f['from'], f['col'], f['to'], f['tocol']) for f in schema['fks']}
@@ -78,7 +78,7 @@ def esc(s): return html.escape(str(s), quote=True)
 
 svg = []
 VW, VH = C3 + W + 20, 880
-svg.append(f'<svg id="der" viewBox="0 0 {VW} {VH}" role="img" aria-label="Diagrama entidade-relacionamento do banco de reservas: a UNIDADE (chalé) no centro, ligada à PROPRIEDADE, às tarifas, ajustes, reservas, bloqueios e calendários externos; a RESERVA liga hóspede, pagamentos e a reserva original de uma remarcação.">')
+svg.append(f'<svg id="der" viewBox="0 0 {VW} {VH}" role="img" aria-label="Diagrama entidade-relacionamento do banco de reservas: a SIT_UNIDADE (chalé) no centro, ligada à SIT_PROPRIEDADE, às tarifas, ajustes, reservas, bloqueios e calendários externos; a SIT_RESERVA liga hóspede, pagamentos e a reserva original de uma remarcação.">')
 
 # ligações primeiro (ficam atrás das tabelas)
 svg.append('<g class="edges">')
@@ -133,29 +133,29 @@ for name, (x, y) in POS.items():
 svg.append('</svg>')
 
 PURPOSE = {
- 'PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
- 'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
- 'TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
- 'AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
- 'HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
- 'RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
- 'PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
- 'CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
- 'BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
+ 'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
+ 'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
+ 'SIT_TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
+ 'SIT_AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
+ 'SIT_HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
+ 'SIT_RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
+ 'SIT_PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
+ 'SIT_CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
+ 'SIT_BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
 }
 RULES = {
- 'PROPRIEDADE': ['Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
- 'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
- 'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
- 'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
- 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
- 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_RESERVA_PASSAPORTE).'],
- 'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
- 'CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
- 'BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
+ 'SIT_PROPRIEDADE': ['Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
+ 'SIT_UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
+ 'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
+ 'SIT_AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
+ 'SIT_HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_SIT_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
+ 'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
+ 'SIT_PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
+ 'SIT_CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
+ 'SIT_BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
 CAMPO = {
- 'PROPRIEDADE': {
+ 'SIT_PROPRIEDADE': {
   'ID_PROPRIEDADE': 'Número interno da pousada, gerado pelo banco.',
   'NM_PROPRIEDADE': 'Nome da pousada mostrado ao hóspede.',
   'DS_FUSO_HORARIO': 'Fuso usado para "hoje", check-in e prazos (America/Sao_Paulo).',
@@ -172,7 +172,7 @@ CAMPO = {
   'NO_VERSAO_POLITICA': 'Versão vigente da política de cancelamento; vai para a reserva no aceite.',
   'DT_CRIACAO': 'Quando o cadastro foi criado.',
  },
- 'UNIDADE': {
+ 'SIT_UNIDADE': {
   'ID_UNIDADE': 'Número interno do chalé; é a chave que as outras tabelas usam.',
   'ID_PROPRIEDADE': 'A pousada dona do chalé.',
   'CD_UNIDADE': 'Código público usado pelo site para consultar e reservar.',
@@ -186,7 +186,7 @@ CAMPO = {
   'NO_ORDEM': 'Ordem de exibição quando houver mais de um chalé.',
   'DT_CRIACAO': 'Quando o cadastro foi criado.',
  },
- 'TARIFA': {
+ 'SIT_TARIFA': {
   'ID_TARIFA': 'Número interno da tarifa.',
   'ID_UNIDADE': 'O chalé a que o preço se aplica.',
   'NM_TARIFA': 'Nome para identificar (ex.: Réveillon 2027); aparece no detalhe do preço.',
@@ -203,7 +203,7 @@ CAMPO = {
   'SG_ATIVO': 'Desligar sem apagar o histórico.',
   'DT_CRIACAO': 'Quando a tarifa foi cadastrada.',
  },
- 'AJUSTE_DIARIO': {
+ 'SIT_AJUSTE_DIARIO': {
   'ID_UNIDADE': 'O chalé que recebe a exceção.',
   'DT_REF': 'A noite ajustada (uma linha por chalé e data).',
   'VL_NOITE': 'Valor base desta noite no lugar da tarifa; vazio = usa a tarifa.',
@@ -213,7 +213,7 @@ CAMPO = {
   'SG_SEM_SAIDA': 'Ninguém faz check-out nesta data.',
   'DS_OBSERVACAO': 'Motivo, para a equipe lembrar por que existe o ajuste.',
  },
- 'HOSPEDE': {
+ 'SIT_HOSPEDE': {
   'ID_HOSPEDE': 'Número interno do hóspede.',
   'NM_HOSPEDE': 'Nome completo de quem reserva.',
   'DS_EMAIL': 'E-mail para confirmação; único, sem diferenciar maiúsculas.',
@@ -226,7 +226,7 @@ CAMPO = {
   'DT_VALIDADE_PASSAPORTE': 'Data de validade; precisa cobrir a estadia até o dia da saída.',
   'DT_CRIACAO': 'Primeiro contato com a pousada.',
  },
- 'RESERVA': {
+ 'SIT_RESERVA': {
   'ID_RESERVA': 'Número interno da reserva.',
   'CD_RESERVA': 'Código mostrado ao hóspede (SE- + 8 caracteres aleatórios).',
   'ID_UNIDADE': 'O chalé reservado.',
@@ -252,7 +252,7 @@ CAMPO = {
   'DT_CRIACAO': 'Quando a reserva foi criada.',
   'DT_ATUALIZACAO': 'Última mudança (status, pagamento).',
  },
- 'PAGAMENTO': {
+ 'SIT_PAGAMENTO': {
   'ID_PAGAMENTO': 'Número interno do pagamento.',
   'ID_RESERVA': 'A reserva paga.',
   'TP_PARCELA': 'SINAL (no site) ou SALDO (no check-in).',
@@ -266,7 +266,7 @@ CAMPO = {
   'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se APROVADO.',
   'DT_CRIACAO': 'Quando a cobrança foi gerada.',
  },
- 'CALENDARIO_EXTERNO': {
+ 'SIT_CALENDARIO_EXTERNO': {
   'ID_CALENDARIO': 'Número interno do calendário.',
   'ID_UNIDADE': 'O chalé anunciado no canal.',
   'TP_CANAL': 'AIRBNB, BOOKING ou OUTRO.',
@@ -275,7 +275,7 @@ CAMPO = {
   'DT_ULTIMA_SINCRONIZACAO': 'Última leitura com sucesso.',
   'DS_ULTIMO_ERRO': 'Erro da última leitura, se houver.',
  },
- 'BLOQUEIO': {
+ 'SIT_BLOQUEIO': {
   'ID_BLOQUEIO': 'Número interno do bloqueio.',
   'ID_UNIDADE': 'O chalé bloqueado.',
   'DT_INI': 'Primeira noite bloqueada.',
@@ -288,7 +288,7 @@ CAMPO = {
  },
 }
 
-ORDER = ['PROPRIEDADE', 'UNIDADE', 'TARIFA', 'AJUSTE_DIARIO', 'RESERVA', 'HOSPEDE', 'PAGAMENTO', 'CALENDARIO_EXTERNO', 'BLOQUEIO']
+ORDER = ['SIT_PROPRIEDADE', 'SIT_UNIDADE', 'SIT_TARIFA', 'SIT_AJUSTE_DIARIO', 'SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_CALENDARIO_EXTERNO', 'SIT_BLOQUEIO']
 cards = []
 for n in ORDER:
     t = T[n]; g = GROUP[n]
@@ -319,14 +319,14 @@ def fmt(col, v):
         if col.startswith('HR_'): return v[:5]
     return esc(v)
 CAP = {
- 'PROPRIEDADE': ['A pousada'], 'UNIDADE': ['O chalé'],
- 'TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
- 'AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
- 'HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
- 'RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
- 'PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
- 'CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
- 'BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
+ 'SIT_PROPRIEDADE': ['A pousada'], 'SIT_UNIDADE': ['O chalé'],
+ 'SIT_TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
+ 'SIT_AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
+ 'SIT_HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
+ 'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
+ 'SIT_PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
+ 'SIT_CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
+ 'SIT_BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
 }
 LONG = lambda v: ' class="long"' if isinstance(v, list) or (isinstance(v, str) and len(v) > 26) else ''
 exs = []
@@ -339,25 +339,25 @@ for n in ORDER:
     exs.append(f'<section class="ex g-{g}" id="e-{n}" data-t="{n}">\n  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span></header>\n'
                f'  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th>{head}</tr></thead><tbody>{body}</tbody></table></div>\n</section>')
 
-# passo a passo do AJUSTE_DIARIO, a partir da reserva 1 gravada no banco
-r1 = EX['RESERVA'][0]
+# passo a passo do SIT_AJUSTE_DIARIO, a partir da reserva 1 gravada no banco
+r1 = EX['SIT_RESERVA'][0]
 DOW = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
-aj = {a['dt_ref']: a for a in EX['AJUSTE_DIARIO']}
+aj = {a['dt_ref']: a for a in EX['SIT_AJUSTE_DIARIO']}
 linhas = []
 for x in r1['ds_detalhe_precos']:
     d = datetime.fromisoformat(x['dt_ref']); a = aj.get(x['dt_ref'])
-    fonte = f'<b>AJUSTE_DIARIO</b> (VL_NOITE {brl(a["vl_noite"])})' if a and a['vl_noite'] is not None else f'TARIFA “{esc(x["nm_tarifa"])}”'
+    fonte = f'<b>SIT_AJUSTE_DIARIO</b> (VL_NOITE {brl(a["vl_noite"])})' if a and a['vl_noite'] is not None else f'SIT_TARIFA “{esc(x["nm_tarifa"])}”'
     hl = ' class="hl"' if a else ''
     linhas.append(f'<tr{hl}><td>{d:%d/%m} {DOW[d.weekday()]}</td><td>{fonte}</td><td>{brl(x["vl_base"])}</td><td>{brl(x["vl_criancas"])}</td><td>{brl(x["vl_bebes"])}</td><td><b>{brl(x["vl_noite"])}</b></td></tr>')
 ajuste_html = (
  '<section class="explica" id="como-ajuste">\n'
- '  <h2>Como funciona o AJUSTE_DIARIO</h2>\n'
- '  <p>A <b>TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
- '  <ol class="ordem"><li>Existe AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
+ '  <h2>Como funciona o SIT_AJUSTE_DIARIO</h2>\n'
+ '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
  f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>\n'
  '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>\n'
  f'  <tbody>{"".join(linhas)}</tbody>\n'
- f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
+ f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em SIT_RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
  '  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>\n'
  '  <ul class="fn">\n'
  '    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>\n'
@@ -368,16 +368,16 @@ ajuste_html = (
  '  </ul>\n'
  '  <h3>Quando usar cada tabela</h3>\n'
  '  <div class="tscroll"><table class="passo"><thead><tr><th>Situação</th><th>Use</th></tr></thead><tbody>\n'
- '    <tr><td>Preço de uma temporada inteira (Réveillon, Carnaval, julho)</td><td>TARIFA com prioridade maior</td></tr>\n'
- '    <tr><td>Preço ou regra diferente num único dia (véspera, feriado no meio da semana)</td><td>AJUSTE_DIARIO</td></tr>\n'
- '    <tr><td>Chalé indisponível: manutenção, uso próprio ou reserva do Airbnb</td><td>BLOQUEIO</td></tr>\n'
+ '    <tr><td>Preço de uma temporada inteira (Réveillon, Carnaval, julho)</td><td>SIT_TARIFA com prioridade maior</td></tr>\n'
+ '    <tr><td>Preço ou regra diferente num único dia (véspera, feriado no meio da semana)</td><td>SIT_AJUSTE_DIARIO</td></tr>\n'
+ '    <tr><td>Chalé indisponível: manutenção, uso próprio ou reserva do Airbnb</td><td>SIT_BLOQUEIO</td></tr>\n'
  '  </tbody></table></div>\n'
  '</section>')
 
 # ── painel de detalhe (aparece abaixo do diagrama ao clicar numa tabela) ──
 for _n in ORDER:
     assert set(CAMPO[_n]) == {c['n'] for c in T[_n]['cols']}, (_n, set(CAMPO[_n]) ^ {c['n'] for c in T[_n]['cols']})
-COND = {('HOSPEDE', 'CD_CPF'): 'se brasileiro', ('HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
+COND = {('SIT_HOSPEDE', 'CD_CPF'): 'se brasileiro', ('SIT_HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('SIT_HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('SIT_HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
 paineis = []
 for n in ORDER:
     t = T[n]; g = GROUP[n]; rs = EX[n][:2]; caps = CAP[n][:2]
@@ -394,7 +394,7 @@ for n in ORDER:
     for l in L:
         if l['p'] == n and l['c'] != n:
             lig.append(f'<li>{l["c"]}.<code>{l["f"]}</code> <i>({esc(l["lbl"])})</i>: cada {n} pode ter zero ou vários {l["c"]}.</li>')
-    extra = '<p class="dlink"><a href="#como-ajuste">Ver o passo a passo do cálculo com o ajuste ↓</a></p>' if n == 'AJUSTE_DIARIO' else ''
+    extra = '<p class="dlink"><a href="#como-ajuste">Ver o passo a passo do cálculo com o ajuste ↓</a></p>' if n == 'SIT_AJUSTE_DIARIO' else ''
     paineis.append(f'''<template id="d-{n}"><div class="dt g-{g}">
   <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span><span class="dmeta">{len(t['cols'])} campos</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
   <p class="purpose">{esc(PURPOSE[n])}</p>{extra}
@@ -546,7 +546,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026 · prefixo SIT_ = tabelas do projeto Site</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>
@@ -566,7 +566,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     <div class="scroll">
 {chr(10).join(svg)}
     </div>
-    <figcaption id="detalhe" aria-live="polite">A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. <b>Clique numa tabela para ver aqui o detalhe dela: cada campo explicado, com exemplo, ligações e regras.</b></figcaption>
+    <figcaption id="detalhe" aria-live="polite">A SIT_UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. <b>Clique numa tabela para ver aqui o detalhe dela: cada campo explicado, com exemplo, ligações e regras.</b></figcaption>
 {chr(10).join(paineis)}
   </figure>
 
