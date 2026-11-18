@@ -15,7 +15,7 @@
 --  • Restrições: PK_<TABELA>, FK_<FILHA>_<PAI>, UQ_ (única), CK_ (regra),
 --    EX_ (exclusão), IX_ (índice).
 --  • O PostgreSQL guarda nomes sem aspas em minúsculas por dentro; escrever
---    em maiúsculas nas consultas funciona igual (SELECT VL_TOTAL FROM RESERVA).
+--    em maiúsculas nas consultas funciona igual (SELECT VL_TOTAL FROM SIT_RESERVA).
 --
 --  Convenções de reserva
 --  • Estadia = noites de DT_CHECKIN até a véspera de DT_CHECKOUT: quem sai
@@ -32,9 +32,9 @@ create schema if not exists extensions;
 create extension if not exists btree_gist with schema extensions;
 
 
--- ── PROPRIEDADE: a pousada ──────────────────────────────────────────
+-- ── SIT_PROPRIEDADE: a pousada ──────────────────────────────────────────
 
-create table PROPRIEDADE (
+create table SIT_PROPRIEDADE (
   ID_PROPRIEDADE           bigint generated always as identity,
   NM_PROPRIEDADE           text not null,
   DS_FUSO_HORARIO          text not null default 'America/Sao_Paulo',
@@ -50,19 +50,19 @@ create table PROPRIEDADE (
   QTDE_DIAS_ARREPENDIMENTO smallint not null default 7,           -- CDC art. 49: desistência com reembolso integral
   NO_VERSAO_POLITICA       smallint not null default 1,           -- versão vigente da política de cancelamento
   DT_CRIACAO               timestamptz not null default now(),
-  constraint PK_PROPRIEDADE primary key (ID_PROPRIEDADE),
-  constraint CK_PROPRIEDADE_REMARCACAO check (QTDE_DIAS_LIMITE_REMARCACAO >= 0 and QTDE_MESES_VALIDADE_CREDITO >= 1),
-  constraint CK_PROPRIEDADE_ARREPENDIMENTO check (QTDE_DIAS_ARREPENDIMENTO >= 7),     -- o mínimo é o da lei
-  constraint CK_PROPRIEDADE_MAX_NOITES check (QTDE_MAX_NOITES between 1 and 365),
-  constraint CK_PROPRIEDADE_IDADES check (NO_IDADE_MAX_BEBE >= 0 and NO_IDADE_MAX_BEBE < NO_IDADE_MAX_CRIANCA),
-  constraint CK_PROPRIEDADE_SINAL check (VL_PERCENTUAL_SINAL between 0 and 100),
-  constraint CK_PROPRIEDADE_PRE_RESERVA check (QTDE_MINUTOS_PRE_RESERVA between 5 and 1440)
+  constraint PK_SIT_PROPRIEDADE primary key (ID_PROPRIEDADE),
+  constraint CK_SIT_PROPRIEDADE_REMARCACAO check (QTDE_DIAS_LIMITE_REMARCACAO >= 0 and QTDE_MESES_VALIDADE_CREDITO >= 1),
+  constraint CK_SIT_PROPRIEDADE_ARREPENDIMENTO check (QTDE_DIAS_ARREPENDIMENTO >= 7),     -- o mínimo é o da lei
+  constraint CK_SIT_PROPRIEDADE_MAX_NOITES check (QTDE_MAX_NOITES between 1 and 365),
+  constraint CK_SIT_PROPRIEDADE_IDADES check (NO_IDADE_MAX_BEBE >= 0 and NO_IDADE_MAX_BEBE < NO_IDADE_MAX_CRIANCA),
+  constraint CK_SIT_PROPRIEDADE_SINAL check (VL_PERCENTUAL_SINAL between 0 and 100),
+  constraint CK_SIT_PROPRIEDADE_PRE_RESERVA check (QTDE_MINUTOS_PRE_RESERVA between 5 and 1440)
 );
 
 
--- ── UNIDADE: cada chalé ─────────────────────────────────────────────
+-- ── SIT_UNIDADE: cada chalé ─────────────────────────────────────────────
 
-create table UNIDADE (
+create table SIT_UNIDADE (
   ID_UNIDADE         bigint generated always as identity,
   ID_PROPRIEDADE     bigint not null,
   CD_UNIDADE         text not null,                   -- código curto usado pelo site (ex.: casa-do-mirante)
@@ -75,23 +75,23 @@ create table UNIDADE (
   SG_ATIVO           boolean not null default true,
   NO_ORDEM           smallint not null default 0,
   DT_CRIACAO         timestamptz not null default now(),
-  constraint PK_UNIDADE primary key (ID_UNIDADE),
-  constraint FK_UNIDADE_PROPRIEDADE foreign key (ID_PROPRIEDADE) references PROPRIEDADE (ID_PROPRIEDADE),
-  constraint UQ_UNIDADE_CD_UNIDADE unique (CD_UNIDADE),
-  constraint CK_UNIDADE_CD_UNIDADE check (CD_UNIDADE ~ '^[a-z0-9-]+$'),
-  constraint CK_UNIDADE_TP_UNIDADE check (TP_UNIDADE in ('CHALE', 'QUARTO', 'SUITE')),
-  constraint CK_UNIDADE_CAPACIDADE check (QTDE_MAX_HOSPEDES >= 1 and QTDE_MAX_ADULTOS >= 1 and QTDE_MAX_CRIANCAS >= 0),
-  constraint CK_UNIDADE_TAXA_LIMPEZA check (VL_TAXA_LIMPEZA >= 0)
+  constraint PK_SIT_UNIDADE primary key (ID_UNIDADE),
+  constraint FK_SIT_UNIDADE_SIT_PROPRIEDADE foreign key (ID_PROPRIEDADE) references SIT_PROPRIEDADE (ID_PROPRIEDADE),
+  constraint UQ_SIT_UNIDADE_CD_UNIDADE unique (CD_UNIDADE),
+  constraint CK_SIT_UNIDADE_CD_UNIDADE check (CD_UNIDADE ~ '^[a-z0-9-]+$'),
+  constraint CK_SIT_UNIDADE_TP_UNIDADE check (TP_UNIDADE in ('CHALE', 'QUARTO', 'SUITE')),
+  constraint CK_SIT_UNIDADE_CAPACIDADE check (QTDE_MAX_HOSPEDES >= 1 and QTDE_MAX_ADULTOS >= 1 and QTDE_MAX_CRIANCAS >= 0),
+  constraint CK_SIT_UNIDADE_TAXA_LIMPEZA check (VL_TAXA_LIMPEZA >= 0)
 );
-create index IX_UNIDADE_ID_PROPRIEDADE on UNIDADE (ID_PROPRIEDADE);
+create index IX_SIT_UNIDADE_ID_PROPRIEDADE on SIT_UNIDADE (ID_PROPRIEDADE);
 
 
--- ── TARIFA: preço por período ───────────────────────────────────────
+-- ── SIT_TARIFA: preço por período ───────────────────────────────────────
 -- Períodos podem se sobrepor quando a prioridade é diferente: vale o
 -- maior NO_PRIORIDADE (ex.: Réveillon por cima da tarifa padrão). Na
 -- mesma prioridade a sobreposição é recusada.
 
-create table TARIFA (
+create table SIT_TARIFA (
   ID_TARIFA               bigint generated always as identity,
   ID_UNIDADE              bigint not null,
   NM_TARIFA               text not null,
@@ -107,21 +107,21 @@ create table TARIFA (
   QTDE_MIN_NOITES         smallint not null default 1,
   SG_ATIVO                boolean not null default true,
   DT_CRIACAO              timestamptz not null default now(),
-  constraint PK_TARIFA primary key (ID_TARIFA),
-  constraint FK_TARIFA_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
-  constraint CK_TARIFA_PERIODO check (DT_FIM > DT_INI),
-  constraint CK_TARIFA_VALORES check (VL_NOITE >= 0 and coalesce(VL_NOITE_FDS, 0) >= 0
+  constraint PK_SIT_TARIFA primary key (ID_TARIFA),
+  constraint FK_SIT_TARIFA_SIT_UNIDADE foreign key (ID_UNIDADE) references SIT_UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint CK_SIT_TARIFA_PERIODO check (DT_FIM > DT_INI),
+  constraint CK_SIT_TARIFA_VALORES check (VL_NOITE >= 0 and coalesce(VL_NOITE_FDS, 0) >= 0
                                       and VL_ADULTO_EXTRA >= 0 and VL_CRIANCA >= 0 and VL_BEBE >= 0),
-  constraint CK_TARIFA_QUANTIDADES check (QTDE_ADULTOS_INCLUSOS >= 1 and QTDE_MIN_NOITES >= 1),
-  constraint EX_TARIFA_SOBREPOSICAO exclude using gist
+  constraint CK_SIT_TARIFA_QUANTIDADES check (QTDE_ADULTOS_INCLUSOS >= 1 and QTDE_MIN_NOITES >= 1),
+  constraint EX_SIT_TARIFA_SOBREPOSICAO exclude using gist
     (ID_UNIDADE with =, NO_PRIORIDADE with =, daterange(DT_INI, DT_FIM) with &&) where (SG_ATIVO)
 );
-create index IX_TARIFA_PERIODO on TARIFA using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
+create index IX_SIT_TARIFA_PERIODO on SIT_TARIFA using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
 
 
--- ── AJUSTE_DIARIO: exceção de uma data ──────────────────────────────
+-- ── SIT_AJUSTE_DIARIO: exceção de uma data ──────────────────────────────
 
-create table AJUSTE_DIARIO (
+create table SIT_AJUSTE_DIARIO (
   ID_UNIDADE       bigint not null,
   DT_REF           date not null,                 -- a noite ajustada
   VL_NOITE         numeric(10,2),                 -- vazio = usa a tarifa
@@ -130,31 +130,71 @@ create table AJUSTE_DIARIO (
   SG_SEM_CHEGADA   boolean not null default false,
   SG_SEM_SAIDA     boolean not null default false,
   DS_OBSERVACAO    text,
-  constraint PK_AJUSTE_DIARIO primary key (ID_UNIDADE, DT_REF),
-  constraint FK_AJUSTE_DIARIO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
-  constraint CK_AJUSTE_DIARIO_VALORES check (coalesce(VL_NOITE, 0) >= 0 and coalesce(QTDE_MIN_NOITES, 1) >= 1)
+  constraint PK_SIT_AJUSTE_DIARIO primary key (ID_UNIDADE, DT_REF),
+  constraint FK_SIT_AJUSTE_DIARIO_SIT_UNIDADE foreign key (ID_UNIDADE) references SIT_UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint CK_SIT_AJUSTE_DIARIO_VALORES check (coalesce(VL_NOITE, 0) >= 0 and coalesce(QTDE_MIN_NOITES, 1) >= 1)
 );
 
 
--- ── HOSPEDE: quem reserva ───────────────────────────────────────────
+-- ── SIT_HOSPEDE: quem reserva ───────────────────────────────────────────
 
-create table HOSPEDE (
-  ID_HOSPEDE   bigint generated always as identity,
-  NM_HOSPEDE   text not null,
-  DS_EMAIL     text not null,
-  DS_TELEFONE  text,
-  DT_CRIACAO   timestamptz not null default now(),
-  constraint PK_HOSPEDE primary key (ID_HOSPEDE)
+-- Documento do hóspede (FNRH digital, obrigatória desde 20/04/2026):
+-- brasileiro informa CPF; estrangeiro informa passaporte e o país que o
+-- emitiu. O CPF NÃO é a chave: estrangeiro não tem CPF, a pré-reserva
+-- nasce antes do documento e a chave se espalha pelas FKs (LGPD).
+create or replace function cpf_valido(p_cpf text)
+returns boolean
+language sql
+immutable
+strict
+set search_path = public, pg_temp
+as $$
+  -- 11 dígitos, não todos iguais, e os 2 dígitos verificadores corretos
+  select p_cpf ~ '^[0-9]{11}$'
+     and p_cpf !~ '^(.)\1{10}$'
+     and (select (sum(substr(p_cpf, i, 1)::int * (11 - i)) * 10 % 11) % 10 from generate_series(1, 9) i)
+         = substr(p_cpf, 10, 1)::int
+     and (select (sum(substr(p_cpf, i, 1)::int * (12 - i)) * 10 % 11) % 10 from generate_series(1, 10) i)
+         = substr(p_cpf, 11, 1)::int
+$$;
+
+create table SIT_HOSPEDE (
+  ID_HOSPEDE          bigint generated always as identity,
+  NM_HOSPEDE          text not null,
+  DS_EMAIL            text not null,
+  DS_TELEFONE         text,
+  SG_NACIONALIDADE    char(2) not null default 'BR',  -- ISO 3166-1: BR, US, AR...
+  CD_CPF              text,                          -- só os 11 dígitos, sem pontos
+  CD_PASSAPORTE       text,                          -- letras maiúsculas e números
+  SG_PAIS_PASSAPORTE  char(2),                       -- país que emitiu o passaporte
+  DT_EMISSAO_PASSAPORTE  date,                       -- opcional
+  DT_VALIDADE_PASSAPORTE date,                       -- obrigatória com passaporte
+  DT_CRIACAO          timestamptz not null default now(),
+  constraint PK_SIT_HOSPEDE primary key (ID_HOSPEDE),
+  constraint CK_SIT_HOSPEDE_NACIONALIDADE check (SG_NACIONALIDADE ~ '^[A-Z]{2}$'),
+  constraint CK_SIT_HOSPEDE_CPF check (CD_CPF is null or cpf_valido(CD_CPF)),
+  constraint CK_SIT_HOSPEDE_PASSAPORTE check (CD_PASSAPORTE is null or CD_PASSAPORTE ~ '^[A-Z0-9]{5,20}$'),
+  -- passaporte, país e validade andam juntos; emissão só com passaporte
+  constraint CK_SIT_HOSPEDE_PAIS_PASSAPORTE check ((CD_PASSAPORTE is null) = (SG_PAIS_PASSAPORTE is null)
+                                               and (SG_PAIS_PASSAPORTE is null or SG_PAIS_PASSAPORTE ~ '^[A-Z]{2}$')),
+  constraint CK_SIT_HOSPEDE_VALIDADE_PASSAPORTE check ((CD_PASSAPORTE is null) = (DT_VALIDADE_PASSAPORTE is null)
+                                                   and (DT_EMISSAO_PASSAPORTE is null or CD_PASSAPORTE is not null)),
+  constraint CK_SIT_HOSPEDE_DATAS_PASSAPORTE check (DT_EMISSAO_PASSAPORTE is null or DT_VALIDADE_PASSAPORTE > DT_EMISSAO_PASSAPORTE),
+  -- brasileiro: CPF obrigatório; estrangeiro: passaporte obrigatório
+  constraint CK_SIT_HOSPEDE_DOCUMENTO check (case when SG_NACIONALIDADE = 'BR' then CD_CPF is not null
+                                              else CD_PASSAPORTE is not null end),
+  constraint UQ_SIT_HOSPEDE_CPF unique (CD_CPF),
+  constraint UQ_SIT_HOSPEDE_PASSAPORTE unique (SG_PAIS_PASSAPORTE, CD_PASSAPORTE)
 );
-create unique index UQ_HOSPEDE_DS_EMAIL on HOSPEDE (lower(DS_EMAIL));
+create unique index UQ_SIT_HOSPEDE_DS_EMAIL on SIT_HOSPEDE (lower(DS_EMAIL));
 
 
--- ── RESERVA: estadias vendidas ──────────────────────────────────────
+-- ── SIT_RESERVA: estadias vendidas ──────────────────────────────────────
 -- Política: o sinal não é devolvido; o hóspede pode só remarcar. A
 -- remarcação cria uma reserva nova com ID_RESERVA_ORIGINAL apontando
 -- para a antiga (que fica REMARCADA), e o que foi pago vale como crédito.
 
-create table RESERVA (
+create table SIT_RESERVA (
   ID_RESERVA           bigint generated always as identity,
   CD_RESERVA           text not null                 -- mostrado ao hóspede; aleatório
                        default 'SE-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)),
@@ -180,45 +220,73 @@ create table RESERVA (
   DT_ACEITE_POLITICA   timestamptz,                  -- quando o hóspede aceitou a política
   DT_CRIACAO           timestamptz not null default now(),
   DT_ATUALIZACAO       timestamptz not null default now(),
-  constraint PK_RESERVA primary key (ID_RESERVA),
-  constraint UQ_RESERVA_CD_RESERVA unique (CD_RESERVA),
-  constraint FK_RESERVA_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE),
-  constraint FK_RESERVA_HOSPEDE foreign key (ID_HOSPEDE) references HOSPEDE (ID_HOSPEDE),
-  constraint FK_RESERVA_RESERVA_ORIGINAL foreign key (ID_RESERVA_ORIGINAL) references RESERVA (ID_RESERVA),
-  constraint CK_RESERVA_PERIODO check (DT_CHECKOUT > DT_CHECKIN),
-  constraint CK_RESERVA_OCUPACAO check (QTDE_ADULTOS >= 1 and QTDE_CRIANCAS >= 0 and QTDE_BEBES >= 0),
-  constraint CK_RESERVA_TP_STATUS check (TP_STATUS in ('PENDENTE', 'CONFIRMADA', 'CANCELADA', 'EXPIRADA', 'REMARCADA')),
-  constraint CK_RESERVA_TP_CANAL check (TP_CANAL in ('SITE', 'DIRETO', 'TELEFONE')),
-  constraint CK_RESERVA_VALORES check (VL_HOSPEDAGEM >= 0 and VL_TAXA_LIMPEZA >= 0 and VL_SINAL >= 0
+  constraint PK_SIT_RESERVA primary key (ID_RESERVA),
+  constraint UQ_SIT_RESERVA_CD_RESERVA unique (CD_RESERVA),
+  constraint FK_SIT_RESERVA_SIT_UNIDADE foreign key (ID_UNIDADE) references SIT_UNIDADE (ID_UNIDADE),
+  constraint FK_SIT_RESERVA_SIT_HOSPEDE foreign key (ID_HOSPEDE) references SIT_HOSPEDE (ID_HOSPEDE),
+  constraint FK_SIT_RESERVA_RESERVA_ORIGINAL foreign key (ID_RESERVA_ORIGINAL) references SIT_RESERVA (ID_RESERVA),
+  constraint CK_SIT_RESERVA_PERIODO check (DT_CHECKOUT > DT_CHECKIN),
+  constraint CK_SIT_RESERVA_OCUPACAO check (QTDE_ADULTOS >= 1 and QTDE_CRIANCAS >= 0 and QTDE_BEBES >= 0),
+  constraint CK_SIT_RESERVA_TP_STATUS check (TP_STATUS in ('PENDENTE', 'CONFIRMADA', 'CANCELADA', 'EXPIRADA', 'REMARCADA')),
+  constraint CK_SIT_RESERVA_TP_CANAL check (TP_CANAL in ('SITE', 'DIRETO', 'TELEFONE')),
+  constraint CK_SIT_RESERVA_VALORES check (VL_HOSPEDAGEM >= 0 and VL_TAXA_LIMPEZA >= 0 and VL_SINAL >= 0
                                        and VL_SINAL <= VL_HOSPEDAGEM + VL_TAXA_LIMPEZA),
-  constraint CK_RESERVA_PENDENTE_EXPIRA check (TP_STATUS <> 'PENDENTE' or DT_EXPIRA is not null),
-  constraint CK_RESERVA_CONFIRMADA_HOSPEDE check (TP_STATUS <> 'CONFIRMADA' or ID_HOSPEDE is not null),
-  constraint CK_RESERVA_TP_MOTIVO_CANCELAMENTO check (TP_MOTIVO_CANCELAMENTO in
+  constraint CK_SIT_RESERVA_PENDENTE_EXPIRA check (TP_STATUS <> 'PENDENTE' or DT_EXPIRA is not null),
+  constraint CK_SIT_RESERVA_CONFIRMADA_HOSPEDE check (TP_STATUS <> 'CONFIRMADA' or ID_HOSPEDE is not null),
+  constraint CK_SIT_RESERVA_TP_MOTIVO_CANCELAMENTO check (TP_MOTIVO_CANCELAMENTO in
     ('ARREPENDIMENTO', 'DESISTENCIA', 'FORCA_MAIOR', 'NAO_COMPARECIMENTO', 'POUSADA')),
-  constraint CK_RESERVA_CANCELADA_MOTIVO check ((TP_STATUS = 'CANCELADA') = (TP_MOTIVO_CANCELAMENTO is not null)),
+  constraint CK_SIT_RESERVA_CANCELADA_MOTIVO check ((TP_STATUS = 'CANCELADA') = (TP_MOTIVO_CANCELAMENTO is not null)),
   -- reserva do site só é confirmada com a política aceita (dever de informação, CDC)
-  constraint CK_RESERVA_SITE_ACEITE check (TP_CANAL <> 'SITE' or TP_STATUS <> 'CONFIRMADA'
+  constraint CK_SIT_RESERVA_SITE_ACEITE check (TP_CANAL <> 'SITE' or TP_STATUS <> 'CONFIRMADA'
                                            or (DT_ACEITE_POLITICA is not null and NO_VERSAO_POLITICA is not null)),
   -- Última barreira contra overbooking: duas reservas ativas da mesma
   -- unidade nunca ocupam a mesma noite, mesmo com acessos simultâneos.
-  constraint EX_RESERVA_SEM_CONFLITO exclude using gist
+  constraint EX_SIT_RESERVA_SEM_CONFLITO exclude using gist
     (ID_UNIDADE with =, daterange(DT_CHECKIN, DT_CHECKOUT) with &&)
     where (TP_STATUS in ('PENDENTE', 'CONFIRMADA'))
 );
-create index IX_RESERVA_ID_HOSPEDE on RESERVA (ID_HOSPEDE);
-create index IX_RESERVA_ID_RESERVA_ORIGINAL on RESERVA (ID_RESERVA_ORIGINAL);
-create index IX_RESERVA_PERIODO on RESERVA using gist (ID_UNIDADE, daterange(DT_CHECKIN, DT_CHECKOUT));
-create index IX_RESERVA_PENDENTE_EXPIRA on RESERVA (DT_EXPIRA) where TP_STATUS = 'PENDENTE';
+create index IX_SIT_RESERVA_ID_HOSPEDE on SIT_RESERVA (ID_HOSPEDE);
+
+-- Estrangeiro: o passaporte precisa valer até o dia da saída. Conferido
+-- quando a reserva ativa ganha hóspede ou muda de datas (a validade é
+-- comparada com a estadia, por isso não cabe numa regra da SIT_HOSPEDE).
+create or replace function verificar_passaporte_reserva()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+declare v_validade date;
+begin
+  if new.ID_HOSPEDE is null or new.TP_STATUS not in ('PENDENTE', 'CONFIRMADA') then
+    return new;
+  end if;
+  select h.DT_VALIDADE_PASSAPORTE into v_validade
+  from SIT_HOSPEDE h where h.ID_HOSPEDE = new.ID_HOSPEDE and h.SG_NACIONALIDADE <> 'BR';
+  if v_validade is not null and v_validade < new.DT_CHECKOUT then
+    raise exception 'passaporte_vencido'
+      using errcode = 'check_violation',
+            detail = format('Passaporte vale até %s; a estadia termina em %s.', v_validade, new.DT_CHECKOUT);
+  end if;
+  return new;
+end;
+$$;
+create trigger TG_SIT_RESERVA_PASSAPORTE
+  before insert or update of ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, TP_STATUS on SIT_RESERVA
+  for each row execute function verificar_passaporte_reserva();
+revoke all on function verificar_passaporte_reserva() from public, anon, authenticated;
+create index IX_SIT_RESERVA_ID_RESERVA_ORIGINAL on SIT_RESERVA (ID_RESERVA_ORIGINAL);
+create index IX_SIT_RESERVA_PERIODO on SIT_RESERVA using gist (ID_UNIDADE, daterange(DT_CHECKIN, DT_CHECKOUT));
+create index IX_SIT_RESERVA_PENDENTE_EXPIRA on SIT_RESERVA (DT_EXPIRA) where TP_STATUS = 'PENDENTE';
 
 
--- ── PAGAMENTO: Pix e Mercado Pago ───────────────────────────────────
+-- ── SIT_PAGAMENTO: Pix e Mercado Pago ───────────────────────────────────
 -- Duas parcelas por reserva: o SINAL, pago no site para confirmar, e o
 -- SALDO, pago no check-in, antes de entrar (Pix ou dinheiro). Cada parcela pode ter mais de
 -- uma tentativa (ex.: o Pix venceu e o hóspede gerou outro). O status é
 -- atualizado pelo aviso (webhook) que o Mercado Pago envia.
 -- MANUAL = Pix recebido direto e conferido pela equipe.
 
-create table PAGAMENTO (
+create table SIT_PAGAMENTO (
   ID_PAGAMENTO          bigint generated always as identity,
   ID_RESERVA            bigint not null,
   TP_PARCELA            text not null default 'SINAL',
@@ -231,27 +299,27 @@ create table PAGAMENTO (
   DT_EXPIRA             timestamptz,          -- validade do código Pix
   DT_PAGAMENTO          timestamptz,
   DT_CRIACAO            timestamptz not null default now(),
-  constraint PK_PAGAMENTO primary key (ID_PAGAMENTO),
-  constraint FK_PAGAMENTO_RESERVA foreign key (ID_RESERVA) references RESERVA (ID_RESERVA),
-  constraint UQ_PAGAMENTO_CD_EXTERNO unique (CD_EXTERNO),
-  constraint CK_PAGAMENTO_TP_PARCELA check (TP_PARCELA in ('SINAL', 'SALDO')),
-  constraint CK_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MERCADO_PAGO', 'MANUAL')),
-  constraint CK_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO', 'DINHEIRO')),
-  constraint CK_PAGAMENTO_DINHEIRO_MANUAL check (TP_METODO <> 'DINHEIRO' or TP_PROVEDOR = 'MANUAL'),
-  constraint CK_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'APROVADO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
-  constraint CK_PAGAMENTO_VALOR check (VL_PAGAMENTO > 0),
-  constraint CK_PAGAMENTO_APROVADO_DATA check (TP_STATUS <> 'APROVADO' or DT_PAGAMENTO is not null)
+  constraint PK_SIT_PAGAMENTO primary key (ID_PAGAMENTO),
+  constraint FK_SIT_PAGAMENTO_SIT_RESERVA foreign key (ID_RESERVA) references SIT_RESERVA (ID_RESERVA),
+  constraint UQ_SIT_PAGAMENTO_CD_EXTERNO unique (CD_EXTERNO),
+  constraint CK_SIT_PAGAMENTO_TP_PARCELA check (TP_PARCELA in ('SINAL', 'SALDO')),
+  constraint CK_SIT_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MERCADO_PAGO', 'MANUAL')),
+  constraint CK_SIT_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO', 'DINHEIRO')),
+  constraint CK_SIT_PAGAMENTO_DINHEIRO_MANUAL check (TP_METODO <> 'DINHEIRO' or TP_PROVEDOR = 'MANUAL'),
+  constraint CK_SIT_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'APROVADO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
+  constraint CK_SIT_PAGAMENTO_VALOR check (VL_PAGAMENTO > 0),
+  constraint CK_SIT_PAGAMENTO_APROVADO_DATA check (TP_STATUS <> 'APROVADO' or DT_PAGAMENTO is not null)
 );
-create index IX_PAGAMENTO_ID_RESERVA on PAGAMENTO (ID_RESERVA);
+create index IX_SIT_PAGAMENTO_ID_RESERVA on SIT_PAGAMENTO (ID_RESERVA);
 
 
--- ── CALENDARIO_EXTERNO e BLOQUEIO: datas fora da venda ──────────────
+-- ── SIT_CALENDARIO_EXTERNO e SIT_BLOQUEIO: datas fora da venda ──────────────
 -- O chalé também é vendido no Airbnb e no Booking. Um job lê o iCal de
--- cada canal e grava as datas como BLOQUEIO. Bloqueios ficam fora da
--- restrição EX_RESERVA_SEM_CONFLITO de propósito: o iCal de um canal
+-- cada canal e grava as datas como SIT_BLOQUEIO. Bloqueios ficam fora da
+-- restrição EX_SIT_RESERVA_SEM_CONFLITO de propósito: o iCal de um canal
 -- costuma devolver também as datas que o próprio site já vendeu.
 
-create table CALENDARIO_EXTERNO (
+create table SIT_CALENDARIO_EXTERNO (
   ID_CALENDARIO            bigint generated always as identity,
   ID_UNIDADE               bigint not null,
   TP_CANAL                 text not null,
@@ -259,13 +327,13 @@ create table CALENDARIO_EXTERNO (
   SG_ATIVO                 boolean not null default true,
   DT_ULTIMA_SINCRONIZACAO  timestamptz,
   DS_ULTIMO_ERRO           text,
-  constraint PK_CALENDARIO_EXTERNO primary key (ID_CALENDARIO),
-  constraint FK_CALENDARIO_EXTERNO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
-  constraint UQ_CALENDARIO_EXTERNO_CANAL unique (ID_UNIDADE, TP_CANAL),
-  constraint CK_CALENDARIO_EXTERNO_TP_CANAL check (TP_CANAL in ('AIRBNB', 'BOOKING', 'OUTRO'))
+  constraint PK_SIT_CALENDARIO_EXTERNO primary key (ID_CALENDARIO),
+  constraint FK_SIT_CALENDARIO_EXTERNO_SIT_UNIDADE foreign key (ID_UNIDADE) references SIT_UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint UQ_SIT_CALENDARIO_EXTERNO_CANAL unique (ID_UNIDADE, TP_CANAL),
+  constraint CK_SIT_CALENDARIO_EXTERNO_TP_CANAL check (TP_CANAL in ('AIRBNB', 'BOOKING', 'OUTRO'))
 );
 
-create table BLOQUEIO (
+create table SIT_BLOQUEIO (
   ID_BLOQUEIO     bigint generated always as identity,
   ID_UNIDADE      bigint not null,
   DT_INI          date not null,              -- primeira noite bloqueada
@@ -275,15 +343,15 @@ create table BLOQUEIO (
   CD_EXTERNO      text,                       -- UID do evento iCal: permite atualizar/remover no próximo sync
   DS_OBSERVACAO   text,
   DT_CRIACAO      timestamptz not null default now(),
-  constraint PK_BLOQUEIO primary key (ID_BLOQUEIO),
-  constraint FK_BLOQUEIO_UNIDADE foreign key (ID_UNIDADE) references UNIDADE (ID_UNIDADE) on delete cascade,
-  constraint FK_BLOQUEIO_CALENDARIO_EXTERNO foreign key (ID_CALENDARIO) references CALENDARIO_EXTERNO (ID_CALENDARIO) on delete cascade,
-  constraint UQ_BLOQUEIO_CD_EXTERNO unique (ID_CALENDARIO, CD_EXTERNO),
-  constraint CK_BLOQUEIO_PERIODO check (DT_FIM > DT_INI),
-  constraint CK_BLOQUEIO_TP_MOTIVO check (TP_MOTIVO in ('CANAL_EXTERNO', 'MANUTENCAO', 'USO_PROPRIO', 'OUTRO')),
-  constraint CK_BLOQUEIO_ORIGEM_CANAL check ((TP_MOTIVO = 'CANAL_EXTERNO') = (ID_CALENDARIO is not null))
+  constraint PK_SIT_BLOQUEIO primary key (ID_BLOQUEIO),
+  constraint FK_SIT_BLOQUEIO_SIT_UNIDADE foreign key (ID_UNIDADE) references SIT_UNIDADE (ID_UNIDADE) on delete cascade,
+  constraint FK_SIT_BLOQUEIO_SIT_CALENDARIO_EXTERNO foreign key (ID_CALENDARIO) references SIT_CALENDARIO_EXTERNO (ID_CALENDARIO) on delete cascade,
+  constraint UQ_SIT_BLOQUEIO_CD_EXTERNO unique (ID_CALENDARIO, CD_EXTERNO),
+  constraint CK_SIT_BLOQUEIO_PERIODO check (DT_FIM > DT_INI),
+  constraint CK_SIT_BLOQUEIO_TP_MOTIVO check (TP_MOTIVO in ('CANAL_EXTERNO', 'MANUTENCAO', 'USO_PROPRIO', 'OUTRO')),
+  constraint CK_SIT_BLOQUEIO_ORIGEM_CANAL check ((TP_MOTIVO = 'CANAL_EXTERNO') = (ID_CALENDARIO is not null))
 );
-create index IX_BLOQUEIO_PERIODO on BLOQUEIO using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
+create index IX_SIT_BLOQUEIO_PERIODO on SIT_BLOQUEIO using gist (ID_UNIDADE, daterange(DT_INI, DT_FIM));
 
 
 -- ════════════════════════════════════════════════════════════════════
@@ -319,8 +387,8 @@ stable
 set search_path = public, pg_temp
 as $$
 declare
-  u        UNIDADE%rowtype;
-  p        PROPRIEDADE%rowtype;
+  u        SIT_UNIDADE%rowtype;
+  p        SIT_PROPRIEDADE%rowtype;
   v_hoje   date;
   v_noites int;
   v_min    int;
@@ -331,12 +399,12 @@ declare
 begin
   p_criancas := coalesce(p_criancas, 0);
   p_bebes    := coalesce(p_bebes, 0);
-  select * into u from UNIDADE where ID_UNIDADE = p_id_unidade;
+  select * into u from SIT_UNIDADE where ID_UNIDADE = p_id_unidade;
   if not found then
     return query select false, 'unidade_inativa', 0, 0, 0::numeric(10,2), 0::numeric(10,2), 0::numeric(10,2), '[]'::jsonb;
     return;
   end if;
-  select * into p from PROPRIEDADE where ID_PROPRIEDADE = u.ID_PROPRIEDADE;
+  select * into p from SIT_PROPRIEDADE where ID_PROPRIEDADE = u.ID_PROPRIEDADE;
 
   v_hoje   := (now() at time zone p.DS_FUSO_HORARIO)::date;
   v_noites := p_checkout - p_checkin;
@@ -384,13 +452,13 @@ begin
            t.ID_TARIFA is null as sem_tarifa
     from noites n
     left join lateral (
-      select * from TARIFA tr
+      select * from SIT_TARIFA tr
       where tr.ID_UNIDADE = p_id_unidade and tr.SG_ATIVO
         and n.data >= tr.DT_INI and n.data < tr.DT_FIM
       order by tr.NO_PRIORIDADE desc
       limit 1
     ) t on true
-    left join AJUSTE_DIARIO a on a.ID_UNIDADE = p_id_unidade and a.DT_REF = n.data
+    left join SIT_AJUSTE_DIARIO a on a.ID_UNIDADE = p_id_unidade and a.DT_REF = n.data
   )
   select bool_or(c.sem_tarifa),
          bool_or(coalesce(c.fechado, false)),
@@ -411,17 +479,17 @@ begin
   motivo := case
     when v_sem_tarifa then 'sem_tarifa'                    -- venda ainda não aberta para alguma noite
     when v_fechado    then 'fechado'
-    when exists (select 1 from AJUSTE_DIARIO a
+    when exists (select 1 from SIT_AJUSTE_DIARIO a
                  where a.ID_UNIDADE = p_id_unidade and a.DT_REF = p_checkin and a.SG_SEM_CHEGADA)   then 'sem_chegada'
-    when exists (select 1 from AJUSTE_DIARIO a
+    when exists (select 1 from SIT_AJUSTE_DIARIO a
                  where a.ID_UNIDADE = p_id_unidade and a.DT_REF = p_checkout and a.SG_SEM_SAIDA)    then 'sem_saida'
     when v_noites < v_min then 'min_noites'                -- vale o maior mínimo entre as noites da estadia
     -- 4 · conflitos: reservas ativas (pré-reserva vencida não conta) e bloqueios
-    when exists (select 1 from RESERVA r
+    when exists (select 1 from SIT_RESERVA r
                  where r.ID_UNIDADE = p_id_unidade
                    and daterange(r.DT_CHECKIN, r.DT_CHECKOUT) && daterange(p_checkin, p_checkout)
                    and (r.TP_STATUS = 'CONFIRMADA' or (r.TP_STATUS = 'PENDENTE' and r.DT_EXPIRA > now())))
-      or exists (select 1 from BLOQUEIO b
+      or exists (select 1 from SIT_BLOQUEIO b
                  where b.ID_UNIDADE = p_id_unidade
                    and daterange(b.DT_INI, b.DT_FIM) && daterange(p_checkin, p_checkout)) then 'ocupado'
   end;
@@ -474,8 +542,8 @@ as $$
          case when c.disponivel and c.qtde_noites > 0 then round(c.vl_hospedagem / c.qtde_noites, 2) end,
          case when c.disponivel then round(c.vl_total * p.VL_PERCENTUAL_SINAL / 100, 2) end,
          case when c.disponivel then c.ds_detalhe end
-  from UNIDADE u
-  join PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
+  from SIT_UNIDADE u
+  join SIT_PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
   cross join lateral calcular_estadia(u.ID_UNIDADE, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes) c
   where u.SG_ATIVO
   order by c.disponivel desc, c.vl_total, u.NO_ORDEM;
@@ -484,7 +552,7 @@ $$;
 
 -- ════════════════════════════════════════════════════════════════════
 --  Pré-reserva: segura as datas enquanto o hóspede paga o sinal
---  (PROPRIEDADE.QTDE_MINUTOS_PRE_RESERVA, hoje 30 min). Chamar de uma
+--  (SIT_PROPRIEDADE.QTDE_MINUTOS_PRE_RESERVA, hoje 30 min). Chamar de uma
 --  Edge Function (com captcha / limite de tentativas), nunca direto do
 --  navegador: por isso só o service_role executa.
 -- ════════════════════════════════════════════════════════════════════
@@ -513,7 +581,7 @@ begin
   -- o que também protege os bloqueios (que não estão na restrição EXCLUDE)
   select u.ID_UNIDADE, p.QTDE_MINUTOS_PRE_RESERVA, p.VL_PERCENTUAL_SINAL
     into v_id_unidade, v_minutos, v_percentual
-  from UNIDADE u join PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
+  from SIT_UNIDADE u join SIT_PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
   where u.CD_UNIDADE = p_cd_unidade and u.SG_ATIVO
   for update of u;
   if v_id_unidade is null then
@@ -521,7 +589,7 @@ begin
   end if;
 
   -- libera pré-reservas vencidas desta unidade antes de verificar
-  update RESERVA r set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
+  update SIT_RESERVA r set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
   where r.ID_UNIDADE = v_id_unidade and r.TP_STATUS = 'PENDENTE' and r.DT_EXPIRA <= now();
 
   select * into c from calcular_estadia(v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes);
@@ -530,7 +598,7 @@ begin
   end if;
 
   return query
-  insert into RESERVA as r (ID_UNIDADE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,
+  insert into SIT_RESERVA as r (ID_UNIDADE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,
                             TP_STATUS, TP_CANAL, VL_HOSPEDAGEM, VL_TAXA_LIMPEZA, VL_SINAL,
                             DS_DETALHE_PRECOS, DT_EXPIRA)
   values (v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes,
@@ -552,7 +620,7 @@ security definer
 set search_path = public, pg_temp
 as $$
   with x as (
-    update RESERVA set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
+    update SIT_RESERVA set TP_STATUS = 'EXPIRADA', DT_ATUALIZACAO = now()
     where TP_STATUS = 'PENDENTE' and DT_EXPIRA <= now()
     returning 1
   )
@@ -569,15 +637,15 @@ $$;
 --  no mesmo modelo de perfis do solar-inspect.
 -- ════════════════════════════════════════════════════════════════════
 
-alter table PROPRIEDADE        enable row level security;
-alter table UNIDADE            enable row level security;
-alter table TARIFA             enable row level security;
-alter table AJUSTE_DIARIO      enable row level security;
-alter table HOSPEDE            enable row level security;
-alter table RESERVA            enable row level security;
-alter table PAGAMENTO          enable row level security;
-alter table CALENDARIO_EXTERNO enable row level security;
-alter table BLOQUEIO           enable row level security;
+alter table SIT_PROPRIEDADE        enable row level security;
+alter table SIT_UNIDADE            enable row level security;
+alter table SIT_TARIFA             enable row level security;
+alter table SIT_AJUSTE_DIARIO      enable row level security;
+alter table SIT_HOSPEDE            enable row level security;
+alter table SIT_RESERVA            enable row level security;
+alter table SIT_PAGAMENTO          enable row level security;
+alter table SIT_CALENDARIO_EXTERNO enable row level security;
+alter table SIT_BLOQUEIO           enable row level security;
 
 -- No Supabase as funções do schema public recebem EXECUTE para anon e
 -- authenticated por padrão; por isso a revogação é explícita por papel.
