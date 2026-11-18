@@ -1,8 +1,11 @@
 # Gera o DER (der.html) a partir da estrutura extraída do banco (schema.json com tabelas, campos e FKs).
-# Uso: python3 gerar_der.py schema.json der.html
+# Uso: python3 gerar_der.py schema.json der.html exemplos.json [--completo]
+# exemplos.json: linhas extraídas do banco de teste depois de rodar exemplos_der.sql.
 import json, sys, html
 schema = json.load(open(sys.argv[1]))
 out = sys.argv[2]
+EX = json.load(open(sys.argv[3]))
+COMPLETO = '--completo' in sys.argv
 T = {t['name']: t for t in schema['tables']}
 W, HDR, RH = 330, 40, 19
 C0, C1, C2, C3 = 20, 440, 860, 1280
@@ -162,6 +165,80 @@ for n in ORDER:
   <ul>{''.join(f'<li>{esc(r)}</li>' for r in RULES[n])}</ul>
 </article>''')
 
+# ── exemplos ────────────────────────────────────────────────────────
+from datetime import datetime, timedelta, timezone
+BRT = timezone(timedelta(hours=-3))
+def brl(v): return 'R$ ' + f'{v:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+def fmt(col, v):
+    if v is None: return '<span class="nul">vazio</span>'
+    if isinstance(v, bool): return 'sim' if v else 'não'
+    if isinstance(v, list):  # DS_DETALHE_PRECOS
+        return f'{len(v)} noites: ' + ' + '.join(brl(x['vl_noite']).replace('R$ ', '') for x in v)
+    if col.startswith('VL_PERCENTUAL'): return f'{v:g}%'
+    if col.startswith('VL_'): return brl(v)
+    if isinstance(v, str):
+        if len(v) == 10 and v[4] == '-' and v[7] == '-':
+            return f'{v[8:10]}/{v[5:7]}/{v[:4]}'
+        if col.startswith('DT_') and 'T' in v:
+            return datetime.fromisoformat(v).astimezone(BRT).strftime('%d/%m/%Y %H:%M')
+        if col.startswith('HR_'): return v[:5]
+    return esc(v)
+CAP = {
+ 'PROPRIEDADE': ['A pousada'], 'UNIDADE': ['O chalé'],
+ 'TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
+ 'AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
+ 'HOSPEDE': ['Hóspede da reserva 1', 'Hóspede da reserva 2'],
+ 'RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
+ 'PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
+ 'CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
+ 'BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
+}
+LONG = lambda v: ' class="long"' if isinstance(v, list) or (isinstance(v, str) and len(v) > 26) else ''
+exs = []
+for n in ORDER:
+    rows = EX[n]; g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    for r in rows: assert set(k.upper() for k in r) == set(cols), (n, set(cols) ^ set(k.upper() for k in r))
+    assert len(CAP[n]) == len(rows), n
+    head = ''.join(f'<th scope="col">{esc(c)}</th>' for c in CAP[n])
+    body = ''.join('<tr><th scope="row">' + c + '</th>' + ''.join(f'<td{LONG(r[c.lower()])}>{fmt(c, r[c.lower()])}</td>' for r in rows) + '</tr>' for c in cols)
+    exs.append(f'<section class="ex g-{g}" id="e-{n}" data-t="{n}">\n  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span></header>\n'
+               f'  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th>{head}</tr></thead><tbody>{body}</tbody></table></div>\n</section>')
+
+# passo a passo do AJUSTE_DIARIO, a partir da reserva 1 gravada no banco
+r1 = EX['RESERVA'][0]
+DOW = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
+aj = {a['dt_ref']: a for a in EX['AJUSTE_DIARIO']}
+linhas = []
+for x in r1['ds_detalhe_precos']:
+    d = datetime.fromisoformat(x['dt_ref']); a = aj.get(x['dt_ref'])
+    fonte = f'<b>AJUSTE_DIARIO</b> (VL_NOITE {brl(a["vl_noite"])})' if a and a['vl_noite'] is not None else f'TARIFA “{esc(x["nm_tarifa"])}”'
+    hl = ' class="hl"' if a else ''
+    linhas.append(f'<tr{hl}><td>{d:%d/%m} {DOW[d.weekday()]}</td><td>{fonte}</td><td>{brl(x["vl_base"])}</td><td>{brl(x["vl_criancas"])}</td><td>{brl(x["vl_bebes"])}</td><td><b>{brl(x["vl_noite"])}</b></td></tr>')
+ajuste_html = (
+ '<section class="explica" id="como-ajuste">\n'
+ '  <h2>Como funciona o AJUSTE_DIARIO</h2>\n'
+ '  <p>A <b>TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <ol class="ordem"><li>Existe AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
+ f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>\n'
+ f'  <tbody>{"".join(linhas)}</tbody>\n'
+ f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
+ '  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>\n'
+ '  <ul class="fn">\n'
+ '    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>\n'
+ '    <li><code>QTDE_MIN_NOITES = 2 em 24/12</code><span>Pedido só de 24 para 25/12 volta como <i>min_noites</i>: quem passa por esse dia fica pelo menos 2 noites.</span></li>\n'
+ '    <li><code>SG_SEM_CHEGADA em 06/02/2027</code><span>Check-in em 06/02 volta como <i>sem_chegada</i>. Quem chegou no dia 05 e continua hospedado não é afetado.</span></li>\n'
+ '    <li><code>SG_SEM_SAIDA</code><span>O inverso: ninguém faz check-out nessa data.</span></li>\n'
+ '    <li><code>SG_FECHADO em 17/03/2027</code><span>Qualquer estadia que inclua a noite de 17/03 volta como <i>fechado</i>.</span></li>\n'
+ '  </ul>\n'
+ '  <h3>Quando usar cada tabela</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Situação</th><th>Use</th></tr></thead><tbody>\n'
+ '    <tr><td>Preço de uma temporada inteira (Réveillon, Carnaval, julho)</td><td>TARIFA com prioridade maior</td></tr>\n'
+ '    <tr><td>Preço ou regra diferente num único dia (véspera, feriado no meio da semana)</td><td>AJUSTE_DIARIO</td></tr>\n'
+ '    <tr><td>Chalé indisponível: manutenção, uso próprio ou reserva do Airbnb</td><td>BLOQUEIO</td></tr>\n'
+ '  </tbody></table></div>\n'
+ '</section>')
+
 ncols = sum(len(t['cols']) for t in schema['tables'])
 page = f'''<title>DER das Reservas</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -237,6 +314,29 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 .purpose {{ margin: 8px 0 4px; }}
 .meta {{ margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }}
 .tcard ul {{ margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }}
+/* exemplos */
+.explica, .ex {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }}
+.explica h2 {{ margin-top: 0; }}
+.explica h3 {{ font-size: 0.98rem; margin: 18px 0 8px; }}
+.explica p {{ margin: 6px 0; max-width: 95ch; }}
+.ordem {{ margin: 6px 0 0; padding-left: 22px; display: grid; gap: 2px; }}
+.tscroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+table {{ border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }}
+th, td {{ text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }}
+thead th {{ font-size: 12px; color: var(--muted); font-weight: 600; }}
+.passo tr.hl td {{ background: var(--pre); }}
+.passo tfoot td {{ border-bottom: 0; font-weight: 500; }}
+.exs {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 14px; align-items: start; }}
+.ex {{ scroll-margin-top: 16px; }}
+.ex.on {{ border-color: var(--fk); box-shadow: 0 0 0 1px var(--fk); }}
+.ex header {{ display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }}
+.ex h3 {{ margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; }}
+.ex tbody th {{ font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }}
+.ex td {{ white-space: nowrap; }}
+.ex td.long {{ white-space: normal; overflow-wrap: anywhere; min-width: 24ch; }}
+.ex thead th {{ min-width: 13ch; }}
+.ex tbody tr:nth-child(even) {{ background: var(--zebra); }}
+.nul {{ color: var(--muted); font-style: italic; }}
 h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
 .fn {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; }}
 .fn li {{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }}
@@ -249,7 +349,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>
@@ -269,12 +369,20 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     <div class="scroll">
 {chr(10).join(svg)}
     </div>
-    <figcaption>A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. Clique numa tabela para destacar as ligações dela e ver as regras abaixo.</figcaption>
+    <figcaption>A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. Clique numa tabela para destacar as ligações dela e ver as regras e o exemplo abaixo.</figcaption>
   </figure>
 
   <h2>Regras de cada tabela</h2>
   <div class="cards">
 {chr(10).join(cards)}
+  </div>
+
+{ajuste_html}
+
+  <h2>Exemplos de dados</h2>
+  <p class="hint">Linhas fictícias, gravadas num banco de teste e aprovadas por todas as regras (exemplos_der.sql). Os IDs batem entre as tabelas: a reserva 1 é do hóspede 1 e tem os pagamentos 1 e 2. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
+  <div class="exs">
+{chr(10).join(exs)}
   </div>
 
   <h2>Funções do banco</h2>
@@ -291,7 +399,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   var der = document.getElementById('der');
   var edges = Array.prototype.slice.call(der.querySelectorAll('.edge'));
   var tbls = Array.prototype.slice.call(der.querySelectorAll('.tbl'));
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard'));
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard, .ex'));
   var current = null;
   function select(name, scroll) {{
     if (current === name) name = null;
@@ -313,9 +421,13 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     t.addEventListener('click', function () {{ select(t.getAttribute('data-t'), true); }});
     t.addEventListener('keydown', function (e) {{ if (e.key === 'Enter' || e.key === ' ') {{ e.preventDefault(); select(t.getAttribute('data-t'), true); }} }});
   }});
-  cards.forEach(function (c) {{ c.addEventListener('click', function () {{ select(c.getAttribute('data-t'), false); der.scrollIntoView({{ block: 'nearest' }}); }}); }});
+  cards.filter(function (c) {{ return c.classList.contains('tcard'); }}).forEach(function (c) {{ c.addEventListener('click', function () {{ select(c.getAttribute('data-t'), false); der.scrollIntoView({{ block: 'nearest' }}); }}); }});
 }})();
 </script>
 '''
+if COMPLETO:
+    page = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            + page.replace('</style>\n', '</style>\n</head>\n<body>\n', 1) + '\n</body>\n</html>\n')
 open(out, 'w', encoding='utf-8').write(page)
 print('ok', out, len(page))

@@ -77,6 +77,29 @@ figcaption { font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-widt
 .purpose { margin: 8px 0 4px; }
 .meta { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }
 .tcard ul { margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }
+/* exemplos */
+.explica, .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.explica h2 { margin-top: 0; }
+.explica h3 { font-size: 0.98rem; margin: 18px 0 8px; }
+.explica p { margin: 6px 0; max-width: 95ch; }
+.ordem { margin: 6px 0 0; padding-left: 22px; display: grid; gap: 2px; }
+.tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.passo tr.hl td { background: var(--pre); }
+.passo tfoot td { border-bottom: 0; font-weight: 500; }
+.exs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 14px; align-items: start; }
+.ex { scroll-margin-top: 16px; }
+.ex.on { border-color: var(--fk); box-shadow: 0 0 0 1px var(--fk); }
+.ex header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ex h3 { margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; }
+.ex tbody th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.ex td { white-space: nowrap; }
+.ex td.long { white-space: normal; overflow-wrap: anywhere; min-width: 24ch; }
+.ex thead th { min-width: 13ch; }
+.ex tbody tr:nth-child(even) { background: var(--zebra); }
+.nul { color: var(--muted); font-style: italic; }
 h2 { font-size: 1.1rem; margin: 6px 0 0; }
 .fn { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; }
 .fn li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
@@ -84,14 +107,14 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 .fn span { display: block; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { #der .tbl, #der .edge { transition: none; } }
 </style>
-
 </head>
 <body>
+
 <div class="wrap">
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026</p>
     </div>
     <div class="stats"><span><b>9</b> tabelas</span><span><b>107</b> campos</span><span><b>10</b> ligações</span><span><b>42</b> regras</span></div>
   </header>
@@ -502,7 +525,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </g>
 </svg>
     </div>
-    <figcaption>A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. Clique numa tabela para destacar as ligações dela e ver as regras abaixo.</figcaption>
+    <figcaption>A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. Clique numa tabela para destacar as ligações dela e ver as regras e o exemplo abaixo.</figcaption>
   </figure>
 
   <h2>Regras de cada tabela</h2>
@@ -563,6 +586,71 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </article>
   </div>
 
+<section class="explica" id="como-ajuste">
+  <h2>Como funciona o AJUSTE_DIARIO</h2>
+  <p>A <b>TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>
+  <ol class="ordem"><li>Existe AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>
+  <h3>Exemplo: reserva SE-7F3A2C1D, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>
+  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>
+  <tbody><tr><td>23/12 qua</td><td>TARIFA “Tarifa padrão”</td><td>R$ 1.700,00</td><td>R$ 300,00</td><td>R$ 0,00</td><td><b>R$ 2.000,00</b></td></tr><tr class="hl"><td>24/12 qui</td><td><b>AJUSTE_DIARIO</b> (VL_NOITE R$ 2.200,00)</td><td>R$ 2.200,00</td><td>R$ 300,00</td><td>R$ 0,00</td><td><b>R$ 2.500,00</b></td></tr><tr><td>25/12 sex</td><td>TARIFA “Tarifa padrão”</td><td>R$ 1.700,00</td><td>R$ 300,00</td><td>R$ 0,00</td><td><b>R$ 2.000,00</b></td></tr></tbody>
+  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em RESERVA.VL_HOSPEDAGEM (sinal de 50%: R$ 3.250,00)</td><td><b>R$ 6.500,00</b></td></tr></tfoot></table></div>
+  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>
+  <ul class="fn">
+    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>
+    <li><code>QTDE_MIN_NOITES = 2 em 24/12</code><span>Pedido só de 24 para 25/12 volta como <i>min_noites</i>: quem passa por esse dia fica pelo menos 2 noites.</span></li>
+    <li><code>SG_SEM_CHEGADA em 06/02/2027</code><span>Check-in em 06/02 volta como <i>sem_chegada</i>. Quem chegou no dia 05 e continua hospedado não é afetado.</span></li>
+    <li><code>SG_SEM_SAIDA</code><span>O inverso: ninguém faz check-out nessa data.</span></li>
+    <li><code>SG_FECHADO em 17/03/2027</code><span>Qualquer estadia que inclua a noite de 17/03 volta como <i>fechado</i>.</span></li>
+  </ul>
+  <h3>Quando usar cada tabela</h3>
+  <div class="tscroll"><table class="passo"><thead><tr><th>Situação</th><th>Use</th></tr></thead><tbody>
+    <tr><td>Preço de uma temporada inteira (Réveillon, Carnaval, julho)</td><td>TARIFA com prioridade maior</td></tr>
+    <tr><td>Preço ou regra diferente num único dia (véspera, feriado no meio da semana)</td><td>AJUSTE_DIARIO</td></tr>
+    <tr><td>Chalé indisponível: manutenção, uso próprio ou reserva do Airbnb</td><td>BLOQUEIO</td></tr>
+  </tbody></table></div>
+</section>
+
+  <h2>Exemplos de dados</h2>
+  <p class="hint">Linhas fictícias, gravadas num banco de teste e aprovadas por todas as regras (exemplos_der.sql). Os IDs batem entre as tabelas: a reserva 1 é do hóspede 1 e tem os pagamentos 1 e 2. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
+  <div class="exs">
+<section class="ex g-cad" id="e-PROPRIEDADE" data-t="PROPRIEDADE">
+  <header><h3>PROPRIEDADE</h3><span class="chip">CADASTRO</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">A pousada</th></tr></thead><tbody><tr><th scope="row">ID_PROPRIEDADE</th><td>1</td></tr><tr><th scope="row">NM_PROPRIEDADE</th><td>Solar do Espinhaço</td></tr><tr><th scope="row">DS_FUSO_HORARIO</th><td>America/Sao_Paulo</td></tr><tr><th scope="row">HR_CHECKIN</th><td>15:00</td></tr><tr><th scope="row">HR_CHECKOUT</th><td>12:00</td></tr><tr><th scope="row">NO_IDADE_MAX_BEBE</th><td>1</td></tr><tr><th scope="row">NO_IDADE_MAX_CRIANCA</th><td>13</td></tr><tr><th scope="row">QTDE_MAX_NOITES</th><td>7</td></tr><tr><th scope="row">VL_PERCENTUAL_SINAL</th><td>50%</td></tr><tr><th scope="row">QTDE_MINUTOS_PRE_RESERVA</th><td>30</td></tr><tr><th scope="row">QTDE_DIAS_LIMITE_REMARCACAO</th><td>7</td></tr><tr><th scope="row">QTDE_MESES_VALIDADE_CREDITO</th><td>12</td></tr><tr><th scope="row">QTDE_DIAS_ARREPENDIMENTO</th><td>7</td></tr><tr><th scope="row">NO_VERSAO_POLITICA</th><td>1</td></tr><tr><th scope="row">DT_CRIACAO</th><td>01/11/2026 09:00</td></tr></tbody></table></div>
+</section>
+<section class="ex g-cad" id="e-UNIDADE" data-t="UNIDADE">
+  <header><h3>UNIDADE</h3><span class="chip">CADASTRO</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">O chalé</th></tr></thead><tbody><tr><th scope="row">ID_UNIDADE</th><td>1</td></tr><tr><th scope="row">ID_PROPRIEDADE</th><td>1</td></tr><tr><th scope="row">CD_UNIDADE</th><td>casa-do-mirante</td></tr><tr><th scope="row">NM_UNIDADE</th><td>Casa do Mirante</td></tr><tr><th scope="row">TP_UNIDADE</th><td>CHALE</td></tr><tr><th scope="row">QTDE_MAX_HOSPEDES</th><td>4</td></tr><tr><th scope="row">QTDE_MAX_ADULTOS</th><td>2</td></tr><tr><th scope="row">QTDE_MAX_CRIANCAS</th><td>2</td></tr><tr><th scope="row">VL_TAXA_LIMPEZA</th><td>R$ 0,00</td></tr><tr><th scope="row">SG_ATIVO</th><td>sim</td></tr><tr><th scope="row">NO_ORDEM</th><td>0</td></tr><tr><th scope="row">DT_CRIACAO</th><td>01/11/2026 09:05</td></tr></tbody></table></div>
+</section>
+<section class="ex g-pre" id="e-TARIFA" data-t="TARIFA">
+  <header><h3>TARIFA</h3><span class="chip">PREÇO</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Vale o ano todo</th><th scope="col">Réveillon: prioridade 10 vence a padrão</th></tr></thead><tbody><tr><th scope="row">ID_TARIFA</th><td>1</td><td>2</td></tr><tr><th scope="row">ID_UNIDADE</th><td>1</td><td>1</td></tr><tr><th scope="row">NM_TARIFA</th><td>Tarifa padrão</td><td>Réveillon 2027</td></tr><tr><th scope="row">DT_INI</th><td>01/11/2026</td><td>29/12/2026</td></tr><tr><th scope="row">DT_FIM</th><td>01/01/2028</td><td>02/01/2027</td></tr><tr><th scope="row">NO_PRIORIDADE</th><td>0</td><td>10</td></tr><tr><th scope="row">VL_NOITE</th><td>R$ 1.700,00</td><td>R$ 2.500,00</td></tr><tr><th scope="row">VL_NOITE_FDS</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">QTDE_ADULTOS_INCLUSOS</th><td>2</td><td>2</td></tr><tr><th scope="row">VL_ADULTO_EXTRA</th><td>R$ 0,00</td><td>R$ 0,00</td></tr><tr><th scope="row">VL_CRIANCA</th><td>R$ 300,00</td><td>R$ 300,00</td></tr><tr><th scope="row">VL_BEBE</th><td>R$ 0,00</td><td>R$ 0,00</td></tr><tr><th scope="row">QTDE_MIN_NOITES</th><td>1</td><td>3</td></tr><tr><th scope="row">SG_ATIVO</th><td>sim</td><td>sim</td></tr><tr><th scope="row">DT_CRIACAO</th><td>01/11/2026 09:10</td><td>10/11/2026 16:40</td></tr></tbody></table></div>
+</section>
+<section class="ex g-pre" id="e-AJUSTE_DIARIO" data-t="AJUSTE_DIARIO">
+  <header><h3>AJUSTE_DIARIO</h3><span class="chip">PREÇO</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Preço especial num dia</th><th scope="col">Dia sem chegada</th><th scope="col">Noite fechada</th></tr></thead><tbody><tr><th scope="row">ID_UNIDADE</th><td>1</td><td>1</td><td>1</td></tr><tr><th scope="row">DT_REF</th><td>24/12/2026</td><td>06/02/2027</td><td>17/03/2027</td></tr><tr><th scope="row">VL_NOITE</th><td>R$ 2.200,00</td><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">QTDE_MIN_NOITES</th><td>2</td><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">SG_FECHADO</th><td>não</td><td>não</td><td>sim</td></tr><tr><th scope="row">SG_SEM_CHEGADA</th><td>não</td><td>sim</td><td>não</td></tr><tr><th scope="row">SG_SEM_SAIDA</th><td>não</td><td>não</td><td>não</td></tr><tr><th scope="row">DS_OBSERVACAO</th><td class="long">Véspera de Natal: preço especial e mínimo de 2 noites</td><td class="long">Sábado de Carnaval: ninguém faz check-in neste dia</td><td class="long">Folga da equipe: noite fora da venda</td></tr></tbody></table></div>
+</section>
+<section class="ex g-ven" id="e-RESERVA" data-t="RESERVA">
+  <header><h3>RESERVA</h3><span class="chip">VENDA</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">1 · Confirmada no site</th><th scope="col">2 · Pré-reserva aguardando Pix</th></tr></thead><tbody><tr><th scope="row">ID_RESERVA</th><td>1</td><td>2</td></tr><tr><th scope="row">CD_RESERVA</th><td>SE-7F3A2C1D</td><td>SE-91B0E4A2</td></tr><tr><th scope="row">ID_UNIDADE</th><td>1</td><td>1</td></tr><tr><th scope="row">ID_HOSPEDE</th><td>1</td><td>2</td></tr><tr><th scope="row">DT_CHECKIN</th><td>23/12/2026</td><td>15/01/2027</td></tr><tr><th scope="row">DT_CHECKOUT</th><td>26/12/2026</td><td>17/01/2027</td></tr><tr><th scope="row">QTDE_ADULTOS</th><td>2</td><td>2</td></tr><tr><th scope="row">QTDE_CRIANCAS</th><td>1</td><td>0</td></tr><tr><th scope="row">QTDE_BEBES</th><td>1</td><td>0</td></tr><tr><th scope="row">TP_STATUS</th><td>CONFIRMADA</td><td>PENDENTE</td></tr><tr><th scope="row">TP_CANAL</th><td>SITE</td><td>SITE</td></tr><tr><th scope="row">VL_HOSPEDAGEM</th><td>R$ 6.500,00</td><td>R$ 3.400,00</td></tr><tr><th scope="row">VL_TAXA_LIMPEZA</th><td>R$ 0,00</td><td>R$ 0,00</td></tr><tr><th scope="row">VL_TOTAL</th><td>R$ 6.500,00</td><td>R$ 3.400,00</td></tr><tr><th scope="row">VL_SINAL</th><td>R$ 3.250,00</td><td>R$ 1.700,00</td></tr><tr><th scope="row">VL_SALDO</th><td>R$ 3.250,00</td><td>R$ 1.700,00</td></tr><tr><th scope="row">DS_DETALHE_PRECOS</th><td class="long">3 noites: 2.000,00 + 2.500,00 + 2.000,00</td><td class="long">2 noites: 1.700,00 + 1.700,00</td></tr><tr><th scope="row">DT_EXPIRA</th><td><span class="nul">vazio</span></td><td>18/11/2026 14:35</td></tr><tr><th scope="row">ID_RESERVA_ORIGINAL</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">TP_MOTIVO_CANCELAMENTO</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">NO_VERSAO_POLITICA</th><td>1</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">DT_ACEITE_POLITICA</th><td>18/11/2026 10:12</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 10:12</td><td>18/11/2026 14:05</td></tr><tr><th scope="row">DT_ATUALIZACAO</th><td>18/11/2026 10:19</td><td>18/11/2026 14:05</td></tr></tbody></table></div>
+</section>
+<section class="ex g-ven" id="e-HOSPEDE" data-t="HOSPEDE">
+  <header><h3>HOSPEDE</h3><span class="chip">VENDA</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Hóspede da reserva 1</th><th scope="col">Hóspede da reserva 2</th></tr></thead><tbody><tr><th scope="row">ID_HOSPEDE</th><td>1</td><td>2</td></tr><tr><th scope="row">NM_HOSPEDE</th><td>Ana Souza</td><td>Bruno Lima</td></tr><tr><th scope="row">DS_EMAIL</th><td>ana.souza@exemplo.com</td><td>bruno.lima@exemplo.com</td></tr><tr><th scope="row">DS_TELEFONE</th><td>+55 31 99999-0001</td><td>+55 11 98888-0002</td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 10:12</td><td>18/11/2026 14:05</td></tr></tbody></table></div>
+</section>
+<section class="ex g-ven" id="e-PAGAMENTO" data-t="PAGAMENTO">
+  <header><h3>PAGAMENTO</h3><span class="chip">VENDA</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Sinal pago (reserva 1)</th><th scope="col">Saldo no check-in (reserva 1)</th><th scope="col">Pix gerado (reserva 2)</th></tr></thead><tbody><tr><th scope="row">ID_PAGAMENTO</th><td>1</td><td>2</td><td>3</td></tr><tr><th scope="row">ID_RESERVA</th><td>1</td><td>1</td><td>2</td></tr><tr><th scope="row">TP_PARCELA</th><td>SINAL</td><td>SALDO</td><td>SINAL</td></tr><tr><th scope="row">TP_PROVEDOR</th><td>MERCADO_PAGO</td><td>MANUAL</td><td>MERCADO_PAGO</td></tr><tr><th scope="row">TP_METODO</th><td>PIX</td><td>DINHEIRO</td><td>PIX</td></tr><tr><th scope="row">VL_PAGAMENTO</th><td>R$ 3.250,00</td><td>R$ 3.250,00</td><td>R$ 1.700,00</td></tr><tr><th scope="row">TP_STATUS</th><td>APROVADO</td><td>PENDENTE</td><td>PENDENTE</td></tr><tr><th scope="row">CD_EXTERNO</th><td>MP-1325849901</td><td><span class="nul">vazio</span></td><td>MP-1325851177</td></tr><tr><th scope="row">DS_PIX_COPIA_E_COLA</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td><td class="long">00020126580014br.gov.bcb.pix0136…6304A1B2</td></tr><tr><th scope="row">DT_EXPIRA</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td><td>18/11/2026 14:35</td></tr><tr><th scope="row">DT_PAGAMENTO</th><td>18/11/2026 10:19</td><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 10:13</td><td>18/11/2026 10:19</td><td>18/11/2026 14:05</td></tr></tbody></table></div>
+</section>
+<section class="ex g-can" id="e-CALENDARIO_EXTERNO" data-t="CALENDARIO_EXTERNO">
+  <header><h3>CALENDARIO_EXTERNO</h3><span class="chip">CANAIS</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Airbnb</th><th scope="col">Booking</th></tr></thead><tbody><tr><th scope="row">ID_CALENDARIO</th><td>1</td><td>2</td></tr><tr><th scope="row">ID_UNIDADE</th><td>1</td><td>1</td></tr><tr><th scope="row">TP_CANAL</th><td>AIRBNB</td><td>BOOKING</td></tr><tr><th scope="row">DS_URL_IMPORTACAO</th><td class="long">https://www.airbnb.com.br/calendar/ical/000000.ics?s=…</td><td class="long">https://admin.booking.com/hotel/hoteladmin/ical.html?t=…</td></tr><tr><th scope="row">SG_ATIVO</th><td>sim</td><td>sim</td></tr><tr><th scope="row">DT_ULTIMA_SINCRONIZACAO</th><td>18/11/2026 14:00</td><td>18/11/2026 14:00</td></tr><tr><th scope="row">DS_ULTIMO_ERRO</th><td><span class="nul">vazio</span></td><td><span class="nul">vazio</span></td></tr></tbody></table></div>
+</section>
+<section class="ex g-can" id="e-BLOQUEIO" data-t="BLOQUEIO">
+  <header><h3>BLOQUEIO</h3><span class="chip">CANAIS</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Reserva vinda do Airbnb</th><th scope="col">Manutenção</th></tr></thead><tbody><tr><th scope="row">ID_BLOQUEIO</th><td>1</td><td>2</td></tr><tr><th scope="row">ID_UNIDADE</th><td>1</td><td>1</td></tr><tr><th scope="row">DT_INI</th><td>20/01/2027</td><td>01/03/2027</td></tr><tr><th scope="row">DT_FIM</th><td>23/01/2027</td><td>04/03/2027</td></tr><tr><th scope="row">TP_MOTIVO</th><td>CANAL_EXTERNO</td><td>MANUTENCAO</td></tr><tr><th scope="row">ID_CALENDARIO</th><td>1</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">CD_EXTERNO</th><td>HMXYZ123@airbnb.com</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">DS_OBSERVACAO</th><td>Reserva vinda do Airbnb</td><td>Pintura do deck</td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 14:00</td><td>12/11/2026 11:30</td></tr></tbody></table></div>
+</section>
+  </div>
+
   <h2>Funções do banco</h2>
   <ul class="fn">
     <li><code>consultar_disponibilidade</code><span>Pública: o botão "Ver disponibilidade" do site chama esta função; devolve disponibilidade, preço noite a noite, total e sinal, sem expor nenhuma tabela.</span></li>
@@ -577,7 +665,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
   var der = document.getElementById('der');
   var edges = Array.prototype.slice.call(der.querySelectorAll('.edge'));
   var tbls = Array.prototype.slice.call(der.querySelectorAll('.tbl'));
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard'));
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard, .ex'));
   var current = null;
   function select(name, scroll) {
     if (current === name) name = null;
@@ -599,7 +687,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
     t.addEventListener('click', function () { select(t.getAttribute('data-t'), true); });
     t.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.getAttribute('data-t'), true); } });
   });
-  cards.forEach(function (c) { c.addEventListener('click', function () { select(c.getAttribute('data-t'), false); der.scrollIntoView({ block: 'nearest' }); }); });
+  cards.filter(function (c) { return c.classList.contains('tcard'); }).forEach(function (c) { c.addEventListener('click', function () { select(c.getAttribute('data-t'), false); der.scrollIntoView({ block: 'nearest' }); }); });
 })();
 </script>
 
