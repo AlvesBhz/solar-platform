@@ -23,12 +23,12 @@ on conflict ("CD_UNIDADE") do nothing;
 
 -- Tarifa padrão: R$ 1.700 a noite para o casal, R$ 300 por criança (2 a 13 anos) por noite,
 -- bebê (até 1 ano) não paga: VL_BEBE = 0, mas ocupa uma das 2 vagas de criança.
--- Vale para todas as noites até o fim de 2027. Réveillon, Carnaval e feriados
+-- Mínimo de 2 noites em toda a tarifa. Vale para todas as noites até o fim de 2027. Réveillon, Carnaval e feriados
 -- terão preço próprio e mínimo de 2 noites: entram como tarifas de prioridade
 -- maior (QTDE_MIN_NOITES = 2) quando as datas e os valores forem definidos.
 insert into "SE"."SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "VL_NOITE_FDS",
                              "QTDE_ADULTOS_INCLUSOS", "VL_ADULTO_EXTRA", "VL_CRIANCA", "VL_BEBE", "QTDE_MIN_NOITES")
-select u."ID_UNIDADE", 'Tarifa padrão', '2026-11-01', '2028-01-01', 0, 1700.00, null, 2, 0.00, 300.00, 0.00, 1
+select u."ID_UNIDADE", 'Tarifa padrão', '2026-11-01', '2028-01-01', 0, 1700.00, null, 2, 0.00, 300.00, 0.00, 2
 from "SE"."SIT_UNIDADE" u
 where u."CD_UNIDADE" = 'casa-do-mirante'
   and not exists (select 1 from "SE"."SIT_TARIFA" t where t."ID_UNIDADE" = u."ID_UNIDADE" and t."NM_TARIFA" = 'Tarifa padrão');
