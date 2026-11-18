@@ -133,13 +133,13 @@ for name, (x, y) in POS.items():
 svg.append('</svg>')
 
 PURPOSE = {
- 'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
+ 'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para concluir a reserva no site, remarcação, prazo de arrependimento e versão da política de cancelamento.',
  'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
  'SIT_TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'SIT_AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
  'SIT_HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
- 'SIT_RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
- 'SIT_PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
+ 'SIT_RESERVA': 'Estadia reservada pelo site (ou por telefone/contato direto), com preço, sinal e saldo gravados no momento da reserva. O site não cobra: depois da confirmação a equipe entra em contato para o pagamento.',
+ 'SIT_PAGAMENTO': 'Pagamentos da reserva. Hoje a equipe lança o que recebe fora do site (sinal combinado depois da reserva e saldo no check-in); a estrutura já aceita pagamento online (Mercado Pago) no futuro, sem mudar a tabela.',
  'SIT_CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
  'SIT_BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
 }
@@ -149,8 +149,8 @@ RULES = {
  'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
  'SIT_AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
  'SIT_HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_SIT_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
- 'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
- 'SIT_PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
+ 'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE (pré-reserva de 30 minutos enquanto o hóspede preenche a reserva) exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA); quem confirma é a função confirmar_reserva.', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO, SEM_PAGAMENTO (hóspede não pagou quando a equipe entrou em contato) ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
+ 'SIT_PAGAMENTO': ['Hoje o site não cobra: só há lançamentos MANUAL, feitos pela equipe depois de receber.', 'TP_PROVEDOR: MANUAL ou MERCADO_PAGO (reservado para o pagamento online futuro).', 'TP_PARCELA: SINAL ou SALDO.', 'TP_METODO: PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA; dinheiro e transferência só MANUAL.', 'TP_STATUS: PENDENTE, RECEBIDO, RECUSADO, CANCELADO ou ESTORNADO; MANUAL só RECEBIDO ou ESTORNADO, com NM_REGISTRADO_POR.', 'RECEBIDO e ESTORNADO exigem DT_PAGAMENTO; online exige CD_TRANSACAO, único por provedor.'],
  'SIT_CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
  'SIT_BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
@@ -164,8 +164,8 @@ CAMPO = {
   'NO_IDADE_MAX_BEBE': 'Até esta idade é bebê: não paga, mas ocupa vaga de criança.',
   'NO_IDADE_MAX_CRIANCA': 'Até esta idade é criança; acima disso conta como adulto.',
   'QTDE_MAX_NOITES': 'Estadia máxima vendida pelo site.',
-  'VL_PERCENTUAL_SINAL': 'Percentual do total pago na hora de reservar.',
-  'QTDE_MINUTOS_PRE_RESERVA': 'Tempo que as datas ficam seguras enquanto o hóspede paga o sinal.',
+  'VL_PERCENTUAL_SINAL': 'Percentual do total cobrado como sinal; a equipe combina o pagamento depois da reserva.',
+  'QTDE_MINUTOS_PRE_RESERVA': 'Tempo que as datas ficam seguras enquanto o hóspede preenche a reserva no site.',
   'QTDE_DIAS_LIMITE_REMARCACAO': 'Remarcação permitida até N dias antes do check-in.',
   'QTDE_MESES_VALIDADE_CREDITO': 'Prazo para usar o crédito do sinal numa nova data.',
   'QTDE_DIAS_ARREPENDIMENTO': 'Dias para desistir com reembolso integral (CDC art. 49).',
@@ -230,21 +230,21 @@ CAMPO = {
   'ID_RESERVA': 'Número interno da reserva.',
   'CD_RESERVA': 'Código mostrado ao hóspede (SE- + 8 caracteres aleatórios).',
   'ID_UNIDADE': 'O chalé reservado.',
-  'ID_HOSPEDE': 'Quem reservou; vazio só enquanto a pré-reserva não foi paga.',
+  'ID_HOSPEDE': 'Quem reservou; vazio só enquanto a pré-reserva não foi concluída.',
   'DT_CHECKIN': 'Dia de chegada.',
   'DT_CHECKOUT': 'Dia de saída (não é cobrado).',
   'QTDE_ADULTOS': 'Adultos (14 anos ou mais).',
   'QTDE_CRIANCAS': 'Crianças de 2 a 13 anos (pagam VL_CRIANCA).',
   'QTDE_BEBES': 'Bebês até 1 ano: ocupam vaga de criança, não pagam.',
-  'TP_STATUS': 'PENDENTE → CONFIRMADA; ou CANCELADA, EXPIRADA, REMARCADA.',
+  'TP_STATUS': 'PENDENTE (preenchendo no site) → CONFIRMADA (reserva feita, aguardando contato da equipe); ou CANCELADA, EXPIRADA, REMARCADA.',
   'TP_CANAL': 'Por onde entrou: SITE, DIRETO ou TELEFONE.',
   'VL_HOSPEDAGEM': 'Soma das noites, congelada no momento da reserva.',
   'VL_TAXA_LIMPEZA': 'Taxa de limpeza congelada na reserva.',
   'VL_TOTAL': 'Hospedagem + limpeza (calculado pelo banco).',
-  'VL_SINAL': 'Parte paga ao reservar (50%).',
+  'VL_SINAL': 'Sinal de 50%, combinado e recebido pela equipe depois da reserva.',
   'VL_SALDO': 'Total − sinal, pago no check-in (calculado pelo banco).',
   'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa, criança e bebê (JSON).',
-  'DT_EXPIRA': 'Até quando a pré-reserva segura as datas.',
+  'DT_EXPIRA': 'Até quando a pré-reserva segura as datas (30 minutos para concluir no site).',
   'ID_RESERVA_ORIGINAL': 'Em remarcação, a reserva antiga que deu origem a esta.',
   'TP_MOTIVO_CANCELAMENTO': 'Por que foi cancelada; obrigatório só se CANCELADA.',
   'NO_VERSAO_POLITICA': 'Versão da política que o hóspede aceitou.',
@@ -255,16 +255,16 @@ CAMPO = {
  'SIT_PAGAMENTO': {
   'ID_PAGAMENTO': 'Número interno do pagamento.',
   'ID_RESERVA': 'A reserva paga.',
-  'TP_PARCELA': 'SINAL (no site) ou SALDO (no check-in).',
-  'TP_PROVEDOR': 'MERCADO_PAGO ou MANUAL (recebido na pousada).',
-  'TP_METODO': 'PIX, CARTAO_CREDITO ou DINHEIRO.',
-  'VL_PAGAMENTO': 'Valor desta tentativa.',
-  'TP_STATUS': 'PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.',
-  'CD_EXTERNO': 'Id do pagamento no Mercado Pago, para conciliar.',
-  'DS_PIX_COPIA_E_COLA': 'Código Pix mostrado ao hóspede.',
-  'DT_EXPIRA': 'Validade do Pix gerado.',
-  'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se APROVADO.',
-  'DT_CRIACAO': 'Quando a cobrança foi gerada.',
+  'TP_PARCELA': 'SINAL (combinado depois da reserva) ou SALDO (no check-in).',
+  'TP_PROVEDOR': 'MANUAL (lançado pela equipe, hoje) ou MERCADO_PAGO (pagamento online, quando for integrado).',
+  'TP_METODO': 'PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA.',
+  'VL_PAGAMENTO': 'Valor do pagamento.',
+  'TP_STATUS': 'RECEBIDO ou ESTORNADO no manual; PENDENTE, RECUSADO e CANCELADO servem ao pagamento online.',
+  'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se RECEBIDO.',
+  'CD_TRANSACAO': 'Id do Pix, autorização do cartão ou id da transação no provedor.',
+  'NM_REGISTRADO_POR': 'Quem da equipe lançou (obrigatório no manual).',
+  'DS_OBSERVACAO': 'Anotação da equipe (ex.: combinado por WhatsApp).',
+  'DT_CRIACAO': 'Quando o lançamento (ou a cobrança online) foi criado.',
  },
  'SIT_CALENDARIO_EXTERNO': {
   'ID_CALENDARIO': 'Número interno do calendário.',
@@ -323,8 +323,8 @@ CAP = {
  'SIT_TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
  'SIT_AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
  'SIT_HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
- 'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
- 'SIT_PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
+ 'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva: hóspede preenchendo (30 min)'],
+ 'SIT_PAGAMENTO': ['Sinal por Pix, lançado pela equipe (reserva 1)'],
  'SIT_CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
  'SIT_BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
 }
@@ -586,9 +586,10 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <h2>Funções do banco</h2>
   <ul class="fn">
     <li><code>consultar_disponibilidade</code><span>Pública: o botão "Ver disponibilidade" do site chama esta função; devolve disponibilidade, preço noite a noite, total e sinal, sem expor nenhuma tabela.</span></li>
-    <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede paga o sinal; só a Edge Function do Supabase executa.</span></li>
+    <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede preenche a reserva no site; só a Edge Function do Supabase executa.</span></li>
+    <li><code>confirmar_reserva</code><span>Conclui a reserva do site: grava o hóspede com o documento e o aceite da política e deixa a reserva CONFIRMADA. Não cobra nada: a equipe entra em contato para o pagamento.</span></li>
     <li><code>calcular_estadia</code><span>Interna: valida datas e capacidade, soma as noites e verifica reservas e bloqueios.</span></li>
-    <li><code>expirar_pre_reservas</code><span>Job periódico (pg_cron) que marca como EXPIRADA a pré-reserva não paga.</span></li>
+    <li><code>expirar_pre_reservas</code><span>Job periódico (pg_cron) que marca como EXPIRADA a pré-reserva não concluída em 30 minutos.</span></li>
   </ul>
 </div>
 

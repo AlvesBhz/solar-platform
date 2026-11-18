@@ -11,6 +11,11 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok  anon não pode criar pré-reserva (só a Edge Function)';
 end $$;
 do $$ begin
+  perform confirmar_reserva('SE-00000000','X','x@exemplo.invalid',null,'BR','52998224725');
+  raise exception 'FALHOU: anon conseguiu confirmar reserva';
+exception when insufficient_privilege then raise notice 'ok  anon não pode confirmar reserva (só a Edge Function)';
+end $$;
+do $$ begin
   perform * from calcular_estadia(1,'2027-08-10','2027-08-12',2,0);
   raise exception 'FALHOU: anon executou calcular_estadia';
 exception when insufficient_privilege then raise notice 'ok  anon não executa a função interna calcular_estadia';

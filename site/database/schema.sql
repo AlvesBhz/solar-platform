@@ -190,6 +190,11 @@ create unique index UQ_SIT_HOSPEDE_DS_EMAIL on SIT_HOSPEDE (lower(DS_EMAIL));
 
 
 -- ── SIT_RESERVA: estadias vendidas ──────────────────────────────────────
+-- Pelo site: escolhidas as datas, a pré-reserva (PENDENTE) segura o chalé
+-- por 30 minutos enquanto o hóspede preenche os dados e aceita a política;
+-- ao concluir, a reserva fica CONFIRMADA e as datas garantidas. O site não
+-- cobra: a equipe entra em contato para o pagamento e o lança em
+-- SIT_PAGAMENTO. Sem pagamento, a equipe cancela com motivo SEM_PAGAMENTO.
 -- Política: o sinal não é devolvido; o hóspede pode só remarcar. A
 -- remarcação cria uma reserva nova com ID_RESERVA_ORIGINAL apontando
 -- para a antiga (que fica REMARCADA), e o que foi pago vale como crédito.
@@ -234,7 +239,7 @@ create table SIT_RESERVA (
   constraint CK_SIT_RESERVA_PENDENTE_EXPIRA check (TP_STATUS <> 'PENDENTE' or DT_EXPIRA is not null),
   constraint CK_SIT_RESERVA_CONFIRMADA_HOSPEDE check (TP_STATUS <> 'CONFIRMADA' or ID_HOSPEDE is not null),
   constraint CK_SIT_RESERVA_TP_MOTIVO_CANCELAMENTO check (TP_MOTIVO_CANCELAMENTO in
-    ('ARREPENDIMENTO', 'DESISTENCIA', 'FORCA_MAIOR', 'NAO_COMPARECIMENTO', 'POUSADA')),
+    ('ARREPENDIMENTO', 'DESISTENCIA', 'FORCA_MAIOR', 'NAO_COMPARECIMENTO', 'SEM_PAGAMENTO', 'POUSADA')),
   constraint CK_SIT_RESERVA_CANCELADA_MOTIVO check ((TP_STATUS = 'CANCELADA') = (TP_MOTIVO_CANCELAMENTO is not null)),
   -- reserva do site só é confirmada com a política aceita (dever de informação, CDC)
   constraint CK_SIT_RESERVA_SITE_ACEITE check (TP_CANAL <> 'SITE' or TP_STATUS <> 'CONFIRMADA'
@@ -279,36 +284,44 @@ create index IX_SIT_RESERVA_PERIODO on SIT_RESERVA using gist (ID_UNIDADE, dater
 create index IX_SIT_RESERVA_PENDENTE_EXPIRA on SIT_RESERVA (DT_EXPIRA) where TP_STATUS = 'PENDENTE';
 
 
--- ── SIT_PAGAMENTO: Pix e Mercado Pago ───────────────────────────────────
--- Duas parcelas por reserva: o SINAL, pago no site para confirmar, e o
--- SALDO, pago no check-in, antes de entrar (Pix ou dinheiro). Cada parcela pode ter mais de
--- uma tentativa (ex.: o Pix venceu e o hóspede gerou outro). O status é
--- atualizado pelo aviso (webhook) que o Mercado Pago envia.
--- MANUAL = Pix recebido direto e conferido pela equipe.
+-- ── SIT_PAGAMENTO: pagamentos da reserva ───────────────────────────────────
+-- Hoje o site só faz a reserva e não cobra: depois que o hóspede confirma,
+-- a equipe entra em contato, combina o pagamento e lança aqui o que recebeu
+-- (TP_PROVEDOR = MANUAL): o SINAL e, no check-in, o SALDO.
+-- Pronto para pagamento online depois: com TP_PROVEDOR = MERCADO_PAGO (ou
+-- outro provedor acrescentado na lista), o sistema cria a cobrança como
+-- PENDENTE, guarda o id da transação em CD_TRANSACAO e o aviso do provedor
+-- (webhook) muda para RECEBIDO, RECUSADO ou CANCELADO. Nenhuma tabela muda.
 
 create table SIT_PAGAMENTO (
   ID_PAGAMENTO          bigint generated always as identity,
   ID_RESERVA            bigint not null,
   TP_PARCELA            text not null default 'SINAL',
-  TP_PROVEDOR           text not null default 'MERCADO_PAGO',
+  TP_PROVEDOR           text not null default 'MANUAL',
   TP_METODO             text not null,
   VL_PAGAMENTO          numeric(10,2) not null,
-  TP_STATUS             text not null default 'PENDENTE',
-  CD_EXTERNO            text,                 -- número do pagamento no Mercado Pago
-  DS_PIX_COPIA_E_COLA   text,                 -- código Pix que o hóspede cola no app do banco
-  DT_EXPIRA             timestamptz,          -- validade do código Pix
-  DT_PAGAMENTO          timestamptz,
+  TP_STATUS             text not null default 'RECEBIDO',
+  DT_PAGAMENTO          timestamptz,              -- quando o dinheiro entrou
+  CD_TRANSACAO          text,                     -- id do Pix, autorização do cartão ou id no provedor
+  NM_REGISTRADO_POR     text,                     -- quem da equipe lançou (pagamento manual)
+  DS_OBSERVACAO         text,
   DT_CRIACAO            timestamptz not null default now(),
   constraint PK_SIT_PAGAMENTO primary key (ID_PAGAMENTO),
   constraint FK_SIT_PAGAMENTO_SIT_RESERVA foreign key (ID_RESERVA) references SIT_RESERVA (ID_RESERVA),
-  constraint UQ_SIT_PAGAMENTO_CD_EXTERNO unique (CD_EXTERNO),
+  constraint UQ_SIT_PAGAMENTO_CD_TRANSACAO unique (TP_PROVEDOR, CD_TRANSACAO),
   constraint CK_SIT_PAGAMENTO_TP_PARCELA check (TP_PARCELA in ('SINAL', 'SALDO')),
-  constraint CK_SIT_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MERCADO_PAGO', 'MANUAL')),
-  constraint CK_SIT_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO', 'DINHEIRO')),
-  constraint CK_SIT_PAGAMENTO_DINHEIRO_MANUAL check (TP_METODO <> 'DINHEIRO' or TP_PROVEDOR = 'MANUAL'),
-  constraint CK_SIT_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'APROVADO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
+  constraint CK_SIT_PAGAMENTO_TP_PROVEDOR check (TP_PROVEDOR in ('MANUAL', 'MERCADO_PAGO')),
+  constraint CK_SIT_PAGAMENTO_TP_METODO check (TP_METODO in ('PIX', 'CARTAO_CREDITO', 'CARTAO_DEBITO', 'DINHEIRO', 'TRANSFERENCIA')),
+  constraint CK_SIT_PAGAMENTO_TP_STATUS check (TP_STATUS in ('PENDENTE', 'RECEBIDO', 'RECUSADO', 'CANCELADO', 'ESTORNADO')),
   constraint CK_SIT_PAGAMENTO_VALOR check (VL_PAGAMENTO > 0),
-  constraint CK_SIT_PAGAMENTO_APROVADO_DATA check (TP_STATUS <> 'APROVADO' or DT_PAGAMENTO is not null)
+  -- dinheiro e transferência só existem como lançamento manual
+  constraint CK_SIT_PAGAMENTO_METODO_MANUAL check (TP_METODO not in ('DINHEIRO', 'TRANSFERENCIA') or TP_PROVEDOR = 'MANUAL'),
+  -- lançamento manual é sempre de um valor já recebido, por alguém da equipe
+  constraint CK_SIT_PAGAMENTO_MANUAL check (TP_PROVEDOR <> 'MANUAL'
+                                            or (TP_STATUS in ('RECEBIDO', 'ESTORNADO') and NM_REGISTRADO_POR is not null)),
+  constraint CK_SIT_PAGAMENTO_RECEBIDO_DATA check (TP_STATUS not in ('RECEBIDO', 'ESTORNADO') or DT_PAGAMENTO is not null),
+  -- online: o provedor identifica a transação
+  constraint CK_SIT_PAGAMENTO_ONLINE_TRANSACAO check (TP_PROVEDOR = 'MANUAL' or CD_TRANSACAO is not null)
 );
 create index IX_SIT_PAGAMENTO_ID_RESERVA on SIT_PAGAMENTO (ID_RESERVA);
 
@@ -609,6 +622,74 @@ begin
 end;
 $$;
 
+
+-- Confirmação da reserva pelo site (chamada pela Edge Function quando o
+-- hóspede termina o formulário): grava ou atualiza o hóspede pelo e-mail,
+-- registra o aceite da versão vigente da política e confirma a reserva.
+-- Não há pagamento aqui: a equipe entra em contato depois.
+create or replace function confirmar_reserva(
+  p_cd_reserva            text,
+  p_nome                  text,
+  p_email                 text,
+  p_telefone              text,
+  p_nacionalidade         char(2) default 'BR',
+  p_cpf                   text default null,
+  p_passaporte            text default null,
+  p_pais_passaporte       char(2) default null,
+  p_validade_passaporte   date default null,
+  p_emissao_passaporte    date default null
+)
+returns table (cd_reserva text, vl_total numeric(10,2), vl_sinal numeric(10,2))
+language plpgsql
+volatile
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  v_reserva  SIT_RESERVA%rowtype;
+  v_hospede  bigint;
+  v_versao   smallint;
+begin
+  select r.* into v_reserva from SIT_RESERVA r where r.CD_RESERVA = p_cd_reserva for update;
+  if not found then
+    raise exception 'reserva_inexistente' using errcode = 'P0001';
+  end if;
+  if v_reserva.TP_STATUS <> 'PENDENTE' then
+    raise exception 'reserva_nao_pendente' using errcode = 'P0001';   -- já confirmada, cancelada ou expirada
+  end if;
+  if v_reserva.DT_EXPIRA <= now() then
+    raise exception 'pre_reserva_expirada' using errcode = 'P0001';   -- passou dos 30 minutos: consultar de novo
+  end if;
+
+  select h.ID_HOSPEDE into v_hospede from SIT_HOSPEDE h where lower(h.DS_EMAIL) = lower(p_email);
+  if v_hospede is null then
+    insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_CPF, CD_PASSAPORTE,
+                             SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE, DT_EMISSAO_PASSAPORTE)
+    values (p_nome, p_email, p_telefone, p_nacionalidade, p_cpf, p_passaporte,
+            p_pais_passaporte, p_validade_passaporte, p_emissao_passaporte)
+    returning ID_HOSPEDE into v_hospede;
+  else  -- hóspede que volta: atualiza contato e documento com o que digitou agora
+    update SIT_HOSPEDE set NM_HOSPEDE = p_nome, DS_TELEFONE = coalesce(p_telefone, DS_TELEFONE),
+           SG_NACIONALIDADE = p_nacionalidade, CD_CPF = coalesce(p_cpf, CD_CPF),
+           CD_PASSAPORTE = coalesce(p_passaporte, CD_PASSAPORTE),
+           SG_PAIS_PASSAPORTE = coalesce(p_pais_passaporte, SG_PAIS_PASSAPORTE),
+           DT_VALIDADE_PASSAPORTE = coalesce(p_validade_passaporte, DT_VALIDADE_PASSAPORTE),
+           DT_EMISSAO_PASSAPORTE = coalesce(p_emissao_passaporte, DT_EMISSAO_PASSAPORTE)
+    where ID_HOSPEDE = v_hospede;
+  end if;
+
+  select p.NO_VERSAO_POLITICA into v_versao
+  from SIT_UNIDADE u join SIT_PROPRIEDADE p on p.ID_PROPRIEDADE = u.ID_PROPRIEDADE
+  where u.ID_UNIDADE = v_reserva.ID_UNIDADE;
+
+  return query
+  update SIT_RESERVA r set ID_HOSPEDE = v_hospede, TP_STATUS = 'CONFIRMADA', DT_EXPIRA = null,
+         NO_VERSAO_POLITICA = v_versao, DT_ACEITE_POLITICA = now(), DT_ATUALIZACAO = now()
+  where r.ID_RESERVA = v_reserva.ID_RESERVA
+  returning r.CD_RESERVA, r.VL_TOTAL, r.VL_SINAL;
+end;
+$$;
+
 -- Job periódico (pg_cron no Supabase): marca como expiradas as pré-reservas
 -- vencidas. A consulta de disponibilidade já ignora as vencidas; o job só
 -- mantém o status coerente para relatórios.
@@ -653,7 +734,9 @@ revoke all on function calcular_estadia(bigint, date, date, int, int, int)      
 revoke all on function consultar_disponibilidade(date, date, int, int, int)     from public, anon, authenticated;
 revoke all on function criar_pre_reserva(text, date, date, int, int, int)       from public, anon, authenticated;
 revoke all on function expirar_pre_reservas()                                   from public, anon, authenticated;
+revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date) from public, anon, authenticated;
 
 grant execute on function consultar_disponibilidade(date, date, int, int, int)  to anon, authenticated;
 grant execute on function criar_pre_reserva(text, date, date, int, int, int)    to service_role;
 grant execute on function expirar_pre_reservas()                                to service_role;
+grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date) to service_role;

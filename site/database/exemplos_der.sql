@@ -32,22 +32,19 @@ select 'SE-7F3A2C1D', 1, 1, '2026-12-23', '2026-12-26', 2, 1, 1, 'CONFIRMADA', '
        vl_hospedagem, vl_taxa_limpeza, vl_sinal, ds_detalhe, 1, '2026-11-18 10:12-03', '2026-11-18 10:12-03'
 from consultar_disponibilidade('2026-12-23', '2026-12-26', 2, 1, 1);
 
--- 2) Pré-reserva aguardando o Pix do sinal (segura as datas por 30 minutos)
+-- 2) Pré-reserva: o hóspede ainda está preenchendo a reserva no site (segura as datas por 30 minutos)
 insert into SIT_RESERVA (CD_RESERVA, ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,
                      TP_STATUS, TP_CANAL, VL_HOSPEDAGEM, VL_TAXA_LIMPEZA, VL_SINAL, DS_DETALHE_PRECOS, DT_EXPIRA, DT_CRIACAO)
 select 'SE-91B0E4A2', 1, 2, '2027-01-15', '2027-01-17', 2, 0, 0, 'PENDENTE', 'SITE',
        vl_hospedagem, vl_taxa_limpeza, vl_sinal, ds_detalhe, '2026-11-18 14:35-03', '2026-11-18 14:05-03'
 from consultar_disponibilidade('2027-01-15', '2027-01-17', 2, 0, 0);
 
--- Sinal da reserva 1 pago por Pix no site; saldo a receber em dinheiro no check-in
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, CD_EXTERNO, DT_PAGAMENTO, DT_CRIACAO)
-values (1, 'SINAL', 'MERCADO_PAGO', 'PIX', 3250.00, 'APROVADO', 'MP-1325849901', '2026-11-18 10:19-03', '2026-11-18 10:13-03');
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, DT_CRIACAO)
-values (1, 'SALDO', 'MANUAL', 'DINHEIRO', 3250.00, 'PENDENTE', '2026-11-18 10:19-03');
--- Pix do sinal da pré-reserva 2, ainda não pago
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, CD_EXTERNO, DS_PIX_COPIA_E_COLA, DT_EXPIRA, DT_CRIACAO)
-values (2, 'SINAL', 'MERCADO_PAGO', 'PIX', 1700.00, 'PENDENTE', 'MP-1325851177',
-        '00020126580014br.gov.bcb.pix0136…6304A1B2', '2026-11-18 14:35-03', '2026-11-18 14:05-03');
+-- A reserva 1 foi concluída no site; a equipe entrou em contato e lançou o sinal recebido por Pix.
+-- O saldo será pago no check-in. A reserva 2 ainda está sendo preenchida (sem pagamento).
+insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, DT_PAGAMENTO, CD_TRANSACAO,
+                           NM_REGISTRADO_POR, DS_OBSERVACAO, DT_CRIACAO)
+values (1, 'SINAL', 'MANUAL', 'PIX', 3250.00, 'RECEBIDO', '2026-11-18 16:40-03', 'E18236120202611181940s0a1b2c3d4',
+        'Carla (recepção)', 'Combinado por WhatsApp; Pix na chave da pousada', '2026-11-18 16:45-03');
 
 insert into SIT_CALENDARIO_EXTERNO (ID_UNIDADE, TP_CANAL, DS_URL_IMPORTACAO, DT_ULTIMA_SINCRONIZACAO)
 values (1, 'AIRBNB', 'https://www.airbnb.com.br/calendar/ical/000000.ics?s=…', '2026-11-18 14:00-03'),
