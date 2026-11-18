@@ -205,16 +205,39 @@ do $$ begin
   raise exception 'FALHOU: passaporte sem país aceito';
 exception when check_violation then raise notice 'ok  Passaporte exige o país que o emitiu';
 end $$;
-insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE)
-values ('John Test', 'john@exemplo.invalid', 'US', 'A1234567', 'US');
-insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE)
-values ('Juan Test', 'juan@exemplo.invalid', 'AR', 'A1234567', 'AR');
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE) values ('Sem validade', 'semval@exemplo.invalid', 'US', 'B7654321', 'US');
+  raise exception 'FALHOU: passaporte sem validade aceito';
+exception when check_violation then raise notice 'ok  Passaporte exige a data de validade';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+  values ('Datas trocadas', 'datas@exemplo.invalid', 'US', 'B7654321', 'US', '2030-01-01', '2020-01-01');
+  raise exception 'FALHOU: validade antes da emissão aceita';
+exception when check_violation then raise notice 'ok  Validade do passaporte depois da emissão';
+end $$;
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+values ('John Test', 'john@exemplo.invalid', 'US', 'A1234567', 'US', '2020-03-10', '2030-03-09');
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+values ('Juan Test', 'juan@exemplo.invalid', 'AR', 'A1234567', 'AR', '2027-07-31');
 select 'ok  Estrangeiro com passaporte e país é aceito; mesmo número em país diferente também';
 do $$ begin
-  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE) values ('Duplicado', 'dup@exemplo.invalid', 'US', 'A1234567', 'US');
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE) values ('Duplicado', 'dup@exemplo.invalid', 'US', 'A1234567', 'US', '2031-01-01');
   raise exception 'FALHOU: passaporte repetido no mesmo país aceito';
 exception when unique_violation then raise notice 'ok  O mesmo passaporte do mesmo país não é cadastrado duas vezes';
 end $$;
+do $$ begin
+  -- passaporte do Juan vence em 31/07/2027: estadia até 02/08 é recusada
+  insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
+  select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-30', '2027-08-02', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+  from UNIDADE u, HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+  raise exception 'FALHOU: reserva com passaporte vencido aceita';
+exception when check_violation then raise notice 'ok  Reserva recusada se o passaporte vence antes da saída (%)', sqlerrm;
+end $$;
+insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
+select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-27', '2027-07-30', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+from UNIDADE u, HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+select 'ok  Reserva aceita quando o passaporte vale até a saída';
 
 \echo '── Proteção contra overbooking no próprio banco'
 do $$ begin

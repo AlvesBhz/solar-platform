@@ -12,8 +12,8 @@ C0, C1, C2, C3 = 20, 440, 860, 1280
 
 POS = {
   'TARIFA': (C0, 20), 'PROPRIEDADE': (C0, 379), 'UNIDADE': (C1, 360), 'AJUSTE_DIARIO': (C1, 680),
-  'RESERVA': (C2, 40), 'BLOQUEIO': (C2, 560),
-  'PAGAMENTO': (C3, 21), 'HOSPEDE': (C3, 420), 'CALENDARIO_EXTERNO': (C3, 655),
+  'RESERVA': (C2, 40), 'BLOQUEIO': (C2, 595),
+  'PAGAMENTO': (C3, 21), 'HOSPEDE': (C3, 420), 'CALENDARIO_EXTERNO': (C3, 690),
 }
 GROUP = {'PROPRIEDADE': 'cad', 'UNIDADE': 'cad', 'TARIFA': 'pre', 'AJUSTE_DIARIO': 'pre',
          'RESERVA': 'ven', 'HOSPEDE': 'ven', 'PAGAMENTO': 'ven', 'CALENDARIO_EXTERNO': 'can', 'BLOQUEIO': 'can'}
@@ -147,8 +147,8 @@ RULES = {
  'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
  'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
  'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
- 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE; único por país.', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
- 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],
+ 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
+ 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_RESERVA_PASSAPORTE).'],
  'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
  'CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
  'BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
@@ -221,6 +221,8 @@ CAMPO = {
   'CD_CPF': 'CPF só com os 11 dígitos; obrigatório para brasileiro, opcional para estrangeiro.',
   'CD_PASSAPORTE': 'Número do passaporte; obrigatório para estrangeiro.',
   'SG_PAIS_PASSAPORTE': 'País que emitiu o passaporte; obrigatório junto com ele.',
+  'DT_EMISSAO_PASSAPORTE': 'Data de emissão do passaporte (opcional).',
+  'DT_VALIDADE_PASSAPORTE': 'Data de validade; precisa cobrir a estadia até o dia da saída.',
   'DT_CRIACAO': 'Primeiro contato com a pousada.',
  },
  'RESERVA': {
@@ -374,16 +376,16 @@ ajuste_html = (
 # ── painel de detalhe (aparece abaixo do diagrama ao clicar numa tabela) ──
 for _n in ORDER:
     assert set(CAMPO[_n]) == {c['n'] for c in T[_n]['cols']}, (_n, set(CAMPO[_n]) ^ {c['n'] for c in T[_n]['cols']})
-COND = {('HOSPEDE', 'CD_CPF'): 'se brasileiro', ('HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte'}
+COND = {('HOSPEDE', 'CD_CPF'): 'se brasileiro', ('HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
 paineis = []
 for n in ORDER:
-    t = T[n]; g = GROUP[n]; r0 = EX[n][0]
+    t = T[n]; g = GROUP[n]; rs = EX[n][:2]; caps = CAP[n][:2]
     linhas = []
     for c in t['cols']:
         kk = ('<span class="k kp">PK</span> ' if c['pk'] else '') + ('<span class="k kf">FK</span> ' if c['fk'] else '')
         ob = 'gerado' if c['gen'] else ('auto' if c['ident'] else ('sim' if c['req'] else 'não'))
         ob = COND.get((n, c['n']), ob)
-        linhas.append(f'<tr><th scope="row">{kk}{c["n"]}</th><td class="ty">{esc(c["ty"])}</td><td>{ob}</td><td class="ds">{esc(CAMPO[n][c["n"]])}</td><td{LONG(r0[c["n"].lower()])}>{fmt(c["n"], r0[c["n"].lower()])}</td></tr>')
+        linhas.append(f'<tr><th scope="row">{kk}{c["n"]}</th><td class="ty">{esc(c["ty"])}</td><td>{ob}</td><td class="ds">{esc(CAMPO[n][c["n"]])}</td>' + ''.join(f'<td class="exv{" long" if LONG(r[c["n"].lower()]) else ""}" data-l="{esc(cp)}">{fmt(c["n"], r[c["n"].lower()])}</td>' for r, cp in zip(rs, caps)) + '</tr>')
     lig = []
     for l in L:
         if l['c'] == n:
@@ -393,10 +395,10 @@ for n in ORDER:
             lig.append(f'<li>{l["c"]}.<code>{l["f"]}</code> <i>({esc(l["lbl"])})</i>: cada {n} pode ter zero ou vários {l["c"]}.</li>')
     extra = '<p class="dlink"><a href="#como-ajuste">Ver o passo a passo do cálculo com o ajuste ↓</a></p>' if n == 'AJUSTE_DIARIO' else ''
     paineis.append(f'''<template id="d-{n}"><div class="dt g-{g}">
-  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span><span class="dmeta">{len(t['cols'])} campos · exemplo: {esc(CAP[n][0])}</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
+  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span><span class="dmeta">{len(t['cols'])} campos</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
   <p class="purpose">{esc(PURPOSE[n])}</p>{extra}
   <div class="dgrid">
-    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th><th>Exemplo</th></tr></thead><tbody>{''.join(linhas)}</tbody></table></div>
+    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th>{''.join(f'<th>Exemplo: {esc(cp)}</th>' for cp in caps)}</tr></thead><tbody>{''.join(linhas)}</tbody></table></div>
     <aside><div><h4>Ligações</h4><ul>{''.join(lig)}</ul></div><div><h4>Regras</h4><ul>{''.join(f'<li>{esc(r)}</li>' for r in RULES[n])}</ul></div></aside>
   </div>
 </div></template>''')
@@ -493,6 +495,7 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 .dtab td.ds {{ white-space: normal; min-width: 26ch; color: var(--fg); }}
 .dtab td.ty {{ font-family: var(--mono); font-size: 11.5px; color: var(--muted); }}
 .dtab td.long {{ white-space: normal; overflow-wrap: anywhere; min-width: 20ch; }}
+.dtab thead th {{ white-space: normal; }}
 .dtab tbody tr:nth-child(even) {{ background: var(--zebra); }}
 .dt aside {{ font-size: 13px; color: var(--fg); }}
 @media (max-width: 720px) {{
@@ -501,8 +504,8 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
   .dtab tr {{ display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }}
   .dtab th, .dtab td {{ border: 0; padding: 0; white-space: normal; }}
   .dtab td:nth-child(3) {{ display: none; }}
-  .dtab td.ds, .dtab td:last-child {{ grid-column: 1 / -1; min-width: 0; }}
-  .dtab td:last-child::before {{ content: "Exemplo: "; color: var(--muted); }}
+  .dtab td.ds, .dtab td.exv {{ grid-column: 1 / -1; min-width: 0; }}
+  .dtab td.exv::before {{ content: attr(data-l) ": "; color: var(--muted); }}
 }}
 .dt aside h4 {{ margin: 0 0 4px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }}
 .dt aside ul {{ margin: 0 0 14px; padding-left: 18px; display: grid; gap: 4px; }}

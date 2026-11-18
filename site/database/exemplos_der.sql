@@ -20,8 +20,9 @@ values (1, '2027-03-17', true, 'Folga da equipe: noite fora da venda');
 -- Brasileira com CPF e estrangeiro com passaporte (números fictícios)
 insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_CPF)
 values ('Ana Souza', 'ana.souza@exemplo.com', '+55 31 99999-0001', 'BR', '52998224725');
-insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE)
-values ('John Miller', 'john.miller@exemplo.com', '+1 415 555-0102', 'US', 'X12345678', 'US');
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE,
+                     DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+values ('John Miller', 'john.miller@exemplo.com', '+1 415 555-0102', 'US', 'X12345678', 'US', '2020-03-10', '2030-03-09');
 
 -- 1) Reserva confirmada no site: 23 a 26/12, casal + 1 criança + 1 bebê
 insert into RESERVA (CD_RESERVA, ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,

@@ -167,14 +167,19 @@ create table HOSPEDE (
   CD_CPF              text,                          -- só os 11 dígitos, sem pontos
   CD_PASSAPORTE       text,                          -- letras maiúsculas e números
   SG_PAIS_PASSAPORTE  char(2),                       -- país que emitiu o passaporte
+  DT_EMISSAO_PASSAPORTE  date,                       -- opcional
+  DT_VALIDADE_PASSAPORTE date,                       -- obrigatória com passaporte
   DT_CRIACAO          timestamptz not null default now(),
   constraint PK_HOSPEDE primary key (ID_HOSPEDE),
   constraint CK_HOSPEDE_NACIONALIDADE check (SG_NACIONALIDADE ~ '^[A-Z]{2}$'),
   constraint CK_HOSPEDE_CPF check (CD_CPF is null or cpf_valido(CD_CPF)),
   constraint CK_HOSPEDE_PASSAPORTE check (CD_PASSAPORTE is null or CD_PASSAPORTE ~ '^[A-Z0-9]{5,20}$'),
-  -- passaporte e país andam juntos
+  -- passaporte, país e validade andam juntos; emissão só com passaporte
   constraint CK_HOSPEDE_PAIS_PASSAPORTE check ((CD_PASSAPORTE is null) = (SG_PAIS_PASSAPORTE is null)
                                                and (SG_PAIS_PASSAPORTE is null or SG_PAIS_PASSAPORTE ~ '^[A-Z]{2}$')),
+  constraint CK_HOSPEDE_VALIDADE_PASSAPORTE check ((CD_PASSAPORTE is null) = (DT_VALIDADE_PASSAPORTE is null)
+                                                   and (DT_EMISSAO_PASSAPORTE is null or CD_PASSAPORTE is not null)),
+  constraint CK_HOSPEDE_DATAS_PASSAPORTE check (DT_EMISSAO_PASSAPORTE is null or DT_VALIDADE_PASSAPORTE > DT_EMISSAO_PASSAPORTE),
   -- brasileiro: CPF obrigatório; estrangeiro: passaporte obrigatório
   constraint CK_HOSPEDE_DOCUMENTO check (case when SG_NACIONALIDADE = 'BR' then CD_CPF is not null
                                               else CD_PASSAPORTE is not null end),
@@ -241,6 +246,34 @@ create table RESERVA (
     where (TP_STATUS in ('PENDENTE', 'CONFIRMADA'))
 );
 create index IX_RESERVA_ID_HOSPEDE on RESERVA (ID_HOSPEDE);
+
+-- Estrangeiro: o passaporte precisa valer até o dia da saída. Conferido
+-- quando a reserva ativa ganha hóspede ou muda de datas (a validade é
+-- comparada com a estadia, por isso não cabe numa regra da HOSPEDE).
+create or replace function verificar_passaporte_reserva()
+returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
+declare v_validade date;
+begin
+  if new.ID_HOSPEDE is null or new.TP_STATUS not in ('PENDENTE', 'CONFIRMADA') then
+    return new;
+  end if;
+  select h.DT_VALIDADE_PASSAPORTE into v_validade
+  from HOSPEDE h where h.ID_HOSPEDE = new.ID_HOSPEDE and h.SG_NACIONALIDADE <> 'BR';
+  if v_validade is not null and v_validade < new.DT_CHECKOUT then
+    raise exception 'passaporte_vencido'
+      using errcode = 'check_violation',
+            detail = format('Passaporte vale até %s; a estadia termina em %s.', v_validade, new.DT_CHECKOUT);
+  end if;
+  return new;
+end;
+$$;
+create trigger TG_RESERVA_PASSAPORTE
+  before insert or update of ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, TP_STATUS on RESERVA
+  for each row execute function verificar_passaporte_reserva();
+revoke all on function verificar_passaporte_reserva() from public, anon, authenticated;
 create index IX_RESERVA_ID_RESERVA_ORIGINAL on RESERVA (ID_RESERVA_ORIGINAL);
 create index IX_RESERVA_PERIODO on RESERVA using gist (ID_UNIDADE, daterange(DT_CHECKIN, DT_CHECKOUT));
 create index IX_RESERVA_PENDENTE_EXPIRA on RESERVA (DT_EXPIRA) where TP_STATUS = 'PENDENTE';
