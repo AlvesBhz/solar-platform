@@ -8,7 +8,9 @@ Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chal
 |---|---|
 | `schema.sql` | Tabelas, regras, funções e segurança |
 | `seed_exemplo.sql` | Dados iniciais reais: a pousada, o chalé e a tarifa padrão |
-| `testes.sql` | 28 cenários de preço, regras de venda, ocupação, pré-reserva e pagamento (cria os próprios dados de teste) |
+| `testes.sql` | 50 verificações de preço, bebê, regras de venda, ocupação, pré-reserva, pagamento, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
+| `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
+| `exportar_estrutura.sql` / `gerar_der.py` | Extraem a estrutura do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
 | `supabase_simulado.sql` | Recria as permissões padrão do Supabase num PostgreSQL comum, só para os testes |
 
@@ -50,7 +52,7 @@ erDiagram
 | `PAGAMENTO` | Tentativas de pagamento de cada parcela (`TP_PARCELA`: SINAL no site, SALDO no check-in): Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
 | `BLOQUEIO` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas do Airbnb/Booking |
 | `CALENDARIO_EXTERNO` | Links iCal do Airbnb e do Booking, importados periodicamente para `BLOQUEIO` |
-| `HOSPEDE` | Nome, e-mail e telefone; só o necessário (LGPD) |
+| `HOSPEDE` | Nome, contato e documento da FNRH: CPF para brasileiro, passaporte (com o país) para estrangeiro |
 
 ## Como a disponibilidade e o preço são calculados
 
@@ -148,6 +150,8 @@ Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in �
 Proposta aguardando aprovação: remarcar até 7 dias antes do check-in (`QTDE_DIAS_LIMITE_REMARCACAO`), crédito válido por 12 meses (`QTDE_MESES_VALIDADE_CREDITO`), diferença paga se a nova data for mais cara e não devolvida se for mais barata.
 
 Propostas aguardando aprovação (detalhadas no dicionário de dados, com fontes): política de cancelamento (devolução integral em até 7 dias da reserva, remarcação sem custo com 7+ dias de antecedência, retenção do sinal ou de 20% do total na desistência sem remarcar) e tarifa dinâmica por regras (fator por tipo de data, desconto de antecedência, piso e teto; tabelas TIPO_DATA, DATA_ESPECIAL e REGRA_ANTECEDENCIA ainda não criadas).
+
+Documento do hóspede (18/11/2026): a FNRH digital é obrigatória desde 20/04/2026 e pede o documento de cada hóspede. `HOSPEDE` ganhou `SG_NACIONALIDADE` (padrão BR), `CD_CPF`, `CD_PASSAPORTE` e `SG_PAIS_PASSAPORTE`. Brasileiro exige CPF válido (dígitos verificadores conferidos pela função `cpf_valido`); estrangeiro exige passaporte com o país emissor. CPF único; passaporte único por país. O CPF **não** é a chave: `ID_HOSPEDE` continua como número interno, porque estrangeiro não tem CPF, a pré-reserva nasce antes do documento e a chave é copiada para outras tabelas (LGPD). O documento é exigido quando o hóspede é cadastrado, isto é, no fechamento da reserva.
 
 Diagrama: `der.html` nesta pasta (abre no navegador).
 

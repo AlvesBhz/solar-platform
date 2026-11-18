@@ -138,13 +138,48 @@ create table AJUSTE_DIARIO (
 
 -- ── HOSPEDE: quem reserva ───────────────────────────────────────────
 
+-- Documento do hóspede (FNRH digital, obrigatória desde 20/04/2026):
+-- brasileiro informa CPF; estrangeiro informa passaporte e o país que o
+-- emitiu. O CPF NÃO é a chave: estrangeiro não tem CPF, a pré-reserva
+-- nasce antes do documento e a chave se espalha pelas FKs (LGPD).
+create or replace function cpf_valido(p_cpf text)
+returns boolean
+language sql
+immutable
+strict
+set search_path = public, pg_temp
+as $$
+  -- 11 dígitos, não todos iguais, e os 2 dígitos verificadores corretos
+  select p_cpf ~ '^[0-9]{11}$'
+     and p_cpf !~ '^(.)\1{10}$'
+     and (select (sum(substr(p_cpf, i, 1)::int * (11 - i)) * 10 % 11) % 10 from generate_series(1, 9) i)
+         = substr(p_cpf, 10, 1)::int
+     and (select (sum(substr(p_cpf, i, 1)::int * (12 - i)) * 10 % 11) % 10 from generate_series(1, 10) i)
+         = substr(p_cpf, 11, 1)::int
+$$;
+
 create table HOSPEDE (
-  ID_HOSPEDE   bigint generated always as identity,
-  NM_HOSPEDE   text not null,
-  DS_EMAIL     text not null,
-  DS_TELEFONE  text,
-  DT_CRIACAO   timestamptz not null default now(),
-  constraint PK_HOSPEDE primary key (ID_HOSPEDE)
+  ID_HOSPEDE          bigint generated always as identity,
+  NM_HOSPEDE          text not null,
+  DS_EMAIL            text not null,
+  DS_TELEFONE         text,
+  SG_NACIONALIDADE    char(2) not null default 'BR',  -- ISO 3166-1: BR, US, AR...
+  CD_CPF              text,                          -- só os 11 dígitos, sem pontos
+  CD_PASSAPORTE       text,                          -- letras maiúsculas e números
+  SG_PAIS_PASSAPORTE  char(2),                       -- país que emitiu o passaporte
+  DT_CRIACAO          timestamptz not null default now(),
+  constraint PK_HOSPEDE primary key (ID_HOSPEDE),
+  constraint CK_HOSPEDE_NACIONALIDADE check (SG_NACIONALIDADE ~ '^[A-Z]{2}$'),
+  constraint CK_HOSPEDE_CPF check (CD_CPF is null or cpf_valido(CD_CPF)),
+  constraint CK_HOSPEDE_PASSAPORTE check (CD_PASSAPORTE is null or CD_PASSAPORTE ~ '^[A-Z0-9]{5,20}$'),
+  -- passaporte e país andam juntos
+  constraint CK_HOSPEDE_PAIS_PASSAPORTE check ((CD_PASSAPORTE is null) = (SG_PAIS_PASSAPORTE is null)
+                                               and (SG_PAIS_PASSAPORTE is null or SG_PAIS_PASSAPORTE ~ '^[A-Z]{2}$')),
+  -- brasileiro: CPF obrigatório; estrangeiro: passaporte obrigatório
+  constraint CK_HOSPEDE_DOCUMENTO check (case when SG_NACIONALIDADE = 'BR' then CD_CPF is not null
+                                              else CD_PASSAPORTE is not null end),
+  constraint UQ_HOSPEDE_CPF unique (CD_CPF),
+  constraint UQ_HOSPEDE_PASSAPORTE unique (SG_PAIS_PASSAPORTE, CD_PASSAPORTE)
 );
 create unique index UQ_HOSPEDE_DS_EMAIL on HOSPEDE (lower(DS_EMAIL));
 

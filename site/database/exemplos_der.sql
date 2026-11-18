@@ -17,9 +17,11 @@ values (1, '2027-02-06', true, 'Sábado de Carnaval: ninguém faz check-in neste
 insert into AJUSTE_DIARIO (ID_UNIDADE, DT_REF, SG_FECHADO, DS_OBSERVACAO)
 values (1, '2027-03-17', true, 'Folga da equipe: noite fora da venda');
 
-insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE)
-values ('Ana Souza', 'ana.souza@exemplo.com', '+55 31 99999-0001'),
-       ('Bruno Lima', 'bruno.lima@exemplo.com', '+55 11 98888-0002');
+-- Brasileira com CPF e estrangeiro com passaporte (números fictícios)
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_CPF)
+values ('Ana Souza', 'ana.souza@exemplo.com', '+55 31 99999-0001', 'BR', '52998224725');
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, DS_TELEFONE, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE)
+values ('John Miller', 'john.miller@exemplo.com', '+1 415 555-0102', 'US', 'X12345678', 'US');
 
 -- 1) Reserva confirmada no site: 23 a 26/12, casal + 1 criança + 1 bebê
 insert into RESERVA (CD_RESERVA, ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, QTDE_BEBES,

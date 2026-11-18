@@ -147,7 +147,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
       <h1>DER das Reservas</h1>
       <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026</p>
     </div>
-    <div class="stats"><span><b>9</b> tabelas</span><span><b>107</b> campos</span><span><b>10</b> ligações</span><span><b>42</b> regras</span></div>
+    <div class="stats"><span><b>9</b> tabelas</span><span><b>111</b> campos</span><span><b>10</b> ligações</span><span><b>49</b> regras</span></div>
   </header>
 
   <div class="legend" aria-label="Legenda">
@@ -511,7 +511,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <text class="ctype" x="1600" y="283.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-ven" data-t="HOSPEDE" tabindex="0" role="button" aria-label="Tabela HOSPEDE">
-<rect class="box" x="1280" y="420" width="330" height="135" rx="6"/>
+<rect class="box" x="1280" y="420" width="330" height="211" rx="6"/>
 <path class="head" d="M1280,460 V426 Q1280,420 1286,420 H1604 Q1610,420 1610,426 V460 Z"/>
 <text class="tname" x="1292" y="445">HOSPEDE</text>
 <text class="tgroup" x="1598" y="445" text-anchor="end">VENDA</text>
@@ -526,8 +526,18 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 <rect class="zebra" x="1281" y="517" width="328" height="19"/>
 <text class="cname opt" x="1324" y="530.5">DS_TELEFONE?</text>
 <text class="ctype" x="1600" y="530.5" text-anchor="end">text</text>
-<text class="cname" x="1324" y="549.5">DT_CRIACAO</text>
-<text class="ctype" x="1600" y="549.5" text-anchor="end">timestamptz</text>
+<text class="cname" x="1324" y="549.5">SG_NACIONALIDADE</text>
+<text class="ctype" x="1600" y="549.5" text-anchor="end">char(2)</text>
+<rect class="zebra" x="1281" y="555" width="328" height="19"/>
+<text class="cname opt" x="1324" y="568.5">CD_CPF?</text>
+<text class="ctype" x="1600" y="568.5" text-anchor="end">text</text>
+<text class="cname opt" x="1324" y="587.5">CD_PASSAPORTE?</text>
+<text class="ctype" x="1600" y="587.5" text-anchor="end">text</text>
+<rect class="zebra" x="1281" y="593" width="328" height="19"/>
+<text class="cname opt" x="1324" y="606.5">SG_PAIS_PASSAPORTE?</text>
+<text class="ctype" x="1600" y="606.5" text-anchor="end">char(2)</text>
+<text class="cname" x="1324" y="625.5">DT_CRIACAO</text>
+<text class="ctype" x="1600" y="625.5" text-anchor="end">timestamptz</text>
 </g>
 <g class="tbl g-can" data-t="CALENDARIO_EXTERNO" tabindex="0" role="button" aria-label="Tabela CALENDARIO_EXTERNO">
 <rect class="box" x="1280" y="655" width="330" height="173" rx="6"/>
@@ -598,11 +608,11 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
   </div>
 </div></template>
 <template id="d-HOSPEDE"><div class="dt g-ven">
-  <header><h3>HOSPEDE</h3><span class="chip">VENDA</span><span class="dmeta">5 campos · exemplo: Hóspede da reserva 1</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
-  <p class="purpose">Quem reserva: só nome, e-mail e telefone (LGPD).</p>
+  <header><h3>HOSPEDE</h3><span class="chip">VENDA</span><span class="dmeta">9 campos · exemplo: Brasileira, com CPF (reserva 1)</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
+  <p class="purpose">Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).</p>
   <div class="dgrid">
-    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th><th>Exemplo</th></tr></thead><tbody><tr><th scope="row"><span class="k kp">PK</span> ID_HOSPEDE</th><td class="ty">bigint</td><td>auto</td><td class="ds">Número interno do hóspede.</td><td>1</td></tr><tr><th scope="row">NM_HOSPEDE</th><td class="ty">text</td><td>sim</td><td class="ds">Nome completo de quem reserva.</td><td>Ana Souza</td></tr><tr><th scope="row">DS_EMAIL</th><td class="ty">text</td><td>sim</td><td class="ds">E-mail para confirmação; único, sem diferenciar maiúsculas.</td><td>ana.souza@exemplo.com</td></tr><tr><th scope="row">DS_TELEFONE</th><td class="ty">text</td><td>não</td><td class="ds">Telefone/WhatsApp para contato.</td><td>+55 31 99999-0001</td></tr><tr><th scope="row">DT_CRIACAO</th><td class="ty">timestamptz</td><td>sim</td><td class="ds">Primeiro contato com a pousada.</td><td>18/11/2026 10:12</td></tr></tbody></table></div>
-    <aside><div><h4>Ligações</h4><ul><li>RESERVA.<code>ID_HOSPEDE</code> <i>(feita por)</i>: cada HOSPEDE pode ter zero ou vários RESERVA.</li></ul></div><div><h4>Regras</h4><ul><li>E-mail único, sem diferenciar maiúsculas de minúsculas.</li></ul></div></aside>
+    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th><th>Exemplo</th></tr></thead><tbody><tr><th scope="row"><span class="k kp">PK</span> ID_HOSPEDE</th><td class="ty">bigint</td><td>auto</td><td class="ds">Número interno do hóspede.</td><td>1</td></tr><tr><th scope="row">NM_HOSPEDE</th><td class="ty">text</td><td>sim</td><td class="ds">Nome completo de quem reserva.</td><td>Ana Souza</td></tr><tr><th scope="row">DS_EMAIL</th><td class="ty">text</td><td>sim</td><td class="ds">E-mail para confirmação; único, sem diferenciar maiúsculas.</td><td>ana.souza@exemplo.com</td></tr><tr><th scope="row">DS_TELEFONE</th><td class="ty">text</td><td>não</td><td class="ds">Telefone/WhatsApp para contato.</td><td>+55 31 99999-0001</td></tr><tr><th scope="row">SG_NACIONALIDADE</th><td class="ty">char(2)</td><td>sim</td><td class="ds">País de nacionalidade, 2 letras (BR, US, AR...). Define qual documento é obrigatório.</td><td>BR</td></tr><tr><th scope="row">CD_CPF</th><td class="ty">text</td><td>se brasileiro</td><td class="ds">CPF só com os 11 dígitos; obrigatório para brasileiro, opcional para estrangeiro.</td><td>52998224725</td></tr><tr><th scope="row">CD_PASSAPORTE</th><td class="ty">text</td><td>se estrangeiro</td><td class="ds">Número do passaporte; obrigatório para estrangeiro.</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">SG_PAIS_PASSAPORTE</th><td class="ty">char(2)</td><td>com passaporte</td><td class="ds">País que emitiu o passaporte; obrigatório junto com ele.</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">DT_CRIACAO</th><td class="ty">timestamptz</td><td>sim</td><td class="ds">Primeiro contato com a pousada.</td><td>18/11/2026 10:12</td></tr></tbody></table></div>
+    <aside><div><h4>Ligações</h4><ul><li>RESERVA.<code>ID_HOSPEDE</code> <i>(feita por)</i>: cada HOSPEDE pode ter zero ou vários RESERVA.</li></ul></div><div><h4>Regras</h4><ul><li>E-mail único, sem diferenciar maiúsculas de minúsculas.</li><li>Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.</li><li>CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.</li><li>Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE; único por país.</li><li>O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).</li></ul></div></aside>
   </div>
 </div></template>
 <template id="d-PAGAMENTO"><div class="dt g-ven">
@@ -665,9 +675,9 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </article>
 <article class="tcard g-ven" id="t-HOSPEDE" data-t="HOSPEDE">
   <header><h3>HOSPEDE</h3><span class="chip">VENDA</span></header>
-  <p class="purpose">Quem reserva: só nome, e-mail e telefone (LGPD).</p>
-  <p class="meta">5 campos · ligada a RESERVA</p>
-  <ul><li>E-mail único, sem diferenciar maiúsculas de minúsculas.</li></ul>
+  <p class="purpose">Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).</p>
+  <p class="meta">9 campos · ligada a RESERVA</p>
+  <ul><li>E-mail único, sem diferenciar maiúsculas de minúsculas.</li><li>Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.</li><li>CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.</li><li>Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE; único por país.</li><li>O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).</li></ul>
 </article>
 <article class="tcard g-ven" id="t-PAGAMENTO" data-t="PAGAMENTO">
   <header><h3>PAGAMENTO</h3><span class="chip">VENDA</span></header>
@@ -738,7 +748,7 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 </section>
 <section class="ex g-ven" id="e-HOSPEDE" data-t="HOSPEDE">
   <header><h3>HOSPEDE</h3><span class="chip">VENDA</span></header>
-  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Hóspede da reserva 1</th><th scope="col">Hóspede da reserva 2</th></tr></thead><tbody><tr><th scope="row">ID_HOSPEDE</th><td>1</td><td>2</td></tr><tr><th scope="row">NM_HOSPEDE</th><td>Ana Souza</td><td>Bruno Lima</td></tr><tr><th scope="row">DS_EMAIL</th><td>ana.souza@exemplo.com</td><td>bruno.lima@exemplo.com</td></tr><tr><th scope="row">DS_TELEFONE</th><td>+55 31 99999-0001</td><td>+55 11 98888-0002</td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 10:12</td><td>18/11/2026 14:05</td></tr></tbody></table></div>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Brasileira, com CPF (reserva 1)</th><th scope="col">Estrangeiro, com passaporte (reserva 2)</th></tr></thead><tbody><tr><th scope="row">ID_HOSPEDE</th><td>1</td><td>2</td></tr><tr><th scope="row">NM_HOSPEDE</th><td>Ana Souza</td><td>John Miller</td></tr><tr><th scope="row">DS_EMAIL</th><td>ana.souza@exemplo.com</td><td>john.miller@exemplo.com</td></tr><tr><th scope="row">DS_TELEFONE</th><td>+55 31 99999-0001</td><td>+1 415 555-0102</td></tr><tr><th scope="row">SG_NACIONALIDADE</th><td>BR</td><td>US</td></tr><tr><th scope="row">CD_CPF</th><td>52998224725</td><td><span class="nul">vazio</span></td></tr><tr><th scope="row">CD_PASSAPORTE</th><td><span class="nul">vazio</span></td><td>X12345678</td></tr><tr><th scope="row">SG_PAIS_PASSAPORTE</th><td><span class="nul">vazio</span></td><td>US</td></tr><tr><th scope="row">DT_CRIACAO</th><td>18/11/2026 10:12</td><td>18/11/2026 14:05</td></tr></tbody></table></div>
 </section>
 <section class="ex g-ven" id="e-PAGAMENTO" data-t="PAGAMENTO">
   <header><h3>PAGAMENTO</h3><span class="chip">VENDA</span></header>

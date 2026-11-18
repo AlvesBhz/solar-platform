@@ -136,7 +136,7 @@ PURPOSE = {
  'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
  'TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
- 'HOSPEDE': 'Quem reserva: só nome, e-mail e telefone (LGPD).',
+ 'HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
  'RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
  'PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
  'CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
@@ -147,7 +147,7 @@ RULES = {
  'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
  'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
  'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
- 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.'],
+ 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE; único por país.', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
  'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],
  'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
  'CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
@@ -217,6 +217,10 @@ CAMPO = {
   'NM_HOSPEDE': 'Nome completo de quem reserva.',
   'DS_EMAIL': 'E-mail para confirmação; único, sem diferenciar maiúsculas.',
   'DS_TELEFONE': 'Telefone/WhatsApp para contato.',
+  'SG_NACIONALIDADE': 'País de nacionalidade, 2 letras (BR, US, AR...). Define qual documento é obrigatório.',
+  'CD_CPF': 'CPF só com os 11 dígitos; obrigatório para brasileiro, opcional para estrangeiro.',
+  'CD_PASSAPORTE': 'Número do passaporte; obrigatório para estrangeiro.',
+  'SG_PAIS_PASSAPORTE': 'País que emitiu o passaporte; obrigatório junto com ele.',
   'DT_CRIACAO': 'Primeiro contato com a pousada.',
  },
  'RESERVA': {
@@ -315,7 +319,7 @@ CAP = {
  'PROPRIEDADE': ['A pousada'], 'UNIDADE': ['O chalé'],
  'TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
  'AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
- 'HOSPEDE': ['Hóspede da reserva 1', 'Hóspede da reserva 2'],
+ 'HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
  'RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
  'PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
  'CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
@@ -370,6 +374,7 @@ ajuste_html = (
 # ── painel de detalhe (aparece abaixo do diagrama ao clicar numa tabela) ──
 for _n in ORDER:
     assert set(CAMPO[_n]) == {c['n'] for c in T[_n]['cols']}, (_n, set(CAMPO[_n]) ^ {c['n'] for c in T[_n]['cols']})
+COND = {('HOSPEDE', 'CD_CPF'): 'se brasileiro', ('HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte'}
 paineis = []
 for n in ORDER:
     t = T[n]; g = GROUP[n]; r0 = EX[n][0]
@@ -377,6 +382,7 @@ for n in ORDER:
     for c in t['cols']:
         kk = ('<span class="k kp">PK</span> ' if c['pk'] else '') + ('<span class="k kf">FK</span> ' if c['fk'] else '')
         ob = 'gerado' if c['gen'] else ('auto' if c['ident'] else ('sim' if c['req'] else 'não'))
+        ob = COND.get((n, c['n']), ob)
         linhas.append(f'<tr><th scope="row">{kk}{c["n"]}</th><td class="ty">{esc(c["ty"])}</td><td>{ob}</td><td class="ds">{esc(CAMPO[n][c["n"]])}</td><td{LONG(r0[c["n"].lower()])}>{fmt(c["n"], r0[c["n"].lower()])}</td></tr>')
     lig = []
     for l in L:
