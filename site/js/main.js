@@ -233,6 +233,7 @@ const Booking = (() => {
       if (s.babies)   parts.push(`${s.babies} ${I18N.t(s.babies === 1 ? 'Bebê' : 'Bebês')}`);
       g.textContent = parts.join(', ');
     }
+    if (window.Disponibilidade) Disponibilidade.estadoMudou();
   }
 
   /* ── Fecha popovers ── */
@@ -539,6 +540,7 @@ function setLang(l) {
   Booking.close();
   Booking.updateDisplays();
   if (window.refreshFilterLabel) window.refreshFilterLabel();
+  if (window.Disponibilidade) Disponibilidade.idiomaMudou();
 }
 
 // inicializa no idioma escolhido na última visita (padrão: PT)
@@ -768,7 +770,8 @@ document.addEventListener('click', function(e) {
   // o clique foi dentro do popup — não fechar.
   if (!e.target.isConnected) return;
   var bar = document.getElementById('bookingBar');
-  if (bar && !bar.contains(e.target)) closeBkPopup();
+  var res = document.getElementById('bkResult');
+  if (bar && !bar.contains(e.target) && !(res && res.contains(e.target))) closeBkPopup();
 });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBkPopup(); });
 
