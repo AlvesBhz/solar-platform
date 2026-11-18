@@ -1,14 +1,17 @@
 # Gera o DER das Vistorias (database/der.html) e o dicionário de dados (database/dicionario-de-dados.md).
 # Mesmo modelo visual do DER das Reservas (site/database/gerar_der.py) e integrado ao banco do site:
-# PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são lidas de site/database/schema.sql (fonte única).
+# SIT_PROPRIEDADE, SIT_UNIDADE, SIT_RESERVA e SIT_BLOQUEIO são lidas de site/database/schema.sql (fonte única).
 # Uso (a partir de solar-inspect): python3 -I tools/gerar-der.py
+import ast
 import html
 import json
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 APP = Path(__file__).resolve().parent.parent
-SITE_SQL = APP.parent / "site" / "database" / "schema.sql"
+SITE_DIR = APP.parent / "site" / "database"
+SITE_SQL = SITE_DIR / "schema.sql"
 VERSAO = "proposta v2, 18/11/2026"
 
 
@@ -41,6 +44,18 @@ def ler_site():
 
 
 SITE = ler_site()
+
+
+def ler_campos_site():
+    arv = ast.parse((SITE_DIR / "gerar_der.py").read_text(encoding="utf-8"))
+    for no in arv.body:
+        if isinstance(no, ast.Assign) and any(getattr(t, "id", "") == "CAMPO" for t in no.targets):
+            return ast.literal_eval(no.value)
+    raise SystemExit("CAMPO não encontrado em site/database/gerar_der.py")
+
+
+CAMPO_SITE = ler_campos_site()
+EX_SITE = json.loads((SITE_DIR / "exemplos_der.json").read_text(encoding="utf-8"))
 GRUPOS = {"site": "SITE · COMUM", "ace": "ACESSO", "cad": "CADASTRO", "ope": "OPERAÇÃO", "apo": "APOIO"}
 
 
@@ -49,13 +64,16 @@ def col(n, ty, req=True, desc="", pk=False, fk=False, uq=False, auto=False):
 
 
 def comum(nome, mostrar, descricoes, acrescimos, rotulo_mais):
-    """Tabela do site: mostra os campos que a vistoria usa, resume o resto e acrescenta os campos propostos (+)."""
+    """Tabela do site: o diagrama mostra os campos que a vistoria usa, resume o resto e acrescenta os campos propostos (+);
+    o detalhe e os exemplos listam todos."""
     base = {c["n"]: c for c in SITE[nome]}
-    cols = []
-    for n in mostrar:
+
+    def completo(n):
         c = base[n]
-        cols.append(dict(n=n, ty=c["ty"], req=c["req"] or c["pk"], desc=descricoes.get(n, c["coment"]), pk=c["pk"],
-                         fk=c["fk"], uq=False, auto=c["auto"], gen=c["gen"], add=False, mais=False))
+        return dict(n=n, ty=c["ty"], req=c["req"] or c["pk"], desc=descricoes.get(n) or CAMPO_SITE[nome][n], pk=c["pk"], fk=c["fk"],
+                    uq=False, auto=c["auto"], gen=c["gen"], add=False, mais=False)
+
+    cols = [completo(n) for n in mostrar]
     resto = [n for n in base if n not in mostrar]
     if resto:
         cols.append(dict(n=f"… mais {len(resto)} campos {rotulo_mais}", ty="", req=True, desc=", ".join(resto), pk=False,
@@ -63,13 +81,14 @@ def comum(nome, mostrar, descricoes, acrescimos, rotulo_mais):
     for c in acrescimos:
         c["add"] = True
         cols.append(c)
-    return dict(grupo="site", cols=cols, nsite=len(base))
+    todas = [completo(n) for n in base] + acrescimos
+    return dict(grupo="site", cols=cols, todas=todas, nsite=len(base))
 
 
 VALIDACAO = "QR, GPS ou QR_E_GPS"
 T = {}
-T["PROPRIEDADE"] = comum(
-    "PROPRIEDADE", ["ID_PROPRIEDADE", "NM_PROPRIEDADE", "HR_CHECKIN", "HR_CHECKOUT"],
+T["SIT_PROPRIEDADE"] = comum(
+    "SIT_PROPRIEDADE", ["ID_PROPRIEDADE", "NM_PROPRIEDADE", "HR_CHECKIN", "HR_CHECKOUT"],
     {"ID_PROPRIEDADE": "Identificador da pousada.", "NM_PROPRIEDADE": "Nome da pousada.",
      "HR_CHECKIN": "Horário de entrada: base da agenda de vistorias de Entrada.",
      "HR_CHECKOUT": "Horário de saída: base da agenda de vistorias de Saída."},
@@ -80,8 +99,8 @@ T["PROPRIEDADE"] = comum(
      col("QTDE_PRECISAO_MAX_METROS", "smallint", desc="Pior precisão de GPS aceita (padrão 50 m)."),
      col("QTDE_MINUTOS_MIN_VISTORIA", "smallint", desc="Duração mínima esperada; abaixo disso a vistoria é sinalizada.")],
     "da política de venda")
-T["UNIDADE"] = comum(
-    "UNIDADE", ["ID_UNIDADE", "ID_PROPRIEDADE", "CD_UNIDADE", "NM_UNIDADE", "TP_UNIDADE", "SG_ATIVO"],
+T["SIT_UNIDADE"] = comum(
+    "SIT_UNIDADE", ["ID_UNIDADE", "ID_PROPRIEDADE", "CD_UNIDADE", "NM_UNIDADE", "TP_UNIDADE", "SG_ATIVO"],
     {"ID_UNIDADE": "Identificador do chalé, quarto ou suíte.", "ID_PROPRIEDADE": "Pousada dona da unidade.",
      "CD_UNIDADE": "Código curto (ex.: casa-do-mirante), também usado no site.", "NM_UNIDADE": "Nome exibido.",
      "TP_UNIDADE": "CHALE, QUARTO ou SUITE.", "SG_ATIVO": "Unidade inativa some da venda e da agenda de vistorias."},
@@ -95,15 +114,15 @@ T["UNIDADE"] = comum(
      col("NO_VERSAO_QR", "smallint", desc="Versão do QR; rotacionar invalida as etiquetas antigas."),
      col("DT_ATUALIZACAO", "timestamptz", desc="Última mudança de situação ou de QR.")],
     "da venda")
-T["RESERVA"] = comum(
-    "RESERVA", ["ID_RESERVA", "CD_RESERVA", "ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "TP_STATUS"],
+T["SIT_RESERVA"] = comum(
+    "SIT_RESERVA", ["ID_RESERVA", "CD_RESERVA", "ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "TP_STATUS"],
     {"ID_RESERVA": "Identificador da estadia vendida.", "CD_RESERVA": "Código mostrado ao hóspede (SE-XXXXXXXX).",
      "ID_UNIDADE": "Unidade reservada.", "DT_CHECKIN": "Dia da entrada: gera a vistoria de Entrada na agenda.",
      "DT_CHECKOUT": "Dia da saída: gera a vistoria de Saída na agenda.",
      "TP_STATUS": "Só reservas CONFIRMADA entram na agenda de vistorias."},
     [], "da venda")
-T["BLOQUEIO"] = comum(
-    "BLOQUEIO", ["ID_BLOQUEIO", "ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO", "DS_OBSERVACAO"],
+T["SIT_BLOQUEIO"] = comum(
+    "SIT_BLOQUEIO", ["ID_BLOQUEIO", "ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO", "DS_OBSERVACAO"],
     {"ID_BLOQUEIO": "Identificador do bloqueio.", "ID_UNIDADE": "Unidade fora da venda.",
      "DT_INI": "Primeira noite bloqueada.", "DT_FIM": "Dia seguinte à última noite; liberar a unidade encerra aqui.",
      "TP_MOTIVO": "A vistoria cria bloqueios MANUTENCAO; CANAL_EXTERNO são estadias do Airbnb/Booking.",
@@ -216,6 +235,9 @@ T["VST_FOTO"] = dict(grupo="ope", cols=[
     col("SG_FORA_RAIO", "boolean", desc="Tirada fora do raio."),
     col("DT_CAPTURA", "timestamptz", desc="Momento da câmera, não do envio.")])
 
+for _t in T.values():
+    _t.setdefault("todas", _t["cols"])
+
 # ---------------------------------------------------------------- geometria
 W, HDR, RH = 310, 40, 19
 X = [56, 496, 936, 1376, 1816]
@@ -223,8 +245,8 @@ FUNDO1, FUNDO2 = 1085, 1108
 LARG, ALT = X[4] + W + 68, FUNDO2 + 24
 POS = {
     "VST_USUARIO": (X[0], 40), "VST_USUARIO_PROPRIEDADE": (X[0], 300), "VST_LOG_EVENTO": (X[0], 446),
-    "PROPRIEDADE": (X[1], 40), "BLOQUEIO": (X[1], 380),
-    "RESERVA": (X[2], 40), "UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 655), "VST_ITEM": (X[2], 858),
+    "SIT_PROPRIEDADE": (X[1], 40), "SIT_BLOQUEIO": (X[1], 380),
+    "SIT_RESERVA": (X[2], 40), "SIT_UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 655), "VST_ITEM": (X[2], 858),
     "VST_VISTORIA": (X[3], 40), "VST_RESPOSTA": (X[3], 490), "VST_OCORRENCIA": (X[3], 693),
     "VST_TIPO_VISTORIA": (X[4], 116), "VST_TIPO_VISTORIA_ITEM": (X[4], 330), "VST_FOTO": (X[4], 471),
 }
@@ -248,34 +270,34 @@ def lig(filho, f, pai, pk, lane, sf="d", sp="e"):
 
 c01, c12, c23, c34, c4 = (x + W for x in X)
 E = [  # filho, campo, pai, chave, rótulo, pontos (porta do filho primeiro)
-    ("UNIDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "pertence a", lig("UNIDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c12 + 74, "e", "d")),
-    ("RESERVA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "reserva", lig("RESERVA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 24, "d", "d")),
-    ("BLOQUEIO", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "bloqueia", lig("BLOQUEIO", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c12 + 54, "d", "e")),
-    ("VST_OCORRENCIA", "ID_BLOQUEIO", "BLOQUEIO", "ID_BLOQUEIO", "tira da venda",
+    ("SIT_UNIDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "pertence a", lig("SIT_UNIDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c12 + 74, "e", "d")),
+    ("SIT_RESERVA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "reserva", lig("SIT_RESERVA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 24, "d", "d")),
+    ("SIT_BLOQUEIO", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "bloqueia", lig("SIT_BLOQUEIO", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c12 + 54, "d", "e")),
+    ("VST_OCORRENCIA", "ID_BLOQUEIO", "SIT_BLOQUEIO", "ID_BLOQUEIO", "tira da venda",
      [(X[3], ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, FUNDO2),
-      (c01 + 100, FUNDO2), (c01 + 100, ry("BLOQUEIO", "ID_BLOQUEIO")), (X[1], ry("BLOQUEIO", "ID_BLOQUEIO"))]),
+      (c01 + 100, FUNDO2), (c01 + 100, ry("SIT_BLOQUEIO", "ID_BLOQUEIO")), (X[1], ry("SIT_BLOQUEIO", "ID_BLOQUEIO"))]),
     ("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "acessa", lig("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 26, "e", "e")),
-    ("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "acesso a", lig("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 74)),
-    ("VST_AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "cômodo de", lig("VST_AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 36, "d", "d")),
+    ("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "acesso a", lig("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c01 + 74)),
+    ("VST_AMBIENTE", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "cômodo de", lig("VST_AMBIENTE", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 36, "d", "d")),
     ("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", "conferido em", lig("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", X[2] - 30, "e", "e")),
     ("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "compõe", lig("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", c4 + 22, "d", "d")),
     ("VST_TIPO_VISTORIA_ITEM", "ID_ITEM", "VST_ITEM", "ID_ITEM", "inclui",
      [(c4, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, FUNDO1),
       (c23 + 108, FUNDO1), (c23 + 108, ry("VST_ITEM", "ID_ITEM")), (c23, ry("VST_ITEM", "ID_ITEM"))]),
-    ("VST_VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "vistoria de", lig("VST_VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 72, "e", "d")),
+    ("VST_VISTORIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "vistoria de", lig("VST_VISTORIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 72, "e", "d")),
     ("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "do tipo", lig("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", 0)),
     ("VST_VISTORIA", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "feita por",
      [(X[3], ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, 16),
       (c01 + 34, 16), (c01 + 34, ry("VST_USUARIO", "ID_USUARIO")), (c01, ry("VST_USUARIO", "ID_USUARIO"))]),
     ("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", "entrada de", lig("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", c34 + 26, "d", "d")),
-    ("VST_VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", "da estadia", lig("VST_VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", c23 + 48, "e", "d")),
+    ("VST_VISTORIA", "ID_RESERVA", "SIT_RESERVA", "ID_RESERVA", "da estadia", lig("VST_VISTORIA", "ID_RESERVA", "SIT_RESERVA", "ID_RESERVA", c23 + 48, "e", "d")),
     ("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", "responde", lig("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", c34 + 96, "d", "d")),
     ("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", "sobre", lig("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", c23 + 96, "e", "d")),
     ("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "evidência de", lig("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", 0, "e", "d")),
     ("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "nasce de", lig("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", c34 + 44, "d", "d")),
-    ("VST_OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "na unidade", lig("VST_OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 84, "e", "d")),
+    ("VST_OCORRENCIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "na unidade", lig("VST_OCORRENCIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 84, "e", "d")),
     ("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "por", lig("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 42, "e", "e")),
-    ("VST_LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "em", lig("VST_LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 90)),
+    ("VST_LOG_EVENTO", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "em", lig("VST_LOG_EVENTO", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c01 + 90)),
 ]
 # FKs compostas: a outra coluna segue na mesma linha desenhada
 COMPOSTAS = {("VST_FOTO", "ID_VISTORIA"), ("VST_OCORRENCIA", "ID_VISTORIA")}
@@ -331,7 +353,7 @@ def caminho(i, pts):
 
 
 def svg():
-    s = [f'<svg id="der" viewBox="0 0 {LARG} {ALT}" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são do site; a VST_VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">']
+    s = [f'<svg id="der" viewBox="0 0 {LARG} {ALT}" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: SIT_PROPRIEDADE, SIT_UNIDADE, SIT_RESERVA e SIT_BLOQUEIO são do site; a VST_VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">']
     s.append('<g class="edges">')
     for i, (f, c, p, pk, rot, pts) in enumerate(E):
         s.append(f'<g class="edge" data-rel="{f} {p}"><title>{NOMES_FK.get((f, c), f"FK_{f}_{p}")}: {f}.{c} → {p}.{pk}</title>')
@@ -378,10 +400,10 @@ def svg():
 
 # ---------------------------------------------------------------- textos
 PROPOSITO = {
-    "PROPRIEDADE": "Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio).",
-    "UNIDADE": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS.",
-    "RESERVA": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).",
-    "BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal).",
+    "SIT_PROPRIEDADE": "Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio).",
+    "SIT_UNIDADE": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS.",
+    "SIT_RESERVA": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).",
+    "SIT_BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal).",
     "VST_USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site.",
     "VST_USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas.",
     "VST_LOG_EVENTO": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros).",
@@ -395,17 +417,17 @@ PROPOSITO = {
     "VST_FOTO": "Evidência de uma resposta, com local e horário da câmera.",
 }
 REGRAS = {
-    "PROPRIEDADE": ["Campos novos (+) são acrescentados à tabela do site; nada existente muda.",
+    "SIT_PROPRIEDADE": ["Campos novos (+) são acrescentados à tabela do site; nada existente muda.",
                     f"TP_VALIDACAO: {VALIDACAO}.", "Raio entre 10 e 1.000 m; precisão máxima entre 5 e 500 m.",
                     "Substitui a antiga tabela CONFIGURACAO: os parâmetros ficam na pousada."],
-    "UNIDADE": ["Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.",
+    "SIT_UNIDADE": ["Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.",
                 "TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.",
                 "Só muda pela função alterar_situacao_unidade (grava VST_LOG_EVENTO).",
                 "CD_HASH_QR único; rotacionar soma 1 em NO_VERSAO_QR.",
                 "Latitude e longitude vêm juntas ou ficam vazias juntas."],
-    "RESERVA": ["A vistoria só lê: status, datas e unidade.", "Entrada no dia DT_CHECKIN, Saída no dia DT_CHECKOUT.",
-                "Estadias do Airbnb e do Booking não estão aqui: chegam como BLOQUEIO CANAL_EXTERNO."],
-    "BLOQUEIO": ["Ocorrência crítica cria bloqueio MANUTENCAO de hoje até a liberação.",
+    "SIT_RESERVA": ["A vistoria só lê: status, datas e unidade.", "Entrada no dia DT_CHECKIN, Saída no dia DT_CHECKOUT.",
+                "Estadias do Airbnb e do Booking não estão aqui: chegam como SIT_BLOQUEIO CANAL_EXTERNO."],
+    "SIT_BLOQUEIO": ["Ocorrência crítica cria bloqueio MANUTENCAO a partir de hoje, com prazo provisório de 7 dias (DT_FIM precisa ser depois de DT_INI).",
                  "Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).",
                  "Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.",
                  "Nenhum campo novo: o vínculo fica em VST_OCORRENCIA.ID_BLOQUEIO."],
@@ -429,10 +451,10 @@ REGRAS = {
     "VST_FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "Arquivo em bucket privado; CD_ARQUIVO único."],
 }
 ACESSO = {
-    "PROPRIEDADE": "Todos leem as pousadas a que têm acesso; ADMIN altera.",
-    "UNIDADE": "Leitura por acesso à pousada; situação muda só pela função; GESTOR e ADMIN cadastram.",
-    "RESERVA": "Leitura para GESTOR e ADMIN e para o assessor na agenda do dia; escrita só do site.",
-    "BLOQUEIO": "Leitura por acesso à pousada; criado e encerrado pelas funções da vistoria.",
+    "SIT_PROPRIEDADE": "Todos leem as pousadas a que têm acesso; ADMIN altera.",
+    "SIT_UNIDADE": "Leitura por acesso à pousada; situação muda só pela função; GESTOR e ADMIN cadastram.",
+    "SIT_RESERVA": "Leitura para GESTOR e ADMIN e para o assessor na agenda do dia; escrita só do site.",
+    "SIT_BLOQUEIO": "Leitura por acesso à pousada; criado e encerrado pelas funções da vistoria.",
     "VST_USUARIO": "Cada um lê o próprio; GESTOR lê a equipe; ADMIN cadastra.",
     "VST_USUARIO_PROPRIEDADE": "ADMIN mantém; cada um lê os próprios acessos.",
     "VST_LOG_EVENTO": "GESTOR e ADMIN leem; só funções inserem.",
@@ -446,11 +468,11 @@ ACESSO = {
     "VST_FOTO": "Mesma regra da vistoria; o arquivo sai por link assinado.",
 }
 INTEGRACAO = [
-    ("Cadastro único", "PROPRIEDADE e UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +)."),
-    ("Manutenção tira da venda", "Ocorrência crítica cria um BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam BLOQUEIO: as datas saem da venda sem mudar nada no site."),
+    ("Cadastro único", "SIT_PROPRIEDADE e SIT_UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +)."),
+    ("Manutenção tira da venda", "Ocorrência crítica cria um SIT_BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam SIT_BLOQUEIO: as datas saem da venda sem mudar nada no site. O bloqueio nasce com prazo provisório de 7 dias e é encurtado quando a unidade é liberada."),
     ("Liberar devolve à venda", "Ao liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis."),
     ("Reserva vira agenda", "Reservas CONFIRMADA geram a vistoria de Entrada no DT_CHECKIN e a de Saída no DT_CHECKOUT."),
-    ("Saída ligada à estadia", "VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
+    ("Saída ligada à estadia", "VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como SIT_BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
     ("Mesma equipe", "VST_USUARIO e VST_USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos."),
     ("Conflito", "Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede."),
 ]
@@ -459,12 +481,12 @@ FUNCOES = [
     ("validar_presenca", "Calcula a distância até o ponto da unidade e diz se está dentro do raio e com precisão aceitável."),
     ("alterar_situacao_unidade", "Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava VST_LOG_EVENTO."),
     ("rotacionar_qr", "Gera novo CD_HASH_QR e soma 1 em NO_VERSAO_QR: etiquetas antigas deixam de valer."),
-    ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
+    ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com SIT_BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
 ]
 PREFIXOS = [("ID_", "identificador"), ("NM_", "nome"), ("DS_", "descrição ou texto livre"), ("DT_", "data ou data e hora"),
             ("HR_", "hora"), ("VL_", "valor (dinheiro, coordenada)"), ("QTDE_", "quantidade"), ("NO_", "número (ordem, versão)"),
             ("CD_", "código"), ("TP_", "lista fixa, valores em MAIÚSCULAS"), ("SG_", "sim/não (boolean)")]
-ORDEM = ["UNIDADE", "PROPRIEDADE", "RESERVA", "BLOQUEIO", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO",
+ORDEM = ["SIT_UNIDADE", "SIT_PROPRIEDADE", "SIT_RESERVA", "SIT_BLOQUEIO", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO",
          "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_LOG_EVENTO"]
 assert sorted(ORDEM) == sorted(T)
 
@@ -479,24 +501,200 @@ def chave(c):
 
 def cartao(n):
     t, g = T[n], T[n]["grupo"]
-    proprias = [c for c in t["cols"] if not c["mais"]]
-    linhas = "".join(
-        f'<tr{" class=add" if c["add"] else ""}><td><code>{c["n"]}</code>{" <b class=novo>+ novo</b>" if c["add"] else ""}</td>'
-        f'<td><code>{c["ty"]}</code></td><td>{"sim" if c["req"] else "não"}</td><td>{chave(c) or "—"}</td><td>{esc(c["desc"])}</td></tr>'
-        for c in proprias)
-    mais = next((c for c in t["cols"] if c["mais"]), None)
-    nota = f'<p class="meta">Outros campos do site: {esc(mais["desc"])}. Ver o DER das Reservas.</p>' if mais else ""
-    qtd = f'{t["nsite"]} campos no site + {sum(c["add"] for c in proprias)} novos' if g == "site" else f'{len(proprias)} campos'
     return f'''<article class="tcard g-{g}" id="t-{n}" data-t="{n}">
   <header><h3>{n}</h3><span class="chip">{GRUPOS[g]}</span></header>
   <p class="purpose">{esc(PROPOSITO[n])}</p>
-  <p class="meta">{qtd} · ligada a {", ".join(ligadas_a(n))}</p>
+  <p class="meta">{len(t["todas"])} campos · ligada a {", ".join(ligadas_a(n))}</p>
   <ul>{"".join(f"<li>{esc(r)}</li>" for r in REGRAS[n])}</ul>
-  <p class="acesso"><b>Acesso:</b> {esc(ACESSO[n])}</p>
-  <details><summary>Campos e descrições</summary>
-    <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody>{linhas}</tbody></table>{nota}
-  </details>
 </article>'''
+
+
+# ---------------------------------------------------------------- exemplos de dados (linhas fictícias e coerentes entre si)
+BRT = timezone(timedelta(hours=-3))
+U1, U2 = "0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f01", "0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f02"
+V1, V2 = "0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4e01", "0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4e02"
+F1, F2 = "0193c9e8-5f6a-7b7c-8d9e-1f2a3b4c5d01", "0193c9e8-5f6a-7b7c-8d9e-1f2a3b4c5d02"
+SITE_TABS = ("SIT_PROPRIEDADE", "SIT_UNIDADE", "SIT_RESERVA", "SIT_BLOQUEIO")
+EX = {n: [dict(r) for r in EX_SITE[n]] for n in SITE_TABS}
+EX["SIT_PROPRIEDADE"][0].update(tp_validacao="QR_E_GPS", vl_latitude=-19.0847, vl_longitude=-43.5967, qtde_raio_metros=100,
+                                qtde_precisao_max_metros=50, qtde_minutos_min_vistoria=10)
+EX["SIT_UNIDADE"][0].update(ds_andar="Térreo", tp_validacao=None, vl_latitude=-19.0849, vl_longitude=-43.5969, qtde_raio_metros=60,
+                            tp_situacao="MANUTENCAO", cd_hash_qr="b7e2c91f4a6d", no_versao_qr=1, dt_atualizacao="2026-12-26T18:21:40+00:00")
+EX["SIT_BLOQUEIO"].append(dict(id_bloqueio=3, id_unidade=1, dt_ini="2026-12-26", dt_fim="2027-01-02", tp_motivo="MANUTENCAO",
+                               id_calendario=None, cd_externo=None, ds_observacao="Torneira do banheiro (ocorrência 1)",
+                               dt_criacao="2026-12-26T18:21:40+00:00"))
+EX["VST_USUARIO"] = [
+    dict(id_usuario=U1, nm_usuario="Marina Lopes", cd_login="marina.lopes", cd_cpf="39053344705", tp_perfil="ASSESSOR", sg_ativo=True,
+         dt_aceite_lgpd="2026-11-20T12:30:00+00:00", dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-11-20T12:30:00+00:00"),
+    dict(id_usuario=U2, nm_usuario="Carlos Mendes", cd_login="carlos.mendes", cd_cpf="11144477735", tp_perfil="GESTOR", sg_ativo=True,
+         dt_aceite_lgpd=None, dt_criacao="2026-11-20T12:05:00+00:00", dt_atualizacao="2026-11-20T12:05:00+00:00")]
+EX["VST_USUARIO_PROPRIEDADE"] = [dict(id_usuario=U1, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00"),
+                                 dict(id_usuario=U2, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00")]
+EX["VST_LOG_EVENTO"] = [
+    dict(id_log_evento=1, id_usuario=U1, id_propriedade=1, tp_evento="VISTORIA_ENVIADA", nm_entidade="VST_VISTORIA", cd_registro=V2,
+         ds_evento="Marina Lopes enviou a vistoria de Saída da Casa do Mirante", ds_dados=None, dt_evento="2026-12-26T18:21:40+00:00"),
+    dict(id_log_evento=2, id_usuario=None, id_propriedade=1, tp_evento="SITUACAO_ALTERADA", nm_entidade="SIT_UNIDADE", cd_registro="1",
+         ds_evento="Casa do Mirante: EM_LIMPEZA → MANUTENCAO (ocorrência crítica)", ds_dados={"de": "EM_LIMPEZA", "para": "MANUTENCAO"},
+         dt_evento="2026-12-26T18:21:41+00:00")]
+EX["VST_AMBIENTE"] = [
+    dict(id_ambiente=1, id_unidade=1, nm_ambiente="Sala", no_ordem=1, ds_foto_referencia="ambientes/1/sala.jpg", sg_ativo=True, dt_criacao="2026-11-20T13:00:00+00:00"),
+    dict(id_ambiente=2, id_unidade=1, nm_ambiente="Quarto", no_ordem=2, ds_foto_referencia="ambientes/1/quarto.jpg", sg_ativo=True, dt_criacao="2026-11-20T13:02:00+00:00"),
+    dict(id_ambiente=3, id_unidade=1, nm_ambiente="Banheiro", no_ordem=3, ds_foto_referencia=None, sg_ativo=True, dt_criacao="2026-11-20T13:04:00+00:00")]
+EX["VST_ITEM"] = [
+    dict(id_item=1, id_ambiente=1, nm_item="Sofá e almofadas", ds_orientacao="Sem manchas ou rasgos; almofadas no lugar.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True),
+    dict(id_item=2, id_ambiente=2, nm_item="Cama e roupa de cama", ds_orientacao="Cama arrumada, sem manchas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True),
+    dict(id_item=3, id_ambiente=3, nm_item="Torneira e pia", ds_orientacao="Abrir e fechar; ver se pinga ou vaza.", sg_critico=True, sg_foto_obrigatoria=True, qtde_esperada=None, no_ordem=1, sg_ativo=True),
+    dict(id_item=4, id_ambiente=3, nm_item="Toalhas de banho", ds_orientacao="Contar e ver se estão limpas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=4, no_ordem=2, sg_ativo=True)]
+EX["VST_TIPO_VISTORIA"] = [
+    dict(id_tipo_vistoria=1, nm_tipo_vistoria="Entrada", tp_comportamento="ENTRADA", tp_periodicidade=None, sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T13:10:00+00:00"),
+    dict(id_tipo_vistoria=2, nm_tipo_vistoria="Saída", tp_comportamento="SAIDA", tp_periodicidade=None, sg_exige_entrada=True, sg_exige_assinatura=True, sg_ativo=True, dt_criacao="2026-11-20T13:11:00+00:00"),
+    dict(id_tipo_vistoria=3, nm_tipo_vistoria="Rotina semanal", tp_comportamento="ROTINA", tp_periodicidade="SEMANAL", sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T13:12:00+00:00")]
+EX["VST_TIPO_VISTORIA_ITEM"] = [dict(id_tipo_vistoria=1, id_item=3, no_ordem=1), dict(id_tipo_vistoria=2, id_item=3, no_ordem=1),
+                                dict(id_tipo_vistoria=2, id_item=4, no_ordem=2)]
+EX["VST_VISTORIA"] = [
+    dict(id_vistoria=V1, id_vistoria_entrada=None, id_usuario=U1, id_unidade=1, id_tipo_vistoria=1, id_reserva=1, tp_validacao="QR_E_GPS",
+         dt_inicio="2026-12-23T17:40:00+00:00", dt_fim="2026-12-23T17:52:00+00:00", dt_recebimento="2026-12-23T17:52:30+00:00",
+         vl_latitude=-19.0850, vl_longitude=-43.5970, qtde_precisao_metros=8, qtde_distancia_metros=14, sg_fora_raio=False, tp_status="ENVIADA",
+         ds_sinalizacoes=None, ds_assinatura=None, tp_situacao_resultante="OCUPADO", ds_observacao=None),
+    dict(id_vistoria=V2, id_vistoria_entrada=V1, id_usuario=U1, id_unidade=1, id_tipo_vistoria=2, id_reserva=1, tp_validacao="QR_E_GPS",
+         dt_inicio="2026-12-26T18:05:00+00:00", dt_fim="2026-12-26T18:21:00+00:00", dt_recebimento="2026-12-26T18:21:40+00:00",
+         vl_latitude=-19.0851, vl_longitude=-43.5971, qtde_precisao_metros=11, qtde_distancia_metros=22, sg_fora_raio=False, tp_status="ENVIADA",
+         ds_sinalizacoes=None, ds_assinatura="assinaturas/2026/12/" + V2 + ".png", tp_situacao_resultante="MANUTENCAO", ds_observacao="Torneira do banheiro vazando.")]
+EX["VST_RESPOSTA"] = [
+    dict(id_vistoria=V1, id_item=3, tp_resposta="OK", qtde_encontrada=None, ds_observacao=None, dt_resposta="2026-12-23T17:45:00+00:00"),
+    dict(id_vistoria=V2, id_item=3, tp_resposta="PROBLEMA", qtde_encontrada=None, ds_observacao="Torneira pingando sem parar; pia molhada.", dt_resposta="2026-12-26T18:10:00+00:00"),
+    dict(id_vistoria=V2, id_item=4, tp_resposta="OK", qtde_encontrada=4, ds_observacao=None, dt_resposta="2026-12-26T18:14:00+00:00")]
+EX["VST_OCORRENCIA"] = [
+    dict(id_ocorrencia=1, id_vistoria=V2, id_item=3, id_unidade=1, id_bloqueio=3, tp_gravidade="CRITICA", tp_status="EM_TRATAMENTO",
+         ds_ocorrencia="Torneira do banheiro vazando.", ds_tratamento="Encanador agendado para 28/12.", dt_abertura="2026-12-26T18:21:40+00:00", dt_resolucao=None)]
+EX["VST_FOTO"] = [
+    dict(id_foto=F1, id_vistoria=V2, id_item=3, cd_arquivo="vistorias/2026/12/" + V2 + "/torneira-1.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
+         qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:11:00+00:00"),
+    dict(id_foto=F2, id_vistoria=V2, id_item=3, cd_arquivo="vistorias/2026/12/" + V2 + "/torneira-2.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
+         qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:12:00+00:00")]
+CAP = {
+    "SIT_PROPRIEDADE": ["A pousada"], "SIT_UNIDADE": ["A Casa do Mirante"],
+    "SIT_RESERVA": ["1 · Confirmada no site", "2 · Pré-reserva aguardando Pix"],
+    "SIT_BLOQUEIO": ["Reserva vinda do Airbnb", "Manutenção marcada pela equipe", "Aberta pela vistoria"],
+    "VST_USUARIO": ["Assessora", "Gestor"], "VST_USUARIO_PROPRIEDADE": ["Marina na pousada", "Carlos na pousada"],
+    "VST_LOG_EVENTO": ["Envio de vistoria", "Mudança de situação (sistema)"],
+    "VST_AMBIENTE": ["Sala", "Quarto", "Banheiro"], "VST_ITEM": ["Item comum", "Item comum", "Item crítico", "Item com contagem"],
+    "VST_TIPO_VISTORIA": ["Entrada", "Saída", "Rotina"], "VST_TIPO_VISTORIA_ITEM": ["Entrada confere a torneira", "Saída confere a torneira", "Saída conta as toalhas"],
+    "VST_VISTORIA": ["Entrada de 23/12", "Saída de 26/12"],
+    "VST_RESPOSTA": ["Torneira OK na entrada", "Torneira com problema na saída", "Toalhas conferidas"],
+    "VST_OCORRENCIA": ["Torneira vazando"], "VST_FOTO": ["Foto 1 da torneira", "Foto 2 da torneira"],
+}
+PAINEL_IDX = {"SIT_BLOQUEIO": [1, 2], "VST_ITEM": [2, 3], "VST_RESPOSTA": [1, 2], "VST_TIPO_VISTORIA_ITEM": [1, 2]}
+for _n, _t in T.items():
+    _cols = {c["n"].lower() for c in _t["todas"]}
+    for _r in EX[_n]:
+        assert set(_r) == _cols, (_n, _cols ^ set(_r))
+    assert len(CAP[_n]) == len(EX[_n]), _n
+
+
+def brl(v):
+    return "R$ " + f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def fmt(col, v):
+    if v is None:
+        return '<span class="nul">vazio</span>'
+    if isinstance(v, bool):
+        return "sim" if v else "não"
+    if isinstance(v, list):
+        return f"{len(v)} noites: " + " + ".join(brl(x["vl_noite"]).replace("R$ ", "") for x in v)
+    if isinstance(v, dict):
+        return esc(json.dumps(v, ensure_ascii=False))
+    if col in ("VL_LATITUDE", "VL_LONGITUDE"):
+        return str(v)
+    if col.startswith("VL_PERCENTUAL"):
+        return f"{v:g}%"
+    if col.startswith("VL_"):
+        return brl(v)
+    if isinstance(v, str):
+        if len(v) == 10 and v[4] == "-" and v[7] == "-":
+            return f"{v[8:10]}/{v[5:7]}/{v[:4]}"
+        if col.startswith("DT_") and "T" in v:
+            return datetime.fromisoformat(v).astimezone(BRT).strftime("%d/%m/%Y %H:%M")
+        if col.startswith("HR_"):
+            return v[:5]
+    return esc(v)
+
+
+def texto(col, v):
+    return html.unescape(re.sub(r"<[^>]+>", "", fmt(col, v)))
+
+
+def longo(v):
+    return ' class="long"' if isinstance(v, (list, dict)) or (isinstance(v, str) and len(v) > 26) else ""
+
+
+def obrigatorio(c):
+    return "gerado" if c["gen"] else ("auto" if c["auto"] else ("sim" if c["req"] else "não"))
+
+
+def nome_campo(c, html_=True):
+    if not html_:
+        return c["n"]
+    marca = ('<span class="k ka">+</span> ' if c["add"] else "") + ('<span class="k kp">PK</span> ' if c["pk"] else "") + ('<span class="k kf">FK</span> ' if c["fk"] else "")
+    return marca + c["n"]
+
+
+def exemplo(n):
+    g, rows, cols = T[n]["grupo"], EX[n], T[n]["todas"]
+    cab = "".join(f'<th scope="col">{esc(c)}</th>' for c in CAP[n])
+    corpo = "".join(
+        f'<tr{" class=add" if c["add"] else ""}><th scope="row">{nome_campo(c)}</th>' +
+        "".join(f'<td{longo(r[c["n"].lower()])}>{fmt(c["n"], r[c["n"].lower()])}</td>' for r in rows) + "</tr>" for c in cols)
+    return (f'<section class="ex g-{g}" id="e-{n}" data-t="{n}">\n  <header><h3>{n}</h3><span class="chip">{GRUPOS[g]}</span></header>\n'
+            f'  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th>{cab}</tr></thead><tbody>{corpo}</tbody></table></div>\n</section>')
+
+
+def painel(n):
+    t, g = T[n], T[n]["grupo"]
+    idx = PAINEL_IDX.get(n, [0, 1])[:len(EX[n])]
+    rs, caps = [EX[n][i] for i in idx], [CAP[n][i] for i in idx]
+    linhas = "".join(
+        f'<tr{" class=add" if c["add"] else ""}><th scope="row">{nome_campo(c)}</th><td class="ty">{esc(c["ty"])}</td><td>{obrigatorio(c)}</td><td class="ds">{esc(c["desc"])}</td>' +
+        "".join(f'<td class="exv{" long" if longo(r[c["n"].lower()]) else ""}" data-l="{esc(cp)}">{fmt(c["n"], r[c["n"].lower()])}</td>' for r, cp in zip(rs, caps)) + "</tr>"
+        for c in t["todas"])
+    lig = []
+    for f, c, p, pk, rot, _ in E:
+        if f == n:
+            lig.append(f'<li><code>{c}</code> → {p} <i>({esc(rot)})</i>: cada {n} aponta para {"exatamente" if obrig(f, c) else "no máximo"} 1 {p}.</li>')
+    for f, c, p, pk, rot, _ in E:
+        if p == n and f != n:
+            lig.append(f'<li>{f}.<code>{c}</code> <i>({esc(rot)})</i>: cada {n} pode ter zero ou vários {f}.</li>')
+    nota = '<p class="dlink">Os demais campos e regras desta tabela estão no DER das Reservas (projeto Site).</p>' if g == "site" else ""
+    return f'''<template id="d-{n}"><div class="dt g-{g}">
+  <header><h3>{n}</h3><span class="chip">{GRUPOS[g]}</span><span class="dmeta">{len(t["todas"])} campos</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
+  <p class="purpose">{esc(PROPOSITO[n])}</p>{nota}
+  <div class="dgrid">
+    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th>{"".join(f"<th>Exemplo: {esc(cp)}</th>" for cp in caps)}</tr></thead><tbody>{linhas}</tbody></table></div>
+    <aside><div><h4>Ligações</h4><ul>{"".join(lig)}</ul></div><div><h4>Regras</h4><ul>{"".join(f"<li>{esc(r)}</li>" for r in REGRAS[n])}</ul></div><div><h4>Quem acessa</h4><p>{esc(ACESSO[n])}</p></div></aside>
+  </div>
+</div></template>'''
+
+
+PASSOS = [
+    ("23/12 14:40", "Marina faz a vistoria de Entrada antes de a hóspede chegar, com QR e GPS a 14 m da casa.", "VST_VISTORIA 1", "OCUPADO"),
+    ("26/12 12:00", "Check-out da reserva SE-7F3A2C1D. A Saída aparece na agenda a partir do DT_CHECKOUT.", "SIT_RESERVA 1", "—"),
+    ("26/12 15:05", "Marina começa a Saída. A vistoria aponta a Entrada (ID_VISTORIA_ENTRADA = 1) e a estadia (ID_RESERVA = 1). GPS a 22 m, dentro do raio de 60 m.", "VST_VISTORIA 2", "—"),
+    ("26/12 15:10", "Em “Torneira e pia”, item crítico, responde PROBLEMA, descreve o defeito e tira 2 fotos (foto obrigatória).", "VST_RESPOSTA, VST_FOTO", "—"),
+    ("26/12 15:21", "Envia. A função enviar_vistoria grava tudo, abre a ocorrência 1 (CRITICA), cria o bloqueio 3 (MANUTENCAO, 26/12 a 02/01, prazo provisório) e muda a unidade. O log registra.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3, VST_LOG_EVENTO", "MANUTENCAO"),
+    ("26/12 15:22", "No site, consultar_disponibilidade já devolve essas noites como bloqueadas e o iCal leva a mesma janela ao Airbnb e ao Booking. Nada muda no código do site.", "SIT_BLOQUEIO 3", "MANUTENCAO"),
+    ("28/12", "O gestor marca a ocorrência como RESOLVIDA e libera a unidade. O bloqueio é encerrado (DT_FIM = 29/12) e as datas voltam à venda.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "LIBERADO"),
+]
+
+
+def passo_a_passo():
+    linhas = "".join(f"<tr><td>{a}</td><td>{esc(b)}</td><td><code>{esc(c)}</code></td><td>{d}</td></tr>" for a, b, c, d in PASSOS)
+    return ('<section class="explica" id="como-bloqueio">\n  <h2>Como uma vistoria tira o chalé da venda</h2>\n'
+            '  <p>É o ponto em que os dois produtos se encontram. A <b>VST_VISTORIA</b> registra o que o assessor viu; se um item crítico está com problema, nasce uma <b>VST_OCORRENCIA</b> e o banco cria um <b>SIT_BLOQUEIO</b> de manutenção. Como o site já consulta os bloqueios antes de vender, não é preciso mudar nada nele. O exemplo abaixo usa as mesmas linhas da seção de exemplos de dados.</p>\n'
+            '  <h3>Exemplo: Casa do Mirante, estadia da reserva SE-7F3A2C1D (23 a 26/12/2026)</h3>\n'
+            '  <div class="tscroll"><table class="passo"><thead><tr><th>Quando</th><th>O que acontece</th><th>Tabelas</th><th>Situação do chalé</th></tr></thead>\n'
+            f'  <tbody>{linhas}</tbody></table></div>\n'
+            '  <p>Uma reserva confirmada que já exista nessas datas não é cancelada pelo bloqueio: o painel avisa o gestor para remanejar o hóspede.</p>\n</section>')
 
 
 CSS = r'''
@@ -532,6 +730,7 @@ h1 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem); margin: 0; letter-spacing
 .sw.tr { border: 1.5px dashed var(--wire); }
 .k { font-family: var(--mono); font-size: 11px; font-weight: 600; }
 .kp { color: var(--pk); } .kf { color: var(--fk); } .ka { color: var(--add); }
+.hint { font-size: 13px; color: var(--muted); margin: 0; max-width: 95ch; }
 figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; min-width: 0; }
 .fbar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .fbar p { margin: 0; font-size: 13px; color: var(--muted); flex: 1 1 260px; }
@@ -539,7 +738,7 @@ figure { margin: 0; background: var(--surface); border: 1px solid var(--line); b
   background: var(--surface); color: var(--fg); font: 500 14px var(--sans); cursor: pointer; }
 .btn:hover { border-color: var(--wire); }
 .btn.pri { background: var(--fg); border-color: var(--fg); color: var(--bg); }
-button:focus-visible, summary:focus-visible { outline: 2px solid var(--fk); outline-offset: 2px; }
+button:focus-visible { outline: 2px solid var(--fk); outline-offset: 2px; }
 .scroll { overflow: auto; -webkit-overflow-scrolling: touch; max-height: 78svh; }
 #der { display: block; height: auto; color: var(--wire); }
 .scroll #der { width: 100%; min-width: 1500px; }
@@ -571,11 +770,11 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 .integ { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; }
 .integ li { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--fk); border-radius: 8px; padding: 10px 14px; }
 .integ b { display: block; font-size: 14px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; align-items: start; }
-.tcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 12px; min-width: 0; scroll-margin-top: 16px; }
-.tcard.g-site { border-style: dashed; border-color: var(--wire); }
-.tcard.on { border-color: var(--fk); border-style: solid; box-shadow: 0 0 0 1px var(--fk); }
-.tcard header { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; }
+.tcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px 12px; min-width: 0; scroll-margin-top: 16px; cursor: pointer; }
+.tcard.g-site, .ex.g-site, .dt.g-site { border-style: dashed; border-color: var(--wire); }
+.tcard.on, .ex.on { border-color: var(--fk); border-style: solid; box-shadow: 0 0 0 1px var(--fk); }
+.tcard header, .ex header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .tcard h3 { margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
 .chip { font-size: 10px; letter-spacing: 0.12em; padding: 2px 8px; border-radius: 99px; color: var(--fg); white-space: nowrap; }
 .g-site .chip { background: var(--site); } .g-ace .chip { background: var(--ace); } .g-cad .chip { background: var(--cad); }
@@ -583,21 +782,60 @@ h2 { font-size: 1.1rem; margin: 6px 0 0; }
 .purpose { margin: 8px 0 4px; }
 .meta { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }
 .tcard ul { margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }
-.acesso { margin: 8px 0 0; font-size: 13px; color: var(--muted); } .acesso b { color: var(--fg); font-weight: 600; }
-details { margin-top: 4px; font-size: 13px; }
-summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--fk); font-weight: 500; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-th { text-align: left; font-weight: 500; font-size: 11px; letter-spacing: 0.06em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
-td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-td code { font-family: var(--mono); font-size: 11.5px; overflow-wrap: anywhere; }
-tr.add td:first-child code { color: var(--add); }
-.novo { font: 600 10px var(--sans); color: var(--add); white-space: nowrap; }
-@media (max-width: 640px) {
-  table, thead, tbody, tr, td { display: block; } thead { display: none; }
-  tr { padding: 6px 0; border-bottom: 1px solid var(--line); } td { border: 0; padding: 1px 0; }
-  td:nth-child(2)::before { content: "tipo: "; color: var(--muted); } td:nth-child(3)::before { content: "obrigatório: "; color: var(--muted); }
-  td:nth-child(4)::before { content: "chave: "; color: var(--muted); }
+/* painel de detalhe */
+#detalhe.has { padding-top: 14px; max-width: none; color: var(--fg); }
+.dt { border: 0; }
+.dt header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.dt h3 { margin: 0; font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--fg); }
+.dmeta { font-size: 12.5px; color: var(--muted); }
+.dclose { margin-left: auto; font: inherit; font-size: 12.5px; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; min-height: 32px; }
+.dclose:hover { border-color: var(--fk); }
+.dt .purpose { color: var(--fg); font-size: 14px; margin: 8px 0 10px; max-width: 100ch; }
+.dlink { margin: -4px 0 10px; font-size: 13px; color: var(--muted); }
+.dgrid { display: grid; gap: 16px; }
+.dt aside { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 0 28px; font-size: 13px; color: var(--fg); }
+.dt aside h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.dt aside ul { margin: 0 0 14px; padding-left: 18px; display: grid; gap: 4px; }
+.dt aside p { margin: 0 0 14px; }
+.dt aside code { font-family: var(--mono); font-size: 12px; }
+.dtab { color: var(--fg); }
+.dtab tbody th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.dtab td { white-space: nowrap; }
+.dtab td.ds { white-space: normal; min-width: 26ch; color: var(--fg); }
+.dtab td.ty { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+.dtab td.long { white-space: normal; overflow-wrap: anywhere; min-width: 20ch; }
+.dtab thead th { white-space: normal; }
+.dtab tbody tr:nth-child(even), .ex tbody tr:nth-child(even) { background: var(--zebra); }
+tr.add th { color: var(--add); }
+@media (max-width: 720px) {
+  .dtab thead { display: none; }
+  .dtab, .dtab tbody { display: block; }
+  .dtab tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+  .dtab th, .dtab td { border: 0; padding: 0; white-space: normal; }
+  .dtab td:nth-child(3) { display: none; }
+  .dtab td.ds, .dtab td.exv { grid-column: 1 / -1; min-width: 0; }
+  .dtab td.exv::before { content: attr(data-l) ": "; color: var(--muted); }
 }
+/* explicação e exemplos */
+.explica, .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }
+.explica h2 { margin-top: 0; }
+.explica h3 { font-size: 0.98rem; margin: 18px 0 8px; }
+.explica p { margin: 6px 0; max-width: 95ch; }
+.tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-size: 12px; color: var(--muted); font-weight: 600; }
+.passo td:first-child { white-space: nowrap; }
+.passo td:nth-child(3) { min-width: 18ch; } .passo code { font-family: var(--mono); font-size: 12px; }
+.exs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 14px; align-items: start; }
+.ex { scroll-margin-top: 16px; }
+.ex header { margin-bottom: 8px; }
+.ex h3 { margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; }
+.ex tbody th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.ex td { white-space: nowrap; }
+.ex td.long { white-space: normal; overflow-wrap: anywhere; min-width: 24ch; }
+.ex thead th { min-width: 13ch; }
+.nul { color: var(--muted); font-style: italic; }
 .fn { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; }
 .fn li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
 .fn code { font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
@@ -606,6 +844,7 @@ tr.add td:first-child code { color: var(--add); }
 .pref li { background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; }
 .pref code { font-family: var(--mono); font-weight: 600; }
 p.nota { margin: 0; font-size: 13.5px; color: var(--muted); max-width: 90ch; }
+/* tela cheia */
 html.travado, html.travado body { overflow: hidden; }
 .tela { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; background: var(--bg); }
 .tela[hidden] { display: none; }
@@ -633,7 +872,8 @@ JS = r'''
   var der = document.getElementById('der');
   var edges = [].slice.call(der.querySelectorAll('.edge'));
   var tbls = [].slice.call(der.querySelectorAll('.tbl'));
-  var cards = [].slice.call(document.querySelectorAll('.tcard'));
+  var cards = [].slice.call(document.querySelectorAll('.tcard, .ex'));
+  var cap = document.getElementById('detalhe'), capPadrao = cap.innerHTML;
   var area = document.getElementById('area'), tela = document.getElementById('tela'), palco = document.getElementById('palco');
   var info = document.getElementById('info'), W = __W__, A = __A__, DADOS = __DADOS__;
   var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -643,6 +883,7 @@ JS = r'''
     edges.forEach(function (e) { var r = e.getAttribute('data-rel').split(' '); if (r.indexOf(name) >= 0) { n[r[0]] = 1; n[r[1]] = 1; } });
     delete n[name]; return Object.keys(n).sort();
   }
+  // Seleciona a tabela: destaca as ligações, mostra o detalhe abaixo do diagrama e realça cartão e exemplo
   function select(name, scroll, forcar) {
     if (current === name && !forcar) name = null;
     current = name;
@@ -657,23 +898,23 @@ JS = r'''
     if (name) near[name] = 1;
     tbls.forEach(function (t) { var n = t.getAttribute('data-t'); t.classList.toggle('near', !!near[n]); t.classList.toggle('on', n === name); });
     cards.forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-t') === name); });
+    var tp = name && document.getElementById('d-' + name);
+    cap.innerHTML = tp ? tp.innerHTML : capPadrao; cap.classList.toggle('has', !!tp);
+    var bt = cap.querySelector('.dclose'); if (bt) bt.addEventListener('click', function () { select(current, false); });
     if (aberto) mostrarInfo(name);
-    if (name && scroll) irPara(name);
-  }
-  function irPara(name) {
-    var el = document.getElementById('t-' + name);
-    if (el) el.scrollIntoView({ behavior: reduz ? 'auto' : 'smooth', block: 'start' });
+    if (name && scroll) cap.scrollIntoView({ behavior: reduz ? 'auto' : 'smooth', block: 'nearest' });
   }
   tbls.forEach(function (t) {
     t.addEventListener('click', function () { if (!aberto) select(t.getAttribute('data-t'), true); });
     t.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(t.getAttribute('data-t'), !aberto); } });
   });
-  // clicar no título do cartão destaca a tabela no diagrama
-  cards.forEach(function (c) {
-    c.querySelector('header').addEventListener('click', function () {
-      var n = c.getAttribute('data-t'); select(n, false, true); area.scrollIntoView({ block: 'nearest', behavior: reduz ? 'auto' : 'smooth' });
+  // clicar num cartão de regras volta ao diagrama com a tabela destacada e centralizada
+  [].slice.call(document.querySelectorAll('.tcard')).forEach(function (c) {
+    c.addEventListener('click', function () {
+      var n = c.getAttribute('data-t'); select(n, false, true);
       var b = der.querySelector('.tbl[data-t="' + n + '"] .box'), k = der.getBoundingClientRect().width / W;
       area.scrollTo({ left: (+b.getAttribute('x') + 155) * k - area.clientWidth / 2, top: +b.getAttribute('y') * k - 20, behavior: reduz ? 'auto' : 'smooth' });
+      area.scrollIntoView({ block: 'nearest', behavior: reduz ? 'auto' : 'smooth' });
     });
   });
   // tela cheia: arrastar move, pinça/roda/botões aproximam, tocar seleciona
@@ -690,16 +931,12 @@ JS = r'''
     if (!name) { info.innerHTML = '<span>Toque numa tabela para ver para que serve e com quem se liga · Esc fecha</span>'; return; }
     var d = DADOS[name], h = '<div class="nome">' + name + ' <span class="' + d.c + '"><span class="chip">' + d.g + '</span></span></div><p>' + d.p + '</p><div class="lig"><span>Ligada a</span>';
     vizinhos(name).forEach(function (v) { h += '<button type="button" class="chipbtn" data-ir="' + v + '">' + v + '</button>'; });
-    info.innerHTML = h + '<button type="button" class="btn pri ver" data-ver="' + name + '">Ver campos e regras ›</button></div>';
+    info.innerHTML = h + '<button type="button" class="btn pri ver" data-ver="' + name + '">Ver campos, exemplos e regras ›</button></div>';
   }
   info.addEventListener('click', function (e) {
     var b = e.target.closest('button'); if (!b) return;
     if (b.dataset.ir) { select(b.dataset.ir, false, true); centrar(b.dataset.ir); }
-    if (b.dataset.ver) {
-      var n = b.dataset.ver, c = document.getElementById('t-' + n); fechar();
-      if (c) c.querySelector('details').open = true;
-      requestAnimationFrame(function () { irPara(n); });
-    }
+    if (b.dataset.ver) { var n = b.dataset.ver; fechar(); requestAnimationFrame(function () { select(n, true, true); }); }
   });
   var btAbrir = document.getElementById('abrir'), btFechar = document.getElementById('fechar');
   function abrir() {
@@ -748,8 +985,8 @@ JS = r'''
 
 
 def pagina():
-    ncols = sum(1 for t in T.values() for c in t["cols"] if not c["mais"])
-    novos = sum(c["add"] for t in T.values() for c in t["cols"])
+    ncols = sum(len(t["todas"]) for t in T.values())
+    novos = sum(c["add"] for t in T.values() for c in t["todas"])
     dados = {n: {"g": GRUPOS[T[n]["grupo"]], "c": "g-" + T[n]["grupo"], "p": esc(PROPOSITO[n])} for n in T}
     js = JS.replace("__W__", str(LARG)).replace("__A__", str(ALT)).replace("__DADOS__", json.dumps(dados, ensure_ascii=False))
     leg = ('<span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M30,7 L42,1 M30,7 L42,13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="24" cy="7" r="3.5" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/></svg> zero ou muitos</span>'
@@ -768,7 +1005,7 @@ def pagina():
   <header class="top">
     <div>
       <h1>DER das Vistorias</h1>
-      <p class="sub">Solar do Espinhaço · integrado ao banco de reservas do site · PostgreSQL (Supabase), esquema public · {VERSAO}</p>
+      <p class="sub">Solar do Espinhaço · integrado ao banco de reservas do site · PostgreSQL (Supabase), esquema public · {VERSAO} · prefixo VST_ = projeto Vistorias, SIT_ = projeto Site</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>4</b> do site</span><span><b>{ncols}</b> campos</span><span><b>{novos}</b> novos no site</span><span><b>{len(E)}</b> ligações</span></div>
   </header>
@@ -776,22 +1013,23 @@ def pagina():
   <div class="legend" aria-label="Legenda">
     <span class="it"><span class="k kp">PK</span> chave primária</span>
     <span class="it"><span class="k kf">FK</span> chave estrangeira</span>
-    <span class="it"><span class="k">CAMPO?</span> opcional</span>
+    <span class="it"><span class="k">CAMPO?</span> opcional (aceita vazio)</span>
     <span class="it"><span class="k ka">+ CAMPO</span> novo numa tabela do site</span>
-    <span class="it"><span class="k">auto · gerado</span> preenchido pelo banco</span>
+    <span class="it"><span class="k">gerado · auto</span> preenchido pelo banco</span>
     {leg}
     {grupos}
   </div>
 
   <figure>
     <div class="fbar">
-      <p>Tabelas tracejadas são do site (mesmo banco). Clique numa tabela para destacar as ligações e ir às regras dela.</p>
+      <p>Tabelas tracejadas são do site (mesmo banco). Clique numa tabela para ver o detalhe dela logo abaixo do diagrama.</p>
       <button type="button" class="btn pri" id="abrir"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tela cheia</button>
     </div>
     <div class="scroll" id="area">
 {svg()}
     </div>
-    <figcaption>A UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VST_VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a RESERVA; respostas, fotos e ocorrências saem dela. Uma ocorrência crítica cria um BLOQUEIO, que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK.</figcaption>
+    <figcaption id="detalhe" aria-live="polite">A SIT_UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VST_VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a SIT_RESERVA; respostas, fotos e ocorrências saem dela, e uma ocorrência crítica cria um SIT_BLOQUEIO que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK. <b>Clique numa tabela para ver aqui o detalhe dela: cada campo explicado, com exemplo, ligações e regras.</b></figcaption>
+{chr(10).join(painel(n) for n in ORDEM)}
   </figure>
 
   <div class="tela" id="tela" role="dialog" aria-modal="true" aria-label="DER em tela cheia" hidden>
@@ -810,9 +1048,17 @@ def pagina():
     {"".join(f"<li><b>{esc(a)}</b>{esc(b)}</li>" for a, b in INTEGRACAO)}
   </ul>
 
-  <h2>Regras e campos de cada tabela</h2>
+  <h2>Regras de cada tabela</h2>
   <div class="cards">
 {chr(10).join(cartao(n) for n in ORDEM)}
+  </div>
+
+{passo_a_passo()}
+
+  <h2>Exemplos de dados</h2>
+  <p class="hint">Linhas fictícias que contam uma história só: a Marina faz a Entrada e a Saída da reserva SE-7F3A2C1D, acha uma torneira vazando e o chalé sai da venda. Os IDs batem entre as tabelas (a vistoria 2 aponta a reserva 1, a ocorrência 1 aponta o bloqueio 3). As tabelas do site usam as linhas do DER das Reservas; os campos novos (+) estão em verde. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
+  <div class="exs">
+{chr(10).join(exemplo(n) for n in ORDEM)}
   </div>
 
   <h2>Funções do banco</h2>
@@ -821,7 +1067,7 @@ def pagina():
   </ul>
 
   <h2>Nomenclatura</h2>
-  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tabelas da vistoria com o prefixo VST_ (as do site ficam sem prefixo), tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições PK_, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_ e IX_. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VST_VISTORIA, VST_FOTO).</p>
+  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): toda tabela do projeto Vistorias começa com <b>VST_</b> e as do projeto Site com <b>SIT_</b>, para separar os projetos no mesmo banco. Tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições com o nome completo da tabela (PK_VST_VISTORIA, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_, EX_, IX_). Os campos não levam o prefixo da tabela. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VST_VISTORIA, VST_FOTO).</p>
   <ul class="pref">{"".join(f"<li><code>{a}</code> {esc(b)}</li>" for a, b in PREFIXOS)}</ul>
 </div>
 
@@ -831,21 +1077,21 @@ def pagina():
 
 def markdown():
     l = ["# Dicionário de dados — Vistorias\n",
-         f"Integrado ao banco de reservas do site (mesmo Supabase, esquema `public`): {len(T)} tabelas, 4 delas do site, e {len(E)} ligações. Diagrama em [`der.html`](./der.html). {VERSAO}.\n",
-         "Gerado por `tools/gerar-der.py`, que lê as tabelas do site em `site/database/schema.sql`.\n",
+         f"Integrado ao banco de reservas do site (mesmo Supabase, esquema `public`): {len(T)} tabelas, 4 delas do site (`SIT_`), e {len(E)} ligações. Diagrama em [`der.html`](./der.html). {VERSAO}.\n",
+         "Gerado por `tools/gerar-der.py`, que lê as tabelas do site em `site/database/schema.sql` e os textos em `site/database/gerar_der.py`.\n",
          "## Integração com o site\n"]
     l += [f"- **{a}.** {b}" for a, b in INTEGRACAO]
-    l += ["", "## Nomenclatura\n", "Tabelas da vistoria levam o prefixo `VST_` (ex.: `VST_VISTORIA`); as do site (`PROPRIEDADE`, `UNIDADE`, `RESERVA`, `BLOQUEIO`) ficam sem prefixo. Mesmo padrão do site: " + ", ".join(f"`{a}` {b}" for a, b in PREFIXOS) + ". Restrições `PK_`, `FK_<FILHA>_<PAI>`, `UQ_`, `CK_`, `IX_`.\n"]
+    l += ["", "## Como uma vistoria tira o chalé da venda\n", "| Quando | O que acontece | Tabelas | Situação do chalé |", "|---|---|---|---|"]
+    l += [f"| {a} | {b} | `{c}` | {d} |" for a, b, c, d in PASSOS]
+    l += ["", "## Nomenclatura\n", "Tabelas do projeto Vistorias começam com `VST_`; as do projeto Site, com `SIT_`. Mesmo padrão do site: " + ", ".join(f"`{a}` {b}" for a, b in PREFIXOS) + ". Restrições com o nome completo da tabela: `PK_VST_VISTORIA`, `FK_<FILHA>_<PAI>`, `UQ_`, `CK_`, `EX_`, `IX_`. Os campos não levam o prefixo da tabela.\n"]
     for n in ORDEM:
         t = T[n]
         l += [f"## `{n}` ({GRUPOS[t['grupo']]})\n", PROPOSITO[n] + "\n", f"- **Ligada a:** {', '.join(ligadas_a(n))}",
               f"- **Acesso (RLS):** {ACESSO[n]}", "- **Regras:** " + " ".join(REGRAS[n]) + "\n",
-              "| Campo | Tipo | Obrigatório | Chave | Descrição |", "|---|---|---|---|---|"]
-        for c in t["cols"]:
-            if c["mais"]:
-                l.append(f"| _{c['n']}_ | | | | {c['desc']} |")
-            else:
-                l.append(f"| `{c['n']}`{' **+ novo**' if c['add'] else ''} | `{c['ty']}` | {'sim' if c['req'] else 'não'} | {chave(c) or '—'} | {c['desc']} |")
+              f"| Campo | Tipo | Obrigatório | Chave | Descrição | Exemplo ({CAP[n][PAINEL_IDX.get(n, [0])[0]]}) |", "|---|---|---|---|---|---|"]
+        r = EX[n][PAINEL_IDX.get(n, [0])[0]]
+        for c in t["todas"]:
+            l.append(f"| `{c['n']}`{' **+ novo**' if c['add'] else ''} | `{c['ty']}` | {obrigatorio(c)} | {chave(c) or '—'} | {c['desc']} | {texto(c['n'], r[c['n'].lower()])} |")
         l.append("")
     l += ["## Ligações\n", "| Filha | Campo | Pai | Obrigatória | Leitura |", "|---|---|---|---|---|"]
     l += [f"| `{f}` | {'`ID_VISTORIA` + ' if (f, 'ID_VISTORIA') in COMPOSTAS else ''}`{c}` | `{p}` | {'sim' if obrig(f, c) else 'não'} | {r} |" for f, c, p, pk, r, _ in E]
