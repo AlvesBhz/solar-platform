@@ -839,6 +839,16 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 
 /* resultado da consulta de disponibilidade (abaixo da barra) */
 #bkPopup { flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; }
+/* o calendário aberto fica sempre por cima do resultado */
+#bookingBar { position: relative; z-index: 2; }
+#bkResult { position: relative; z-index: 1; }
+/* campo de data que falta: destaque curto */
+.bk-need { animation: bkNeed 1.8s ease both; }
+@keyframes bkNeed {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(201,185,138,0); }
+  15%, 70% { box-shadow: inset 0 0 0 1.5px rgba(201,185,138,0.85); background: rgba(201,185,138,0.08); }
+}
+@media (prefers-reduced-motion: reduce) { .bk-need { animation: none; box-shadow: inset 0 0 0 1.5px rgba(201,185,138,0.85); } }
 #bkResult {
   display: none; width: 100%; max-width: 48rem; margin: 0.75rem auto 0;
   padding: 1.1rem 1.4rem 1.2rem; color: #e7e5e4; font-size: 0.8rem; line-height: 1.5;

@@ -43,6 +43,14 @@ window.Disponibilidade = (function () {
     }
     return el;
   }
+  function destacar(campo) {
+    var el = document.querySelector('[data-field="' + campo + '"]');
+    if (!el) return;
+    el.classList.remove('bk-need');
+    void el.offsetWidth;                 /* reinicia a animação se clicar de novo */
+    el.classList.add('bk-need');
+    setTimeout(function () { el.classList.remove('bk-need'); }, 1800);
+  }
   function esconder() {
     var el = document.getElementById('bkResult');
     if (el) { el.classList.remove('is-on'); el.innerHTML = ''; }
@@ -101,8 +109,12 @@ window.Disponibilidade = (function () {
   function consultar() {
     var s = Booking.getState();
     if (!s.checkin || !s.checkout) {
-      mostrar('<p class="bkr-msg">' + t('Escolha as datas de check-in e check-out.') + '</p>', 'is-off');
-      Booking.open(!s.checkin ? 'checkin' : 'checkout');
+      /* faltam datas: abre o calendário do campo que falta (sem fechar se já estiver aberto)
+         e destaca o campo, em vez de uma mensagem por cima do calendário */
+      esconder();
+      var campo = !s.checkin ? 'checkin' : 'checkout';
+      if (s.active !== campo) Booking.open(campo);
+      destacar(campo);
       return;
     }
     var chave = chaveDe(s);
