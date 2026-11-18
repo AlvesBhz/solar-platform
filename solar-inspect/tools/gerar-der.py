@@ -110,7 +110,7 @@ T["BLOQUEIO"] = comum(
      "DS_OBSERVACAO": "Resumo da ocorrência que motivou o bloqueio."},
     [], "do canal")
 
-T["USUARIO"] = dict(grupo="ace", cols=[
+T["VST_USUARIO"] = dict(grupo="ace", cols=[
     col("ID_USUARIO", "uuid", pk=True, desc="Mesmo id do login no Supabase Auth (auth.users)."),
     col("NM_USUARIO", "text", desc="Nome completo."),
     col("CD_LOGIN", "text", uq=True, desc="Usuário de acesso (ex.: ana.souza), minúsculo."),
@@ -120,11 +120,11 @@ T["USUARIO"] = dict(grupo="ace", cols=[
     col("DT_ACEITE_LGPD", "timestamptz", False, desc="Aceite do termo de uso de localização e fotos."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro."),
     col("DT_ATUALIZACAO", "timestamptz", desc="Última alteração.")])
-T["USUARIO_PROPRIEDADE"] = dict(grupo="ace", cols=[
+T["VST_USUARIO_PROPRIEDADE"] = dict(grupo="ace", cols=[
     col("ID_USUARIO", "uuid", pk=True, fk=True, desc="Usuário."),
     col("ID_PROPRIEDADE", "bigint", pk=True, fk=True, desc="Pousada que ele pode ver."),
     col("DT_CRIACAO", "timestamptz", desc="Quando o acesso foi dado.")])
-T["LOG_EVENTO"] = dict(grupo="ace", cols=[
+T["VST_LOG_EVENTO"] = dict(grupo="ace", cols=[
     col("ID_LOG_EVENTO", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("ID_USUARIO", "uuid", False, fk=True, desc="Quem fez; vazio para eventos do sistema."),
     col("ID_PROPRIEDADE", "bigint", False, fk=True, desc="Pousada afetada."),
@@ -134,7 +134,7 @@ T["LOG_EVENTO"] = dict(grupo="ace", cols=[
     col("DS_EVENTO", "text", desc="Frase legível para a tela de auditoria."),
     col("DS_DADOS", "jsonb", False, desc="Antes e depois, quando houver."),
     col("DT_EVENTO", "timestamptz", desc="Momento do evento.")])
-T["AMBIENTE"] = dict(grupo="cad", cols=[
+T["VST_AMBIENTE"] = dict(grupo="cad", cols=[
     col("ID_AMBIENTE", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("ID_UNIDADE", "bigint", fk=True, desc="Unidade do cômodo."),
     col("NM_AMBIENTE", "text", desc="Sala, Quarto, Banheiro, Varanda…"),
@@ -142,7 +142,7 @@ T["AMBIENTE"] = dict(grupo="cad", cols=[
     col("DS_FOTO_REFERENCIA", "text", False, desc="Caminho no Storage da foto de como deve ficar."),
     col("SG_ATIVO", "boolean", desc="Inativo sai do checklist."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
-T["ITEM"] = dict(grupo="cad", cols=[
+T["VST_ITEM"] = dict(grupo="cad", cols=[
     col("ID_ITEM", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("ID_AMBIENTE", "bigint", fk=True, desc="Cômodo onde o item é conferido."),
     col("NM_ITEM", "text", desc="Ex.: Toalhas de banho, Frigobar."),
@@ -152,7 +152,7 @@ T["ITEM"] = dict(grupo="cad", cols=[
     col("QTDE_ESPERADA", "smallint", False, desc="Quantidade que deve haver (contagem)."),
     col("NO_ORDEM", "smallint", desc="Ordem dentro do cômodo."),
     col("SG_ATIVO", "boolean", desc="Inativo sai do checklist.")])
-T["TIPO_VISTORIA"] = dict(grupo="apo", cols=[
+T["VST_TIPO_VISTORIA"] = dict(grupo="apo", cols=[
     col("ID_TIPO_VISTORIA", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("NM_TIPO_VISTORIA", "text", uq=True, desc="Entrada, Saída, Rotina, Manutenção…"),
     col("TP_COMPORTAMENTO", "text", desc="ENTRADA, SAIDA, ROTINA ou MANUTENCAO: regra que o app aplica."),
@@ -161,11 +161,11 @@ T["TIPO_VISTORIA"] = dict(grupo="apo", cols=[
     col("SG_EXIGE_ASSINATURA", "boolean", desc="Pede assinatura no fim."),
     col("SG_ATIVO", "boolean", desc="Inativo some da lista."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
-T["TIPO_VISTORIA_ITEM"] = dict(grupo="apo", cols=[
+T["VST_TIPO_VISTORIA_ITEM"] = dict(grupo="apo", cols=[
     col("ID_TIPO_VISTORIA", "bigint", pk=True, fk=True, desc="Tipo de vistoria."),
     col("ID_ITEM", "bigint", pk=True, fk=True, desc="Item que entra nesse tipo."),
     col("NO_ORDEM", "smallint", False, desc="Ordem própria do tipo; vazio segue a do item.")])
-T["VISTORIA"] = dict(grupo="ope", cols=[
+T["VST_VISTORIA"] = dict(grupo="ope", cols=[
     col("ID_VISTORIA", "uuid", pk=True, desc="uuid v7 gerado no celular: funciona offline sem duplicar."),
     col("ID_VISTORIA_ENTRADA", "uuid", False, fk=True, desc="Na Saída, a Entrada da mesma estadia (comparação)."),
     col("ID_USUARIO", "uuid", fk=True, desc="Assessor que fez."),
@@ -186,14 +186,14 @@ T["VISTORIA"] = dict(grupo="ope", cols=[
     col("DS_ASSINATURA", "text", False, desc="Caminho no Storage da assinatura."),
     col("TP_SITUACAO_RESULTANTE", "text", desc="Situação em que a unidade ficou (LIBERADO, MANUTENCAO…)."),
     col("DS_OBSERVACAO", "text", False, desc="Observação geral.")])
-T["RESPOSTA"] = dict(grupo="ope", cols=[
+T["VST_RESPOSTA"] = dict(grupo="ope", cols=[
     col("ID_VISTORIA", "uuid", pk=True, fk=True, desc="Vistoria."),
     col("ID_ITEM", "bigint", pk=True, fk=True, desc="Item conferido."),
     col("TP_RESPOSTA", "text", desc="OK, PROBLEMA ou NAO_SE_APLICA."),
     col("QTDE_ENCONTRADA", "smallint", False, desc="Contagem, quando o item tem quantidade."),
     col("DS_OBSERVACAO", "text", False, desc="Obrigatória quando PROBLEMA."),
     col("DT_RESPOSTA", "timestamptz", desc="Momento no celular.")])
-T["OCORRENCIA"] = dict(grupo="ope", cols=[
+T["VST_OCORRENCIA"] = dict(grupo="ope", cols=[
     col("ID_OCORRENCIA", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("ID_VISTORIA", "uuid", fk=True, desc="Vistoria de origem."),
     col("ID_ITEM", "bigint", fk=True, desc="Item com problema."),
@@ -205,7 +205,7 @@ T["OCORRENCIA"] = dict(grupo="ope", cols=[
     col("DS_TRATAMENTO", "text", False, desc="O que a gestão fez."),
     col("DT_ABERTURA", "timestamptz", desc="Abertura."),
     col("DT_RESOLUCAO", "timestamptz", False, desc="Exigida quando RESOLVIDA.")])
-T["FOTO"] = dict(grupo="ope", cols=[
+T["VST_FOTO"] = dict(grupo="ope", cols=[
     col("ID_FOTO", "uuid", pk=True, desc="uuid v7 gerado no celular."),
     col("ID_VISTORIA", "uuid", fk=True, desc="Vistoria (com ID_ITEM, aponta a resposta)."),
     col("ID_ITEM", "bigint", fk=True, desc="Item fotografado."),
@@ -222,11 +222,11 @@ X = [56, 496, 936, 1376, 1816]
 FUNDO1, FUNDO2 = 1085, 1108
 LARG, ALT = X[4] + W + 68, FUNDO2 + 24
 POS = {
-    "USUARIO": (X[0], 40), "USUARIO_PROPRIEDADE": (X[0], 300), "LOG_EVENTO": (X[0], 446),
+    "VST_USUARIO": (X[0], 40), "VST_USUARIO_PROPRIEDADE": (X[0], 300), "VST_LOG_EVENTO": (X[0], 446),
     "PROPRIEDADE": (X[1], 40), "BLOQUEIO": (X[1], 380),
-    "RESERVA": (X[2], 40), "UNIDADE": (X[2], 262), "AMBIENTE": (X[2], 655), "ITEM": (X[2], 858),
-    "VISTORIA": (X[3], 40), "RESPOSTA": (X[3], 490), "OCORRENCIA": (X[3], 693),
-    "TIPO_VISTORIA": (X[4], 116), "TIPO_VISTORIA_ITEM": (X[4], 330), "FOTO": (X[4], 471),
+    "RESERVA": (X[2], 40), "UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 655), "VST_ITEM": (X[2], 858),
+    "VST_VISTORIA": (X[3], 40), "VST_RESPOSTA": (X[3], 490), "VST_OCORRENCIA": (X[3], 693),
+    "VST_TIPO_VISTORIA": (X[4], 116), "VST_TIPO_VISTORIA_ITEM": (X[4], 330), "VST_FOTO": (X[4], 471),
 }
 assert set(POS) == set(T)
 
@@ -251,40 +251,40 @@ E = [  # filho, campo, pai, chave, rótulo, pontos (porta do filho primeiro)
     ("UNIDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "pertence a", lig("UNIDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c12 + 74, "e", "d")),
     ("RESERVA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "reserva", lig("RESERVA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 24, "d", "d")),
     ("BLOQUEIO", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "bloqueia", lig("BLOQUEIO", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c12 + 54, "d", "e")),
-    ("OCORRENCIA", "ID_BLOQUEIO", "BLOQUEIO", "ID_BLOQUEIO", "tira da venda",
-     [(X[3], ry("OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, ry("OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, FUNDO2),
+    ("VST_OCORRENCIA", "ID_BLOQUEIO", "BLOQUEIO", "ID_BLOQUEIO", "tira da venda",
+     [(X[3], ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, FUNDO2),
       (c01 + 100, FUNDO2), (c01 + 100, ry("BLOQUEIO", "ID_BLOQUEIO")), (X[1], ry("BLOQUEIO", "ID_BLOQUEIO"))]),
-    ("USUARIO_PROPRIEDADE", "ID_USUARIO", "USUARIO", "ID_USUARIO", "acessa", lig("USUARIO_PROPRIEDADE", "ID_USUARIO", "USUARIO", "ID_USUARIO", X[0] - 26, "e", "e")),
-    ("USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "acesso a", lig("USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 74)),
-    ("AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "cômodo de", lig("AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 36, "d", "d")),
-    ("ITEM", "ID_AMBIENTE", "AMBIENTE", "ID_AMBIENTE", "conferido em", lig("ITEM", "ID_AMBIENTE", "AMBIENTE", "ID_AMBIENTE", X[2] - 30, "e", "e")),
-    ("TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "TIPO_VISTORIA", "ID_TIPO_VISTORIA", "compõe", lig("TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "TIPO_VISTORIA", "ID_TIPO_VISTORIA", c4 + 22, "d", "d")),
-    ("TIPO_VISTORIA_ITEM", "ID_ITEM", "ITEM", "ID_ITEM", "inclui",
-     [(c4, ry("TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, ry("TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, FUNDO1),
-      (c23 + 108, FUNDO1), (c23 + 108, ry("ITEM", "ID_ITEM")), (c23, ry("ITEM", "ID_ITEM"))]),
-    ("VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "vistoria de", lig("VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 72, "e", "d")),
-    ("VISTORIA", "ID_TIPO_VISTORIA", "TIPO_VISTORIA", "ID_TIPO_VISTORIA", "do tipo", lig("VISTORIA", "ID_TIPO_VISTORIA", "TIPO_VISTORIA", "ID_TIPO_VISTORIA", 0)),
-    ("VISTORIA", "ID_USUARIO", "USUARIO", "ID_USUARIO", "feita por",
-     [(X[3], ry("VISTORIA", "ID_USUARIO")), (c23 + 104, ry("VISTORIA", "ID_USUARIO")), (c23 + 104, 16),
-      (c01 + 34, 16), (c01 + 34, ry("USUARIO", "ID_USUARIO")), (c01, ry("USUARIO", "ID_USUARIO"))]),
-    ("VISTORIA", "ID_VISTORIA_ENTRADA", "VISTORIA", "ID_VISTORIA", "entrada de", lig("VISTORIA", "ID_VISTORIA_ENTRADA", "VISTORIA", "ID_VISTORIA", c34 + 26, "d", "d")),
-    ("VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", "da estadia", lig("VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", c23 + 48, "e", "d")),
-    ("RESPOSTA", "ID_VISTORIA", "VISTORIA", "ID_VISTORIA", "responde", lig("RESPOSTA", "ID_VISTORIA", "VISTORIA", "ID_VISTORIA", c34 + 96, "d", "d")),
-    ("RESPOSTA", "ID_ITEM", "ITEM", "ID_ITEM", "sobre", lig("RESPOSTA", "ID_ITEM", "ITEM", "ID_ITEM", c23 + 96, "e", "d")),
-    ("FOTO", "ID_ITEM", "RESPOSTA", "ID_ITEM", "evidência de", lig("FOTO", "ID_ITEM", "RESPOSTA", "ID_ITEM", 0, "e", "d")),
-    ("OCORRENCIA", "ID_ITEM", "RESPOSTA", "ID_ITEM", "nasce de", lig("OCORRENCIA", "ID_ITEM", "RESPOSTA", "ID_ITEM", c34 + 44, "d", "d")),
-    ("OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "na unidade", lig("OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 84, "e", "d")),
-    ("LOG_EVENTO", "ID_USUARIO", "USUARIO", "ID_USUARIO", "por", lig("LOG_EVENTO", "ID_USUARIO", "USUARIO", "ID_USUARIO", X[0] - 42, "e", "e")),
-    ("LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "em", lig("LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 90)),
+    ("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "acessa", lig("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 26, "e", "e")),
+    ("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "acesso a", lig("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 74)),
+    ("VST_AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "cômodo de", lig("VST_AMBIENTE", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 36, "d", "d")),
+    ("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", "conferido em", lig("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", X[2] - 30, "e", "e")),
+    ("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "compõe", lig("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", c4 + 22, "d", "d")),
+    ("VST_TIPO_VISTORIA_ITEM", "ID_ITEM", "VST_ITEM", "ID_ITEM", "inclui",
+     [(c4, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, FUNDO1),
+      (c23 + 108, FUNDO1), (c23 + 108, ry("VST_ITEM", "ID_ITEM")), (c23, ry("VST_ITEM", "ID_ITEM"))]),
+    ("VST_VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "vistoria de", lig("VST_VISTORIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 72, "e", "d")),
+    ("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "do tipo", lig("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", 0)),
+    ("VST_VISTORIA", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "feita por",
+     [(X[3], ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, 16),
+      (c01 + 34, 16), (c01 + 34, ry("VST_USUARIO", "ID_USUARIO")), (c01, ry("VST_USUARIO", "ID_USUARIO"))]),
+    ("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", "entrada de", lig("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", c34 + 26, "d", "d")),
+    ("VST_VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", "da estadia", lig("VST_VISTORIA", "ID_RESERVA", "RESERVA", "ID_RESERVA", c23 + 48, "e", "d")),
+    ("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", "responde", lig("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", c34 + 96, "d", "d")),
+    ("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", "sobre", lig("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", c23 + 96, "e", "d")),
+    ("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "evidência de", lig("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", 0, "e", "d")),
+    ("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "nasce de", lig("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", c34 + 44, "d", "d")),
+    ("VST_OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", "na unidade", lig("VST_OCORRENCIA", "ID_UNIDADE", "UNIDADE", "ID_UNIDADE", c23 + 84, "e", "d")),
+    ("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "por", lig("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 42, "e", "e")),
+    ("VST_LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", "em", lig("VST_LOG_EVENTO", "ID_PROPRIEDADE", "PROPRIEDADE", "ID_PROPRIEDADE", c01 + 90)),
 ]
 # FKs compostas: a outra coluna segue na mesma linha desenhada
-COMPOSTAS = {("FOTO", "ID_VISTORIA"), ("OCORRENCIA", "ID_VISTORIA")}
+COMPOSTAS = {("VST_FOTO", "ID_VISTORIA"), ("VST_OCORRENCIA", "ID_VISTORIA")}
 marcadas = {(t, c["n"]) for t, d in T.items() for c in d["cols"] if c["fk"]}
 assert marcadas == {(e[0], e[1]) for e in E} | COMPOSTAS, marcadas ^ ({(e[0], e[1]) for e in E} | COMPOSTAS)
 for e in E:
     assert any(c["n"] == e[3] and c["pk"] for c in T[e[2]]["cols"]), e
-ROTULO_LIVRE = {("VISTORIA", "ID_VISTORIA_ENTRADA"): (c34 + 32, ry("VISTORIA", "ID_VISTORIA_ENTRADA") - 6)}
-NOMES_FK = {("VISTORIA", "ID_VISTORIA_ENTRADA"): "FK_VISTORIA_VISTORIA_ENTRADA"}
+ROTULO_LIVRE = {("VST_VISTORIA", "ID_VISTORIA_ENTRADA"): (c34 + 32, ry("VST_VISTORIA", "ID_VISTORIA_ENTRADA") - 6)}
+NOMES_FK = {("VST_VISTORIA", "ID_VISTORIA_ENTRADA"): "FK_VST_VISTORIA_VISTORIA_ENTRADA"}
 
 
 def obrig(t, c):
@@ -331,7 +331,7 @@ def caminho(i, pts):
 
 
 def svg():
-    s = [f'<svg id="der" viewBox="0 0 {LARG} {ALT}" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são do site; a VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">']
+    s = [f'<svg id="der" viewBox="0 0 {LARG} {ALT}" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são do site; a VST_VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">']
     s.append('<g class="edges">')
     for i, (f, c, p, pk, rot, pts) in enumerate(E):
         s.append(f'<g class="edge" data-rel="{f} {p}"><title>{NOMES_FK.get((f, c), f"FK_{f}_{p}")}: {f}.{c} → {p}.{pk}</title>')
@@ -382,17 +382,17 @@ PROPOSITO = {
     "UNIDADE": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS.",
     "RESERVA": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).",
     "BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal).",
-    "USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site.",
-    "USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas.",
-    "LOG_EVENTO": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros).",
-    "AMBIENTE": "Cômodos de cada unidade, na ordem em que o assessor percorre.",
-    "ITEM": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada.",
-    "TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma.",
-    "TIPO_VISTORIA_ITEM": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo).",
-    "VISTORIA": "Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou.",
-    "RESPOSTA": "A resposta de cada item: OK, PROBLEMA ou não se aplica.",
-    "OCORRENCIA": "Problema encontrado que precisa de tratamento; pode tirar a unidade da venda.",
-    "FOTO": "Evidência de uma resposta, com local e horário da câmera.",
+    "VST_USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site.",
+    "VST_USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas.",
+    "VST_LOG_EVENTO": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros).",
+    "VST_AMBIENTE": "Cômodos de cada unidade, na ordem em que o assessor percorre.",
+    "VST_ITEM": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada.",
+    "VST_TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma.",
+    "VST_TIPO_VISTORIA_ITEM": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo).",
+    "VST_VISTORIA": "Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou.",
+    "VST_RESPOSTA": "A resposta de cada item: OK, PROBLEMA ou não se aplica.",
+    "VST_OCORRENCIA": "Problema encontrado que precisa de tratamento; pode tirar a unidade da venda.",
+    "VST_FOTO": "Evidência de uma resposta, com local e horário da câmera.",
 }
 REGRAS = {
     "PROPRIEDADE": ["Campos novos (+) são acrescentados à tabela do site; nada existente muda.",
@@ -400,7 +400,7 @@ REGRAS = {
                     "Substitui a antiga tabela CONFIGURACAO: os parâmetros ficam na pousada."],
     "UNIDADE": ["Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.",
                 "TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.",
-                "Só muda pela função alterar_situacao_unidade (grava LOG_EVENTO).",
+                "Só muda pela função alterar_situacao_unidade (grava VST_LOG_EVENTO).",
                 "CD_HASH_QR único; rotacionar soma 1 em NO_VERSAO_QR.",
                 "Latitude e longitude vêm juntas ou ficam vazias juntas."],
     "RESERVA": ["A vistoria só lê: status, datas e unidade.", "Entrada no dia DT_CHECKIN, Saída no dia DT_CHECKOUT.",
@@ -408,64 +408,64 @@ REGRAS = {
     "BLOQUEIO": ["Ocorrência crítica cria bloqueio MANUTENCAO de hoje até a liberação.",
                  "Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).",
                  "Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.",
-                 "Nenhum campo novo: o vínculo fica em OCORRENCIA.ID_BLOQUEIO."],
-    "USUARIO": ["ID_USUARIO = auth.users.id (login do Supabase Auth).", "CD_LOGIN e CD_CPF únicos; CPF com 11 números e dígitos válidos.",
+                 "Nenhum campo novo: o vínculo fica em VST_OCORRENCIA.ID_BLOQUEIO."],
+    "VST_USUARIO": ["ID_USUARIO = auth.users.id (login do Supabase Auth).", "CD_LOGIN e CD_CPF únicos; CPF com 11 números e dígitos válidos.",
                 "TP_PERFIL: ASSESSOR, GESTOR ou ADMIN.", "Inativo não entra (checado no login e nas regras de acesso)."],
-    "USUARIO_PROPRIEDADE": ["Chave composta: um acesso por usuário e pousada.", "ADMIN vê todas; os demais só as listadas aqui."],
-    "LOG_EVENTO": ["Só inserção: ninguém altera nem apaga.", "Gravado pelas funções do banco, não pelo app."],
-    "AMBIENTE": ["Nome único por unidade.", "NO_ORDEM define a ordem do checklist."],
-    "ITEM": ["Nome único por cômodo.", "QTDE_ESPERADA ≥ 0 quando informada."],
-    "TIPO_VISTORIA": ["TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.", "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL."],
-    "TIPO_VISTORIA_ITEM": ["Chave composta: o item entra uma vez em cada tipo."],
-    "VISTORIA": ["Id uuid v7 gerado no celular: reenviar não duplica.", "DT_FIM ≥ DT_INICIO.",
+    "VST_USUARIO_PROPRIEDADE": ["Chave composta: um acesso por usuário e pousada.", "ADMIN vê todas; os demais só as listadas aqui."],
+    "VST_LOG_EVENTO": ["Só inserção: ninguém altera nem apaga.", "Gravado pelas funções do banco, não pelo app."],
+    "VST_AMBIENTE": ["Nome único por unidade.", "NO_ORDEM define a ordem do checklist."],
+    "VST_ITEM": ["Nome único por cômodo.", "QTDE_ESPERADA ≥ 0 quando informada."],
+    "VST_TIPO_VISTORIA": ["TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.", "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL."],
+    "VST_TIPO_VISTORIA_ITEM": ["Chave composta: o item entra uma vez em cada tipo."],
+    "VST_VISTORIA": ["Id uuid v7 gerado no celular: reenviar não duplica.", "DT_FIM ≥ DT_INICIO.",
                  "TP_STATUS: ENVIADA ou SINALIZADA; SINALIZADA exige DS_SINALIZACOES.",
                  "Saída com SG_EXIGE_ENTRADA aponta a Entrada em ID_VISTORIA_ENTRADA.",
                  "ID_RESERVA só aceita reserva da mesma unidade.", "Gravada só pela função enviar_vistoria."],
-    "RESPOSTA": ["Chave composta: uma resposta por item na vistoria.", "TP_RESPOSTA: OK, PROBLEMA ou NAO_SE_APLICA.",
+    "VST_RESPOSTA": ["Chave composta: uma resposta por item na vistoria.", "TP_RESPOSTA: OK, PROBLEMA ou NAO_SE_APLICA.",
                  "PROBLEMA exige DS_OBSERVACAO."],
-    "OCORRENCIA": ["Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM).", "TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.",
+    "VST_OCORRENCIA": ["Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM).", "TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.",
                    "TP_STATUS: ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA; RESOLVIDA exige DT_RESOLUCAO.",
                    "ID_BLOQUEIO preenchido quando a unidade sai da venda."],
-    "FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "Arquivo em bucket privado; CD_ARQUIVO único."],
+    "VST_FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "Arquivo em bucket privado; CD_ARQUIVO único."],
 }
 ACESSO = {
     "PROPRIEDADE": "Todos leem as pousadas a que têm acesso; ADMIN altera.",
     "UNIDADE": "Leitura por acesso à pousada; situação muda só pela função; GESTOR e ADMIN cadastram.",
     "RESERVA": "Leitura para GESTOR e ADMIN e para o assessor na agenda do dia; escrita só do site.",
     "BLOQUEIO": "Leitura por acesso à pousada; criado e encerrado pelas funções da vistoria.",
-    "USUARIO": "Cada um lê o próprio; GESTOR lê a equipe; ADMIN cadastra.",
-    "USUARIO_PROPRIEDADE": "ADMIN mantém; cada um lê os próprios acessos.",
-    "LOG_EVENTO": "GESTOR e ADMIN leem; só funções inserem.",
-    "AMBIENTE": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
-    "ITEM": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
-    "TIPO_VISTORIA": "Todos leem; ADMIN mantém.",
-    "TIPO_VISTORIA_ITEM": "Todos leem; GESTOR e ADMIN mantêm.",
-    "VISTORIA": "Assessor lê as próprias; GESTOR e ADMIN leem as da pousada; insere só enviar_vistoria.",
-    "RESPOSTA": "Mesma regra da vistoria.",
-    "OCORRENCIA": "Leitura por acesso à pousada; GESTOR e ADMIN tratam.",
-    "FOTO": "Mesma regra da vistoria; o arquivo sai por link assinado.",
+    "VST_USUARIO": "Cada um lê o próprio; GESTOR lê a equipe; ADMIN cadastra.",
+    "VST_USUARIO_PROPRIEDADE": "ADMIN mantém; cada um lê os próprios acessos.",
+    "VST_LOG_EVENTO": "GESTOR e ADMIN leem; só funções inserem.",
+    "VST_AMBIENTE": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
+    "VST_ITEM": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
+    "VST_TIPO_VISTORIA": "Todos leem; ADMIN mantém.",
+    "VST_TIPO_VISTORIA_ITEM": "Todos leem; GESTOR e ADMIN mantêm.",
+    "VST_VISTORIA": "Assessor lê as próprias; GESTOR e ADMIN leem as da pousada; insere só enviar_vistoria.",
+    "VST_RESPOSTA": "Mesma regra da vistoria.",
+    "VST_OCORRENCIA": "Leitura por acesso à pousada; GESTOR e ADMIN tratam.",
+    "VST_FOTO": "Mesma regra da vistoria; o arquivo sai por link assinado.",
 }
 INTEGRACAO = [
     ("Cadastro único", "PROPRIEDADE e UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +)."),
     ("Manutenção tira da venda", "Ocorrência crítica cria um BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam BLOQUEIO: as datas saem da venda sem mudar nada no site."),
     ("Liberar devolve à venda", "Ao liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis."),
     ("Reserva vira agenda", "Reservas CONFIRMADA geram a vistoria de Entrada no DT_CHECKIN e a de Saída no DT_CHECKOUT."),
-    ("Saída ligada à estadia", "VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
-    ("Mesma equipe", "USUARIO e USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos."),
+    ("Saída ligada à estadia", "VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
+    ("Mesma equipe", "VST_USUARIO e VST_USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos."),
     ("Conflito", "Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede."),
 ]
 FUNCOES = [
     ("enviar_vistoria", "Recebe a vistoria do celular (com respostas e fotos), valida presença e regras, abre ocorrências, cria o bloqueio se preciso e muda a situação da unidade. Reenviar o mesmo id não duplica."),
     ("validar_presenca", "Calcula a distância até o ponto da unidade e diz se está dentro do raio e com precisão aceitável."),
-    ("alterar_situacao_unidade", "Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava LOG_EVENTO."),
+    ("alterar_situacao_unidade", "Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava VST_LOG_EVENTO."),
     ("rotacionar_qr", "Gera novo CD_HASH_QR e soma 1 em NO_VERSAO_QR: etiquetas antigas deixam de valer."),
     ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
 ]
 PREFIXOS = [("ID_", "identificador"), ("NM_", "nome"), ("DS_", "descrição ou texto livre"), ("DT_", "data ou data e hora"),
             ("HR_", "hora"), ("VL_", "valor (dinheiro, coordenada)"), ("QTDE_", "quantidade"), ("NO_", "número (ordem, versão)"),
             ("CD_", "código"), ("TP_", "lista fixa, valores em MAIÚSCULAS"), ("SG_", "sim/não (boolean)")]
-ORDEM = ["UNIDADE", "PROPRIEDADE", "RESERVA", "BLOQUEIO", "VISTORIA", "RESPOSTA", "OCORRENCIA", "FOTO",
-         "AMBIENTE", "ITEM", "TIPO_VISTORIA", "TIPO_VISTORIA_ITEM", "USUARIO", "USUARIO_PROPRIEDADE", "LOG_EVENTO"]
+ORDEM = ["UNIDADE", "PROPRIEDADE", "RESERVA", "BLOQUEIO", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO",
+         "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_LOG_EVENTO"]
 assert sorted(ORDEM) == sorted(T)
 
 
@@ -791,7 +791,7 @@ def pagina():
     <div class="scroll" id="area">
 {svg()}
     </div>
-    <figcaption>A UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a RESERVA; respostas, fotos e ocorrências saem dela. Uma ocorrência crítica cria um BLOQUEIO, que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK.</figcaption>
+    <figcaption>A UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VST_VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a RESERVA; respostas, fotos e ocorrências saem dela. Uma ocorrência crítica cria um BLOQUEIO, que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK.</figcaption>
   </figure>
 
   <div class="tela" id="tela" role="dialog" aria-modal="true" aria-label="DER em tela cheia" hidden>
@@ -821,7 +821,7 @@ def pagina():
   </ul>
 
   <h2>Nomenclatura</h2>
-  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições PK_, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_ e IX_. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VISTORIA, FOTO).</p>
+  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tabelas da vistoria com o prefixo VST_ (as do site ficam sem prefixo), tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições PK_, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_ e IX_. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VST_VISTORIA, VST_FOTO).</p>
   <ul class="pref">{"".join(f"<li><code>{a}</code> {esc(b)}</li>" for a, b in PREFIXOS)}</ul>
 </div>
 
@@ -835,7 +835,7 @@ def markdown():
          "Gerado por `tools/gerar-der.py`, que lê as tabelas do site em `site/database/schema.sql`.\n",
          "## Integração com o site\n"]
     l += [f"- **{a}.** {b}" for a, b in INTEGRACAO]
-    l += ["", "## Nomenclatura\n", "Mesmo padrão do site: " + ", ".join(f"`{a}` {b}" for a, b in PREFIXOS) + ". Restrições `PK_`, `FK_<FILHA>_<PAI>`, `UQ_`, `CK_`, `IX_`.\n"]
+    l += ["", "## Nomenclatura\n", "Tabelas da vistoria levam o prefixo `VST_` (ex.: `VST_VISTORIA`); as do site (`PROPRIEDADE`, `UNIDADE`, `RESERVA`, `BLOQUEIO`) ficam sem prefixo. Mesmo padrão do site: " + ", ".join(f"`{a}` {b}" for a, b in PREFIXOS) + ". Restrições `PK_`, `FK_<FILHA>_<PAI>`, `UQ_`, `CK_`, `IX_`.\n"]
     for n in ORDEM:
         t = T[n]
         l += [f"## `{n}` ({GRUPOS[t['grupo']]})\n", PROPOSITO[n] + "\n", f"- **Ligada a:** {', '.join(ligadas_a(n))}",
@@ -849,7 +849,7 @@ def markdown():
         l.append("")
     l += ["## Ligações\n", "| Filha | Campo | Pai | Obrigatória | Leitura |", "|---|---|---|---|---|"]
     l += [f"| `{f}` | {'`ID_VISTORIA` + ' if (f, 'ID_VISTORIA') in COMPOSTAS else ''}`{c}` | `{p}` | {'sim' if obrig(f, c) else 'não'} | {r} |" for f, c, p, pk, r, _ in E]
-    l += ["", "`USUARIO.ID_USUARIO` também referencia `auth.users` (Supabase Auth).", ""]
+    l += ["", "`VST_USUARIO.ID_USUARIO` também referencia `auth.users` (Supabase Auth).", ""]
     return "\n".join(l)
 
 

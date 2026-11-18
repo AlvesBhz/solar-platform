@@ -158,7 +158,7 @@ html.travado, html.travado body { overflow: hidden; }
       <button type="button" class="btn pri" id="abrir"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Tela cheia</button>
     </div>
     <div class="scroll" id="area">
-<svg id="der" viewBox="0 0 2194 1132" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são do site; a VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">
+<svg id="der" viewBox="0 0 2194 1132" role="img" aria-label="Diagrama entidade-relacionamento das vistorias integrado ao banco do site: PROPRIEDADE, UNIDADE, RESERVA e BLOQUEIO são do site; a VST_VISTORIA liga unidade, tipo, assessor e reserva; respostas, fotos e ocorrências saem dela.">
 <g class="edges">
 <g class="edge" data-rel="UNIDADE PROPRIEDADE"><title>FK_UNIDADE_PROPRIEDADE: UNIDADE.ID_PROPRIEDADE → PROPRIEDADE.ID_PROPRIEDADE</title>
 <path class="wire" d="M936,330.5 L880,330.5 L880,89.5 L806,89.5"/>
@@ -172,87 +172,87 @@ html.travado, html.travado body { overflow: hidden; }
 <path class="wire" d="M806,448.5 L860,448.5 L860,311.5 L875,311.5 Q880,303.5 885,311.5 L936,311.5"/>
 <g class="card"><path d="M818.0,448.5 L806.0,442.5 M818.0,448.5 L806.0,454.5"/><circle cx="824.0" cy="448.5" r="3.5" class="hollow"/><path d="M929.0,317.5 L929.0,305.5"/><path d="M924.0,317.5 L924.0,305.5"/></g>
 <text class="elabel" x="860.0" y="380.0" transform="rotate(-90 860.0 380.0)" dy="-5" text-anchor="middle">bloqueia</text></g>
-<g class="edge" data-rel="OCORRENCIA BLOQUEIO"><title>FK_OCORRENCIA_BLOQUEIO: OCORRENCIA.ID_BLOQUEIO → BLOQUEIO.ID_BLOQUEIO</title>
+<g class="edge" data-rel="VST_OCORRENCIA BLOQUEIO"><title>FK_VST_OCORRENCIA_BLOQUEIO: VST_OCORRENCIA.ID_BLOQUEIO → BLOQUEIO.ID_BLOQUEIO</title>
 <path class="wire" d="M1376,818.5 L1347,818.5 Q1342,810.5 1337,818.5 L1258,818.5 L1258,1108 L466,1108 L466,429.5 L496,429.5"/>
 <g class="card"><path d="M1364.0,818.5 L1376.0,824.5 M1364.0,818.5 L1376.0,812.5"/><circle cx="1358.0" cy="818.5" r="3.5" class="hollow"/><path d="M489.0,435.5 L489.0,423.5"/><circle cx="481.0" cy="429.5" r="3.5" class="hollow"/></g>
 <text class="elabel" x="862.0" y="1108.0" dy="-6" text-anchor="middle">tira da venda</text></g>
-<g class="edge" data-rel="USUARIO_PROPRIEDADE USUARIO"><title>FK_USUARIO_PROPRIEDADE_USUARIO: USUARIO_PROPRIEDADE.ID_USUARIO → USUARIO.ID_USUARIO</title>
+<g class="edge" data-rel="VST_USUARIO_PROPRIEDADE VST_USUARIO"><title>FK_VST_USUARIO_PROPRIEDADE_VST_USUARIO: VST_USUARIO_PROPRIEDADE.ID_USUARIO → VST_USUARIO.ID_USUARIO</title>
 <path class="wire" d="M56,349.5 L30,349.5 L30,89.5 L56,89.5"/>
 <g class="card"><path d="M44.0,349.5 L56.0,355.5 M44.0,349.5 L56.0,343.5"/><circle cx="38.0" cy="349.5" r="3.5" class="hollow"/><path d="M49.0,95.5 L49.0,83.5"/><path d="M44.0,95.5 L44.0,83.5"/></g>
 <text class="elabel" x="30.0" y="219.5" transform="rotate(-90 30.0 219.5)" dy="-5" text-anchor="middle">acessa</text></g>
-<g class="edge" data-rel="USUARIO_PROPRIEDADE PROPRIEDADE"><title>FK_USUARIO_PROPRIEDADE_PROPRIEDADE: USUARIO_PROPRIEDADE.ID_PROPRIEDADE → PROPRIEDADE.ID_PROPRIEDADE</title>
+<g class="edge" data-rel="VST_USUARIO_PROPRIEDADE PROPRIEDADE"><title>FK_VST_USUARIO_PROPRIEDADE_PROPRIEDADE: VST_USUARIO_PROPRIEDADE.ID_PROPRIEDADE → PROPRIEDADE.ID_PROPRIEDADE</title>
 <path class="wire" d="M366,368.5 L440,368.5 L440,89.5 L496,89.5"/>
 <g class="card"><path d="M378.0,368.5 L366.0,362.5 M378.0,368.5 L366.0,374.5"/><circle cx="384.0" cy="368.5" r="3.5" class="hollow"/><path d="M489.0,95.5 L489.0,83.5"/><path d="M484.0,95.5 L484.0,83.5"/></g>
 <text class="elabel" x="440.0" y="229.0" transform="rotate(-90 440.0 229.0)" dy="-5" text-anchor="middle">acesso a</text></g>
-<g class="edge" data-rel="AMBIENTE UNIDADE"><title>FK_AMBIENTE_UNIDADE: AMBIENTE.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
+<g class="edge" data-rel="VST_AMBIENTE UNIDADE"><title>FK_VST_AMBIENTE_UNIDADE: VST_AMBIENTE.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
 <path class="wire" d="M1246,723.5 L1282,723.5 L1282,311.5 L1246,311.5"/>
 <g class="card"><path d="M1258.0,723.5 L1246.0,717.5 M1258.0,723.5 L1246.0,729.5"/><circle cx="1264.0" cy="723.5" r="3.5" class="hollow"/><path d="M1253.0,305.5 L1253.0,317.5"/><path d="M1258.0,305.5 L1258.0,317.5"/></g>
 <text class="elabel" x="1282.0" y="517.5" transform="rotate(-90 1282.0 517.5)" dy="-5" text-anchor="middle">cômodo de</text></g>
-<g class="edge" data-rel="ITEM AMBIENTE"><title>FK_ITEM_AMBIENTE: ITEM.ID_AMBIENTE → AMBIENTE.ID_AMBIENTE</title>
+<g class="edge" data-rel="VST_ITEM VST_AMBIENTE"><title>FK_VST_ITEM_VST_AMBIENTE: VST_ITEM.ID_AMBIENTE → VST_AMBIENTE.ID_AMBIENTE</title>
 <path class="wire" d="M936,926.5 L906,926.5 L906,704.5 L936,704.5"/>
 <g class="card"><path d="M924.0,926.5 L936.0,932.5 M924.0,926.5 L936.0,920.5"/><circle cx="918.0" cy="926.5" r="3.5" class="hollow"/><path d="M929.0,710.5 L929.0,698.5"/><path d="M924.0,710.5 L924.0,698.5"/></g>
 <text class="elabel" x="906.0" y="815.5" transform="rotate(-90 906.0 815.5)" dy="-5" text-anchor="middle">conferido em</text></g>
-<g class="edge" data-rel="TIPO_VISTORIA_ITEM TIPO_VISTORIA"><title>FK_TIPO_VISTORIA_ITEM_TIPO_VISTORIA: TIPO_VISTORIA_ITEM.ID_TIPO_VISTORIA → TIPO_VISTORIA.ID_TIPO_VISTORIA</title>
+<g class="edge" data-rel="VST_TIPO_VISTORIA_ITEM VST_TIPO_VISTORIA"><title>FK_VST_TIPO_VISTORIA_ITEM_VST_TIPO_VISTORIA: VST_TIPO_VISTORIA_ITEM.ID_TIPO_VISTORIA → VST_TIPO_VISTORIA.ID_TIPO_VISTORIA</title>
 <path class="wire" d="M2126,379.5 L2148,379.5 L2148,165.5 L2126,165.5"/>
 <g class="card"><path d="M2138.0,379.5 L2126.0,373.5 M2138.0,379.5 L2126.0,385.5"/><circle cx="2144.0" cy="379.5" r="3.5" class="hollow"/><path d="M2133.0,159.5 L2133.0,171.5"/><path d="M2138.0,159.5 L2138.0,171.5"/></g>
 <text class="elabel" x="2148.0" y="272.5" transform="rotate(-90 2148.0 272.5)" dy="-5" text-anchor="middle">compõe</text></g>
-<g class="edge" data-rel="TIPO_VISTORIA_ITEM ITEM"><title>FK_TIPO_VISTORIA_ITEM_ITEM: TIPO_VISTORIA_ITEM.ID_ITEM → ITEM.ID_ITEM</title>
+<g class="edge" data-rel="VST_TIPO_VISTORIA_ITEM VST_ITEM"><title>FK_VST_TIPO_VISTORIA_ITEM_VST_ITEM: VST_TIPO_VISTORIA_ITEM.ID_ITEM → VST_ITEM.ID_ITEM</title>
 <path class="wire" d="M2126,398.5 L2166,398.5 L2166,1085 L1354,1085 L1354,907.5 L1263,907.5 Q1258,899.5 1253,907.5 L1246,907.5"/>
 <g class="card"><path d="M2138.0,398.5 L2126.0,392.5 M2138.0,398.5 L2126.0,404.5"/><circle cx="2144.0" cy="398.5" r="3.5" class="hollow"/><path d="M1253.0,901.5 L1253.0,913.5"/><path d="M1258.0,901.5 L1258.0,913.5"/></g>
 <text class="elabel" x="1760.0" y="1085.0" dy="-6" text-anchor="middle">inclui</text></g>
-<g class="edge" data-rel="VISTORIA UNIDADE"><title>FK_VISTORIA_UNIDADE: VISTORIA.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
+<g class="edge" data-rel="VST_VISTORIA UNIDADE"><title>FK_VST_VISTORIA_UNIDADE: VST_VISTORIA.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
 <path class="wire" d="M1376,146.5 L1318,146.5 L1318,311.5 L1246,311.5"/>
 <g class="card"><path d="M1364.0,146.5 L1376.0,152.5 M1364.0,146.5 L1376.0,140.5"/><circle cx="1358.0" cy="146.5" r="3.5" class="hollow"/><path d="M1253.0,305.5 L1253.0,317.5"/><path d="M1258.0,305.5 L1258.0,317.5"/></g>
 <text class="elabel" x="1318.0" y="229.0" transform="rotate(-90 1318.0 229.0)" dy="-5" text-anchor="middle">vistoria de</text></g>
-<g class="edge" data-rel="VISTORIA TIPO_VISTORIA"><title>FK_VISTORIA_TIPO_VISTORIA: VISTORIA.ID_TIPO_VISTORIA → TIPO_VISTORIA.ID_TIPO_VISTORIA</title>
+<g class="edge" data-rel="VST_VISTORIA VST_TIPO_VISTORIA"><title>FK_VST_VISTORIA_VST_TIPO_VISTORIA: VST_VISTORIA.ID_TIPO_VISTORIA → VST_TIPO_VISTORIA.ID_TIPO_VISTORIA</title>
 <path class="wire" d="M1686,165.5 L1777,165.5 Q1782,157.5 1787,165.5 L1816,165.5"/>
 <g class="card"><path d="M1698.0,165.5 L1686.0,159.5 M1698.0,165.5 L1686.0,171.5"/><circle cx="1704.0" cy="165.5" r="3.5" class="hollow"/><path d="M1809.0,171.5 L1809.0,159.5"/><path d="M1804.0,171.5 L1804.0,159.5"/></g>
 <text class="elabel" x="1751.0" y="165.5" dy="-6" text-anchor="middle">do tipo</text></g>
-<g class="edge" data-rel="VISTORIA USUARIO"><title>FK_VISTORIA_USUARIO: VISTORIA.ID_USUARIO → USUARIO.ID_USUARIO</title>
+<g class="edge" data-rel="VST_VISTORIA VST_USUARIO"><title>FK_VST_VISTORIA_VST_USUARIO: VST_VISTORIA.ID_USUARIO → VST_USUARIO.ID_USUARIO</title>
 <path class="wire" d="M1376,127.5 L1350,127.5 L1350,16 L400,16 L400,89.5 L366,89.5"/>
 <g class="card"><path d="M1364.0,127.5 L1376.0,133.5 M1364.0,127.5 L1376.0,121.5"/><circle cx="1358.0" cy="127.5" r="3.5" class="hollow"/><path d="M373.0,83.5 L373.0,95.5"/><path d="M378.0,83.5 L378.0,95.5"/></g>
 <text class="elabel" x="875.0" y="16.0" dy="-6" text-anchor="middle">feita por</text></g>
-<g class="edge" data-rel="VISTORIA VISTORIA"><title>FK_VISTORIA_VISTORIA_ENTRADA: VISTORIA.ID_VISTORIA_ENTRADA → VISTORIA.ID_VISTORIA</title>
+<g class="edge" data-rel="VST_VISTORIA VST_VISTORIA"><title>FK_VST_VISTORIA_VISTORIA_ENTRADA: VST_VISTORIA.ID_VISTORIA_ENTRADA → VST_VISTORIA.ID_VISTORIA</title>
 <path class="wire" d="M1686,108.5 L1712,108.5 L1712,89.5 L1686,89.5"/>
 <g class="card"><path d="M1698.0,108.5 L1686.0,102.5 M1698.0,108.5 L1686.0,114.5"/><circle cx="1704.0" cy="108.5" r="3.5" class="hollow"/><path d="M1693.0,83.5 L1693.0,95.5"/><circle cx="1701.0" cy="89.5" r="3.5" class="hollow"/></g>
 <text class="elabel" x="1718" y="102.5">entrada de</text></g>
-<g class="edge" data-rel="VISTORIA RESERVA"><title>FK_VISTORIA_RESERVA: VISTORIA.ID_RESERVA → RESERVA.ID_RESERVA</title>
+<g class="edge" data-rel="VST_VISTORIA RESERVA"><title>FK_VST_VISTORIA_RESERVA: VST_VISTORIA.ID_RESERVA → RESERVA.ID_RESERVA</title>
 <path class="wire" d="M1376,184.5 L1323,184.5 Q1318,176.5 1313,184.5 L1294,184.5 L1294,89.5 L1246,89.5"/>
 <g class="card"><path d="M1364.0,184.5 L1376.0,190.5 M1364.0,184.5 L1376.0,178.5"/><circle cx="1358.0" cy="184.5" r="3.5" class="hollow"/><path d="M1253.0,83.5 L1253.0,95.5"/><circle cx="1261.0" cy="89.5" r="3.5" class="hollow"/></g>
 <text class="elabel" x="1294.0" y="137.0" transform="rotate(-90 1294.0 137.0)" dy="-5" text-anchor="middle">da estadia</text></g>
-<g class="edge" data-rel="RESPOSTA VISTORIA"><title>FK_RESPOSTA_VISTORIA: RESPOSTA.ID_VISTORIA → VISTORIA.ID_VISTORIA</title>
+<g class="edge" data-rel="VST_RESPOSTA VST_VISTORIA"><title>FK_VST_RESPOSTA_VST_VISTORIA: VST_RESPOSTA.ID_VISTORIA → VST_VISTORIA.ID_VISTORIA</title>
 <path class="wire" d="M1686,539.5 L1782,539.5 L1782,89.5 L1686,89.5"/>
 <g class="card"><path d="M1698.0,539.5 L1686.0,533.5 M1698.0,539.5 L1686.0,545.5"/><circle cx="1704.0" cy="539.5" r="3.5" class="hollow"/><path d="M1693.0,83.5 L1693.0,95.5"/><path d="M1698.0,83.5 L1698.0,95.5"/></g>
 <text class="elabel" x="1782.0" y="314.5" transform="rotate(-90 1782.0 314.5)" dy="-5" text-anchor="middle">responde</text></g>
-<g class="edge" data-rel="RESPOSTA ITEM"><title>FK_RESPOSTA_ITEM: RESPOSTA.ID_ITEM → ITEM.ID_ITEM</title>
+<g class="edge" data-rel="VST_RESPOSTA VST_ITEM"><title>FK_VST_RESPOSTA_VST_ITEM: VST_RESPOSTA.ID_ITEM → VST_ITEM.ID_ITEM</title>
 <path class="wire" d="M1376,558.5 L1342,558.5 L1342,907.5 L1263,907.5 Q1258,899.5 1253,907.5 L1246,907.5"/>
 <g class="card"><path d="M1364.0,558.5 L1376.0,564.5 M1364.0,558.5 L1376.0,552.5"/><circle cx="1358.0" cy="558.5" r="3.5" class="hollow"/><path d="M1253.0,901.5 L1253.0,913.5"/><path d="M1258.0,901.5 L1258.0,913.5"/></g>
 <text class="elabel" x="1342.0" y="733.0" transform="rotate(-90 1342.0 733.0)" dy="-5" text-anchor="middle">sobre</text></g>
-<g class="edge" data-rel="FOTO RESPOSTA"><title>FK_FOTO_RESPOSTA: FOTO.ID_ITEM → RESPOSTA.ID_ITEM</title>
+<g class="edge" data-rel="VST_FOTO VST_RESPOSTA"><title>FK_VST_FOTO_VST_RESPOSTA: VST_FOTO.ID_ITEM → VST_RESPOSTA.ID_ITEM</title>
 <path class="wire" d="M1816,558.5 L1686,558.5"/>
 <g class="card"><path d="M1804.0,558.5 L1816.0,564.5 M1804.0,558.5 L1816.0,552.5"/><circle cx="1798.0" cy="558.5" r="3.5" class="hollow"/><path d="M1693.0,552.5 L1693.0,564.5"/><path d="M1698.0,552.5 L1698.0,564.5"/></g>
 <text class="elabel" x="1751.0" y="558.5" dy="-6" text-anchor="middle">evidência de</text></g>
-<g class="edge" data-rel="OCORRENCIA RESPOSTA"><title>FK_OCORRENCIA_RESPOSTA: OCORRENCIA.ID_ITEM → RESPOSTA.ID_ITEM</title>
+<g class="edge" data-rel="VST_OCORRENCIA VST_RESPOSTA"><title>FK_VST_OCORRENCIA_VST_RESPOSTA: VST_OCORRENCIA.ID_ITEM → VST_RESPOSTA.ID_ITEM</title>
 <path class="wire" d="M1686,780.5 L1730,780.5 L1730,558.5 L1686,558.5"/>
 <g class="card"><path d="M1698.0,780.5 L1686.0,774.5 M1698.0,780.5 L1686.0,786.5"/><circle cx="1704.0" cy="780.5" r="3.5" class="hollow"/><path d="M1693.0,552.5 L1693.0,564.5"/><path d="M1698.0,552.5 L1698.0,564.5"/></g>
 <text class="elabel" x="1730.0" y="669.5" transform="rotate(-90 1730.0 669.5)" dy="-5" text-anchor="middle">nasce de</text></g>
-<g class="edge" data-rel="OCORRENCIA UNIDADE"><title>FK_OCORRENCIA_UNIDADE: OCORRENCIA.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
+<g class="edge" data-rel="VST_OCORRENCIA UNIDADE"><title>FK_VST_OCORRENCIA_UNIDADE: VST_OCORRENCIA.ID_UNIDADE → UNIDADE.ID_UNIDADE</title>
 <path class="wire" d="M1376,799.5 L1347,799.5 Q1342,791.5 1337,799.5 L1330,799.5 L1330,311.5 L1246,311.5"/>
 <g class="card"><path d="M1364.0,799.5 L1376.0,805.5 M1364.0,799.5 L1376.0,793.5"/><circle cx="1358.0" cy="799.5" r="3.5" class="hollow"/><path d="M1253.0,305.5 L1253.0,317.5"/><path d="M1258.0,305.5 L1258.0,317.5"/></g>
 <text class="elabel" x="1330.0" y="555.5" transform="rotate(-90 1330.0 555.5)" dy="-5" text-anchor="middle">na unidade</text></g>
-<g class="edge" data-rel="LOG_EVENTO USUARIO"><title>FK_LOG_EVENTO_USUARIO: LOG_EVENTO.ID_USUARIO → USUARIO.ID_USUARIO</title>
+<g class="edge" data-rel="VST_LOG_EVENTO VST_USUARIO"><title>FK_VST_LOG_EVENTO_VST_USUARIO: VST_LOG_EVENTO.ID_USUARIO → VST_USUARIO.ID_USUARIO</title>
 <path class="wire" d="M56,514.5 L14,514.5 L14,89.5 L56,89.5"/>
 <g class="card"><path d="M44.0,514.5 L56.0,520.5 M44.0,514.5 L56.0,508.5"/><circle cx="38.0" cy="514.5" r="3.5" class="hollow"/><path d="M49.0,95.5 L49.0,83.5"/><circle cx="41.0" cy="89.5" r="3.5" class="hollow"/></g>
 <text class="elabel" x="14.0" y="302.0" transform="rotate(-90 14.0 302.0)" dy="-5" text-anchor="middle">por</text></g>
-<g class="edge" data-rel="LOG_EVENTO PROPRIEDADE"><title>FK_LOG_EVENTO_PROPRIEDADE: LOG_EVENTO.ID_PROPRIEDADE → PROPRIEDADE.ID_PROPRIEDADE</title>
+<g class="edge" data-rel="VST_LOG_EVENTO PROPRIEDADE"><title>FK_VST_LOG_EVENTO_PROPRIEDADE: VST_LOG_EVENTO.ID_PROPRIEDADE → PROPRIEDADE.ID_PROPRIEDADE</title>
 <path class="wire" d="M366,533.5 L456,533.5 L456,89.5 L496,89.5"/>
 <g class="card"><path d="M378.0,533.5 L366.0,527.5 M378.0,533.5 L366.0,539.5"/><circle cx="384.0" cy="533.5" r="3.5" class="hollow"/><path d="M489.0,95.5 L489.0,83.5"/><circle cx="481.0" cy="89.5" r="3.5" class="hollow"/></g>
 <text class="elabel" x="456.0" y="311.5" transform="rotate(-90 456.0 311.5)" dy="-5" text-anchor="middle">em</text></g>
 </g>
-<g class="tbl g-ace" data-t="USUARIO" tabindex="0" role="button" aria-label="Tabela USUARIO">
+<g class="tbl g-ace" data-t="VST_USUARIO" tabindex="0" role="button" aria-label="Tabela VST_USUARIO">
 <rect class="box" x="56" y="40" width="310" height="211" rx="6"/>
 <path class="head" d="M56,80 V46 Q56,40 62,40 H360 Q366,40 366,46 V80 Z"/>
-<text class="tname" x="68" y="65">USUARIO</text>
+<text class="tname" x="68" y="65">VST_USUARIO</text>
 <text class="tgroup" x="354" y="65" text-anchor="end">ACESSO</text>
 <text class="key" x="66" y="93.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="100" y="93.5">ID_USUARIO</text>
@@ -278,10 +278,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="100" y="245.5">DT_ATUALIZACAO</text>
 <text class="ctype" x="356" y="245.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-ace" data-t="USUARIO_PROPRIEDADE" tabindex="0" role="button" aria-label="Tabela USUARIO_PROPRIEDADE">
+<g class="tbl g-ace" data-t="VST_USUARIO_PROPRIEDADE" tabindex="0" role="button" aria-label="Tabela VST_USUARIO_PROPRIEDADE">
 <rect class="box" x="56" y="300" width="310" height="97" rx="6"/>
 <path class="head" d="M56,340 V306 Q56,300 62,300 H360 Q366,300 366,306 V340 Z"/>
-<text class="tname" x="68" y="325">USUARIO_PROPRIEDADE</text>
+<text class="tname" x="68" y="325">VST_USUARIO_PROPRIEDADE</text>
 <text class="tgroup" x="354" y="325" text-anchor="end">ACESSO</text>
 <text class="key" x="66" y="353.5"><tspan class="kpk">PK</tspan> <tspan class="kfk">FK</tspan></text>
 <text class="cname" x="100" y="353.5">ID_USUARIO</text>
@@ -293,10 +293,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="100" y="391.5">DT_CRIACAO</text>
 <text class="ctype" x="356" y="391.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-ace" data-t="LOG_EVENTO" tabindex="0" role="button" aria-label="Tabela LOG_EVENTO">
+<g class="tbl g-ace" data-t="VST_LOG_EVENTO" tabindex="0" role="button" aria-label="Tabela VST_LOG_EVENTO">
 <rect class="box" x="56" y="446" width="310" height="211" rx="6"/>
 <path class="head" d="M56,486 V452 Q56,446 62,446 H360 Q366,446 366,452 V486 Z"/>
-<text class="tname" x="68" y="471">LOG_EVENTO</text>
+<text class="tname" x="68" y="471">VST_LOG_EVENTO</text>
 <text class="tgroup" x="354" y="471" text-anchor="end">ACESSO</text>
 <text class="key" x="66" y="499.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="100" y="499.5">ID_LOG_EVENTO</text>
@@ -467,10 +467,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname add" x="980" y="600.5">DT_ATUALIZACAO</text>
 <text class="ctype" x="1236" y="600.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-cad" data-t="AMBIENTE" tabindex="0" role="button" aria-label="Tabela AMBIENTE">
+<g class="tbl g-cad" data-t="VST_AMBIENTE" tabindex="0" role="button" aria-label="Tabela VST_AMBIENTE">
 <rect class="box" x="936" y="655" width="310" height="173" rx="6"/>
 <path class="head" d="M936,695 V661 Q936,655 942,655 H1240 Q1246,655 1246,661 V695 Z"/>
-<text class="tname" x="948" y="680">AMBIENTE</text>
+<text class="tname" x="948" y="680">VST_AMBIENTE</text>
 <text class="tgroup" x="1234" y="680" text-anchor="end">CADASTRO</text>
 <text class="key" x="946" y="708.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="980" y="708.5">ID_AMBIENTE</text>
@@ -492,10 +492,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="980" y="822.5">DT_CRIACAO</text>
 <text class="ctype" x="1236" y="822.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-cad" data-t="ITEM" tabindex="0" role="button" aria-label="Tabela ITEM">
+<g class="tbl g-cad" data-t="VST_ITEM" tabindex="0" role="button" aria-label="Tabela VST_ITEM">
 <rect class="box" x="936" y="858" width="310" height="211" rx="6"/>
 <path class="head" d="M936,898 V864 Q936,858 942,858 H1240 Q1246,858 1246,864 V898 Z"/>
-<text class="tname" x="948" y="883">ITEM</text>
+<text class="tname" x="948" y="883">VST_ITEM</text>
 <text class="tgroup" x="1234" y="883" text-anchor="end">CADASTRO</text>
 <text class="key" x="946" y="911.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="980" y="911.5">ID_ITEM</text>
@@ -522,10 +522,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="980" y="1063.5">SG_ATIVO</text>
 <text class="ctype" x="1236" y="1063.5" text-anchor="end">boolean</text>
 </g>
-<g class="tbl g-ope" data-t="VISTORIA" tabindex="0" role="button" aria-label="Tabela VISTORIA">
+<g class="tbl g-ope" data-t="VST_VISTORIA" tabindex="0" role="button" aria-label="Tabela VST_VISTORIA">
 <rect class="box" x="1376" y="40" width="310" height="420" rx="6"/>
 <path class="head" d="M1376,80 V46 Q1376,40 1382,40 H1680 Q1686,40 1686,46 V80 Z"/>
-<text class="tname" x="1388" y="65">VISTORIA</text>
+<text class="tname" x="1388" y="65">VST_VISTORIA</text>
 <text class="tgroup" x="1674" y="65" text-anchor="end">OPERAÇÃO</text>
 <text class="key" x="1386" y="93.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="1420" y="93.5">ID_VISTORIA</text>
@@ -584,10 +584,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname opt" x="1420" y="454.5">DS_OBSERVACAO?</text>
 <text class="ctype" x="1676" y="454.5" text-anchor="end">text</text>
 </g>
-<g class="tbl g-ope" data-t="RESPOSTA" tabindex="0" role="button" aria-label="Tabela RESPOSTA">
+<g class="tbl g-ope" data-t="VST_RESPOSTA" tabindex="0" role="button" aria-label="Tabela VST_RESPOSTA">
 <rect class="box" x="1376" y="490" width="310" height="154" rx="6"/>
 <path class="head" d="M1376,530 V496 Q1376,490 1382,490 H1680 Q1686,490 1686,496 V530 Z"/>
-<text class="tname" x="1388" y="515">RESPOSTA</text>
+<text class="tname" x="1388" y="515">VST_RESPOSTA</text>
 <text class="tgroup" x="1674" y="515" text-anchor="end">OPERAÇÃO</text>
 <text class="key" x="1386" y="543.5"><tspan class="kpk">PK</tspan> <tspan class="kfk">FK</tspan></text>
 <text class="cname" x="1420" y="543.5">ID_VISTORIA</text>
@@ -607,10 +607,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="1420" y="638.5">DT_RESPOSTA</text>
 <text class="ctype" x="1676" y="638.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-ope" data-t="OCORRENCIA" tabindex="0" role="button" aria-label="Tabela OCORRENCIA">
+<g class="tbl g-ope" data-t="VST_OCORRENCIA" tabindex="0" role="button" aria-label="Tabela VST_OCORRENCIA">
 <rect class="box" x="1376" y="693" width="310" height="249" rx="6"/>
 <path class="head" d="M1376,733 V699 Q1376,693 1382,693 H1680 Q1686,693 1686,699 V733 Z"/>
-<text class="tname" x="1388" y="718">OCORRENCIA</text>
+<text class="tname" x="1388" y="718">VST_OCORRENCIA</text>
 <text class="tgroup" x="1674" y="718" text-anchor="end">OPERAÇÃO</text>
 <text class="key" x="1386" y="746.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="1420" y="746.5">ID_OCORRENCIA</text>
@@ -645,10 +645,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname opt" x="1420" y="936.5">DT_RESOLUCAO?</text>
 <text class="ctype" x="1676" y="936.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-apo" data-t="TIPO_VISTORIA" tabindex="0" role="button" aria-label="Tabela TIPO_VISTORIA">
+<g class="tbl g-apo" data-t="VST_TIPO_VISTORIA" tabindex="0" role="button" aria-label="Tabela VST_TIPO_VISTORIA">
 <rect class="box" x="1816" y="116" width="310" height="192" rx="6"/>
 <path class="head" d="M1816,156 V122 Q1816,116 1822,116 H2120 Q2126,116 2126,122 V156 Z"/>
-<text class="tname" x="1828" y="141">TIPO_VISTORIA</text>
+<text class="tname" x="1828" y="141">VST_TIPO_VISTORIA</text>
 <text class="tgroup" x="2114" y="141" text-anchor="end">APOIO</text>
 <text class="key" x="1826" y="169.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="1860" y="169.5">ID_TIPO_VISTORIA</text>
@@ -672,10 +672,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="1860" y="302.5">DT_CRIACAO</text>
 <text class="ctype" x="2116" y="302.5" text-anchor="end">timestamptz</text>
 </g>
-<g class="tbl g-apo" data-t="TIPO_VISTORIA_ITEM" tabindex="0" role="button" aria-label="Tabela TIPO_VISTORIA_ITEM">
+<g class="tbl g-apo" data-t="VST_TIPO_VISTORIA_ITEM" tabindex="0" role="button" aria-label="Tabela VST_TIPO_VISTORIA_ITEM">
 <rect class="box" x="1816" y="330" width="310" height="97" rx="6"/>
 <path class="head" d="M1816,370 V336 Q1816,330 1822,330 H2120 Q2126,330 2126,336 V370 Z"/>
-<text class="tname" x="1828" y="355">TIPO_VISTORIA_ITEM</text>
+<text class="tname" x="1828" y="355">VST_TIPO_VISTORIA_ITEM</text>
 <text class="tgroup" x="2114" y="355" text-anchor="end">APOIO</text>
 <text class="key" x="1826" y="383.5"><tspan class="kpk">PK</tspan> <tspan class="kfk">FK</tspan></text>
 <text class="cname" x="1860" y="383.5">ID_TIPO_VISTORIA</text>
@@ -687,10 +687,10 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname opt" x="1860" y="421.5">NO_ORDEM?</text>
 <text class="ctype" x="2116" y="421.5" text-anchor="end">smallint</text>
 </g>
-<g class="tbl g-ope" data-t="FOTO" tabindex="0" role="button" aria-label="Tabela FOTO">
+<g class="tbl g-ope" data-t="VST_FOTO" tabindex="0" role="button" aria-label="Tabela VST_FOTO">
 <rect class="box" x="1816" y="471" width="310" height="211" rx="6"/>
 <path class="head" d="M1816,511 V477 Q1816,471 1822,471 H2120 Q2126,471 2126,477 V511 Z"/>
-<text class="tname" x="1828" y="496">FOTO</text>
+<text class="tname" x="1828" y="496">VST_FOTO</text>
 <text class="tgroup" x="2114" y="496" text-anchor="end">OPERAÇÃO</text>
 <text class="key" x="1826" y="524.5"><tspan class="kpk">PK</tspan></text>
 <text class="cname" x="1860" y="524.5">ID_FOTO</text>
@@ -720,7 +720,7 @@ html.travado, html.travado body { overflow: hidden; }
 </g>
 </svg>
     </div>
-    <figcaption>A UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a RESERVA; respostas, fotos e ocorrências saem dela. Uma ocorrência crítica cria um BLOQUEIO, que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK.</figcaption>
+    <figcaption>A UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VST_VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a RESERVA; respostas, fotos e ocorrências saem dela. Uma ocorrência crítica cria um BLOQUEIO, que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK.</figcaption>
   </figure>
 
   <div class="tela" id="tela" role="dialog" aria-modal="true" aria-label="DER em tela cheia" hidden>
@@ -736,7 +736,7 @@ html.travado, html.travado body { overflow: hidden; }
 
   <h2>Integração com o site</h2>
   <ul class="integ">
-    <li><b>Cadastro único</b>PROPRIEDADE e UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +).</li><li><b>Manutenção tira da venda</b>Ocorrência crítica cria um BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam BLOQUEIO: as datas saem da venda sem mudar nada no site.</li><li><b>Liberar devolve à venda</b>Ao liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis.</li><li><b>Reserva vira agenda</b>Reservas CONFIRMADA geram a vistoria de Entrada no DT_CHECKIN e a de Saída no DT_CHECKOUT.</li><li><b>Saída ligada à estadia</b>VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio.</li><li><b>Mesma equipe</b>USUARIO e USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos.</li><li><b>Conflito</b>Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede.</li>
+    <li><b>Cadastro único</b>PROPRIEDADE e UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +).</li><li><b>Manutenção tira da venda</b>Ocorrência crítica cria um BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam BLOQUEIO: as datas saem da venda sem mudar nada no site.</li><li><b>Liberar devolve à venda</b>Ao liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis.</li><li><b>Reserva vira agenda</b>Reservas CONFIRMADA geram a vistoria de Entrada no DT_CHECKIN e a de Saída no DT_CHECKOUT.</li><li><b>Saída ligada à estadia</b>VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio.</li><li><b>Mesma equipe</b>VST_USUARIO e VST_USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos.</li><li><b>Conflito</b>Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede.</li>
   </ul>
 
   <h2>Regras e campos de cada tabela</h2>
@@ -744,8 +744,8 @@ html.travado, html.travado body { overflow: hidden; }
 <article class="tcard g-site" id="t-UNIDADE" data-t="UNIDADE">
   <header><h3>UNIDADE</h3><span class="chip">SITE · COMUM</span></header>
   <p class="purpose">Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS.</p>
-  <p class="meta">12 campos no site + 9 novos · ligada a AMBIENTE, BLOQUEIO, OCORRENCIA, PROPRIEDADE, RESERVA, VISTORIA</p>
-  <ul><li>Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.</li><li>TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.</li><li>Só muda pela função alterar_situacao_unidade (grava LOG_EVENTO).</li><li>CD_HASH_QR único; rotacionar soma 1 em NO_VERSAO_QR.</li><li>Latitude e longitude vêm juntas ou ficam vazias juntas.</li></ul>
+  <p class="meta">12 campos no site + 9 novos · ligada a BLOQUEIO, PROPRIEDADE, RESERVA, VST_AMBIENTE, VST_OCORRENCIA, VST_VISTORIA</p>
+  <ul><li>Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.</li><li>TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.</li><li>Só muda pela função alterar_situacao_unidade (grava VST_LOG_EVENTO).</li><li>CD_HASH_QR único; rotacionar soma 1 em NO_VERSAO_QR.</li><li>Latitude e longitude vêm juntas ou ficam vazias juntas.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura por acesso à pousada; situação muda só pela função; GESTOR e ADMIN cadastram.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_UNIDADE</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Identificador do chalé, quarto ou suíte.</td></tr><tr><td><code>ID_PROPRIEDADE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Pousada dona da unidade.</td></tr><tr><td><code>CD_UNIDADE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Código curto (ex.: casa-do-mirante), também usado no site.</td></tr><tr><td><code>NM_UNIDADE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Nome exibido.</td></tr><tr><td><code>TP_UNIDADE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>CHALE, QUARTO ou SUITE.</td></tr><tr><td><code>SG_ATIVO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Unidade inativa some da venda e da agenda de vistorias.</td></tr><tr class=add><td><code>DS_ANDAR</code> <b class=novo>+ novo</b></td><td><code>text</code></td><td>não</td><td>—</td><td>Andar ou bloco, para o assessor se localizar.</td></tr><tr class=add><td><code>TP_VALIDACAO</code> <b class=novo>+ novo</b></td><td><code>text</code></td><td>não</td><td>—</td><td>Validação desta unidade (QR, GPS ou QR_E_GPS); vazio herda da propriedade.</td></tr><tr class=add><td><code>VL_LATITUDE</code> <b class=novo>+ novo</b></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Ponto da unidade; vazio usa o da propriedade.</td></tr><tr class=add><td><code>VL_LONGITUDE</code> <b class=novo>+ novo</b></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Longitude da unidade.</td></tr><tr class=add><td><code>QTDE_RAIO_METROS</code> <b class=novo>+ novo</b></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Raio próprio; vazio usa o da propriedade.</td></tr><tr class=add><td><code>TP_SITUACAO</code> <b class=novo>+ novo</b></td><td><code>text</code></td><td>sim</td><td>—</td><td>EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.</td></tr><tr class=add><td><code>CD_HASH_QR</code> <b class=novo>+ novo</b></td><td><code>text</code></td><td>sim</td><td>UQ</td><td>Hash do código impresso no QR da porta.</td></tr><tr class=add><td><code>NO_VERSAO_QR</code> <b class=novo>+ novo</b></td><td><code>smallint</code></td><td>sim</td><td>—</td><td>Versão do QR; rotacionar invalida as etiquetas antigas.</td></tr><tr class=add><td><code>DT_ATUALIZACAO</code> <b class=novo>+ novo</b></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Última mudança de situação ou de QR.</td></tr></tbody></table><p class="meta">Outros campos do site: QTDE_MAX_HOSPEDES, QTDE_MAX_ADULTOS, QTDE_MAX_CRIANCAS, VL_TAXA_LIMPEZA, NO_ORDEM, DT_CRIACAO. Ver o DER das Reservas.</p>
@@ -754,7 +754,7 @@ html.travado, html.travado body { overflow: hidden; }
 <article class="tcard g-site" id="t-PROPRIEDADE" data-t="PROPRIEDADE">
   <header><h3>PROPRIEDADE</h3><span class="chip">SITE · COMUM</span></header>
   <p class="purpose">Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio).</p>
-  <p class="meta">15 campos no site + 6 novos · ligada a LOG_EVENTO, UNIDADE, USUARIO_PROPRIEDADE</p>
+  <p class="meta">15 campos no site + 6 novos · ligada a UNIDADE, VST_LOG_EVENTO, VST_USUARIO_PROPRIEDADE</p>
   <ul><li>Campos novos (+) são acrescentados à tabela do site; nada existente muda.</li><li>TP_VALIDACAO: QR, GPS ou QR_E_GPS.</li><li>Raio entre 10 e 1.000 m; precisão máxima entre 5 e 500 m.</li><li>Substitui a antiga tabela CONFIGURACAO: os parâmetros ficam na pousada.</li></ul>
   <p class="acesso"><b>Acesso:</b> Todos leem as pousadas a que têm acesso; ADMIN altera.</p>
   <details><summary>Campos e descrições</summary>
@@ -764,7 +764,7 @@ html.travado, html.travado body { overflow: hidden; }
 <article class="tcard g-site" id="t-RESERVA" data-t="RESERVA">
   <header><h3>RESERVA</h3><span class="chip">SITE · COMUM</span></header>
   <p class="purpose">Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).</p>
-  <p class="meta">24 campos no site + 0 novos · ligada a UNIDADE, VISTORIA</p>
+  <p class="meta">24 campos no site + 0 novos · ligada a UNIDADE, VST_VISTORIA</p>
   <ul><li>A vistoria só lê: status, datas e unidade.</li><li>Entrada no dia DT_CHECKIN, Saída no dia DT_CHECKOUT.</li><li>Estadias do Airbnb e do Booking não estão aqui: chegam como BLOQUEIO CANAL_EXTERNO.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura para GESTOR e ADMIN e para o assessor na agenda do dia; escrita só do site.</p>
   <details><summary>Campos e descrições</summary>
@@ -774,117 +774,117 @@ html.travado, html.travado body { overflow: hidden; }
 <article class="tcard g-site" id="t-BLOQUEIO" data-t="BLOQUEIO">
   <header><h3>BLOQUEIO</h3><span class="chip">SITE · COMUM</span></header>
   <p class="purpose">Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal).</p>
-  <p class="meta">9 campos no site + 0 novos · ligada a OCORRENCIA, UNIDADE</p>
-  <ul><li>Ocorrência crítica cria bloqueio MANUTENCAO de hoje até a liberação.</li><li>Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).</li><li>Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.</li><li>Nenhum campo novo: o vínculo fica em OCORRENCIA.ID_BLOQUEIO.</li></ul>
+  <p class="meta">9 campos no site + 0 novos · ligada a UNIDADE, VST_OCORRENCIA</p>
+  <ul><li>Ocorrência crítica cria bloqueio MANUTENCAO de hoje até a liberação.</li><li>Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).</li><li>Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.</li><li>Nenhum campo novo: o vínculo fica em VST_OCORRENCIA.ID_BLOQUEIO.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura por acesso à pousada; criado e encerrado pelas funções da vistoria.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_BLOQUEIO</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Identificador do bloqueio.</td></tr><tr><td><code>ID_UNIDADE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Unidade fora da venda.</td></tr><tr><td><code>DT_INI</code></td><td><code>date</code></td><td>sim</td><td>—</td><td>Primeira noite bloqueada.</td></tr><tr><td><code>DT_FIM</code></td><td><code>date</code></td><td>sim</td><td>—</td><td>Dia seguinte à última noite; liberar a unidade encerra aqui.</td></tr><tr><td><code>TP_MOTIVO</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>A vistoria cria bloqueios MANUTENCAO; CANAL_EXTERNO são estadias do Airbnb/Booking.</td></tr><tr><td><code>DS_OBSERVACAO</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Resumo da ocorrência que motivou o bloqueio.</td></tr></tbody></table><p class="meta">Outros campos do site: ID_CALENDARIO, CD_EXTERNO, DT_CRIACAO. Ver o DER das Reservas.</p>
   </details>
 </article>
-<article class="tcard g-ope" id="t-VISTORIA" data-t="VISTORIA">
-  <header><h3>VISTORIA</h3><span class="chip">OPERAÇÃO</span></header>
+<article class="tcard g-ope" id="t-VST_VISTORIA" data-t="VST_VISTORIA">
+  <header><h3>VST_VISTORIA</h3><span class="chip">OPERAÇÃO</span></header>
   <p class="purpose">Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou.</p>
-  <p class="meta">20 campos · ligada a RESERVA, RESPOSTA, TIPO_VISTORIA, UNIDADE, USUARIO</p>
+  <p class="meta">20 campos · ligada a RESERVA, UNIDADE, VST_RESPOSTA, VST_TIPO_VISTORIA, VST_USUARIO</p>
   <ul><li>Id uuid v7 gerado no celular: reenviar não duplica.</li><li>DT_FIM ≥ DT_INICIO.</li><li>TP_STATUS: ENVIADA ou SINALIZADA; SINALIZADA exige DS_SINALIZACOES.</li><li>Saída com SG_EXIGE_ENTRADA aponta a Entrada em ID_VISTORIA_ENTRADA.</li><li>ID_RESERVA só aceita reserva da mesma unidade.</li><li>Gravada só pela função enviar_vistoria.</li></ul>
   <p class="acesso"><b>Acesso:</b> Assessor lê as próprias; GESTOR e ADMIN leem as da pousada; insere só enviar_vistoria.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_VISTORIA</code></td><td><code>uuid</code></td><td>sim</td><td>PK</td><td>uuid v7 gerado no celular: funciona offline sem duplicar.</td></tr><tr><td><code>ID_VISTORIA_ENTRADA</code></td><td><code>uuid</code></td><td>não</td><td>FK</td><td>Na Saída, a Entrada da mesma estadia (comparação).</td></tr><tr><td><code>ID_USUARIO</code></td><td><code>uuid</code></td><td>sim</td><td>FK</td><td>Assessor que fez.</td></tr><tr><td><code>ID_UNIDADE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Unidade vistoriada.</td></tr><tr><td><code>ID_TIPO_VISTORIA</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Tipo aplicado.</td></tr><tr><td><code>ID_RESERVA</code></td><td><code>bigint</code></td><td>não</td><td>FK</td><td>Estadia do site; vazio em rotina e em estadias de canal.</td></tr><tr><td><code>TP_VALIDACAO</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Validação usada: QR, GPS ou QR_E_GPS.</td></tr><tr><td><code>DT_INICIO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Início no celular.</td></tr><tr><td><code>DT_FIM</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Fim no celular.</td></tr><tr><td><code>DT_RECEBIMENTO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Chegada ao servidor (pode ser bem depois, se offline).</td></tr><tr><td><code>VL_LATITUDE</code></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Posição no início.</td></tr><tr><td><code>VL_LONGITUDE</code></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Posição no início.</td></tr><tr><td><code>QTDE_PRECISAO_METROS</code></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Precisão do GPS.</td></tr><tr><td><code>QTDE_DISTANCIA_METROS</code></td><td><code>integer</code></td><td>não</td><td>—</td><td>Distância até o ponto da unidade.</td></tr><tr><td><code>SG_FORA_RAIO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Começou fora do raio aceito.</td></tr><tr><td><code>TP_STATUS</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>ENVIADA ou SINALIZADA (algo fora do padrão).</td></tr><tr><td><code>DS_SINALIZACOES</code></td><td><code>text[]</code></td><td>não</td><td>—</td><td>Motivos: FORA_RAIO, RAPIDA, GPS_IMPRECISO, SEM_ENTRADA…</td></tr><tr><td><code>DS_ASSINATURA</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Caminho no Storage da assinatura.</td></tr><tr><td><code>TP_SITUACAO_RESULTANTE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Situação em que a unidade ficou (LIBERADO, MANUTENCAO…).</td></tr><tr><td><code>DS_OBSERVACAO</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Observação geral.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ope" id="t-RESPOSTA" data-t="RESPOSTA">
-  <header><h3>RESPOSTA</h3><span class="chip">OPERAÇÃO</span></header>
+<article class="tcard g-ope" id="t-VST_RESPOSTA" data-t="VST_RESPOSTA">
+  <header><h3>VST_RESPOSTA</h3><span class="chip">OPERAÇÃO</span></header>
   <p class="purpose">A resposta de cada item: OK, PROBLEMA ou não se aplica.</p>
-  <p class="meta">6 campos · ligada a FOTO, ITEM, OCORRENCIA, VISTORIA</p>
+  <p class="meta">6 campos · ligada a VST_FOTO, VST_ITEM, VST_OCORRENCIA, VST_VISTORIA</p>
   <ul><li>Chave composta: uma resposta por item na vistoria.</li><li>TP_RESPOSTA: OK, PROBLEMA ou NAO_SE_APLICA.</li><li>PROBLEMA exige DS_OBSERVACAO.</li></ul>
   <p class="acesso"><b>Acesso:</b> Mesma regra da vistoria.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_VISTORIA</code></td><td><code>uuid</code></td><td>sim</td><td>PK FK</td><td>Vistoria.</td></tr><tr><td><code>ID_ITEM</code></td><td><code>bigint</code></td><td>sim</td><td>PK FK</td><td>Item conferido.</td></tr><tr><td><code>TP_RESPOSTA</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>OK, PROBLEMA ou NAO_SE_APLICA.</td></tr><tr><td><code>QTDE_ENCONTRADA</code></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Contagem, quando o item tem quantidade.</td></tr><tr><td><code>DS_OBSERVACAO</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Obrigatória quando PROBLEMA.</td></tr><tr><td><code>DT_RESPOSTA</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Momento no celular.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ope" id="t-OCORRENCIA" data-t="OCORRENCIA">
-  <header><h3>OCORRENCIA</h3><span class="chip">OPERAÇÃO</span></header>
+<article class="tcard g-ope" id="t-VST_OCORRENCIA" data-t="VST_OCORRENCIA">
+  <header><h3>VST_OCORRENCIA</h3><span class="chip">OPERAÇÃO</span></header>
   <p class="purpose">Problema encontrado que precisa de tratamento; pode tirar a unidade da venda.</p>
-  <p class="meta">11 campos · ligada a BLOQUEIO, RESPOSTA, UNIDADE</p>
+  <p class="meta">11 campos · ligada a BLOQUEIO, UNIDADE, VST_RESPOSTA</p>
   <ul><li>Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM).</li><li>TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.</li><li>TP_STATUS: ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA; RESOLVIDA exige DT_RESOLUCAO.</li><li>ID_BLOQUEIO preenchido quando a unidade sai da venda.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura por acesso à pousada; GESTOR e ADMIN tratam.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_OCORRENCIA</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Sequencial.</td></tr><tr><td><code>ID_VISTORIA</code></td><td><code>uuid</code></td><td>sim</td><td>FK</td><td>Vistoria de origem.</td></tr><tr><td><code>ID_ITEM</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Item com problema.</td></tr><tr><td><code>ID_UNIDADE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Copiado da vistoria: filtra o painel por unidade.</td></tr><tr><td><code>ID_BLOQUEIO</code></td><td><code>bigint</code></td><td>não</td><td>FK</td><td>Bloqueio MANUTENCAO criado no site, quando houver.</td></tr><tr><td><code>TP_GRAVIDADE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>BAIXA, MEDIA ou CRITICA.</td></tr><tr><td><code>TP_STATUS</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA.</td></tr><tr><td><code>DS_OCORRENCIA</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>O que foi encontrado.</td></tr><tr><td><code>DS_TRATAMENTO</code></td><td><code>text</code></td><td>não</td><td>—</td><td>O que a gestão fez.</td></tr><tr><td><code>DT_ABERTURA</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Abertura.</td></tr><tr><td><code>DT_RESOLUCAO</code></td><td><code>timestamptz</code></td><td>não</td><td>—</td><td>Exigida quando RESOLVIDA.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ope" id="t-FOTO" data-t="FOTO">
-  <header><h3>FOTO</h3><span class="chip">OPERAÇÃO</span></header>
+<article class="tcard g-ope" id="t-VST_FOTO" data-t="VST_FOTO">
+  <header><h3>VST_FOTO</h3><span class="chip">OPERAÇÃO</span></header>
   <p class="purpose">Evidência de uma resposta, com local e horário da câmera.</p>
-  <p class="meta">9 campos · ligada a RESPOSTA</p>
+  <p class="meta">9 campos · ligada a VST_RESPOSTA</p>
   <ul><li>Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).</li><li>Arquivo em bucket privado; CD_ARQUIVO único.</li></ul>
   <p class="acesso"><b>Acesso:</b> Mesma regra da vistoria; o arquivo sai por link assinado.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_FOTO</code></td><td><code>uuid</code></td><td>sim</td><td>PK</td><td>uuid v7 gerado no celular.</td></tr><tr><td><code>ID_VISTORIA</code></td><td><code>uuid</code></td><td>sim</td><td>FK</td><td>Vistoria (com ID_ITEM, aponta a resposta).</td></tr><tr><td><code>ID_ITEM</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Item fotografado.</td></tr><tr><td><code>CD_ARQUIVO</code></td><td><code>text</code></td><td>sim</td><td>UQ</td><td>Caminho no Storage (bucket privado).</td></tr><tr><td><code>VL_LATITUDE</code></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Onde foi tirada.</td></tr><tr><td><code>VL_LONGITUDE</code></td><td><code>numeric(9,6)</code></td><td>não</td><td>—</td><td>Onde foi tirada.</td></tr><tr><td><code>QTDE_PRECISAO_METROS</code></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Precisão do GPS.</td></tr><tr><td><code>SG_FORA_RAIO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Tirada fora do raio.</td></tr><tr><td><code>DT_CAPTURA</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Momento da câmera, não do envio.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-cad" id="t-AMBIENTE" data-t="AMBIENTE">
-  <header><h3>AMBIENTE</h3><span class="chip">CADASTRO</span></header>
+<article class="tcard g-cad" id="t-VST_AMBIENTE" data-t="VST_AMBIENTE">
+  <header><h3>VST_AMBIENTE</h3><span class="chip">CADASTRO</span></header>
   <p class="purpose">Cômodos de cada unidade, na ordem em que o assessor percorre.</p>
-  <p class="meta">7 campos · ligada a ITEM, UNIDADE</p>
+  <p class="meta">7 campos · ligada a UNIDADE, VST_ITEM</p>
   <ul><li>Nome único por unidade.</li><li>NO_ORDEM define a ordem do checklist.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura por acesso à pousada; GESTOR e ADMIN mantêm.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_AMBIENTE</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Sequencial.</td></tr><tr><td><code>ID_UNIDADE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Unidade do cômodo.</td></tr><tr><td><code>NM_AMBIENTE</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Sala, Quarto, Banheiro, Varanda…</td></tr><tr><td><code>NO_ORDEM</code></td><td><code>smallint</code></td><td>sim</td><td>—</td><td>Ordem de passagem no checklist.</td></tr><tr><td><code>DS_FOTO_REFERENCIA</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Caminho no Storage da foto de como deve ficar.</td></tr><tr><td><code>SG_ATIVO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Inativo sai do checklist.</td></tr><tr><td><code>DT_CRIACAO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Cadastro.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-cad" id="t-ITEM" data-t="ITEM">
-  <header><h3>ITEM</h3><span class="chip">CADASTRO</span></header>
+<article class="tcard g-cad" id="t-VST_ITEM" data-t="VST_ITEM">
+  <header><h3>VST_ITEM</h3><span class="chip">CADASTRO</span></header>
   <p class="purpose">O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada.</p>
-  <p class="meta">9 campos · ligada a AMBIENTE, RESPOSTA, TIPO_VISTORIA_ITEM</p>
+  <p class="meta">9 campos · ligada a VST_AMBIENTE, VST_RESPOSTA, VST_TIPO_VISTORIA_ITEM</p>
   <ul><li>Nome único por cômodo.</li><li>QTDE_ESPERADA ≥ 0 quando informada.</li></ul>
   <p class="acesso"><b>Acesso:</b> Leitura por acesso à pousada; GESTOR e ADMIN mantêm.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_ITEM</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Sequencial.</td></tr><tr><td><code>ID_AMBIENTE</code></td><td><code>bigint</code></td><td>sim</td><td>FK</td><td>Cômodo onde o item é conferido.</td></tr><tr><td><code>NM_ITEM</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Ex.: Toalhas de banho, Frigobar.</td></tr><tr><td><code>DS_ORIENTACAO</code></td><td><code>text</code></td><td>não</td><td>—</td><td>Como conferir.</td></tr><tr><td><code>SG_CRITICO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Problema em item crítico abre ocorrência CRITICA.</td></tr><tr><td><code>SG_FOTO_OBRIGATORIA</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Exige foto mesmo quando está OK.</td></tr><tr><td><code>QTDE_ESPERADA</code></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Quantidade que deve haver (contagem).</td></tr><tr><td><code>NO_ORDEM</code></td><td><code>smallint</code></td><td>sim</td><td>—</td><td>Ordem dentro do cômodo.</td></tr><tr><td><code>SG_ATIVO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Inativo sai do checklist.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-apo" id="t-TIPO_VISTORIA" data-t="TIPO_VISTORIA">
-  <header><h3>TIPO_VISTORIA</h3><span class="chip">APOIO</span></header>
+<article class="tcard g-apo" id="t-VST_TIPO_VISTORIA" data-t="VST_TIPO_VISTORIA">
+  <header><h3>VST_TIPO_VISTORIA</h3><span class="chip">APOIO</span></header>
   <p class="purpose">Entrada, Saída, Rotina e Manutenção, com as regras de cada uma.</p>
-  <p class="meta">8 campos · ligada a TIPO_VISTORIA_ITEM, VISTORIA</p>
+  <p class="meta">8 campos · ligada a VST_TIPO_VISTORIA_ITEM, VST_VISTORIA</p>
   <ul><li>TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.</li><li>TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL.</li></ul>
   <p class="acesso"><b>Acesso:</b> Todos leem; ADMIN mantém.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_TIPO_VISTORIA</code></td><td><code>bigint</code></td><td>sim</td><td>PK</td><td>Sequencial.</td></tr><tr><td><code>NM_TIPO_VISTORIA</code></td><td><code>text</code></td><td>sim</td><td>UQ</td><td>Entrada, Saída, Rotina, Manutenção…</td></tr><tr><td><code>TP_COMPORTAMENTO</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>ENTRADA, SAIDA, ROTINA ou MANUTENCAO: regra que o app aplica.</td></tr><tr><td><code>TP_PERIODICIDADE</code></td><td><code>text</code></td><td>não</td><td>—</td><td>DIARIA, SEMANAL ou MENSAL (só rotina).</td></tr><tr><td><code>SG_EXIGE_ENTRADA</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Saída exige a vistoria de Entrada da mesma estadia.</td></tr><tr><td><code>SG_EXIGE_ASSINATURA</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Pede assinatura no fim.</td></tr><tr><td><code>SG_ATIVO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Inativo some da lista.</td></tr><tr><td><code>DT_CRIACAO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Cadastro.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-apo" id="t-TIPO_VISTORIA_ITEM" data-t="TIPO_VISTORIA_ITEM">
-  <header><h3>TIPO_VISTORIA_ITEM</h3><span class="chip">APOIO</span></header>
+<article class="tcard g-apo" id="t-VST_TIPO_VISTORIA_ITEM" data-t="VST_TIPO_VISTORIA_ITEM">
+  <header><h3>VST_TIPO_VISTORIA_ITEM</h3><span class="chip">APOIO</span></header>
   <p class="purpose">Quais itens entram em cada tipo de vistoria (o checklist de cada tipo).</p>
-  <p class="meta">3 campos · ligada a ITEM, TIPO_VISTORIA</p>
+  <p class="meta">3 campos · ligada a VST_ITEM, VST_TIPO_VISTORIA</p>
   <ul><li>Chave composta: o item entra uma vez em cada tipo.</li></ul>
   <p class="acesso"><b>Acesso:</b> Todos leem; GESTOR e ADMIN mantêm.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_TIPO_VISTORIA</code></td><td><code>bigint</code></td><td>sim</td><td>PK FK</td><td>Tipo de vistoria.</td></tr><tr><td><code>ID_ITEM</code></td><td><code>bigint</code></td><td>sim</td><td>PK FK</td><td>Item que entra nesse tipo.</td></tr><tr><td><code>NO_ORDEM</code></td><td><code>smallint</code></td><td>não</td><td>—</td><td>Ordem própria do tipo; vazio segue a do item.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ace" id="t-USUARIO" data-t="USUARIO">
-  <header><h3>USUARIO</h3><span class="chip">ACESSO</span></header>
+<article class="tcard g-ace" id="t-VST_USUARIO" data-t="VST_USUARIO">
+  <header><h3>VST_USUARIO</h3><span class="chip">ACESSO</span></header>
   <p class="purpose">Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site.</p>
-  <p class="meta">9 campos · ligada a LOG_EVENTO, USUARIO_PROPRIEDADE, VISTORIA</p>
+  <p class="meta">9 campos · ligada a VST_LOG_EVENTO, VST_USUARIO_PROPRIEDADE, VST_VISTORIA</p>
   <ul><li>ID_USUARIO = auth.users.id (login do Supabase Auth).</li><li>CD_LOGIN e CD_CPF únicos; CPF com 11 números e dígitos válidos.</li><li>TP_PERFIL: ASSESSOR, GESTOR ou ADMIN.</li><li>Inativo não entra (checado no login e nas regras de acesso).</li></ul>
   <p class="acesso"><b>Acesso:</b> Cada um lê o próprio; GESTOR lê a equipe; ADMIN cadastra.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_USUARIO</code></td><td><code>uuid</code></td><td>sim</td><td>PK</td><td>Mesmo id do login no Supabase Auth (auth.users).</td></tr><tr><td><code>NM_USUARIO</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>Nome completo.</td></tr><tr><td><code>CD_LOGIN</code></td><td><code>text</code></td><td>sim</td><td>UQ</td><td>Usuário de acesso (ex.: ana.souza), minúsculo.</td></tr><tr><td><code>CD_CPF</code></td><td><code>text</code></td><td>não</td><td>UQ</td><td>CPF só com números; também serve para entrar.</td></tr><tr><td><code>TP_PERFIL</code></td><td><code>text</code></td><td>sim</td><td>—</td><td>ASSESSOR (campo), GESTOR ou ADMIN (gestão).</td></tr><tr><td><code>SG_ATIVO</code></td><td><code>boolean</code></td><td>sim</td><td>—</td><td>Inativo não entra no app.</td></tr><tr><td><code>DT_ACEITE_LGPD</code></td><td><code>timestamptz</code></td><td>não</td><td>—</td><td>Aceite do termo de uso de localização e fotos.</td></tr><tr><td><code>DT_CRIACAO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Cadastro.</td></tr><tr><td><code>DT_ATUALIZACAO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Última alteração.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ace" id="t-USUARIO_PROPRIEDADE" data-t="USUARIO_PROPRIEDADE">
-  <header><h3>USUARIO_PROPRIEDADE</h3><span class="chip">ACESSO</span></header>
+<article class="tcard g-ace" id="t-VST_USUARIO_PROPRIEDADE" data-t="VST_USUARIO_PROPRIEDADE">
+  <header><h3>VST_USUARIO_PROPRIEDADE</h3><span class="chip">ACESSO</span></header>
   <p class="purpose">Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas.</p>
-  <p class="meta">3 campos · ligada a PROPRIEDADE, USUARIO</p>
+  <p class="meta">3 campos · ligada a PROPRIEDADE, VST_USUARIO</p>
   <ul><li>Chave composta: um acesso por usuário e pousada.</li><li>ADMIN vê todas; os demais só as listadas aqui.</li></ul>
   <p class="acesso"><b>Acesso:</b> ADMIN mantém; cada um lê os próprios acessos.</p>
   <details><summary>Campos e descrições</summary>
     <table><thead><tr><th>Campo</th><th>Tipo</th><th>Obrig.</th><th>Chave</th><th>Descrição</th></tr></thead><tbody><tr><td><code>ID_USUARIO</code></td><td><code>uuid</code></td><td>sim</td><td>PK FK</td><td>Usuário.</td></tr><tr><td><code>ID_PROPRIEDADE</code></td><td><code>bigint</code></td><td>sim</td><td>PK FK</td><td>Pousada que ele pode ver.</td></tr><tr><td><code>DT_CRIACAO</code></td><td><code>timestamptz</code></td><td>sim</td><td>—</td><td>Quando o acesso foi dado.</td></tr></tbody></table>
   </details>
 </article>
-<article class="tcard g-ace" id="t-LOG_EVENTO" data-t="LOG_EVENTO">
-  <header><h3>LOG_EVENTO</h3><span class="chip">ACESSO</span></header>
+<article class="tcard g-ace" id="t-VST_LOG_EVENTO" data-t="VST_LOG_EVENTO">
+  <header><h3>VST_LOG_EVENTO</h3><span class="chip">ACESSO</span></header>
   <p class="purpose">Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros).</p>
-  <p class="meta">9 campos · ligada a PROPRIEDADE, USUARIO</p>
+  <p class="meta">9 campos · ligada a PROPRIEDADE, VST_USUARIO</p>
   <ul><li>Só inserção: ninguém altera nem apaga.</li><li>Gravado pelas funções do banco, não pelo app.</li></ul>
   <p class="acesso"><b>Acesso:</b> GESTOR e ADMIN leem; só funções inserem.</p>
   <details><summary>Campos e descrições</summary>
@@ -895,11 +895,11 @@ html.travado, html.travado body { overflow: hidden; }
 
   <h2>Funções do banco</h2>
   <ul class="fn">
-    <li><code>enviar_vistoria</code><span>Recebe a vistoria do celular (com respostas e fotos), valida presença e regras, abre ocorrências, cria o bloqueio se preciso e muda a situação da unidade. Reenviar o mesmo id não duplica.</span></li><li><code>validar_presenca</code><span>Calcula a distância até o ponto da unidade e diz se está dentro do raio e com precisão aceitável.</span></li><li><code>alterar_situacao_unidade</code><span>Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava LOG_EVENTO.</span></li><li><code>rotacionar_qr</code><span>Gera novo CD_HASH_QR e soma 1 em NO_VERSAO_QR: etiquetas antigas deixam de valer.</span></li><li><code>consultar_disponibilidade (site)</code><span>Função do site que já exclui as datas com BLOQUEIO: por isso a manutenção some da venda sem mudar o site.</span></li>
+    <li><code>enviar_vistoria</code><span>Recebe a vistoria do celular (com respostas e fotos), valida presença e regras, abre ocorrências, cria o bloqueio se preciso e muda a situação da unidade. Reenviar o mesmo id não duplica.</span></li><li><code>validar_presenca</code><span>Calcula a distância até o ponto da unidade e diz se está dentro do raio e com precisão aceitável.</span></li><li><code>alterar_situacao_unidade</code><span>Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava VST_LOG_EVENTO.</span></li><li><code>rotacionar_qr</code><span>Gera novo CD_HASH_QR e soma 1 em NO_VERSAO_QR: etiquetas antigas deixam de valer.</span></li><li><code>consultar_disponibilidade (site)</code><span>Função do site que já exclui as datas com BLOQUEIO: por isso a manutenção some da venda sem mudar o site.</span></li>
   </ul>
 
   <h2>Nomenclatura</h2>
-  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições PK_, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_ e IX_. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VISTORIA, FOTO).</p>
+  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tabelas da vistoria com o prefixo VST_ (as do site ficam sem prefixo), tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições PK_, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_ e IX_. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VST_VISTORIA, VST_FOTO).</p>
   <ul class="pref"><li><code>ID_</code> identificador</li><li><code>NM_</code> nome</li><li><code>DS_</code> descrição ou texto livre</li><li><code>DT_</code> data ou data e hora</li><li><code>HR_</code> hora</li><li><code>VL_</code> valor (dinheiro, coordenada)</li><li><code>QTDE_</code> quantidade</li><li><code>NO_</code> número (ordem, versão)</li><li><code>CD_</code> código</li><li><code>TP_</code> lista fixa, valores em MAIÚSCULAS</li><li><code>SG_</code> sim/não (boolean)</li></ul>
 </div>
 
@@ -910,7 +910,7 @@ html.travado, html.travado body { overflow: hidden; }
   var tbls = [].slice.call(der.querySelectorAll('.tbl'));
   var cards = [].slice.call(document.querySelectorAll('.tcard'));
   var area = document.getElementById('area'), tela = document.getElementById('tela'), palco = document.getElementById('palco');
-  var info = document.getElementById('info'), W = 2194, A = 1132, DADOS = {"PROPRIEDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio)."}, "UNIDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS."}, "RESERVA": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out)."}, "BLOQUEIO": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal)."}, "USUARIO": {"g": "ACESSO", "c": "g-ace", "p": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site."}, "USUARIO_PROPRIEDADE": {"g": "ACESSO", "c": "g-ace", "p": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas."}, "LOG_EVENTO": {"g": "ACESSO", "c": "g-ace", "p": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros)."}, "AMBIENTE": {"g": "CADASTRO", "c": "g-cad", "p": "Cômodos de cada unidade, na ordem em que o assessor percorre."}, "ITEM": {"g": "CADASTRO", "c": "g-cad", "p": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada."}, "TIPO_VISTORIA": {"g": "APOIO", "c": "g-apo", "p": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma."}, "TIPO_VISTORIA_ITEM": {"g": "APOIO", "c": "g-apo", "p": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo)."}, "VISTORIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou."}, "RESPOSTA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "A resposta de cada item: OK, PROBLEMA ou não se aplica."}, "OCORRENCIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Problema encontrado que precisa de tratamento; pode tirar a unidade da venda."}, "FOTO": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Evidência de uma resposta, com local e horário da câmera."}};
+  var info = document.getElementById('info'), W = 2194, A = 1132, DADOS = {"PROPRIEDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio)."}, "UNIDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS."}, "RESERVA": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out)."}, "BLOQUEIO": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal)."}, "VST_USUARIO": {"g": "ACESSO", "c": "g-ace", "p": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site."}, "VST_USUARIO_PROPRIEDADE": {"g": "ACESSO", "c": "g-ace", "p": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas."}, "VST_LOG_EVENTO": {"g": "ACESSO", "c": "g-ace", "p": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros)."}, "VST_AMBIENTE": {"g": "CADASTRO", "c": "g-cad", "p": "Cômodos de cada unidade, na ordem em que o assessor percorre."}, "VST_ITEM": {"g": "CADASTRO", "c": "g-cad", "p": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada."}, "VST_TIPO_VISTORIA": {"g": "APOIO", "c": "g-apo", "p": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma."}, "VST_TIPO_VISTORIA_ITEM": {"g": "APOIO", "c": "g-apo", "p": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo)."}, "VST_VISTORIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou."}, "VST_RESPOSTA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "A resposta de cada item: OK, PROBLEMA ou não se aplica."}, "VST_OCORRENCIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Problema encontrado que precisa de tratamento; pode tirar a unidade da venda."}, "VST_FOTO": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Evidência de uma resposta, com local e horário da câmera."}};
   var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var current = null, aberto = false;
   function vizinhos(name) {
