@@ -18,10 +18,11 @@ O site **não cobra** nada hoje: não há Pix automático, cartão nem integraç
 |---|---|
 | `schema.sql` | Tabelas, regras, funções e segurança |
 | `seed_exemplo.sql` | Dados iniciais reais: a pousada, o chalé e a tarifa padrão |
-| `testes.sql` | 66 verificações de preço, bebê, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
+| `testes.sql` | 66 verificações, no schema `"SE"`, de preço, bebê, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
 | `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
 | `exportar_estrutura.sql` / `exportar_exemplos.sql` / `gerar_der.py` | Extraem a estrutura e os exemplos do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
+| `remover_public.sql` | Apaga a primeira versão criada no schema `public` (tabelas, funções e agendamento), antes de criar tudo no `"SE"` |
 | `supabase_simulado.sql` | Recria as permissões padrão do Supabase num PostgreSQL comum, só para os testes |
 
 ---
@@ -36,7 +37,9 @@ O Supabase roda **PostgreSQL**, não Microsoft SQL Server. Os dois usam a lingua
 
 ## Modelo
 
-Nomes no mesmo padrão dos outros projetos (esquema IBP): tabelas e campos em MAIÚSCULAS. **Toda tabela deste projeto começa com `SIT_`** (de Site), para separar das tabelas de outros projetos que usam o mesmo banco, como o `solar-inspect`, mesmo quando elas se integram. Tabelas no singular e prefixo pelo tipo do campo (`ID_` identificador, `NM_` nome, `DS_` descrição, `DT_` data, `HR_` hora, `VL_` valor, `QTDE_` quantidade, `NO_` número, `CD_` código, `TP_` tipo de lista fixa, `SG_` sim/não). Restrições com o nome completo da tabela: `PK_SIT_RESERVA`, `FK_SIT_RESERVA_SIT_UNIDADE` (`FK_<FILHA>_<PAI>`), `UQ_`, `CK_`, `EX_`, `IX_`, `TG_`. Os campos não levam o prefixo: a chave continua `ID_RESERVA`, `ID_UNIDADE` etc. O PostgreSQL guarda os nomes em minúsculas por dentro, mas aceita escrevê-los em maiúsculas nas consultas.
+Nomes no mesmo padrão dos outros projetos (esquema IBP): tabelas e campos em MAIÚSCULAS. **Toda tabela deste projeto começa com `SIT_`** (de Site), para separar das tabelas de outros projetos que usam o mesmo banco, como o `solar-inspect`, mesmo quando elas se integram. Tabelas no singular e prefixo pelo tipo do campo (`ID_` identificador, `NM_` nome, `DS_` descrição, `DT_` data, `HR_` hora, `VL_` valor, `QTDE_` quantidade, `NO_` número, `CD_` código, `TP_` tipo de lista fixa, `SG_` sim/não). Restrições com o nome completo da tabela: `PK_SIT_RESERVA`, `FK_SIT_RESERVA_SIT_UNIDADE` (`FK_<FILHA>_<PAI>`), `UQ_`, `CK_`, `EX_`, `IX_`, `TG_`. Os campos não levam o prefixo: a chave continua `ID_RESERVA`, `ID_UNIDADE` etc.
+
+**Schema `"SE"` e nomes em maiúsculas de verdade** (18/11/2026): tudo fica no schema `"SE"`, e tabelas, campos, restrições e índices são criados entre aspas, então aparecem em MAIÚSCULAS no Supabase. Em qualquer SQL escrito à mão use aspas: `select "VL_TOTAL" from "SE"."SIT_RESERVA";` (sem aspas o PostgreSQL procura `sit_reserva` e não acha). As funções que o site e as Edge Functions chamam ficam em minúsculas (`consultar_disponibilidade`, `criar_pre_reserva`, `confirmar_reserva`), e os campos que elas devolvem também (`vl_total`, `disponivel`…), como a API espera.
 
 ```mermaid
 erDiagram
@@ -103,11 +106,14 @@ const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`
     apikey: SUPABASE_ANON_KEY,
     Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     'Content-Type': 'application/json',
+    'Content-Profile': 'SE',          // as funções estão no schema "SE"
   },
   body: JSON.stringify({ p_checkin: '2027-03-04', p_checkout: '2027-03-07', p_adultos: 2, p_criancas: 1, p_bebes: 0 }),
 });
 const [chale] = await resp.json();
 ```
+
+Com a biblioteca `supabase-js`: `supabase.schema('SE').rpc('consultar_disponibilidade', { p_checkin: '2027-03-04', … })`. O schema `SE` precisa estar liberado em **Project Settings › API › Exposed schemas**.
 
 Resposta de exemplo, gerada pelos testes (casal + 1 criança, 3 noites de qui a dom):
 
@@ -125,7 +131,7 @@ Resposta de exemplo, gerada pelos testes (casal + 1 criança, 3 noites de qui a 
 }
 ```
 
-Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica o porquê. A API devolve os nomes em minúsculas (é assim que o PostgreSQL os guarda). A chave `anon` do Supabase é pública por natureza; a proteção está no banco (ver Segurança).
+Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica o porquê. A API devolve os campos da consulta em minúsculas (`vl_total`, `disponivel`), como declarados na função. A chave `anon` do Supabase é pública por natureza; a proteção está no banco (ver Segurança).
 
 ### 2. Reservar
 
@@ -177,11 +183,11 @@ psql -d solar -v ON_ERROR_STOP=1 -f exemplos_der.sql
 ```
 
 ```bash
-psql -d solar -At -f exportar_estrutura.sql > schema.json
+psql -d solar -q -At -f exportar_estrutura.sql > schema.json
 ```
 
 ```bash
-psql -d solar -At -f exportar_exemplos.sql > exemplos_der.json
+psql -d solar -q -At -f exportar_exemplos.sql > exemplos_der.json
 ```
 
 ```bash
@@ -206,13 +212,15 @@ Cada cenário imprime `ok` ou interrompe com `FALHOU` mostrando o valor obtido e
 
 ## Como aplicar no Supabase
 
-1. No painel do projeto, abra **SQL Editor › New query**.
-2. Cole o conteúdo de `schema.sql` e clique em **Run**.
-3. Opcional: rode `seed_exemplo.sql` para ter os dados iniciais e, num projeto de teste, `testes.sql` ou `exemplos_der.sql`.
-4. Para expirar pré-reservas automaticamente, ative a extensão **pg_cron** (Database › Extensions) e rode:
-   `select cron.schedule('expirar-pre-reservas', '* * * * *', 'select expirar_pre_reservas()');`
+1. **Só se você já rodou a versão antiga no `public`:** abra **SQL Editor › New query**, cole `remover_public.sql` e clique em **Run**. Ele apaga as tabelas `sit_…`, as funções e o agendamento do pg_cron da primeira versão; a conferência no fim deve mostrar `0 | 0`.
+2. **New query** › cole `schema.sql` › **Run**. Cria o schema `"SE"` com as 9 tabelas, as funções, o RLS e as permissões. O Supabase pode avisar que a consulta mexe com permissões: confirme.
+3. **New query** › cole `seed_exemplo.sql` › **Run** (a pousada, a Casa do Mirante e a tarifa padrão).
+4. **Project Settings › API › Exposed schemas**: acrescente `SE` e salve. Sem isso o site não consegue chamar a consulta.
+5. Para expirar pré-reservas automaticamente, ative **Database › Extensions › pg_cron** e rode:
+   `select cron.schedule('expirar-pre-reservas', '* * * * *', 'select "SE".expirar_pre_reservas()');`
+6. Conferência no SQL Editor: `select cd_unidade, disponivel, qtde_noites, vl_total, vl_sinal from "SE".consultar_disponibilidade('2027-03-02', '2027-03-04', 2, 1, 0);` deve trazer `casa-do-mirante | true | 2 | 4000.00 | 2000.00`. No Table Editor, escolha o schema `SE` no seletor do topo para ver as tabelas em maiúsculas.
 
-Não rode `supabase_simulado.sql` no Supabase: os papéis `anon`, `authenticated` e `service_role` já existem lá.
+Num projeto de produção não rode `testes.sql` nem `exemplos_der.sql` (gravam dados fictícios); use um projeto de teste. Não rode `supabase_simulado.sql` no Supabase: os papéis `anon`, `authenticated` e `service_role` já existem lá.
 
 ## Próximos passos sugeridos
 

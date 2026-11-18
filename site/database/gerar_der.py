@@ -6,6 +6,8 @@ import json, sys, html
 schema = json.load(open(sys.argv[1]))
 out = sys.argv[2]
 EX = json.load(open(sys.argv[3]))
+# campos em maiúsculas (schema "SE") ou minúsculas: lê tudo do mesmo jeito
+EX = {t: [{k.lower(): v for k, v in r.items()} for r in (rows or [])] for t, rows in EX.items()}
 COMPLETO = '--completo' in sys.argv
 T = {t['name']: t for t in schema['tables']}
 W, HDR, RH = 330, 40, 19
@@ -546,7 +548,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026 · prefixo SIT_ = tabelas do projeto Site</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase), schema "SE" · proposta v3, 18/11/2026 · prefixo SIT_ = tabelas do projeto Site · nomes em maiúsculas (use aspas no SQL)</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>

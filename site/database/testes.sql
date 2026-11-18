@@ -7,17 +7,19 @@
 -- ════════════════════════════════════════════════════════════════════
 
 -- Dados SÓ PARA TESTE: uma temporada, ajustes, um bloqueio do Airbnb e uma reserva
-insert into SIT_TARIFA (ID_UNIDADE, NM_TARIFA, DT_INI, DT_FIM, NO_PRIORIDADE, VL_NOITE, QTDE_ADULTOS_INCLUSOS, VL_CRIANCA, QTDE_MIN_NOITES)
-select ID_UNIDADE, 'Réveillon (teste)', '2026-12-29', '2027-01-02', 20, 2500.00, 2, 300.00, 4 from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
-insert into SIT_AJUSTE_DIARIO (ID_UNIDADE, DT_REF, VL_NOITE, DS_OBSERVACAO) select ID_UNIDADE, '2027-04-21', 1900.00, 'Tiradentes (teste)' from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
-insert into SIT_AJUSTE_DIARIO (ID_UNIDADE, DT_REF, SG_FECHADO)             select ID_UNIDADE, '2027-05-12', true from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
-insert into SIT_AJUSTE_DIARIO (ID_UNIDADE, DT_REF, SG_SEM_CHEGADA)         select ID_UNIDADE, '2027-06-04', true from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
-insert into SIT_CALENDARIO_EXTERNO (ID_UNIDADE, TP_CANAL, DS_URL_IMPORTACAO) select ID_UNIDADE, 'AIRBNB', 'https://exemplo.invalid/airbnb.ics' from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
-insert into SIT_BLOQUEIO (ID_UNIDADE, DT_INI, DT_FIM, TP_MOTIVO, ID_CALENDARIO, CD_EXTERNO)
-select u.ID_UNIDADE, '2027-03-12', '2027-03-15', 'CANAL_EXTERNO', c.ID_CALENDARIO, 'teste-1' from SIT_UNIDADE u join SIT_CALENDARIO_EXTERNO c on c.ID_UNIDADE = u.ID_UNIDADE;
-insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('Hóspede Teste', 'teste@exemplo.invalid', '11144477735');
-insert into SIT_RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
-select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-03-19', '2027-03-21', 2, 'CONFIRMADA', 'TELEFONE', 3400.00 from SIT_UNIDADE u, SIT_HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante';
+set search_path = "SE", extensions, public;   -- tabelas do site ficam no schema "SE"
+
+insert into "SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "QTDE_ADULTOS_INCLUSOS", "VL_CRIANCA", "QTDE_MIN_NOITES")
+select "ID_UNIDADE", 'Réveillon (teste)', '2026-12-29', '2027-01-02', 20, 2500.00, 2, 300.00, 4 from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "VL_NOITE", "DS_OBSERVACAO") select "ID_UNIDADE", '2027-04-21', 1900.00, 'Tiradentes (teste)' from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_FECHADO")             select "ID_UNIDADE", '2027-05-12', true from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_SEM_CHEGADA")         select "ID_UNIDADE", '2027-06-04', true from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_CALENDARIO_EXTERNO" ("ID_UNIDADE", "TP_CANAL", "DS_URL_IMPORTACAO") select "ID_UNIDADE", 'AIRBNB', 'https://exemplo.invalid/airbnb.ics' from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO", "ID_CALENDARIO", "CD_EXTERNO")
+select u."ID_UNIDADE", '2027-03-12', '2027-03-15', 'CANAL_EXTERNO', c."ID_CALENDARIO", 'teste-1' from "SIT_UNIDADE" u join "SIT_CALENDARIO_EXTERNO" c on c."ID_UNIDADE" = u."ID_UNIDADE";
+insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "CD_CPF") values ('Hóspede Teste', 'teste@exemplo.invalid', '11144477735');
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+select u."ID_UNIDADE", h."ID_HOSPEDE", '2027-03-19', '2027-03-21', 2, 'CONFIRMADA', 'TELEFONE', 3400.00 from "SIT_UNIDADE" u, "SIT_HOSPEDE" h where u."CD_UNIDADE" = 'casa-do-mirante';
 
 create or replace function pg_temp.cons(ci date, co date, a int, c int default 0)
 returns record language sql as $$
@@ -110,122 +112,122 @@ exception when sqlstate 'P0001' then
 end $$;
 -- reserva do site não confirma sem o aceite da política (nem por update direto)
 do $$ begin
-  update SIT_RESERVA set TP_STATUS = 'CONFIRMADA', ID_HOSPEDE = (select ID_HOSPEDE from SIT_HOSPEDE limit 1), DT_EXPIRA = null
-  where DT_CHECKIN = '2027-04-06' and TP_STATUS = 'PENDENTE';
+  update "SIT_RESERVA" set "TP_STATUS" = 'CONFIRMADA', "ID_HOSPEDE" = (select "ID_HOSPEDE" from "SIT_HOSPEDE" limit 1), "DT_EXPIRA" = null
+  where "DT_CHECKIN" = '2027-04-06' and "TP_STATUS" = 'PENDENTE';
   raise exception 'FALHOU: reserva do site confirmada sem aceite da política';
 exception when check_violation then raise notice 'ok  Reserva do site só confirma com a política aceita';
 end $$;
 -- o hóspede termina o formulário: o site confirma com os dados e o aceite
 select 'ok  Reserva confirmada pelo site: ' || cd_reserva || ' · total R$ ' || vl_total || ' · sinal R$ ' || vl_sinal
-from confirmar_reserva((select CD_RESERVA from SIT_RESERVA where DT_CHECKIN = '2027-04-06' and TP_STATUS = 'PENDENTE'),
+from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06' and "TP_STATUS" = 'PENDENTE'),
                        'Maria Teste', 'maria@exemplo.invalid', '+55 31 90000-0000', 'BR', '52998224725');
 do $$ declare r record; begin
-  select r2.TP_STATUS, r2.DT_EXPIRA, r2.DT_ACEITE_POLITICA, r2.NO_VERSAO_POLITICA, h.NM_HOSPEDE into r
-  from SIT_RESERVA r2 join SIT_HOSPEDE h using (ID_HOSPEDE) where r2.DT_CHECKIN = '2027-04-06';
-  if r.TP_STATUS <> 'CONFIRMADA' or r.DT_EXPIRA is not null or r.DT_ACEITE_POLITICA is null or r.NO_VERSAO_POLITICA is null or r.NM_HOSPEDE <> 'Maria Teste' then
+  select r2."TP_STATUS", r2."DT_EXPIRA", r2."DT_ACEITE_POLITICA", r2."NO_VERSAO_POLITICA", h."NM_HOSPEDE" into r
+  from "SIT_RESERVA" r2 join "SIT_HOSPEDE" h using ("ID_HOSPEDE") where r2."DT_CHECKIN" = '2027-04-06';
+  if r."TP_STATUS" <> 'CONFIRMADA' or r."DT_EXPIRA" is not null or r."DT_ACEITE_POLITICA" is null or r."NO_VERSAO_POLITICA" is null or r."NM_HOSPEDE" <> 'Maria Teste' then
     raise exception 'FALHOU: confirmação não gravou hóspede, aceite ou status: %', r;
   end if;
-  raise notice 'ok  Confirmação grava o hóspede, o aceite da política (versão %) e libera o prazo', r.NO_VERSAO_POLITICA;
+  raise notice 'ok  Confirmação grava o hóspede, o aceite da política (versão %) e libera o prazo', r."NO_VERSAO_POLITICA";
 end $$;
 select pg_temp.nao('Reserva confirmada continua ocupando as datas',     '2027-04-06','2027-04-08', 2,0, 'ocupado');
 do $$ begin
-  perform confirmar_reserva((select CD_RESERVA from SIT_RESERVA where DT_CHECKIN = '2027-04-06'), 'Outra', 'outra@exemplo.invalid', null, 'BR', '11144477735');
+  perform confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Outra', 'outra@exemplo.invalid', null, 'BR', '11144477735');
   raise exception 'FALHOU: reserva já confirmada foi confirmada de novo';
 exception when sqlstate 'P0001' then raise notice 'ok  Reserva já confirmada não é confirmada de novo (%)', sqlerrm;
 end $$;
 -- pré-reserva que venceu antes de o hóspede terminar
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-14', '2027-09-16', 2, 0);
-update SIT_RESERVA set DT_EXPIRA = now() - interval '1 minute' where TP_STATUS = 'PENDENTE' and DT_CHECKIN = '2027-09-14';
+update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "TP_STATUS" = 'PENDENTE' and "DT_CHECKIN" = '2027-09-14';
 do $$ begin
-  perform confirmar_reserva((select CD_RESERVA from SIT_RESERVA where DT_CHECKIN = '2027-09-14'), 'Atrasado', 'atrasado@exemplo.invalid', null, 'BR', '12345678909');
+  perform confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-14'), 'Atrasado', 'atrasado@exemplo.invalid', null, 'BR', '12345678909');
   raise exception 'FALHOU: pré-reserva vencida foi confirmada';
 exception when sqlstate 'P0001' then
   if sqlerrm <> 'pre_reserva_expirada' then raise; end if;
   raise notice 'ok  Pré-reserva vencida não confirma: o hóspede consulta de novo (%)', sqlerrm;
 end $$;
 -- a equipe entra em contato e lança o sinal recebido por Pix
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_METODO, VL_PAGAMENTO, DT_PAGAMENTO, CD_TRANSACAO, NM_REGISTRADO_POR)
-select ID_RESERVA, 'SINAL', 'PIX', VL_SINAL, now(), 'E0000TESTE1', 'Equipe (teste)' from SIT_RESERVA where DT_CHECKIN = '2027-04-06';
-select 'ok  Pagamento lançado pela equipe: ' || TP_PARCELA || ' · ' || TP_METODO || ' · R$ ' || VL_PAGAMENTO || ' · ' || TP_STATUS from SIT_PAGAMENTO;
+insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO", "CD_TRANSACAO", "NM_REGISTRADO_POR")
+select "ID_RESERVA", 'SINAL', 'PIX', "VL_SINAL", now(), 'E0000TESTE1', 'Equipe (teste)' from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06';
+select 'ok  Pagamento lançado pela equipe: ' || "TP_PARCELA" || ' · ' || "TP_METODO" || ' · R$ ' || "VL_PAGAMENTO" || ' · ' || "TP_STATUS" from "SIT_PAGAMENTO";
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_METODO, VL_PAGAMENTO, NM_REGISTRADO_POR) select ID_RESERVA, 'PIX', 10, 'Equipe (teste)' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_METODO", "VL_PAGAMENTO", "NM_REGISTRADO_POR") select "ID_RESERVA", 'PIX', 10, 'Equipe (teste)' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: pagamento sem data aceito';
 exception when check_violation then raise notice 'ok  Pagamento recebido exige a data em que o dinheiro entrou';
 end $$;
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_METODO, VL_PAGAMENTO, DT_PAGAMENTO) select ID_RESERVA, 'PIX', 10, now() from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO") select "ID_RESERVA", 'PIX', 10, now() from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: pagamento sem responsável aceito';
 exception when check_violation then raise notice 'ok  Lançamento manual exige quem da equipe lançou';
 end $$;
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_METODO, VL_PAGAMENTO, DT_PAGAMENTO, NM_REGISTRADO_POR) select ID_RESERVA, 'BOLETO', 10, now(), 'Equipe (teste)' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO", "NM_REGISTRADO_POR") select "ID_RESERVA", 'BOLETO', 10, now(), 'Equipe (teste)' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: método fora da lista aceito';
 exception when check_violation then raise notice 'ok  Método só PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA';
 end $$;
-select 'ok  Saldo a pagar no check-in: R$ ' || VL_SALDO || ' (total R$ ' || VL_TOTAL || ' − sinal R$ ' || VL_SINAL || ')' from SIT_RESERVA where DT_CHECKIN = '2027-04-06';
+select 'ok  Saldo a pagar no check-in: R$ ' || "VL_SALDO" || ' (total R$ ' || "VL_TOTAL" || ' − sinal R$ ' || "VL_SINAL" || ')' from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06';
 -- saldo pago no check-in, direto na pousada, em dinheiro
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_METODO, VL_PAGAMENTO, DT_PAGAMENTO, NM_REGISTRADO_POR)
-select ID_RESERVA, 'SALDO', 'DINHEIRO', VL_SALDO, now(), 'Recepção (teste)' from SIT_RESERVA where DT_CHECKIN = '2027-04-06';
-select 'ok  Total quitado: R$ ' || sum(VL_PAGAMENTO) || ' em ' || count(*) || ' parcelas (sinal + saldo)' from SIT_PAGAMENTO p join SIT_RESERVA r using (ID_RESERVA) where p.TP_STATUS = 'RECEBIDO' and r.DT_CHECKIN = '2027-04-06';
+insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO", "NM_REGISTRADO_POR")
+select "ID_RESERVA", 'SALDO', 'DINHEIRO', "VL_SALDO", now(), 'Recepção (teste)' from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06';
+select 'ok  Total quitado: R$ ' || sum("VL_PAGAMENTO") || ' em ' || count(*) || ' parcelas (sinal + saldo)' from "SIT_PAGAMENTO" p join "SIT_RESERVA" r using ("ID_RESERVA") where p."TP_STATUS" = 'RECEBIDO' and r."DT_CHECKIN" = '2027-04-06';
 -- pronto para pagamento online depois: cobrança do Mercado Pago nasce PENDENTE e o aviso (webhook) a confirma
-insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, CD_TRANSACAO)
-select ID_RESERVA, 'SINAL', 'MERCADO_PAGO', 'PIX', 1700.00, 'PENDENTE', 'MP-TESTE-1' from SIT_RESERVA where DT_CHECKIN = '2027-03-19';
-update SIT_PAGAMENTO set TP_STATUS = 'RECEBIDO', DT_PAGAMENTO = now() where CD_TRANSACAO = 'MP-TESTE-1';
-select 'ok  Estrutura pronta para Mercado Pago: cobrança PENDENTE → RECEBIDO pelo aviso do provedor' from SIT_PAGAMENTO where CD_TRANSACAO = 'MP-TESTE-1' and TP_STATUS = 'RECEBIDO';
+insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_PROVEDOR", "TP_METODO", "VL_PAGAMENTO", "TP_STATUS", "CD_TRANSACAO")
+select "ID_RESERVA", 'SINAL', 'MERCADO_PAGO', 'PIX', 1700.00, 'PENDENTE', 'MP-TESTE-1' from "SIT_RESERVA" where "DT_CHECKIN" = '2027-03-19';
+update "SIT_PAGAMENTO" set "TP_STATUS" = 'RECEBIDO', "DT_PAGAMENTO" = now() where "CD_TRANSACAO" = 'MP-TESTE-1';
+select 'ok  Estrutura pronta para Mercado Pago: cobrança PENDENTE → RECEBIDO pelo aviso do provedor' from "SIT_PAGAMENTO" where "CD_TRANSACAO" = 'MP-TESTE-1' and "TP_STATUS" = 'RECEBIDO';
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS) select ID_RESERVA, 'MERCADO_PAGO', 'PIX', 10, 'PENDENTE' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PROVEDOR", "TP_METODO", "VL_PAGAMENTO", "TP_STATUS") select "ID_RESERVA", 'MERCADO_PAGO', 'PIX', 10, 'PENDENTE' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: cobrança online sem id da transação aceita';
 exception when check_violation then raise notice 'ok  Cobrança online exige o id da transação no provedor';
 end $$;
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_PROVEDOR, TP_METODO, VL_PAGAMENTO, TP_STATUS, CD_TRANSACAO) select ID_RESERVA, 'MERCADO_PAGO', 'DINHEIRO', 10, 'PENDENTE', 'MP-X' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PROVEDOR", "TP_METODO", "VL_PAGAMENTO", "TP_STATUS", "CD_TRANSACAO") select "ID_RESERVA", 'MERCADO_PAGO', 'DINHEIRO', 10, 'PENDENTE', 'MP-X' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: dinheiro pelo provedor online aceito';
 exception when check_violation then raise notice 'ok  Dinheiro e transferência só como lançamento manual';
 end $$;
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_METODO, VL_PAGAMENTO, TP_STATUS, NM_REGISTRADO_POR) select ID_RESERVA, 'PIX', 10, 'PENDENTE', 'Equipe (teste)' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_METODO", "VL_PAGAMENTO", "TP_STATUS", "NM_REGISTRADO_POR") select "ID_RESERVA", 'PIX', 10, 'PENDENTE', 'Equipe (teste)' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: lançamento manual pendente aceito';
 exception when check_violation then raise notice 'ok  Lançamento manual é sempre de valor já recebido';
 end $$;
 do $$ begin
-  insert into SIT_PAGAMENTO (ID_RESERVA, TP_PARCELA, TP_METODO, VL_PAGAMENTO, DT_PAGAMENTO, NM_REGISTRADO_POR) select ID_RESERVA, 'ENTRADA', 'PIX', 1, now(), 'Equipe (teste)' from SIT_RESERVA limit 1;
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO", "NM_REGISTRADO_POR") select "ID_RESERVA", 'ENTRADA', 'PIX', 1, now(), 'Equipe (teste)' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: parcela fora da lista foi aceita';
 exception when check_violation then raise notice 'ok  Parcela só aceita SINAL ou SALDO';
 end $$;
 -- simula o vencimento da pré-reserva de outra estadia
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-08-10', '2027-08-12', 2, 0);
-update SIT_RESERVA set DT_EXPIRA = now() - interval '1 minute' where TP_STATUS = 'PENDENTE' and DT_CHECKIN = '2027-08-10';
+update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "TP_STATUS" = 'PENDENTE' and "DT_CHECKIN" = '2027-08-10';
 select pg_temp.ok ('Pré-reserva vencida libera as datas',               '2027-08-10','2027-08-12', 2,0, 3400, 3400);
 
 \echo '── Remarcação (o sinal não é devolvido, vira crédito)'
 -- a reserva confirmada e com sinal recebido é remarcada para outra data
 with antiga as (
-  update SIT_RESERVA set TP_STATUS = 'REMARCADA', DT_ATUALIZACAO = now()
-  where DT_CHECKIN = '2027-04-06' and TP_STATUS = 'CONFIRMADA'
+  update "SIT_RESERVA" set "TP_STATUS" = 'REMARCADA', "DT_ATUALIZACAO" = now()
+  where "DT_CHECKIN" = '2027-04-06' and "TP_STATUS" = 'CONFIRMADA'
   returning *
 )
-insert into SIT_RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, QTDE_CRIANCAS, TP_STATUS, VL_HOSPEDAGEM, VL_SINAL, ID_RESERVA_ORIGINAL, NO_VERSAO_POLITICA, DT_ACEITE_POLITICA)
-select ID_UNIDADE, ID_HOSPEDE, '2027-05-18', '2027-05-20', QTDE_ADULTOS, QTDE_CRIANCAS, 'CONFIRMADA', VL_HOSPEDAGEM, VL_SINAL, ID_RESERVA, NO_VERSAO_POLITICA, DT_ACEITE_POLITICA from antiga;
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "QTDE_CRIANCAS", "TP_STATUS", "VL_HOSPEDAGEM", "VL_SINAL", "ID_RESERVA_ORIGINAL", "NO_VERSAO_POLITICA", "DT_ACEITE_POLITICA")
+select "ID_UNIDADE", "ID_HOSPEDE", '2027-05-18', '2027-05-20', "QTDE_ADULTOS", "QTDE_CRIANCAS", 'CONFIRMADA', "VL_HOSPEDAGEM", "VL_SINAL", "ID_RESERVA", "NO_VERSAO_POLITICA", "DT_ACEITE_POLITICA" from antiga;
 select pg_temp.ok ('Datas antigas liberadas após a remarcação',         '2027-04-06','2027-04-08', 2,0, 3400, 3400);
 select pg_temp.nao('Novas datas ocupadas pela reserva remarcada',       '2027-05-18','2027-05-20', 2,0, 'ocupado');
-select 'ok  Crédito na nova reserva: R$ ' || sum(pg.VL_PAGAMENTO) || ' de sinal pago na reserva original'
-from SIT_RESERVA nova join SIT_PAGAMENTO pg on pg.ID_RESERVA = nova.ID_RESERVA_ORIGINAL and pg.TP_STATUS = 'RECEBIDO' and pg.TP_PARCELA = 'SINAL'
-where nova.DT_CHECKIN = '2027-05-18';
+select 'ok  Crédito na nova reserva: R$ ' || sum(pg."VL_PAGAMENTO") || ' de sinal pago na reserva original'
+from "SIT_RESERVA" nova join "SIT_PAGAMENTO" pg on pg."ID_RESERVA" = nova."ID_RESERVA_ORIGINAL" and pg."TP_STATUS" = 'RECEBIDO' and pg."TP_PARCELA" = 'SINAL'
+where nova."DT_CHECKIN" = '2027-05-18';
 
 \echo '── Cancelamento por arrependimento (CDC art. 49)'
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-10-05', '2027-10-07', 2, 0);
 do $$ begin
-  update SIT_RESERVA set TP_STATUS = 'CANCELADA' where DT_CHECKIN = '2027-10-05';
+  update "SIT_RESERVA" set "TP_STATUS" = 'CANCELADA' where "DT_CHECKIN" = '2027-10-05';
   raise exception 'FALHOU: cancelamento sem motivo aceito';
 exception when check_violation then raise notice 'ok  Cancelamento exige o motivo';
 end $$;
-update SIT_RESERVA set TP_STATUS = 'CANCELADA', TP_MOTIVO_CANCELAMENTO = 'ARREPENDIMENTO', DT_ATUALIZACAO = now() where DT_CHECKIN = '2027-10-05';
+update "SIT_RESERVA" set "TP_STATUS" = 'CANCELADA', "TP_MOTIVO_CANCELAMENTO" = 'ARREPENDIMENTO', "DT_ATUALIZACAO" = now() where "DT_CHECKIN" = '2027-10-05';
 select pg_temp.ok ('Cancelada por arrependimento libera as datas',      '2027-10-05','2027-10-07', 2,0, 3400, 3400);
 -- hóspede confirmou no site, mas não pagou quando a equipe entrou em contato
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-10-19', '2027-10-21', 2, 0);
-select cd_reserva like 'SE-%' from confirmar_reserva((select CD_RESERVA from SIT_RESERVA where DT_CHECKIN = '2027-10-19'),
+select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-10-19'),
        'Sem Pagar', 'sempagar@exemplo.invalid', null, 'BR', '12345678909');
-update SIT_RESERVA set TP_STATUS = 'CANCELADA', TP_MOTIVO_CANCELAMENTO = 'SEM_PAGAMENTO', DT_ATUALIZACAO = now() where DT_CHECKIN = '2027-10-19';
+update "SIT_RESERVA" set "TP_STATUS" = 'CANCELADA', "TP_MOTIVO_CANCELAMENTO" = 'SEM_PAGAMENTO', "DT_ATUALIZACAO" = now() where "DT_CHECKIN" = '2027-10-19';
 select pg_temp.ok ('Cancelada sem pagamento pela equipe libera as datas', '2027-10-19','2027-10-21', 2,0, 3400, 3400);
 
 \echo '── Documento do hóspede: CPF para brasileiro, passaporte para estrangeiro'
@@ -236,67 +238,67 @@ do $$ begin
   raise notice 'ok  CPF: dígitos verificadores conferidos; repetido e com pontuação recusados';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL) values ('Sem CPF', 'semcpf@exemplo.invalid');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL") values ('Sem CPF', 'semcpf@exemplo.invalid');
   raise exception 'FALHOU: brasileiro sem CPF aceito';
 exception when check_violation then raise notice 'ok  Brasileiro sem CPF é recusado';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('CPF errado', 'cpferrado@exemplo.invalid', '52998224724');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "CD_CPF") values ('CPF errado', 'cpferrado@exemplo.invalid', '52998224724');
   raise exception 'FALHOU: CPF inválido aceito';
 exception when check_violation then raise notice 'ok  CPF com dígito verificador errado é recusado';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('CPF repetido', 'repetido@exemplo.invalid', '11144477735');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "CD_CPF") values ('CPF repetido', 'repetido@exemplo.invalid', '11144477735');
   raise exception 'FALHOU: CPF repetido aceito';
 exception when unique_violation then raise notice 'ok  O mesmo CPF não é cadastrado duas vezes';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE) values ('Foreigner', 'foreigner@exemplo.invalid', 'US');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE") values ('Foreigner', 'foreigner@exemplo.invalid', 'US');
   raise exception 'FALHOU: estrangeiro sem passaporte aceito';
 exception when check_violation then raise notice 'ok  Estrangeiro sem passaporte é recusado';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE) values ('Sem país', 'sempais@exemplo.invalid', 'US', 'A1234567');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE") values ('Sem país', 'sempais@exemplo.invalid', 'US', 'A1234567');
   raise exception 'FALHOU: passaporte sem país aceito';
 exception when check_violation then raise notice 'ok  Passaporte exige o país que o emitiu';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE) values ('Sem validade', 'semval@exemplo.invalid', 'US', 'B7654321', 'US');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE", "SG_PAIS_PASSAPORTE") values ('Sem validade', 'semval@exemplo.invalid', 'US', 'B7654321', 'US');
   raise exception 'FALHOU: passaporte sem validade aceito';
 exception when check_violation then raise notice 'ok  Passaporte exige a data de validade';
 end $$;
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE", "SG_PAIS_PASSAPORTE", "DT_EMISSAO_PASSAPORTE", "DT_VALIDADE_PASSAPORTE")
   values ('Datas trocadas', 'datas@exemplo.invalid', 'US', 'B7654321', 'US', '2030-01-01', '2020-01-01');
   raise exception 'FALHOU: validade antes da emissão aceita';
 exception when check_violation then raise notice 'ok  Validade do passaporte depois da emissão';
 end $$;
-insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE", "SG_PAIS_PASSAPORTE", "DT_EMISSAO_PASSAPORTE", "DT_VALIDADE_PASSAPORTE")
 values ('John Test', 'john@exemplo.invalid', 'US', 'A1234567', 'US', '2020-03-10', '2030-03-09');
-insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE", "SG_PAIS_PASSAPORTE", "DT_VALIDADE_PASSAPORTE")
 values ('Juan Test', 'juan@exemplo.invalid', 'AR', 'A1234567', 'AR', '2027-07-31');
 select 'ok  Estrangeiro com passaporte e país é aceito; mesmo número em país diferente também';
 do $$ begin
-  insert into SIT_HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE) values ('Duplicado', 'dup@exemplo.invalid', 'US', 'A1234567', 'US', '2031-01-01');
+  insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "SG_NACIONALIDADE", "CD_PASSAPORTE", "SG_PAIS_PASSAPORTE", "DT_VALIDADE_PASSAPORTE") values ('Duplicado', 'dup@exemplo.invalid', 'US', 'A1234567', 'US', '2031-01-01');
   raise exception 'FALHOU: passaporte repetido no mesmo país aceito';
 exception when unique_violation then raise notice 'ok  O mesmo passaporte do mesmo país não é cadastrado duas vezes';
 end $$;
 do $$ begin
   -- passaporte do Juan vence em 31/07/2027: estadia até 02/08 é recusada
-  insert into SIT_RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
-  select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-30', '2027-08-02', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
-  from SIT_UNIDADE u, SIT_HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+  insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+  select u."ID_UNIDADE", h."ID_HOSPEDE", '2027-07-30', '2027-08-02', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+  from "SIT_UNIDADE" u, "SIT_HOSPEDE" h where u."CD_UNIDADE" = 'casa-do-mirante' and h."DS_EMAIL" = 'juan@exemplo.invalid';
   raise exception 'FALHOU: reserva com passaporte vencido aceita';
 exception when check_violation then raise notice 'ok  Reserva recusada se o passaporte vence antes da saída (%)', sqlerrm;
 end $$;
-insert into SIT_RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
-select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-27', '2027-07-30', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
-from SIT_UNIDADE u, SIT_HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+select u."ID_UNIDADE", h."ID_HOSPEDE", '2027-07-27', '2027-07-30', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+from "SIT_UNIDADE" u, "SIT_HOSPEDE" h where u."CD_UNIDADE" = 'casa-do-mirante' and h."DS_EMAIL" = 'juan@exemplo.invalid';
 select 'ok  Reserva aceita quando o passaporte vale até a saída';
 -- pelo site: estrangeiro com passaporte vencendo antes da saída não confirma
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-11-08', '2027-11-11', 2, 0);
 do $$ begin
-  perform confirmar_reserva((select CD_RESERVA from SIT_RESERVA where DT_CHECKIN = '2027-11-08'), 'Peter Test', 'peter@exemplo.invalid', null,
+  perform confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-11-08'), 'Peter Test', 'peter@exemplo.invalid', null,
                             'GB', null, 'P9988776', 'GB', '2027-11-09');
   raise exception 'FALHOU: confirmação com passaporte vencido aceita';
 exception when check_violation then raise notice 'ok  Site não confirma reserva de estrangeiro com passaporte vencendo antes da saída';
@@ -304,8 +306,8 @@ end $$;
 
 \echo '── Proteção contra overbooking no próprio banco'
 do $$ begin
-  insert into SIT_RESERVA (ID_UNIDADE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM, ID_HOSPEDE)
-  select ID_UNIDADE, '2027-03-20', '2027-03-21', 2, 'CONFIRMADA', 'TELEFONE', 1, (select ID_HOSPEDE from SIT_HOSPEDE limit 1) from SIT_UNIDADE where CD_UNIDADE = 'casa-do-mirante';
+  insert into "SIT_RESERVA" ("ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM", "ID_HOSPEDE")
+  select "ID_UNIDADE", '2027-03-20', '2027-03-21', 2, 'CONFIRMADA', 'TELEFONE', 1, (select "ID_HOSPEDE" from "SIT_HOSPEDE" limit 1) from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
   raise exception 'FALHOU: banco aceitou duas reservas na mesma noite';
 exception when exclusion_violation then
   raise notice 'ok  Inserção direta sobreposta é barrada pela constraint (exclusion_violation)';
