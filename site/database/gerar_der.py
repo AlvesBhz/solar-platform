@@ -1,16 +1,20 @@
 # Gera o DER (der.html) a partir da estrutura extraída do banco (schema.json com tabelas, campos e FKs).
-# Uso: python3 gerar_der.py schema.json der.html
+# Uso: python3 gerar_der.py schema.json der.html exemplos.json [--completo]
+# schema.json: saída de exportar_estrutura.sql · exemplos.json: saída de exportar_exemplos.sql,
+# num banco de teste depois de rodar exemplos_der.sql.
 import json, sys, html
 schema = json.load(open(sys.argv[1]))
 out = sys.argv[2]
+EX = json.load(open(sys.argv[3]))
+COMPLETO = '--completo' in sys.argv
 T = {t['name']: t for t in schema['tables']}
 W, HDR, RH = 330, 40, 19
 C0, C1, C2, C3 = 20, 440, 860, 1280
 
 POS = {
   'TARIFA': (C0, 20), 'PROPRIEDADE': (C0, 379), 'UNIDADE': (C1, 360), 'AJUSTE_DIARIO': (C1, 680),
-  'RESERVA': (C2, 40), 'BLOQUEIO': (C2, 560),
-  'PAGAMENTO': (C3, 21), 'HOSPEDE': (C3, 420), 'CALENDARIO_EXTERNO': (C3, 655),
+  'RESERVA': (C2, 40), 'BLOQUEIO': (C2, 595),
+  'PAGAMENTO': (C3, 21), 'HOSPEDE': (C3, 420), 'CALENDARIO_EXTERNO': (C3, 690),
 }
 GROUP = {'PROPRIEDADE': 'cad', 'UNIDADE': 'cad', 'TARIFA': 'pre', 'AJUSTE_DIARIO': 'pre',
          'RESERVA': 'ven', 'HOSPEDE': 'ven', 'PAGAMENTO': 'ven', 'CALENDARIO_EXTERNO': 'can', 'BLOQUEIO': 'can'}
@@ -133,7 +137,7 @@ PURPOSE = {
  'UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
  'TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
- 'HOSPEDE': 'Quem reserva: só nome, e-mail e telefone (LGPD).',
+ 'HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
  'RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
  'PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
  'CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
@@ -144,12 +148,146 @@ RULES = {
  'UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
  'TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_TARIFA_SOBREPOSICAO).'],
  'AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
- 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.'],
- 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).'],
+ 'HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
+ 'RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_RESERVA_PASSAPORTE).'],
  'PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
  'CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
  'BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
+CAMPO = {
+ 'PROPRIEDADE': {
+  'ID_PROPRIEDADE': 'Número interno da pousada, gerado pelo banco.',
+  'NM_PROPRIEDADE': 'Nome da pousada mostrado ao hóspede.',
+  'DS_FUSO_HORARIO': 'Fuso usado para "hoje", check-in e prazos (America/Sao_Paulo).',
+  'HR_CHECKIN': 'Hora a partir da qual o hóspede pode entrar.',
+  'HR_CHECKOUT': 'Hora limite para sair.',
+  'NO_IDADE_MAX_BEBE': 'Até esta idade é bebê: não paga, mas ocupa vaga de criança.',
+  'NO_IDADE_MAX_CRIANCA': 'Até esta idade é criança; acima disso conta como adulto.',
+  'QTDE_MAX_NOITES': 'Estadia máxima vendida pelo site.',
+  'VL_PERCENTUAL_SINAL': 'Percentual do total pago na hora de reservar.',
+  'QTDE_MINUTOS_PRE_RESERVA': 'Tempo que as datas ficam seguras enquanto o hóspede paga o sinal.',
+  'QTDE_DIAS_LIMITE_REMARCACAO': 'Remarcação permitida até N dias antes do check-in.',
+  'QTDE_MESES_VALIDADE_CREDITO': 'Prazo para usar o crédito do sinal numa nova data.',
+  'QTDE_DIAS_ARREPENDIMENTO': 'Dias para desistir com reembolso integral (CDC art. 49).',
+  'NO_VERSAO_POLITICA': 'Versão vigente da política de cancelamento; vai para a reserva no aceite.',
+  'DT_CRIACAO': 'Quando o cadastro foi criado.',
+ },
+ 'UNIDADE': {
+  'ID_UNIDADE': 'Número interno do chalé; é a chave que as outras tabelas usam.',
+  'ID_PROPRIEDADE': 'A pousada dona do chalé.',
+  'CD_UNIDADE': 'Código público usado pelo site para consultar e reservar.',
+  'NM_UNIDADE': 'Nome mostrado ao hóspede.',
+  'TP_UNIDADE': 'Tipo: CHALE, QUARTO ou SUITE.',
+  'QTDE_MAX_HOSPEDES': 'Total de pessoas, contando adultos, crianças e bebês.',
+  'QTDE_MAX_ADULTOS': 'Máximo de adultos (14 anos ou mais).',
+  'QTDE_MAX_CRIANCAS': 'Máximo de crianças e bebês somados (sofá-cama).',
+  'VL_TAXA_LIMPEZA': 'Taxa única por estadia; hoje R$ 0 (em avaliação).',
+  'SG_ATIVO': 'Se o chalé aparece para venda.',
+  'NO_ORDEM': 'Ordem de exibição quando houver mais de um chalé.',
+  'DT_CRIACAO': 'Quando o cadastro foi criado.',
+ },
+ 'TARIFA': {
+  'ID_TARIFA': 'Número interno da tarifa.',
+  'ID_UNIDADE': 'O chalé a que o preço se aplica.',
+  'NM_TARIFA': 'Nome para identificar (ex.: Réveillon 2027); aparece no detalhe do preço.',
+  'DT_INI': 'Primeira noite coberta.',
+  'DT_FIM': 'Dia seguinte à última noite coberta.',
+  'NO_PRIORIDADE': 'Quando duas tarifas cobrem a mesma noite, vale a maior.',
+  'VL_NOITE': 'Preço da noite para os adultos inclusos.',
+  'VL_NOITE_FDS': 'Preço das noites de sexta e sábado; vazio = VL_NOITE.',
+  'QTDE_ADULTOS_INCLUSOS': 'Adultos já cobertos pelo VL_NOITE.',
+  'VL_ADULTO_EXTRA': 'Por adulto além dos inclusos, por noite.',
+  'VL_CRIANCA': 'Por criança (2 a 13 anos), por noite.',
+  'VL_BEBE': 'Por bebê, por noite: R$ 0, bebê não paga.',
+  'QTDE_MIN_NOITES': 'Mínimo de noites quando a estadia passa por este período.',
+  'SG_ATIVO': 'Desligar sem apagar o histórico.',
+  'DT_CRIACAO': 'Quando a tarifa foi cadastrada.',
+ },
+ 'AJUSTE_DIARIO': {
+  'ID_UNIDADE': 'O chalé que recebe a exceção.',
+  'DT_REF': 'A noite ajustada (uma linha por chalé e data).',
+  'VL_NOITE': 'Valor base desta noite no lugar da tarifa; vazio = usa a tarifa.',
+  'QTDE_MIN_NOITES': 'Mínimo de noites para estadias que passam por esta data; vazio = o da tarifa.',
+  'SG_FECHADO': 'Noite fora da venda: estadia que a inclua é recusada.',
+  'SG_SEM_CHEGADA': 'Ninguém faz check-in nesta data.',
+  'SG_SEM_SAIDA': 'Ninguém faz check-out nesta data.',
+  'DS_OBSERVACAO': 'Motivo, para a equipe lembrar por que existe o ajuste.',
+ },
+ 'HOSPEDE': {
+  'ID_HOSPEDE': 'Número interno do hóspede.',
+  'NM_HOSPEDE': 'Nome completo de quem reserva.',
+  'DS_EMAIL': 'E-mail para confirmação; único, sem diferenciar maiúsculas.',
+  'DS_TELEFONE': 'Telefone/WhatsApp para contato.',
+  'SG_NACIONALIDADE': 'País de nacionalidade, 2 letras (BR, US, AR...). Define qual documento é obrigatório.',
+  'CD_CPF': 'CPF só com os 11 dígitos; obrigatório para brasileiro, opcional para estrangeiro.',
+  'CD_PASSAPORTE': 'Número do passaporte; obrigatório para estrangeiro.',
+  'SG_PAIS_PASSAPORTE': 'País que emitiu o passaporte; obrigatório junto com ele.',
+  'DT_EMISSAO_PASSAPORTE': 'Data de emissão do passaporte (opcional).',
+  'DT_VALIDADE_PASSAPORTE': 'Data de validade; precisa cobrir a estadia até o dia da saída.',
+  'DT_CRIACAO': 'Primeiro contato com a pousada.',
+ },
+ 'RESERVA': {
+  'ID_RESERVA': 'Número interno da reserva.',
+  'CD_RESERVA': 'Código mostrado ao hóspede (SE- + 8 caracteres aleatórios).',
+  'ID_UNIDADE': 'O chalé reservado.',
+  'ID_HOSPEDE': 'Quem reservou; vazio só enquanto a pré-reserva não foi paga.',
+  'DT_CHECKIN': 'Dia de chegada.',
+  'DT_CHECKOUT': 'Dia de saída (não é cobrado).',
+  'QTDE_ADULTOS': 'Adultos (14 anos ou mais).',
+  'QTDE_CRIANCAS': 'Crianças de 2 a 13 anos (pagam VL_CRIANCA).',
+  'QTDE_BEBES': 'Bebês até 1 ano: ocupam vaga de criança, não pagam.',
+  'TP_STATUS': 'PENDENTE → CONFIRMADA; ou CANCELADA, EXPIRADA, REMARCADA.',
+  'TP_CANAL': 'Por onde entrou: SITE, DIRETO ou TELEFONE.',
+  'VL_HOSPEDAGEM': 'Soma das noites, congelada no momento da reserva.',
+  'VL_TAXA_LIMPEZA': 'Taxa de limpeza congelada na reserva.',
+  'VL_TOTAL': 'Hospedagem + limpeza (calculado pelo banco).',
+  'VL_SINAL': 'Parte paga ao reservar (50%).',
+  'VL_SALDO': 'Total − sinal, pago no check-in (calculado pelo banco).',
+  'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa, criança e bebê (JSON).',
+  'DT_EXPIRA': 'Até quando a pré-reserva segura as datas.',
+  'ID_RESERVA_ORIGINAL': 'Em remarcação, a reserva antiga que deu origem a esta.',
+  'TP_MOTIVO_CANCELAMENTO': 'Por que foi cancelada; obrigatório só se CANCELADA.',
+  'NO_VERSAO_POLITICA': 'Versão da política que o hóspede aceitou.',
+  'DT_ACEITE_POLITICA': 'Quando o hóspede marcou o aceite no site.',
+  'DT_CRIACAO': 'Quando a reserva foi criada.',
+  'DT_ATUALIZACAO': 'Última mudança (status, pagamento).',
+ },
+ 'PAGAMENTO': {
+  'ID_PAGAMENTO': 'Número interno do pagamento.',
+  'ID_RESERVA': 'A reserva paga.',
+  'TP_PARCELA': 'SINAL (no site) ou SALDO (no check-in).',
+  'TP_PROVEDOR': 'MERCADO_PAGO ou MANUAL (recebido na pousada).',
+  'TP_METODO': 'PIX, CARTAO_CREDITO ou DINHEIRO.',
+  'VL_PAGAMENTO': 'Valor desta tentativa.',
+  'TP_STATUS': 'PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.',
+  'CD_EXTERNO': 'Id do pagamento no Mercado Pago, para conciliar.',
+  'DS_PIX_COPIA_E_COLA': 'Código Pix mostrado ao hóspede.',
+  'DT_EXPIRA': 'Validade do Pix gerado.',
+  'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se APROVADO.',
+  'DT_CRIACAO': 'Quando a cobrança foi gerada.',
+ },
+ 'CALENDARIO_EXTERNO': {
+  'ID_CALENDARIO': 'Número interno do calendário.',
+  'ID_UNIDADE': 'O chalé anunciado no canal.',
+  'TP_CANAL': 'AIRBNB, BOOKING ou OUTRO.',
+  'DS_URL_IMPORTACAO': 'Link iCal exportado pelo canal.',
+  'SG_ATIVO': 'Se a leitura periódica está ligada.',
+  'DT_ULTIMA_SINCRONIZACAO': 'Última leitura com sucesso.',
+  'DS_ULTIMO_ERRO': 'Erro da última leitura, se houver.',
+ },
+ 'BLOQUEIO': {
+  'ID_BLOQUEIO': 'Número interno do bloqueio.',
+  'ID_UNIDADE': 'O chalé bloqueado.',
+  'DT_INI': 'Primeira noite bloqueada.',
+  'DT_FIM': 'Dia seguinte à última noite bloqueada.',
+  'TP_MOTIVO': 'CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.',
+  'ID_CALENDARIO': 'De qual calendário veio (só CANAL_EXTERNO).',
+  'CD_EXTERNO': 'Id do evento no iCal, para não importar duas vezes.',
+  'DS_OBSERVACAO': 'Anotação da equipe.',
+  'DT_CRIACAO': 'Quando foi criado ou importado.',
+ },
+}
+
 ORDER = ['PROPRIEDADE', 'UNIDADE', 'TARIFA', 'AJUSTE_DIARIO', 'RESERVA', 'HOSPEDE', 'PAGAMENTO', 'CALENDARIO_EXTERNO', 'BLOQUEIO']
 cards = []
 for n in ORDER:
@@ -161,6 +299,110 @@ for n in ORDER:
   <p class="meta">{len(t['cols'])} campos · ligada a {', '.join(links)}</p>
   <ul>{''.join(f'<li>{esc(r)}</li>' for r in RULES[n])}</ul>
 </article>''')
+
+# ── exemplos ────────────────────────────────────────────────────────
+from datetime import datetime, timedelta, timezone
+BRT = timezone(timedelta(hours=-3))
+def brl(v): return 'R$ ' + f'{v:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+def fmt(col, v):
+    if v is None: return '<span class="nul">vazio</span>'
+    if isinstance(v, bool): return 'sim' if v else 'não'
+    if isinstance(v, list):  # DS_DETALHE_PRECOS
+        return f'{len(v)} noites: ' + ' + '.join(brl(x['vl_noite']).replace('R$ ', '') for x in v)
+    if col.startswith('VL_PERCENTUAL'): return f'{v:g}%'
+    if col.startswith('VL_'): return brl(v)
+    if isinstance(v, str):
+        if len(v) == 10 and v[4] == '-' and v[7] == '-':
+            return f'{v[8:10]}/{v[5:7]}/{v[:4]}'
+        if col.startswith('DT_') and 'T' in v:
+            return datetime.fromisoformat(v).astimezone(BRT).strftime('%d/%m/%Y %H:%M')
+        if col.startswith('HR_'): return v[:5]
+    return esc(v)
+CAP = {
+ 'PROPRIEDADE': ['A pousada'], 'UNIDADE': ['O chalé'],
+ 'TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
+ 'AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
+ 'HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
+ 'RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
+ 'PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
+ 'CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
+ 'BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
+}
+LONG = lambda v: ' class="long"' if isinstance(v, list) or (isinstance(v, str) and len(v) > 26) else ''
+exs = []
+for n in ORDER:
+    rows = EX[n]; g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    for r in rows: assert set(k.upper() for k in r) == set(cols), (n, set(cols) ^ set(k.upper() for k in r))
+    assert len(CAP[n]) == len(rows), n
+    head = ''.join(f'<th scope="col">{esc(c)}</th>' for c in CAP[n])
+    body = ''.join('<tr><th scope="row">' + c + '</th>' + ''.join(f'<td{LONG(r[c.lower()])}>{fmt(c, r[c.lower()])}</td>' for r in rows) + '</tr>' for c in cols)
+    exs.append(f'<section class="ex g-{g}" id="e-{n}" data-t="{n}">\n  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span></header>\n'
+               f'  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th>{head}</tr></thead><tbody>{body}</tbody></table></div>\n</section>')
+
+# passo a passo do AJUSTE_DIARIO, a partir da reserva 1 gravada no banco
+r1 = EX['RESERVA'][0]
+DOW = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom']
+aj = {a['dt_ref']: a for a in EX['AJUSTE_DIARIO']}
+linhas = []
+for x in r1['ds_detalhe_precos']:
+    d = datetime.fromisoformat(x['dt_ref']); a = aj.get(x['dt_ref'])
+    fonte = f'<b>AJUSTE_DIARIO</b> (VL_NOITE {brl(a["vl_noite"])})' if a and a['vl_noite'] is not None else f'TARIFA “{esc(x["nm_tarifa"])}”'
+    hl = ' class="hl"' if a else ''
+    linhas.append(f'<tr{hl}><td>{d:%d/%m} {DOW[d.weekday()]}</td><td>{fonte}</td><td>{brl(x["vl_base"])}</td><td>{brl(x["vl_criancas"])}</td><td>{brl(x["vl_bebes"])}</td><td><b>{brl(x["vl_noite"])}</b></td></tr>')
+ajuste_html = (
+ '<section class="explica" id="como-ajuste">\n'
+ '  <h2>Como funciona o AJUSTE_DIARIO</h2>\n'
+ '  <p>A <b>TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <ol class="ordem"><li>Existe AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
+ f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>\n'
+ f'  <tbody>{"".join(linhas)}</tbody>\n'
+ f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
+ '  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>\n'
+ '  <ul class="fn">\n'
+ '    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>\n'
+ '    <li><code>QTDE_MIN_NOITES = 2 em 24/12</code><span>Pedido só de 24 para 25/12 volta como <i>min_noites</i>: quem passa por esse dia fica pelo menos 2 noites.</span></li>\n'
+ '    <li><code>SG_SEM_CHEGADA em 06/02/2027</code><span>Check-in em 06/02 volta como <i>sem_chegada</i>. Quem chegou no dia 05 e continua hospedado não é afetado.</span></li>\n'
+ '    <li><code>SG_SEM_SAIDA</code><span>O inverso: ninguém faz check-out nessa data.</span></li>\n'
+ '    <li><code>SG_FECHADO em 17/03/2027</code><span>Qualquer estadia que inclua a noite de 17/03 volta como <i>fechado</i>.</span></li>\n'
+ '  </ul>\n'
+ '  <h3>Quando usar cada tabela</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Situação</th><th>Use</th></tr></thead><tbody>\n'
+ '    <tr><td>Preço de uma temporada inteira (Réveillon, Carnaval, julho)</td><td>TARIFA com prioridade maior</td></tr>\n'
+ '    <tr><td>Preço ou regra diferente num único dia (véspera, feriado no meio da semana)</td><td>AJUSTE_DIARIO</td></tr>\n'
+ '    <tr><td>Chalé indisponível: manutenção, uso próprio ou reserva do Airbnb</td><td>BLOQUEIO</td></tr>\n'
+ '  </tbody></table></div>\n'
+ '</section>')
+
+# ── painel de detalhe (aparece abaixo do diagrama ao clicar numa tabela) ──
+for _n in ORDER:
+    assert set(CAMPO[_n]) == {c['n'] for c in T[_n]['cols']}, (_n, set(CAMPO[_n]) ^ {c['n'] for c in T[_n]['cols']})
+COND = {('HOSPEDE', 'CD_CPF'): 'se brasileiro', ('HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
+paineis = []
+for n in ORDER:
+    t = T[n]; g = GROUP[n]; rs = EX[n][:2]; caps = CAP[n][:2]
+    linhas = []
+    for c in t['cols']:
+        kk = ('<span class="k kp">PK</span> ' if c['pk'] else '') + ('<span class="k kf">FK</span> ' if c['fk'] else '')
+        ob = 'gerado' if c['gen'] else ('auto' if c['ident'] else ('sim' if c['req'] else 'não'))
+        ob = COND.get((n, c['n']), ob)
+        linhas.append(f'<tr><th scope="row">{kk}{c["n"]}</th><td class="ty">{esc(c["ty"])}</td><td>{ob}</td><td class="ds">{esc(CAMPO[n][c["n"]])}</td>' + ''.join(f'<td class="exv{" long" if LONG(r[c["n"].lower()]) else ""}" data-l="{esc(cp)}">{fmt(c["n"], r[c["n"].lower()])}</td>' for r, cp in zip(rs, caps)) + '</tr>')
+    lig = []
+    for l in L:
+        if l['c'] == n:
+            lig.append(f'<li><code>{l["f"]}</code> → {l["p"]} <i>({esc(l["lbl"])})</i>: cada {n} aponta para {"no máximo" if nullable(n, l["f"]) else "exatamente"} 1 {l["p"]}.</li>')
+    for l in L:
+        if l['p'] == n and l['c'] != n:
+            lig.append(f'<li>{l["c"]}.<code>{l["f"]}</code> <i>({esc(l["lbl"])})</i>: cada {n} pode ter zero ou vários {l["c"]}.</li>')
+    extra = '<p class="dlink"><a href="#como-ajuste">Ver o passo a passo do cálculo com o ajuste ↓</a></p>' if n == 'AJUSTE_DIARIO' else ''
+    paineis.append(f'''<template id="d-{n}"><div class="dt g-{g}">
+  <header><h3>{n}</h3><span class="chip">{GNAME[g]}</span><span class="dmeta">{len(t['cols'])} campos</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
+  <p class="purpose">{esc(PURPOSE[n])}</p>{extra}
+  <div class="dgrid">
+    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th>{''.join(f'<th>Exemplo: {esc(cp)}</th>' for cp in caps)}</tr></thead><tbody>{''.join(linhas)}</tbody></table></div>
+    <aside><div><h4>Ligações</h4><ul>{''.join(lig)}</ul></div><div><h4>Regras</h4><ul>{''.join(f'<li>{esc(r)}</li>' for r in RULES[n])}</ul></div></aside>
+  </div>
+</div></template>''')
 
 ncols = sum(len(t['cols']) for t in schema['tables'])
 page = f'''<title>DER das Reservas</title>
@@ -237,6 +479,61 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 .purpose {{ margin: 8px 0 4px; }}
 .meta {{ margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }}
 .tcard ul {{ margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }}
+/* painel de detalhe */
+#detalhe.has {{ padding-top: 14px; max-width: none; color: var(--fg); }}
+.dt header {{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }}
+.dt h3 {{ margin: 0; font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--fg); }}
+.dmeta {{ font-size: 12.5px; color: var(--muted); }}
+.dclose {{ margin-left: auto; font: inherit; font-size: 12.5px; color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; cursor: pointer; }}
+.dclose:hover {{ border-color: var(--fk); }}
+.dt .purpose {{ color: var(--fg); font-size: 14px; margin: 8px 0 10px; max-width: 100ch; }}
+.dlink {{ margin: -4px 0 10px; font-size: 13px; }} .dlink a {{ color: var(--fk); }}
+.dgrid {{ display: grid; gap: 16px; }}
+.dt aside {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 0 28px; }}
+.dtab {{ color: var(--fg); }}
+.dtab tbody th {{ font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }}
+.dtab td {{ white-space: nowrap; }}
+.dtab td.ds {{ white-space: normal; min-width: 26ch; color: var(--fg); }}
+.dtab td.ty {{ font-family: var(--mono); font-size: 11.5px; color: var(--muted); }}
+.dtab td.long {{ white-space: normal; overflow-wrap: anywhere; min-width: 20ch; }}
+.dtab thead th {{ white-space: normal; }}
+.dtab tbody tr:nth-child(even) {{ background: var(--zebra); }}
+.dt aside {{ font-size: 13px; color: var(--fg); }}
+@media (max-width: 720px) {{
+  .dtab thead {{ display: none; }}
+  .dtab, .dtab tbody {{ display: block; }}
+  .dtab tr {{ display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 4px; border-bottom: 1px solid var(--line); }}
+  .dtab th, .dtab td {{ border: 0; padding: 0; white-space: normal; }}
+  .dtab td:nth-child(3) {{ display: none; }}
+  .dtab td.ds, .dtab td.exv {{ grid-column: 1 / -1; min-width: 0; }}
+  .dtab td.exv::before {{ content: attr(data-l) ": "; color: var(--muted); }}
+}}
+.dt aside h4 {{ margin: 0 0 4px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }}
+.dt aside ul {{ margin: 0 0 14px; padding-left: 18px; display: grid; gap: 4px; }}
+.dt aside code {{ font-family: var(--mono); font-size: 12px; }}
+/* exemplos */
+.explica, .ex {{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0; }}
+.explica h2 {{ margin-top: 0; }}
+.explica h3 {{ font-size: 0.98rem; margin: 18px 0 8px; }}
+.explica p {{ margin: 6px 0; max-width: 95ch; }}
+.ordem {{ margin: 6px 0 0; padding-left: 22px; display: grid; gap: 2px; }}
+.tscroll {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+table {{ border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }}
+th, td {{ text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }}
+thead th {{ font-size: 12px; color: var(--muted); font-weight: 600; }}
+.passo tr.hl td {{ background: var(--pre); }}
+.passo tfoot td {{ border-bottom: 0; font-weight: 500; }}
+.exs {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 14px; align-items: start; }}
+.ex {{ scroll-margin-top: 16px; }}
+.ex.on {{ border-color: var(--fk); box-shadow: 0 0 0 1px var(--fk); }}
+.ex header {{ display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }}
+.ex h3 {{ margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; }}
+.ex tbody th {{ font-family: var(--mono); font-size: 11.5px; font-weight: 500; white-space: nowrap; }}
+.ex td {{ white-space: nowrap; }}
+.ex td.long {{ white-space: normal; overflow-wrap: anywhere; min-width: 24ch; }}
+.ex thead th {{ min-width: 13ch; }}
+.ex tbody tr:nth-child(even) {{ background: var(--zebra); }}
+.nul {{ color: var(--muted); font-style: italic; }}
 h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
 .fn {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; }}
 .fn li {{ background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }}
@@ -249,7 +546,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 17/11/2026</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>
@@ -269,12 +566,21 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     <div class="scroll">
 {chr(10).join(svg)}
     </div>
-    <figcaption>A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. Clique numa tabela para destacar as ligações dela e ver as regras abaixo.</figcaption>
+    <figcaption id="detalhe" aria-live="polite">A UNIDADE (o chalé) é o centro: preço, exceções, reservas, bloqueios e calendários apontam para ela. Cada linha liga o campo FK do filho à chave do pai; passe o mouse numa linha para ver o nome da regra. <b>Clique numa tabela para ver aqui o detalhe dela: cada campo explicado, com exemplo, ligações e regras.</b></figcaption>
+{chr(10).join(paineis)}
   </figure>
 
   <h2>Regras de cada tabela</h2>
   <div class="cards">
 {chr(10).join(cards)}
+  </div>
+
+{ajuste_html}
+
+  <h2>Exemplos de dados</h2>
+  <p class="hint">Linhas fictícias, gravadas num banco de teste e aprovadas por todas as regras (exemplos_der.sql). Os IDs batem entre as tabelas: a reserva 1 é do hóspede 1 e tem os pagamentos 1 e 2. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
+  <div class="exs">
+{chr(10).join(exs)}
   </div>
 
   <h2>Funções do banco</h2>
@@ -291,7 +597,8 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   var der = document.getElementById('der');
   var edges = Array.prototype.slice.call(der.querySelectorAll('.edge'));
   var tbls = Array.prototype.slice.call(der.querySelectorAll('.tbl'));
-  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard'));
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.tcard, .ex'));
+  var cap = document.getElementById('detalhe'); var capPadrao = cap.innerHTML;
   var current = null;
   function select(name, scroll) {{
     if (current === name) name = null;
@@ -307,15 +614,22 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     if (name) near[name] = 1;
     tbls.forEach(function (t) {{ var n = t.getAttribute('data-t'); t.classList.toggle('near', !!near[n]); t.classList.toggle('on', n === name); }});
     cards.forEach(function (c) {{ c.classList.toggle('on', c.getAttribute('data-t') === name); }});
-    if (name && scroll) {{ var el = document.getElementById('t-' + name); if (el) el.scrollIntoView({{ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' }}); }}
+    var tp = name && document.getElementById('d-' + name);
+    cap.innerHTML = tp ? tp.innerHTML : capPadrao; cap.classList.toggle('has', !!tp);
+    var bt = cap.querySelector('.dclose'); if (bt) bt.addEventListener('click', function () {{ select(current, false); }});
+    if (name && scroll) {{ var el = cap; if (el) el.scrollIntoView({{ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' }}); }}
   }}
   tbls.forEach(function (t) {{
     t.addEventListener('click', function () {{ select(t.getAttribute('data-t'), true); }});
     t.addEventListener('keydown', function (e) {{ if (e.key === 'Enter' || e.key === ' ') {{ e.preventDefault(); select(t.getAttribute('data-t'), true); }} }});
   }});
-  cards.forEach(function (c) {{ c.addEventListener('click', function () {{ select(c.getAttribute('data-t'), false); der.scrollIntoView({{ block: 'nearest' }}); }}); }});
+  cards.filter(function (c) {{ return c.classList.contains('tcard'); }}).forEach(function (c) {{ c.addEventListener('click', function () {{ select(c.getAttribute('data-t'), false); der.scrollIntoView({{ block: 'nearest' }}); }}); }});
 }})();
 </script>
 '''
+if COMPLETO:
+    page = ('<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            + page.replace('</style>\n', '</style>\n</head>\n<body>\n', 1) + '\n</body>\n</html>\n')
 open(out, 'w', encoding='utf-8').write(page)
 print('ok', out, len(page))

@@ -1,4 +1,4 @@
-# Banco de dados de reservas — proposta v3
+# Banco de dados de reservas — proposta v3 (atualizada em 18/11/2026)
 
 Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chalé está livre nas datas escolhidas e quanto custa a estadia, noite a noite.
 
@@ -8,7 +8,9 @@ Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chal
 |---|---|
 | `schema.sql` | Tabelas, regras, funções e segurança |
 | `seed_exemplo.sql` | Dados iniciais reais: a pousada, o chalé e a tarifa padrão |
-| `testes.sql` | 28 cenários de preço, regras de venda, ocupação, pré-reserva e pagamento (cria os próprios dados de teste) |
+| `testes.sql` | 54 verificações de preço, bebê, regras de venda, ocupação, pré-reserva, pagamento, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
+| `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
+| `exportar_estrutura.sql` / `exportar_exemplos.sql` / `gerar_der.py` | Extraem a estrutura e os exemplos do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
 | `supabase_simulado.sql` | Recria as permissões padrão do Supabase num PostgreSQL comum, só para os testes |
 
@@ -40,17 +42,19 @@ erDiagram
     RESERVA ||--o| RESERVA : "remarcada de"
 ```
 
+O diagrama completo, com todos os campos, exemplos e regras de cada tabela, está em `der.html` (abre no navegador; ao clicar numa tabela aparece o detalhe dela).
+
 | Tabela | Para que serve |
 |---|---|
-| `PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de criança, estadia máxima, percentual do sinal, minutos para pagar e regra de remarcação |
+| `PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de bebê e de criança, estadia máxima, percentual do sinal, minutos para pagar, regra de remarcação, prazo de arrependimento e versão da política de cancelamento |
 | `UNIDADE` | Cada chalé: capacidade (hóspedes, adultos, crianças + bebês) e taxa de limpeza |
-| `TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, valor por criança, mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
-| `AJUSTE_DIARIO` | Exceção de um dia (`DT_REF`): preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída |
-| `RESERVA` | Reservas do site, telefone ou contato direto, com o preço, o sinal (pago no site) e o saldo (pago no check-in) gravados no momento da reserva |
-| `PAGAMENTO` | Tentativas de pagamento de cada parcela (`TP_PARCELA`: SINAL no site, SALDO no check-in): Pix ou cartão via Mercado Pago, ou Pix manual. Nenhum dado de cartão é guardado |
+| `TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, valor por criança, valor por bebê (R$ 0), mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
+| `AJUSTE_DIARIO` | Exceção de um dia (`DT_REF`): preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída. Campo vazio não muda nada; o valor do ajuste substitui só o valor base da noite, e criança e bebê continuam vindo da tarifa (passo a passo no DER) |
+| `RESERVA` | Reservas do site, telefone ou contato direto: adultos, crianças e bebês, preço noite a noite, sinal (pago no site) e saldo (pago no check-in) gravados no momento da reserva, aceite da política, motivo do cancelamento e a reserva original de uma remarcação |
+| `PAGAMENTO` | Tentativas de pagamento de cada parcela (`TP_PARCELA`: SINAL no site, SALDO no check-in): Pix ou cartão via Mercado Pago, ou Pix e dinheiro recebidos na pousada (`MANUAL`). Nenhum dado de cartão é guardado |
 | `BLOQUEIO` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas do Airbnb/Booking |
 | `CALENDARIO_EXTERNO` | Links iCal do Airbnb e do Booking, importados periodicamente para `BLOQUEIO` |
-| `HOSPEDE` | Nome, e-mail e telefone; só o necessário (LGPD) |
+| `HOSPEDE` | Nome, contato e documento da FNRH: CPF para brasileiro; passaporte, país emissor e validade para estrangeiro |
 
 ## Como a disponibilidade e o preço são calculados
 
@@ -115,7 +119,7 @@ Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica 
 
 ### 2. Reservar
 
-`criar_pre_reserva(unidade, check-in, check-out, adultos, crianças, bebês)` segura as datas por **30 minutos** enquanto o hóspede paga o **sinal** (50% do total, a confirmar), e devolve o código da reserva (ex.: `SE-C1D82CDD`), o total e o sinal. Ela é chamada por uma **Edge Function** do Supabase, nunca direto do navegador, para que a função possa aplicar captcha e limite de tentativas antes de segurar datas. O pagamento é feito pelo Mercado Pago (Pix ou cartão) e registrado em `PAGAMENTO`; quando o Mercado Pago avisa a aprovação (webhook), a Edge Function grava o hóspede e muda a reserva para `confirmada`.
+`criar_pre_reserva(unidade, check-in, check-out, adultos, crianças, bebês)` segura as datas por **30 minutos** enquanto o hóspede paga o **sinal** (50% do total), e devolve o código da reserva (ex.: `SE-7F3A2C1D`), o total e o sinal. Ela é chamada por uma **Edge Function** do Supabase, nunca direto do navegador, para que a função possa aplicar captcha e limite de tentativas antes de segurar datas. O pagamento é feito pelo Mercado Pago (Pix ou cartão) e registrado em `PAGAMENTO`; quando o Mercado Pago avisa a aprovação (webhook), a Edge Function grava o hóspede, com o documento (CPF do brasileiro ou passaporte do estrangeiro) e o aceite da política, e muda a reserva para `CONFIRMADA`. O banco recusa a confirmação se o passaporte do estrangeiro vencer antes do dia da saída.
 
 Se o pagamento não acontecer, a pré-reserva vence sozinha: a consulta já ignora pré-reservas vencidas, e um job (`expirar_pre_reservas`, via pg_cron) só atualiza o status.
 
@@ -149,7 +153,27 @@ Proposta aguardando aprovação: remarcar até 7 dias antes do check-in (`QTDE_D
 
 Propostas aguardando aprovação (detalhadas no dicionário de dados, com fontes): política de cancelamento (devolução integral em até 7 dias da reserva, remarcação sem custo com 7+ dias de antecedência, retenção do sinal ou de 20% do total na desistência sem remarcar) e tarifa dinâmica por regras (fator por tipo de data, desconto de antecedência, piso e teto; tabelas TIPO_DATA, DATA_ESPECIAL e REGRA_ANTECEDENCIA ainda não criadas).
 
-Diagrama: `der.html` nesta pasta (abre no navegador).
+Documento do hóspede (18/11/2026): a FNRH digital é obrigatória desde 20/04/2026 e pede o documento de cada hóspede. `HOSPEDE` ganhou `SG_NACIONALIDADE` (padrão BR), `CD_CPF`, `CD_PASSAPORTE`, `SG_PAIS_PASSAPORTE`, `DT_EMISSAO_PASSAPORTE` (opcional) e `DT_VALIDADE_PASSAPORTE`. Brasileiro exige CPF válido (dígitos verificadores conferidos pela função `cpf_valido`); estrangeiro exige passaporte com o país emissor e a validade (depois da emissão). O gatilho `TG_RESERVA_PASSAPORTE` recusa reserva ativa de estrangeiro cujo passaporte vence antes da saída. CPF único; passaporte único por país. O CPF **não** é a chave: `ID_HOSPEDE` continua como número interno, porque estrangeiro não tem CPF, a pré-reserva nasce antes do documento e a chave é copiada para outras tabelas (LGPD). O documento é exigido quando o hóspede é cadastrado, isto é, no fechamento da reserva.
+
+Diagrama: `der.html` nesta pasta (abre no navegador). Para gerar de novo depois de mudar o schema:
+
+```bash
+psql -d solar -v ON_ERROR_STOP=1 -f exemplos_der.sql
+```
+
+```bash
+psql -d solar -At -f exportar_estrutura.sql > schema.json
+```
+
+```bash
+psql -d solar -At -f exportar_exemplos.sql > exemplos_der.json
+```
+
+```bash
+python3 gerar_der.py schema.json der.html exemplos_der.json --completo
+```
+
+Use um banco de teste: `exemplos_der.sql` grava dados fictícios. O `gerar_der.py` confere se as ligações do desenho são as FKs reais e se cada campo tem explicação e exemplo.
 
 ## Como testar localmente
 
@@ -169,7 +193,7 @@ Cada cenário imprime `ok` ou interrompe com `FALHOU` mostrando o valor obtido e
 
 1. No painel do projeto, abra **SQL Editor › New query**.
 2. Cole o conteúdo de `schema.sql` e clique em **Run**.
-3. Opcional: rode `seed_exemplo.sql` para ter dados de teste, e depois `testes.sql`.
+3. Opcional: rode `seed_exemplo.sql` para ter os dados iniciais e, num projeto de teste, `testes.sql` ou `exemplos_der.sql`.
 4. Para expirar pré-reservas automaticamente, ative a extensão **pg_cron** (Database › Extensions) e rode:
    `select cron.schedule('expirar-pre-reservas', '* * * * *', 'select expirar_pre_reservas()');`
 
@@ -182,3 +206,4 @@ Não rode `supabase_simulado.sql` no Supabase: os papéis `anon`, `authenticated
 3. Ligar o botão "Ver disponibilidade" do site à consulta e mostrar preço ou motivo.
 4. Edge Functions: pré-reserva + pagamento, importação dos iCal, exportação do iCal do site.
 5. Painel da equipe para tarifas, ajustes e reservas.
+6. Envio da FNRH digital ao Ministério do Turismo a partir do cadastro do hóspede.

@@ -15,7 +15,7 @@ insert into AJUSTE_DIARIO (ID_UNIDADE, DT_REF, SG_SEM_CHEGADA)         select ID
 insert into CALENDARIO_EXTERNO (ID_UNIDADE, TP_CANAL, DS_URL_IMPORTACAO) select ID_UNIDADE, 'AIRBNB', 'https://exemplo.invalid/airbnb.ics' from UNIDADE where CD_UNIDADE = 'casa-do-mirante';
 insert into BLOQUEIO (ID_UNIDADE, DT_INI, DT_FIM, TP_MOTIVO, ID_CALENDARIO, CD_EXTERNO)
 select u.ID_UNIDADE, '2027-03-12', '2027-03-15', 'CANAL_EXTERNO', c.ID_CALENDARIO, 'teste-1' from UNIDADE u join CALENDARIO_EXTERNO c on c.ID_UNIDADE = u.ID_UNIDADE;
-insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL) values ('Hóspede Teste', 'teste@exemplo.invalid');
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('Hóspede Teste', 'teste@exemplo.invalid', '11144477735');
 insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
 select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-03-19', '2027-03-21', 2, 'CONFIRMADA', 'TELEFONE', 3400.00 from UNIDADE u, HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante';
 
@@ -172,6 +172,72 @@ exception when check_violation then raise notice 'ok  Cancelamento exige o motiv
 end $$;
 update RESERVA set TP_STATUS = 'CANCELADA', TP_MOTIVO_CANCELAMENTO = 'ARREPENDIMENTO', DT_ATUALIZACAO = now() where DT_CHECKIN = '2027-10-05';
 select pg_temp.ok ('Cancelada por arrependimento libera as datas',      '2027-10-05','2027-10-07', 2,0, 3400, 3400);
+
+\echo '── Documento do hóspede: CPF para brasileiro, passaporte para estrangeiro'
+do $$ begin
+  if not cpf_valido('52998224725') or cpf_valido('52998224724') or cpf_valido('11111111111') or cpf_valido('529.982.247-25') then
+    raise exception 'FALHOU: validação de CPF';
+  end if;
+  raise notice 'ok  CPF: dígitos verificadores conferidos; repetido e com pontuação recusados';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL) values ('Sem CPF', 'semcpf@exemplo.invalid');
+  raise exception 'FALHOU: brasileiro sem CPF aceito';
+exception when check_violation then raise notice 'ok  Brasileiro sem CPF é recusado';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('CPF errado', 'cpferrado@exemplo.invalid', '52998224724');
+  raise exception 'FALHOU: CPF inválido aceito';
+exception when check_violation then raise notice 'ok  CPF com dígito verificador errado é recusado';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, CD_CPF) values ('CPF repetido', 'repetido@exemplo.invalid', '11144477735');
+  raise exception 'FALHOU: CPF repetido aceito';
+exception when unique_violation then raise notice 'ok  O mesmo CPF não é cadastrado duas vezes';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE) values ('Foreigner', 'foreigner@exemplo.invalid', 'US');
+  raise exception 'FALHOU: estrangeiro sem passaporte aceito';
+exception when check_violation then raise notice 'ok  Estrangeiro sem passaporte é recusado';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE) values ('Sem país', 'sempais@exemplo.invalid', 'US', 'A1234567');
+  raise exception 'FALHOU: passaporte sem país aceito';
+exception when check_violation then raise notice 'ok  Passaporte exige o país que o emitiu';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE) values ('Sem validade', 'semval@exemplo.invalid', 'US', 'B7654321', 'US');
+  raise exception 'FALHOU: passaporte sem validade aceito';
+exception when check_violation then raise notice 'ok  Passaporte exige a data de validade';
+end $$;
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+  values ('Datas trocadas', 'datas@exemplo.invalid', 'US', 'B7654321', 'US', '2030-01-01', '2020-01-01');
+  raise exception 'FALHOU: validade antes da emissão aceita';
+exception when check_violation then raise notice 'ok  Validade do passaporte depois da emissão';
+end $$;
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_EMISSAO_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+values ('John Test', 'john@exemplo.invalid', 'US', 'A1234567', 'US', '2020-03-10', '2030-03-09');
+insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE)
+values ('Juan Test', 'juan@exemplo.invalid', 'AR', 'A1234567', 'AR', '2027-07-31');
+select 'ok  Estrangeiro com passaporte e país é aceito; mesmo número em país diferente também';
+do $$ begin
+  insert into HOSPEDE (NM_HOSPEDE, DS_EMAIL, SG_NACIONALIDADE, CD_PASSAPORTE, SG_PAIS_PASSAPORTE, DT_VALIDADE_PASSAPORTE) values ('Duplicado', 'dup@exemplo.invalid', 'US', 'A1234567', 'US', '2031-01-01');
+  raise exception 'FALHOU: passaporte repetido no mesmo país aceito';
+exception when unique_violation then raise notice 'ok  O mesmo passaporte do mesmo país não é cadastrado duas vezes';
+end $$;
+do $$ begin
+  -- passaporte do Juan vence em 31/07/2027: estadia até 02/08 é recusada
+  insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
+  select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-30', '2027-08-02', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+  from UNIDADE u, HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+  raise exception 'FALHOU: reserva com passaporte vencido aceita';
+exception when check_violation then raise notice 'ok  Reserva recusada se o passaporte vence antes da saída (%)', sqlerrm;
+end $$;
+insert into RESERVA (ID_UNIDADE, ID_HOSPEDE, DT_CHECKIN, DT_CHECKOUT, QTDE_ADULTOS, TP_STATUS, TP_CANAL, VL_HOSPEDAGEM)
+select u.ID_UNIDADE, h.ID_HOSPEDE, '2027-07-27', '2027-07-30', 2, 'CONFIRMADA', 'TELEFONE', 5100.00
+from UNIDADE u, HOSPEDE h where u.CD_UNIDADE = 'casa-do-mirante' and h.DS_EMAIL = 'juan@exemplo.invalid';
+select 'ok  Reserva aceita quando o passaporte vale até a saída';
 
 \echo '── Proteção contra overbooking no próprio banco'
 do $$ begin
