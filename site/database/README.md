@@ -22,6 +22,7 @@ O site **não cobra** nada hoje: não há Pix automático, cartão nem integraç
 | `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
 | `exportar_estrutura.sql` / `exportar_exemplos.sql` / `gerar_der.py` | Extraem a estrutura e os exemplos do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
+| `remover_se.sql` | Apaga o banco do site inteiro (schema `"SE"` e agendamento do pg_cron), para recriar do zero com `schema.sql` e `seed_exemplo.sql`. Apaga também reservas e pagamentos |
 | `remover_public.sql` | Apaga a primeira versão criada no schema `public` (tabelas, funções e agendamento), antes de criar tudo no `"SE"` |
 | `supabase_simulado.sql` | Recria as permissões padrão do Supabase num PostgreSQL comum, só para os testes |
 
@@ -219,6 +220,8 @@ Cada cenário imprime `ok` ou interrompe com `FALHOU` mostrando o valor obtido e
 5. Para expirar pré-reservas automaticamente, ative **Database › Extensions › pg_cron** e rode:
    `select cron.schedule('expirar-pre-reservas', '* * * * *', 'select "SE".expirar_pre_reservas()');`
 6. Conferência no SQL Editor: `select cd_unidade, disponivel, qtde_noites, vl_total, vl_sinal from "SE".consultar_disponibilidade('2027-03-02', '2027-03-04', 2, 1, 0);` deve trazer `casa-do-mirante | true | 2 | 4000.00 | 2000.00`. No Table Editor, escolha o schema `SE` no seletor do topo para ver as tabelas em maiúsculas.
+
+**Recriar do zero** (ex.: depois de mudar o schema, antes de ter reservas reais): rode `remover_se.sql`, depois `schema.sql` e `seed_exemplo.sql`. O `seed_exemplo.sql` pode rodar mais de uma vez sem duplicar.
 
 Num projeto de produção não rode `testes.sql` nem `exemplos_der.sql` (gravam dados fictícios); use um projeto de teste. Não rode `supabase_simulado.sql` no Supabase: os papéis `anon`, `authenticated` e `service_role` já existem lá.
 
