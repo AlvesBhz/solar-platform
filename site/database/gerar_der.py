@@ -1,6 +1,7 @@
 # Gera o DER (der.html) a partir da estrutura extraída do banco (schema.json com tabelas, campos e FKs).
 # Uso: python3 gerar_der.py schema.json der.html exemplos.json [--completo]
-# exemplos.json: linhas extraídas do banco de teste depois de rodar exemplos_der.sql.
+# schema.json: saída de exportar_estrutura.sql · exemplos.json: saída de exportar_exemplos.sql,
+# num banco de teste depois de rodar exemplos_der.sql.
 import json, sys, html
 schema = json.load(open(sys.argv[1]))
 out = sys.argv[2]
