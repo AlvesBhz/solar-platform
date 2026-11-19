@@ -117,11 +117,8 @@ window.Disponibilidade = (function () {
     }).join('');
     var saldo = Number(r.vl_total) - Number(r.vl_sinal);
     var qtd = r.qtde_noites + ' ' + t(r.qtde_noites === 1 ? 'noite' : 'noites');
-    var corpo = t('Olá! Quero reservar a {chale}. Check-in: {ci}. Check-out: {co}. Hóspedes: {h}. Total: {total}.')
-      .replace('{chale}', r.nm_unidade).replace('{ci}', document.getElementById('checkinDisplay').textContent)
-      .replace('{co}', document.getElementById('checkoutDisplay').textContent).replace('{h}', document.getElementById('guestsDisplay').textContent)
-      .replace('{total}', moeda(r.vl_total));
-    var assunto = encodeURIComponent(t('Reserva') + ' ' + r.nm_unidade) + '&body=' + encodeURIComponent(corpo);
+    var st = Booking.getState();
+    var urlReserva = 'reserva.html?ci=' + iso(st.checkin) + '&co=' + iso(st.checkout) + '&a=' + st.adults + '&c=' + st.children + '&b=' + st.babies;
     mostrar(
       '<div class="bkr-head is-ok"><iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>' +
       '<span>' + t('Disponível') + ' · ' + r.nm_unidade + '</span></div>' +
@@ -132,7 +129,7 @@ window.Disponibilidade = (function () {
         '<div><dt>' + t('Saldo no check-in') + '</dt><dd>' + moeda(saldo) + '</dd></div>' +
       '</dl>' +
       '<p class="bkr-nota">' + t('Bebês até 1 ano não pagam. Valores consultados agora; as datas só ficam garantidas ao concluir a reserva.') + '</p>' +
-      '<a class="bkr-cta" href="mailto:' + CONFIG.contato + '?subject=' + assunto + '">' + t('Realizar reserva') +
+      '<a class="bkr-cta" href="' + urlReserva + '">' + t('Realizar reserva') +
       ' <iconify-icon icon="solar:arrow-right-linear" width="12"></iconify-icon></a>', 'is-ok');
     colapsar();
   }
