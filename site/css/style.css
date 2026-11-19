@@ -842,6 +842,21 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 /* o calendário aberto fica sempre por cima do resultado */
 #bookingBar { position: relative; z-index: 2; }
 #bkResult { position: relative; z-index: 1; }
+/* tela de trás travada enquanto a janela de reserva está aberta (iOS inclusive) */
+body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden; }
+/* barra recolhida: resumo da busca + seta verde para pesquisar de novo */
+#bkPopup.bk-collapsed #bookingBar { display: none; }
+#bkAgain { display: none; width: 100%; max-width: 48rem; margin: 0 auto; padding: 0.7rem 0.7rem 0.7rem 1.4rem;
+  align-items: center; justify-content: space-between; gap: 1rem; color: #e7e5e4; font: inherit; font-size: 0.78rem;
+  text-align: left; cursor: pointer; border: 0; }
+#bkAgain.is-on { display: flex; }
+#bkAgain .bka-seta { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 50%; display: grid; place-items: center;
+  color: #4ade80; background: rgba(74,222,128,0.14); box-shadow: inset 0 0 0 1.5px #4ade80; }
+#bkAgain:hover .bka-seta { background: rgba(74,222,128,0.26); }
+#bkResult { position: relative; }
+#bkResult .bkr-close { position: absolute; top: 0.6rem; right: 0.7rem; display: grid; place-items: center;
+  width: 2rem; height: 2rem; border: 0; background: transparent; color: #a8a29e; cursor: pointer; }
+#bkResult .bkr-close:hover { color: #fafaf9; }
 /* campo de data que falta: destaque curto */
 .bk-need { animation: bkNeed 1.8s ease both; }
 @keyframes bkNeed {
