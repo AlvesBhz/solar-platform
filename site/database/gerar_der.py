@@ -246,6 +246,7 @@ CAMPO = {
   'VL_SINAL': 'Sinal de 50%, combinado e recebido pela equipe depois da reserva.',
   'VL_SALDO': 'Total − sinal, pago no check-in (calculado pelo banco).',
   'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa, criança e bebê (JSON).',
+  'DS_ACOMPANHANTES': 'Nome e sobrenome dos adultos e nome e idade das crianças e bebês que vão junto (JSON); a reserva exige os adultos.',
   'DT_EXPIRA': 'Até quando a pré-reserva segura as datas (30 minutos para concluir no site).',
   'ID_RESERVA_ORIGINAL': 'Em remarcação, a reserva antiga que deu origem a esta.',
   'TP_MOTIVO_CANCELAMENTO': 'Por que foi cancelada; obrigatório só se CANCELADA.',
@@ -309,8 +310,10 @@ def brl(v): return 'R$ ' + f'{v:,.2f}'.replace(',', 'X').replace('.', ',').repla
 def fmt(col, v):
     if v is None: return '<span class="nul">vazio</span>'
     if isinstance(v, bool): return 'sim' if v else 'não'
-    if isinstance(v, list):  # DS_DETALHE_PRECOS
+    if isinstance(v, list) and col == 'DS_DETALHE_PRECOS':
         return f'{len(v)} noites: ' + ' + '.join(brl(x['vl_noite']).replace('R$ ', '') for x in v)
+    if isinstance(v, list):  # ex.: DS_ACOMPANHANTES
+        return f'{len(v)} pessoas: ' + ', '.join(esc(x.get('nome', '')) for x in v)
     if col.startswith('VL_PERCENTUAL'): return f'{v:g}%'
     if col.startswith('VL_'): return brl(v)
     if isinstance(v, str):
@@ -589,7 +592,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <ul class="fn">
     <li><code>consultar_disponibilidade</code><span>Pública: o botão "Ver disponibilidade" do site chama esta função; devolve disponibilidade, preço noite a noite, total e sinal, sem expor nenhuma tabela.</span></li>
     <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede preenche a reserva no site; só a Edge Function do Supabase executa.</span></li>
-    <li><code>confirmar_reserva</code><span>Conclui a reserva do site: grava o hóspede com o documento e o aceite da política e deixa a reserva CONFIRMADA. Não cobra nada: a equipe entra em contato para o pagamento.</span></li>
+    <li><code>confirmar_reserva</code><span>Conclui a reserva do site: grava o hóspede com o documento (reconhece quem já se hospedou por e-mail, CPF ou passaporte), os acompanhantes e o aceite da política, e deixa a reserva CONFIRMADA. Não cobra nada: a equipe entra em contato para o pagamento.</span></li>
     <li><code>calcular_estadia</code><span>Interna: valida datas e capacidade, soma as noites e verifica reservas e bloqueios.</span></li>
     <li><code>expirar_pre_reservas</code><span>Job periódico (pg_cron) que marca como EXPIRADA a pré-reserva não concluída em 30 minutos.</span></li>
   </ul>

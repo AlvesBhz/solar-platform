@@ -226,6 +226,7 @@ create table "SIT_RESERVA" (
   "VL_SINAL"             numeric(10,2) not null default 0,   -- pago na reserva; não reembolsável
   "VL_SALDO"             numeric(10,2) generated always as ("VL_HOSPEDAGEM" + "VL_TAXA_LIMPEZA" - "VL_SINAL") stored,  -- pago no check-in
   "DS_DETALHE_PRECOS"    jsonb not null default '[]',        -- cálculo noite a noite no momento da reserva
+  "DS_ACOMPANHANTES"     jsonb,                              -- nome e sobrenome dos adultos, nome e idade das crianças e bebês
   "DT_EXPIRA"            timestamptz,                         -- só para PENDENTE
   "ID_RESERVA_ORIGINAL"  bigint,
   "TP_MOTIVO_CANCELAMENTO" text,                       -- só quando CANCELADA
@@ -645,7 +646,8 @@ create or replace function confirmar_reserva(
   p_passaporte            text default null,
   p_pais_passaporte       char(2) default null,
   p_validade_passaporte   date default null,
-  p_emissao_passaporte    date default null
+  p_emissao_passaporte    date default null,
+  p_acompanhantes         jsonb default null
 )
 returns table (cd_reserva text, vl_total numeric(10,2), vl_sinal numeric(10,2))
 language plpgsql
@@ -669,7 +671,13 @@ begin
     raise exception 'pre_reserva_expirada' using errcode = 'P0001';   -- passou dos 30 minutos: consultar de novo
   end if;
 
-  select h."ID_HOSPEDE" into v_hospede from "SIT_HOSPEDE" h where lower(h."DS_EMAIL") = lower(p_email);
+  -- reconhece quem já se hospedou pelo e-mail, pelo CPF ou pelo passaporte (o que casar primeiro)
+  select h."ID_HOSPEDE" into v_hospede from "SIT_HOSPEDE" h
+  where lower(h."DS_EMAIL") = lower(p_email)
+     or (p_cpf is not null and h."CD_CPF" = p_cpf)
+     or (p_passaporte is not null and h."CD_PASSAPORTE" = p_passaporte and h."SG_PAIS_PASSAPORTE" = p_pais_passaporte)
+  order by (lower(h."DS_EMAIL") = lower(p_email)) desc
+  limit 1;
   if v_hospede is null then
     insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "DS_TELEFONE", "SG_NACIONALIDADE", "CD_CPF", "CD_PASSAPORTE",
                              "SG_PAIS_PASSAPORTE", "DT_VALIDADE_PASSAPORTE", "DT_EMISSAO_PASSAPORTE")
@@ -677,7 +685,7 @@ begin
             p_pais_passaporte, p_validade_passaporte, p_emissao_passaporte)
     returning "ID_HOSPEDE" into v_hospede;
   else  -- hóspede que volta: atualiza contato e documento com o que digitou agora
-    update "SIT_HOSPEDE" set "NM_HOSPEDE" = p_nome, "DS_TELEFONE" = coalesce(p_telefone, "DS_TELEFONE"),
+    update "SIT_HOSPEDE" set "NM_HOSPEDE" = p_nome, "DS_EMAIL" = p_email, "DS_TELEFONE" = coalesce(p_telefone, "DS_TELEFONE"),
            "SG_NACIONALIDADE" = p_nacionalidade, "CD_CPF" = coalesce(p_cpf, "CD_CPF"),
            "CD_PASSAPORTE" = coalesce(p_passaporte, "CD_PASSAPORTE"),
            "SG_PAIS_PASSAPORTE" = coalesce(p_pais_passaporte, "SG_PAIS_PASSAPORTE"),
@@ -692,7 +700,8 @@ begin
 
   return query
   update "SIT_RESERVA" r set "ID_HOSPEDE" = v_hospede, "TP_STATUS" = 'CONFIRMADA', "DT_EXPIRA" = null,
-         "NO_VERSAO_POLITICA" = v_versao, "DT_ACEITE_POLITICA" = now(), "DT_ATUALIZACAO" = now()
+         "NO_VERSAO_POLITICA" = v_versao, "DT_ACEITE_POLITICA" = now(), "DT_ATUALIZACAO" = now(),
+         "DS_ACOMPANHANTES" = p_acompanhantes
   where r."ID_RESERVA" = v_reserva."ID_RESERVA"
   returning r."CD_RESERVA", r."VL_TOTAL", r."VL_SINAL";
 end;
@@ -749,9 +758,9 @@ revoke all on function calcular_estadia(bigint, date, date, int, int, int)      
 revoke all on function consultar_disponibilidade(date, date, int, int, int)     from public, anon, authenticated;
 revoke all on function criar_pre_reserva(text, date, date, int, int, int)       from public, anon, authenticated;
 revoke all on function expirar_pre_reservas()                                   from public, anon, authenticated;
-revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date) from public, anon, authenticated;
+revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) from public, anon, authenticated;
 
 grant execute on function consultar_disponibilidade(date, date, int, int, int)  to anon, authenticated;
 grant execute on function criar_pre_reserva(text, date, date, int, int, int)    to service_role;
 grant execute on function expirar_pre_reservas()                                to service_role;
-grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date) to service_role;
+grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) to service_role;

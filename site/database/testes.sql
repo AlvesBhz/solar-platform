@@ -304,6 +304,22 @@ do $$ begin
 exception when check_violation then raise notice 'ok  Site não confirma reserva de estrangeiro com passaporte vencendo antes da saída';
 end $$;
 
+-- acompanhantes gravados e hóspede que volta reconhecido pelo CPF (mesmo com outro e-mail)
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-11-22', '2027-11-24', 2, 1);
+select 'ok  Hóspede que volta é reconhecido pelo CPF: ' || (select count(*) from "SIT_HOSPEDE" where "CD_CPF" = '52998224725') || ' cadastro'
+from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-11-22'), 'Maria Teste', 'maria.nova@exemplo.invalid', null, 'BR', '52998224725', null, null, null, null,
+     '[{"tipo":"adulto","nome":"Pedro","sobrenome":"Teste"},{"tipo":"crianca","nome":"Lia","idade":6}]'::jsonb);
+do $$ declare n int; a jsonb; begin
+  select count(*) into n from "SIT_HOSPEDE" where "CD_CPF" = '52998224725';
+  select "DS_ACOMPANHANTES" into a from "SIT_RESERVA" where "DT_CHECKIN" = '2027-11-22';
+  if n <> 1 then raise exception 'FALHOU: CPF repetido gerou % cadastros', n; end if;
+  if a is null or jsonb_array_length(a) <> 2 then raise exception 'FALHOU: acompanhantes não gravados: %', a; end if;
+  if not exists (select 1 from "SIT_HOSPEDE" where "CD_CPF" = '52998224725' and lower("DS_EMAIL") = 'maria.nova@exemplo.invalid') then
+    raise exception 'FALHOU: e-mail novo não foi atualizado no cadastro';
+  end if;
+  raise notice 'ok  Acompanhantes gravados (%) e e-mail atualizado no cadastro do hóspede', jsonb_array_length(a);
+end $$;
+
 \echo '── Proteção contra overbooking no próprio banco'
 do $$ begin
   insert into "SIT_RESERVA" ("ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM", "ID_HOSPEDE")
