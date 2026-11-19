@@ -18,7 +18,7 @@ O site **não cobra** nada hoje: não há Pix automático, cartão nem integraç
 |---|---|
 | `schema.sql` | Tabelas, regras, funções e segurança |
 | `seed_exemplo.sql` | Dados iniciais reais: a pousada, o chalé e a tarifa padrão |
-| `testes.sql` | 66 verificações, no schema `"SE"`, de preço, bebê, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
+| `testes.sql` | 68 verificações, no schema `"SE"`, de preço, bebê, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
 | `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
 | `exportar_estrutura.sql` / `exportar_exemplos.sql` / `gerar_der.py` | Extraem a estrutura e os exemplos do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
@@ -225,12 +225,26 @@ Cada cenário imprime `ok` ou interrompe com `FALHOU` mostrando o valor obtido e
 
 Num projeto de produção não rode `testes.sql` nem `exemplos_der.sql` (gravam dados fictícios); use um projeto de teste. Não rode `supabase_simulado.sql` no Supabase: os papéis `anon`, `authenticated` e `service_role` já existem lá.
 
+## Publicar a função de reserva (`supabase/functions/reservar`)
+
+A página `reserva.html` envia o pedido para uma Edge Function que segura as datas (`criar_pre_reserva`) e conclui a reserva (`confirmar_reserva`). Ela usa a chave de serviço, que o Supabase injeta sozinho: essa chave nunca vai para o site nem para o GitHub. Enquanto a função não estiver publicada, a página cai no envio por e-mail.
+
+1. **Banco atualizado.** A reserva ganhou `DS_ACOMPANHANTES`; se o seu banco foi criado antes disso, recrie: `remover_se.sql`, `schema.sql`, `seed_exemplo.sql` (só antes de ter reservas reais).
+2. **Publicar.** Pelo painel: **Edge Functions › Deploy a new function › Via Editor**, nome `reservar`, com os arquivos `index.ts` e `handler.ts` da pasta `supabase/functions/reservar`, e **desligue "Verify JWT"** (o hóspede não faz login). Ou pela linha de comando: `supabase functions deploy reservar --no-verify-jwt --project-ref tnjpyjbqcjrowzjfnuln`.
+3. **Segredos** (**Edge Functions › Secrets**): `ALLOWED_ORIGINS` = `https://alvesbhz.github.io` (endereços do site, separados por vírgula). Opcional, contra robôs: `TURNSTILE_SECRET` (Cloudflare Turnstile, gratuito); com ele, coloque a chave pública do Turnstile em `TURNSTILE_SITEKEY` no `reserva.html`.
+4. **Conferir** que a função responde (não grava nada, o pedido vazio é recusado):
+   `curl -s -X POST https://tnjpyjbqcjrowzjfnuln.supabase.co/functions/v1/reservar -H "Origin: https://alvesbhz.github.io" -H "Content-Type: application/json" -d "{}"` deve devolver `{"erro":"validacao","mensagem":"Confira os dados: ..."}`.
+5. **O que ela faz e recusa:** valida datas (2 a 7 noites), hóspedes, CPF, passaporte válido até a saída e nome e sobrenome dos adultos; recusa datas ocupadas na hora (`409`); limita 6 tentativas por IP por hora; ignora robôs que preenchem o campo escondido; só aceita pedidos vindos de `ALLOWED_ORIGINS`.
+6. **Avisar a equipe:** a função não envia e-mail. Quem reserva vê o código e um botão para avisar a pousada pelo WhatsApp; a equipe acompanha as novas reservas na tabela `SIT_RESERVA` (**Table Editor**, schema `SE`, status `CONFIRMADA` sem pagamento em `SIT_PAGAMENTO`).
+
+Testes da função: `supabase/functions/reservar/teste.mjs` (19 verificações contra um PostgreSQL de teste com o schema `"SE"`).
+
 ## Próximos passos sugeridos
 
 1. Fechar as decisões em aberto e substituir os dados de exemplo.
 2. Criar o projeto no Supabase (ou usar o do `solar-inspect`) e aplicar o schema.
 3. Ligar o botão "Ver disponibilidade" do site à consulta e mostrar preço ou motivo.
-4. Tela de reserva no site e Edge Functions: pré-reserva e confirmação, importação dos iCal e exportação do iCal.
+4. Importação dos iCal e exportação do iCal (Edge Functions). A tela de reserva e a função `reservar` já existem; falta publicá-la no Supabase.
 5. Painel da equipe para tarifas, ajustes, reservas e lançamento de pagamentos.
 6. Envio da FNRH digital ao Ministério do Turismo a partir do cadastro do hóspede.
 7. Quando quiser cobrar online: Edge Function que cria a cobrança no Mercado Pago (`SIT_PAGAMENTO` `PENDENTE`) e recebe o aviso de aprovação; o banco já tem os campos e as regras.

@@ -167,13 +167,16 @@ input.err,select.err{border-color:var(--bad)}
           </div>
           <label class="aceite" id="aceiteBox"><input type="checkbox" id="aceite"><span>Li e <b>aceito</b> a Política de cancelamento e os Termos e condições de uso, incluindo o contrato de locação por temporada.</span></label>
           <div class="msg" data-m="aceite"></div>
+          <input id="site" name="site" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+          <div id="captcha"></div>
+          <div class="msg" id="erroEnvio" role="alert" style="margin-top:12px;font-size:14px"></div>
           <button class="btn" id="enviar" type="submit">Confirmar reserva</button>
           <p class="nota" id="notaEnviar">Ao confirmar, as datas ficam registradas em seu nome. Nossa equipe entra em contato para combinar o pagamento do sinal.</p>
         </section>
       </form>
 
       <section class="card ok hide" id="feito" role="status" tabindex="-1">
-        <h2><small>Quase pronto</small>Enviar solicitação</h2>
+        <h2><small id="feitoSmall">Quase pronto</small><span id="feitoH">Enviar solicitação</span></h2>
         <p id="feitoTxt"></p>
         <a class="btn" id="feitoBtn" href="#" style="text-decoration:none">Abrir e-mail com a solicitação</a>
       </section>
@@ -204,7 +207,8 @@ input.err,select.err{border-color:var(--bad)}
 <script>
 (function () {
   var API = { url: 'https://tnjpyjbqcjrowzjfnuln.supabase.co', chave: 'sb_publishable_VJqLlw2XZu8v5GSAWWfOfw_qUYdyXDF', schema: 'SE' };
-  var ENDPOINT = '';          /* URL da Edge Function de reserva, quando publicada; vazio = envia por e-mail */
+  var ENDPOINT = API.url + '/functions/v1/reservar';   /* função do Supabase; se ainda não estiver publicada, o envio cai no e-mail */
+  var TURNSTILE_SITEKEY = '';  /* chave pública do captcha Cloudflare Turnstile (opcional) */
   var CONTATO = 'reservas@solardoespinhaco.com.br';
   var VERSAO_TERMOS = 'v1 · 19/11/2026';
   var $ = function (id) { return document.getElementById(id); };
@@ -303,15 +307,16 @@ input.err,select.err{border-color:var(--bad)}
   /* envio */
   function dados() {
     var br = nac() === 'BR', ac = [];
-    document.querySelectorAll('[data-ad]').forEach(function (e) { if (/n$/.test(e.id)) ac.push('Adulto: ' + e.value.trim() + ' ' + $(e.id.replace(/n$/, 's')).value.trim()); });
-    for (var i = 1; i <= P.c; i++) if ($('cr' + i).value.trim()) ac.push('Criança: ' + $('cr' + i).value.trim() + ($('cri' + i).value ? ' (' + $('cri' + i).value + ' anos)' : ''));
-    for (i = 1; i <= P.b; i++) if ($('bb' + i).value.trim()) ac.push('Bebê: ' + $('bb' + i).value.trim());
+    document.querySelectorAll('[data-ad]').forEach(function (e) { if (/n$/.test(e.id)) ac.push({ tipo: 'adulto', nome: e.value.trim(), sobrenome: $(e.id.replace(/n$/, 's')).value.trim() }); });
+    for (var i = 1; i <= P.c; i++) if ($('cr' + i).value.trim()) ac.push({ tipo: 'crianca', nome: $('cr' + i).value.trim(), idade: $('cri' + i).value ? +$('cri' + i).value : undefined });
+    for (i = 1; i <= P.b; i++) if ($('bb' + i).value.trim()) ac.push({ tipo: 'bebe', nome: $('bb' + i).value.trim() });
     return {
       titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(),
         nacionalidade: br ? 'BR' : $('pais').value, cpf: br ? $('cpf').value.replace(/\D/g, '') : null,
         passaporte: br ? null : $('pp').value.trim().toUpperCase(), paisPassaporte: br ? null : $('ppPais').value, validadePassaporte: br ? null : $('ppVal').value },
       acompanhantes: ac, reserva: { checkin: P.ci, checkout: P.co, adultos: P.a, criancas: P.c, bebes: P.b },
-      aceite: { termos: VERSAO_TERMOS, em: new Date().toISOString() }
+      aceite: { termos: VERSAO_TERMOS, em: new Date().toISOString() },
+      site: $('site').value, token: (window.turnstile && TURNSTILE_SITEKEY) ? window.turnstile.getResponse() : undefined
     };
   }
   function textoEmail(d) {
@@ -320,14 +325,15 @@ input.err,select.err{border-color:var(--bad)}
     if (R && R.disponivel) l.push('Total: ' + brl(R.vl_total) + ' · Sinal (50%): ' + brl(R.vl_sinal) + ' · Saldo no check-in: ' + brl(Number(R.vl_total) - Number(R.vl_sinal)));
     l.push('', 'TITULAR', 'Nome: ' + t.nome, 'E-mail: ' + t.email, 'Telefone: ' + t.telefone);
     l.push(t.cpf ? 'CPF: ' + t.cpf : 'Passaporte: ' + t.passaporte + ' (' + t.paisPassaporte + ') · validade ' + t.validadePassaporte + ' · nacionalidade ' + t.nacionalidade);
-    if (d.acompanhantes.length) l.push('', 'ACOMPANHANTES'), d.acompanhantes.forEach(function (a) { l.push(a); });
+    if (d.acompanhantes.length) l.push('', 'ACOMPANHANTES'), d.acompanhantes.forEach(function (a) { l.push((a.tipo === 'adulto' ? 'Adulto: ' + a.nome + ' ' + a.sobrenome : a.tipo === 'crianca' ? 'Criança: ' + a.nome + (a.idade ? ' (' + a.idade + ' anos)' : '') : 'Bebê: ' + a.nome)); });
     l.push('', 'Li e aceito a Política de cancelamento e os Termos e condições de uso (' + d.aceite.termos + ').');
     return l.join('\n');
   }
-  function concluir(html, mailto) {
+  function concluir(html, href, rotulo, titulo, tag) {
     $('form').classList.add('hide'); $('feito').classList.remove('hide');
     $('feitoTxt').innerHTML = html;
-    var b = $('feitoBtn'); if (mailto) { b.href = mailto; b.classList.remove('hide'); } else b.classList.add('hide');
+    $('feitoSmall').textContent = tag || 'Quase pronto'; $('feitoH').textContent = titulo || 'Enviar solicitação';
+    var b = $('feitoBtn'); if (href) { b.href = href; b.textContent = rotulo || 'Abrir e-mail com a solicitação'; b.classList.remove('hide'); } else b.classList.add('hide');
     $('feito').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('feito').focus();
   }
   $('form').addEventListener('submit', function (e) {
@@ -335,19 +341,36 @@ input.err,select.err{border-color:var(--bad)}
     if (!R || !R.disponivel) { estado('Escolha datas disponíveis no site para continuar.', true); return; }
     if (!validar()) return;
     var d = dados();
-    if (ENDPOINT) {
-      $('enviar').disabled = true;
-      fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
-        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw j; return j; }); })
-        .then(function (j) { concluir('Reserva <b>' + j.cd_reserva + '</b> registrada. Nossa equipe entra em contato pelo e-mail <b>' + d.titular.email + '</b> e pelo WhatsApp para combinar o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>.'); })
-        .catch(function (j) { $('enviar').disabled = false; alert(j && j.mensagem ? j.mensagem : 'Não foi possível concluir agora. Tente de novo em instantes.'); });
-      return;
-    }
-    var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));
-    concluir('Tudo certo com os seus dados. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe, que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
+    $('erroEnvio').textContent = '';
+    if (!ENDPOINT) return porEmail(d);
+    var btn = $('enviar'), rotulo = btn.textContent;
+    var liberar = function () { btn.disabled = false; btn.textContent = rotulo; };
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }, function () { return { s: r.status, j: null }; }); })
+      .then(function (x) {
+        liberar();
+        if (x.s === 200 && x.j && x.j.ok) return registrada(x.j, d);
+        if (x.j && x.j.mensagem && x.s >= 400 && x.s < 500) { $('erroEnvio').textContent = x.j.mensagem; $('erroEnvio').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        porEmail(d);                      /* função indisponível ou erro do servidor */
+      })
+      .catch(function () { liberar(); porEmail(d); });
   });
+  function registrada(j, d) {
+    var wa = 'https://wa.me/5531997555245?text=' + encodeURIComponent('Olá! Fiz a reserva ' + j.cd_reserva + ' (' + dataExt(P.ci) + ' a ' + dataExt(P.co) + ') no site do Solar do Espinhaço.');
+    concluir('As datas estão registradas em seu nome. Guarde o código da reserva: <b style="font-size:20px;letter-spacing:.06em">' + j.cd_reserva + '</b><br><br>Nossa equipe entra em contato pelo e-mail <b>' + d.titular.email + '</b> e pelo WhatsApp para combinar o pagamento do sinal de <b>' + brl(j.vl_sinal) + '</b>. Se preferir, avise a pousada agora pelo WhatsApp.', wa, 'Avisar a pousada no WhatsApp', 'Reserva registrada', 'Obrigado');
+  }
+  function porEmail(d) {
+    var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));
+    concluir('Não conseguimos registrar a reserva automaticamente agora. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe, que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
+  }
   document.querySelectorAll('input,select').forEach(function (e) { e.addEventListener('input', function () { if (e.classList.contains('err')) { e.classList.remove('err'); var m = document.querySelector('[data-m="' + e.id + '"]'); if (m) m.textContent = ''; } }); });
 
+  if (TURNSTILE_SITEKEY) {
+    var sc = document.createElement('script'); sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=iniciaCaptcha'; sc.async = true;
+    window.iniciaCaptcha = function () { window.turnstile.render('#captcha', { sitekey: TURNSTILE_SITEKEY, theme: 'dark' }); };
+    document.head.appendChild(sc);
+  }
   consultar();
 })();
 </script>

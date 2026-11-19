@@ -64,3 +64,7 @@ update "SIT_HOSPEDE"     set "DT_CRIACAO" = case when "ID_HOSPEDE" = 1 then time
 update "SIT_RESERVA"     set "DT_ATUALIZACAO" = case when "ID_RESERVA" = 1 then timestamptz '2026-11-18 10:19-03' else "DT_CRIACAO" end;
 update "SIT_CALENDARIO_EXTERNO" set "DS_ULTIMO_ERRO" = null;
 update "SIT_BLOQUEIO"    set "DT_CRIACAO" = case when "ID_BLOQUEIO" = 1 then timestamptz '2026-11-18 14:00-03' else timestamptz '2026-11-12 11:30-03' end;
+
+-- Acompanhantes da reserva 1: adulto com sobrenome, criança com idade e bebê
+update "SE"."SIT_RESERVA" set "DS_ACOMPANHANTES" = '[{"tipo":"adulto","nome":"Pedro","sobrenome":"Souza"},{"tipo":"crianca","nome":"Lia","idade":6},{"tipo":"bebe","nome":"Theo"}]'::jsonb
+where "ID_RESERVA" = 1;
