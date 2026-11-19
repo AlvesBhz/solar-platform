@@ -755,12 +755,21 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
 function openBkPopup(e) {
   if (e) e.stopPropagation();
   document.getElementById('bkPopup').classList.add('is-open');
-  document.body.style.overflow = 'hidden';
+  if (!document.body.classList.contains('bk-lock')) {
+    window._bkY = window.scrollY;
+    document.body.style.top = '-' + window._bkY + 'px';
+    document.body.classList.add('bk-lock');
+  }
   Booking.updateDisplays();
 }
 function closeBkPopup() {
   document.getElementById('bkPopup').classList.remove('is-open');
-  document.body.style.overflow = '';
+  if (document.body.classList.contains('bk-lock')) {
+    document.body.classList.remove('bk-lock');
+    document.body.style.top = '';
+    window.scrollTo({ top: window._bkY || 0, behavior: 'instant' });
+  }
+  if (window.Disponibilidade) Disponibilidade.esconder();
   Booking.close();
 }
 document.addEventListener('click', function(e) {
@@ -771,6 +780,9 @@ document.addEventListener('click', function(e) {
   if (!e.target.isConnected) return;
   var bar = document.getElementById('bookingBar');
   var res = document.getElementById('bkResult');
+  if (res && res.classList.contains('is-on')) return;   /* com resultado na tela, só fecha pelo X */
+  var ag = document.getElementById('bkAgain');
+  if (ag && ag.contains(e.target)) return;               /* a seta de pesquisar de novo não fecha a janela */
   if (bar && !bar.contains(e.target) && !(res && res.contains(e.target))) closeBkPopup();
 });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBkPopup(); });
