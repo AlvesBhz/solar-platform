@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Realizar reserva · Solar do Espinhaço</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f0c;--panel:rgba(255,255,255,.04);--line:rgba(255,255,255,.10);--fg:#e7e5e4;--mut:#a8a29e;--gold:#c9b98a;--gold2:#e3d6ae;--bad:#f0a08c;--ok:#9fcf9a;
+ --serif:"Cormorant Garamond",Georgia,serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:300 15px/1.65 var(--sans);padding:0 max(16px,env(safe-area-inset-left)) 64px}
+a{color:var(--gold)}
+.wrap{max-width:1120px;margin:0 auto}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:22px 0 8px}
+header.top a.back{color:var(--mut);text-decoration:none;font-size:13px;letter-spacing:.04em}
+header.top a.back:hover{color:var(--fg)}
+.brand{font:400 20px var(--serif);letter-spacing:.14em;text-transform:uppercase;color:var(--fg);text-decoration:none}
+h1{font:400 clamp(30px,5vw,44px)/1.1 var(--serif);margin:18px 0 6px}
+.lead{color:var(--mut);margin:0 0 26px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:24px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.side{order:-1;position:static!important}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin:0 0 20px;backdrop-filter:blur(14px)}
+.card h2{font:500 22px/1.2 var(--serif);margin:0 0 14px;color:var(--fg)}
+.card h2 small{font:400 11px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+.side{position:sticky;top:18px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:4px 0}
+.row span:first-child{color:var(--mut)}
+.tot{border-top:1px solid var(--line);margin-top:10px;padding-top:12px}
+.tot .row.big{font-size:18px;font-weight:500}
+.tot .row.big span:first-child{color:var(--fg)}
+.noites{list-style:none;margin:8px 0 0;padding:0;font-size:13px;color:var(--mut)}
+.noites li{display:flex;justify-content:space-between;padding:2px 0}
+.state{padding:14px 16px;border-radius:12px;border:1px solid var(--line);color:var(--mut)}
+.state.bad{color:var(--bad);border-color:rgba(240,160,140,.35)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.fields{grid-template-columns:1fr}}
+.f{display:flex;flex-direction:column;gap:5px}.f.full{grid-column:1/-1}
+label.l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+input,select{font:400 16px var(--sans);color:var(--fg);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:46px;color-scheme:dark}
+input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,185,138,.18)}
+input.err,select.err{border-color:var(--bad)}
+.msg{font-size:12px;color:var(--bad);min-height:0}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;cursor:pointer;font-size:14px}
+.seg input{width:auto;min-height:0;accent-color:#c9b98a}
+.seg label:has(input:checked){border-color:var(--gold);color:var(--gold2)}
+.sub{margin:18px 0 6px;font:500 12px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.gal{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin:0 0 16px}
+.gal img{width:100%;height:150px;object-fit:cover;border-radius:12px;display:block}
+@media(max-width:560px){.gal{grid-template-columns:1fr 1fr}.gal img:first-child{grid-column:1/-1;height:190px}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0;list-style:none}
+.chips li{font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--fg)}
+.pol{border-color:rgba(201,185,138,.45)}
+.pol ol{margin:0;padding-left:20px}.pol li{margin:0 0 10px}
+.pol .alerta{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(201,185,138,.10);color:var(--gold2);font-weight:500;font-size:13px;letter-spacing:.02em}
+.termos{max-height:340px;overflow:auto;padding:4px 14px 4px 0;font-size:13.5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 0 16px;-webkit-overflow-scrolling:touch}
+.termos h3{font:500 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:18px 0 6px}
+.termos p{margin:0 0 9px}
+.aceite{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
+.aceite input{width:22px;height:22px;min-height:0;margin:2px 0 0;flex:none;accent-color:#c9b98a}
+.aceite.err{border-color:var(--bad)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:16px 22px;border:0;border-radius:999px;background:#f5f5f4;color:#1c1917;font:600 12px var(--sans);letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
+.btn:hover{background:#fff}.btn[disabled]{opacity:.4;cursor:not-allowed}
+.nota{font-size:12px;color:var(--mut);margin:10px 0 0}
+.ok{border-color:rgba(159,207,154,.45)}.ok h2{color:var(--ok)}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="back" href="index.html">← Voltar ao site</a>
+    <a class="brand" href="index.html">Solar do Espinhaço</a>
+  </header>
+  <h1>Realizar reserva</h1>
+  <p class="lead">Confira os valores, informe os hóspedes e aceite as condições. Nossa equipe entra em contato em seguida para combinar o pagamento do sinal.</p>
+
+  <div class="grid">
+    <main>
+      <form id="form" novalidate autocomplete="on">
+        <section class="card">
+          <h2><small>Hóspede titular</small>Quem está reservando</h2>
+          <div class="fields">
+            <div class="f"><label class="l" for="nome">Nome</label><input id="nome" autocomplete="given-name" required><div class="msg" data-m="nome"></div></div>
+            <div class="f"><label class="l" for="sobrenome">Sobrenome</label><input id="sobrenome" autocomplete="family-name" required><div class="msg" data-m="sobrenome"></div></div>
+            <div class="f"><label class="l" for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" required><div class="msg" data-m="email"></div></div>
+            <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+55 31 90000-0000" required><div class="msg" data-m="tel"></div></div>
+            <div class="f full"><span class="l">Nacionalidade</span>
+              <div class="seg"><label><input type="radio" name="nac" value="BR" checked> Brasileiro(a)</label><label><input type="radio" name="nac" value="EX"> Estrangeiro(a)</label></div></div>
+            <div class="f full" id="blBR"><label class="l" for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00"><div class="msg" data-m="cpf"></div></div>
+            <div class="hide fields full" id="blEX" style="grid-column:1/-1">
+              <div class="f"><label class="l" for="pais">País de nacionalidade</label><select id="pais"></select></div>
+              <div class="f"><label class="l" for="pp">Nº do passaporte</label><input id="pp" autocapitalize="characters" autocomplete="off"><div class="msg" data-m="pp"></div></div>
+              <div class="f"><label class="l" for="ppPais">País emissor</label><select id="ppPais"></select></div>
+              <div class="f"><label class="l" for="ppVal">Validade do passaporte</label><input id="ppVal" type="date"><div class="msg" data-m="ppVal"></div></div>
+            </div>
+          </div>
+          <p class="nota">Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). Usamos seus dados só para a reserva e o registro obrigatório.</p>
+        </section>
+
+        <section class="card" id="cardAcomp">
+          <h2><small>Acompanhantes</small>Quem vai com você</h2>
+          <p class="nota" style="margin-top:-6px">Toda reserva deve conter nome e sobrenome dos adultos que ocuparão o chalé.</p>
+          <div class="fields" id="acomp"></div>
+        </section>
+
+        <section class="card">
+          <h2><small>O chalé</small>Casa do Mirante</h2>
+          <div class="gal"><img src="assets/images/Suite.jpeg" alt="Suíte" loading="lazy"><img src="assets/images/Sala.webp" alt="Sala" loading="lazy"><img src="assets/images/Frente Dia 3.webp" alt="Frente do chalé" loading="lazy"></div>
+          <ul class="chips"><li>Suíte com banheiro em pedra natural</li><li>Sala de 26 m²</li><li>Cozinha completa</li><li>Sofá-cama</li><li>Smart TV 65"</li></ul>
+          <div class="row"><span>Capacidade</span><span>2 adultos + até 2 crianças ou bebês (sofá-cama)</span></div>
+          <div class="row"><span>Check-in</span><span>a partir das 15h</span></div>
+          <div class="row"><span>Check-out</span><span>até as 12h</span></div>
+          <div class="row"><span>Crianças (2 a 13 anos)</span><span>R$ 300 por noite</span></div>
+          <div class="row"><span>Bebês (até 1 ano)</span><span>não pagam, mas ocupam vaga de criança</span></div>
+          <div class="row"><span>Estadia</span><span>de 2 a 7 noites</span></div>
+          <div class="row"><span>Silêncio</span><span>das 22h às 7h</span></div>
+        </section>
+
+        <section class="card pol" id="politica">
+          <h2><small>Política de cancelamento</small>Leia antes de reservar</h2>
+          <ol>
+            <li><b>Desistência em até 7 dias</b> contados da efetivação da reserva: <b>sem nenhuma penalidade</b>.</li>
+            <li><b>Desistência depois desse prazo:</b> multa de <b>25% do valor total</b> da locação. Devolvemos <b>50% do sinal</b> recebido em até <b>10 dias</b> contados do recebimento do cancelamento.</li>
+            <li><b>Não comparecimento (no show):</b> perda de <b>todo o valor do sinal</b>, sem devolução.</li>
+          </ol>
+          <div class="alerta">Só faça o pagamento do sinal se estiver de acordo com os itens acima.</div>
+        </section>
+
+        <section class="card">
+          <h2><small>Termos e condições de uso</small>Condições da locação por temporada</h2>
+          <div class="termos" id="termos" tabindex="0" aria-label="Termos e condições de uso">
+            <h3>Check-in e check-out</h3>
+            <p>Chegada a partir das <b>15:00</b> e partida até as <b>12:00</b>.</p>
+
+            <h3>Como funciona a reserva</h3>
+            <p>As solicitações de reserva são feitas neste site ou pelo e-mail <a href="mailto:reservas@solardoespinhaco.com.br">reservas@solardoespinhaco.com.br</a> e pelo WhatsApp <a href="https://wa.me/5531997555245">(31) 99755-5245</a>.</p>
+            <p>Ao concluir a reserva no site, as datas ficam registradas em seu nome e a equipe do Solar do Espinhaço entra em contato para combinar o pagamento. O valor correspondente a <b>50% do total</b> da hospedagem é o sinal; o saldo (50%) é pago no check-in, antes da entrada. A forma de pagamento (Pix, transferência, cartão ou dinheiro) é informada pela equipe no contato, e os comprovantes devem ser enviados ao e-mail ou ao WhatsApp acima.</p>
+            <p>Recebido o sinal, a equipe envia ao e-mail do titular a confirmação com os detalhes da estadia. Se o sinal não for identificado no prazo informado no contato, a reserva não será confirmada e as datas voltam a ser vendidas. Pago o sinal e não recebida a confirmação em até 24 horas, entre em contato informando o código da reserva e enviando o comprovante.</p>
+            <p>A reserva fica garantida até a data de chegada. Depois disso, não estará mais garantida e o chalé poderá ser realocado.</p>
+            <p>Todas as reservas devem conter nome e sobrenome dos adultos que ocuparão o chalé. Estrangeiros informam o passaporte, que deve estar válido até o dia da saída.</p>
+            <p>A ocupação máxima é de 2 adultos e até 2 crianças ou bebês. Não é permitida a presença de animais.</p>
+
+            <h3>Contrato de locação residencial para temporada</h3>
+            <p>Pelo presente instrumento, as partes ajustam a locação para fins de temporada do imóvel descrito abaixo, nos termos dos arts. 48 a 50 da Lei 8.245/1991. <b>LOCADOR:</b> Solar do Espinhaço. <b>LOCATÁRIO:</b> o titular, qualificado neste formulário no ato da reserva.</p>
+            <p><b>Cláusula primeira — do imóvel.</b> O imóvel é a Casa do Mirante, com as características descritas neste site.</p>
+            <p><b>Cláusula segunda — do prazo.</b> O período da locação é o selecionado na reserva. O prazo máximo da locação é de 7 noites.</p>
+            <p><b>Cláusula terceira — do valor.</b> O valor total da locação está descrito no ato da reserva. O sinal de 50% é pago após o contato da equipe, na forma por ela informada, e o saldo de 50% no check-in, antes da entrada. A quitação é dada na compensação dos valores.</p>
+            <p><b>Cláusula quarta — da finalidade.</b> A locação é exclusivamente por temporada, com objetivo de turismo e lazer, em dias úteis, fins de semana e feriados, não podendo a destinação ser alterada, substituída ou acrescida de outra. Ficam vedadas a sublocação, a cessão ou transferência do contrato e o empréstimo, parcial ou total, do imóvel, sob pena de rescisão contratual e entrega imediata do imóvel. Todos os convidados do locatário devem pagar pela ocupação e utilização do imóvel.</p>
+            <p><b>Cláusula quinta — da conservação.</b> O LOCATÁRIO obriga-se a conservar o imóvel como se fosse seu, assim como móveis, objetos de decoração e utensílios, sob pena de rescisão e indenização por qualquer dano. Os objetos danificados serão repostos por outros de igual valor, marca e modelo, ou indenizados pelo valor correspondente.</p>
+            <p><b>Cláusula sexta — da apresentação.</b> O LOCADOR, ou alguém de sua confiança, receberá o LOCATÁRIO na chegada. Na saída, conferirão conjuntamente os mesmos bens. O LOCATÁRIO autoriza o LOCADOR, ou quem este indicar, a acessar o imóvel para eventuais consertos necessários.</p>
+            <p><b>Cláusula sétima — das particularidades.</b> A capacidade máxima do imóvel é de 2 adultos e até 2 crianças ou bebês, cabendo ao LOCATÁRIO observar todas as condições informadas neste site e responsabilizar-se pelas escolhas.</p>
+            <p>§ 1º Se o LOCATÁRIO exceder o número máximo de pessoas previsto na reserva, sem consentimento expresso do LOCADOR, incorrerá em multa equivalente ao valor da diária por pessoa, por cada dia de ocupação, além da possibilidade de rescisão e entrega imediata do imóvel, a critério do LOCADOR.</p>
+            <p>§ 2º Não é permitida a presença de animais. § 3º Não é permitida a saída com qualquer objeto ou equipamento pertencente ao imóvel. § 4º O LOCADOR fornece roupa de cama, toalhas, utensílios e equipamentos de cozinha, estando o imóvel mobiliado e em bom estado de conservação. § 5º Deve ser observado o horário de silêncio das 22:00 às 07:00.</p>
+            <p><b>Cláusula oitava — responsabilidades e advertências.</b> O LOCATÁRIO declara saber que o imóvel está em área natural, remota e/ou isolada, na região da Serra do Cipó e Lapinha da Serra, integrada à natureza, com riscos de quedas, picadas de insetos, carrapatos, animais peçonhentos, afogamento, rajadas de vento, raios, tromba d'água, entre outros, sendo o único responsável pela própria segurança e pela de seus convidados, e assumindo o risco de suas atividades nesse ambiente. Isenta o Solar do Espinhaço de responsabilidade por esses eventos e por problemas de saúde, mal súbito ou acidentes pessoais ocorridos consigo e com os demais ocupantes durante o período contratado.</p>
+            <p>Pessoas alérgicas a insetos, abelhas, mosquitos, lagartas ou outros animais devem levar repelente e medicamentos antialérgicos sob prescrição médica. O LOCATÁRIO declara conhecer as dificuldades de acesso ao imóvel, que podem restringir operações de resgate e socorro, e assume total responsabilidade caso precise ser socorrido no local.</p>
+            <p>Os riscos do uso das piscinas, canoas, caiaques, stand up, bicicletas e de quaisquer equipamentos para esportes aquáticos e/ou náuticos são de inteira responsabilidade do LOCATÁRIO e de seus convidados. O LOCADOR não se responsabiliza por objetos deixados no imóvel, furtos ou roubos de bens do LOCATÁRIO, nem por danos decorrentes de caso fortuito ou força maior, nem por eventos como falta de energia elétrica, de responsabilidade da concessionária.</p>
+            <p>Parágrafo único. A assunção de responsabilidades pelo LOCATÁRIO decorre da natureza da locação por temporada (arts. 48 a 50 da Lei 8.245/91): o LOCATÁRIO tem ciência de que contrata uma locação por temporada e não serviços de hotel ou congêneres.</p>
+            <p><b>Cláusula nona — danos ambientais.</b> O LOCATÁRIO é responsável pelos danos que ele e seus convidados causarem aos patrimônios ambientais e históricos existentes no imóvel e em seu entorno. Declara saber que o imóvel está em Área de Proteção Ambiental, protegida por rígidas leis de preservação, e que, nos termos da Lei Federal 9.605/98, é proibido acampar, fazer fogo, coletar pedras, plantas ou areia, pescar, caçar e alimentar peixes ou qualquer animal silvestre. Em caso de infração ambiental, estará sujeito a multa e sanções legais, inclusive prisão.</p>
+            <p><b>Cláusula décima — do cancelamento.</b> Feita a reserva para temporada no site e pago o sinal, em caso de desistência do LOCATÁRIO incidem as penalidades da <b>Política de cancelamento</b> acima: § 1º isenção de penalidades se a desistência for informada em até 7 dias da efetivação da reserva; § 2º multa contratual de 25% sobre o valor total da locação se a desistência ocorrer depois desse prazo, com restituição pelo LOCADOR de 50% do sinal recebido em até 10 dias do recebimento do cancelamento; § 3º em caso de no show, perda de todo o valor do sinal, sem restituição.</p>
+            <p><b>Cláusula décima primeira — foro.</b> Fica eleito o foro da Comarca de Jaboticatubas – MG para dirimir as questões deste contrato, na forma do art. 58 da Lei 8.245/91.</p>
+          </div>
+          <label class="aceite" id="aceiteBox"><input type="checkbox" id="aceite"><span>Li e <b>aceito</b> a Política de cancelamento e os Termos e condições de uso, incluindo o contrato de locação por temporada.</span></label>
+          <div class="msg" data-m="aceite"></div>
+          <button class="btn" id="enviar" type="submit">Confirmar reserva</button>
+          <p class="nota" id="notaEnviar">Ao confirmar, as datas ficam registradas em seu nome. Nossa equipe entra em contato para combinar o pagamento do sinal.</p>
+        </section>
+      </form>
+
+      <section class="card ok hide" id="feito" role="status" tabindex="-1">
+        <h2><small>Quase pronto</small>Enviar solicitação</h2>
+        <p id="feitoTxt"></p>
+        <a class="btn" id="feitoBtn" href="#" style="text-decoration:none">Abrir e-mail com a solicitação</a>
+      </section>
+    </main>
+
+    <aside class="side">
+      <section class="card" id="resumo">
+        <h2><small>Resumo da reserva</small>Casa do Mirante</h2>
+        <div class="state" id="resEstado">Consultando valores…</div>
+        <div id="resCorpo" class="hide">
+          <div class="row"><span>Check-in</span><span id="rCi"></span></div>
+          <div class="row"><span>Check-out</span><span id="rCo"></span></div>
+          <div class="row"><span>Hóspedes</span><span id="rH"></span></div>
+          <div class="row"><span>Noites</span><span id="rN"></span></div>
+          <ul class="noites" id="rNoites"></ul>
+          <div class="tot">
+            <div class="row big"><span>Total</span><span id="rT"></span></div>
+            <div class="row"><span>Sinal (50%)</span><span id="rS"></span></div>
+            <div class="row"><span>Saldo no check-in</span><span id="rSd"></span></div>
+          </div>
+        </div>
+        <p class="nota"><a href="index.html">Alterar datas ou hóspedes</a></p>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API = { url: 'https://tnjpyjbqcjrowzjfnuln.supabase.co', chave: 'sb_publishable_VJqLlw2XZu8v5GSAWWfOfw_qUYdyXDF', schema: 'SE' };
+  var ENDPOINT = '';          /* URL da Edge Function de reserva, quando publicada; vazio = envia por e-mail */
+  var CONTATO = 'reservas@solardoespinhaco.com.br';
+  var VERSAO_TERMOS = 'v1 · 19/11/2026';
+  var $ = function (id) { return document.getElementById(id); };
+  var q = new URLSearchParams(location.search);
+  var P = { ci: q.get('ci'), co: q.get('co'), a: +q.get('a') || 2, c: +q.get('c') || 0, b: +q.get('b') || 0 };
+  var R = null;               /* resposta da consulta */
+
+  var PAISES = [['BR','Brasil'],['AR','Argentina'],['BO','Bolívia'],['CL','Chile'],['CO','Colômbia'],['PY','Paraguai'],['PE','Peru'],['UY','Uruguai'],['VE','Venezuela'],['US','Estados Unidos'],['CA','Canadá'],['MX','México'],['PT','Portugal'],['ES','Espanha'],['FR','França'],['DE','Alemanha'],['IT','Itália'],['GB','Reino Unido'],['IE','Irlanda'],['NL','Países Baixos'],['BE','Bélgica'],['CH','Suíça'],['AT','Áustria'],['SE','Suécia'],['NO','Noruega'],['DK','Dinamarca'],['PL','Polônia'],['JP','Japão'],['CN','China'],['KR','Coreia do Sul'],['IL','Israel'],['AU','Austrália'],['NZ','Nova Zelândia'],['ZA','África do Sul']];
+  var opt = PAISES.filter(function (p) { return p[0] !== 'BR'; }).map(function (p) { return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join('');
+  $('pais').innerHTML = opt; $('ppPais').innerHTML = opt;
+
+  function brl(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  function dt(s) { var p = s.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  var MES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  function dataExt(s) { var d = dt(s); return d.getDate() + ' de ' + MES[d.getMonth()] + ' de ' + d.getFullYear(); }
+  function hospedes() {
+    var t = [P.a + (P.a === 1 ? ' adulto' : ' adultos')];
+    if (P.c) t.push(P.c + (P.c === 1 ? ' criança' : ' crianças'));
+    if (P.b) t.push(P.b + (P.b === 1 ? ' bebê' : ' bebês'));
+    return t.join(', ');
+  }
+  function estado(txt, ruim) { var e = $('resEstado'); e.className = 'state' + (ruim ? ' bad' : ''); e.textContent = txt; e.classList.remove('hide'); $('resCorpo').classList.add('hide'); }
+  var MOTIVOS = { datas_invalidas: 'O check-out precisa ser depois do check-in.', data_passada: 'A data de check-in já passou.', estadia_longa: 'A estadia passa do máximo de 7 noites.', capacidade: 'O chalé recebe até 2 adultos e 2 crianças ou bebês.', sem_tarifa: 'A agenda ainda não está aberta para essas datas.', fechado: 'Uma das noites escolhidas não está disponível.', sem_chegada: 'Não há check-in nesse dia.', sem_saida: 'Não há check-out nesse dia.', ocupado: 'Essas datas já estão reservadas.', unidade_inativa: 'O chalé não está disponível no momento.' };
+
+  /* acompanhantes: um campo de nome e sobrenome por adulto além do titular; crianças e bebês com nome */
+  (function () {
+    var h = '', i;
+    for (i = 2; i <= P.a; i++) h += '<div class="f"><label class="l" for="ad' + i + 'n">Adulto ' + i + ' · nome</label><input id="ad' + i + 'n" data-ad required><div class="msg" data-m="ad' + i + 'n"></div></div><div class="f"><label class="l" for="ad' + i + 's">Adulto ' + i + ' · sobrenome</label><input id="ad' + i + 's" data-ad required><div class="msg" data-m="ad' + i + 's"></div></div>';
+    for (i = 1; i <= P.c; i++) h += '<div class="f"><label class="l" for="cr' + i + '">Criança ' + i + ' · nome</label><input id="cr' + i + '" data-cr></div><div class="f"><label class="l" for="cri' + i + '">Idade</label><input id="cri' + i + '" type="number" inputmode="numeric" min="2" max="13" placeholder="2 a 13"></div>';
+    for (i = 1; i <= P.b; i++) h += '<div class="f full"><label class="l" for="bb' + i + '">Bebê ' + i + ' · nome</label><input id="bb' + i + '" data-bb></div>';
+    $('acomp').innerHTML = h || '';
+    if (!h) $('cardAcomp').classList.add('hide');
+  })();
+
+  /* consulta de preço e disponibilidade */
+  function consultar() {
+    var ok = /^\d{4}-\d{2}-\d{2}$/.test(P.ci || '') && /^\d{4}-\d{2}-\d{2}$/.test(P.co || '');
+    if (!ok) { estado('Escolha as datas no site para ver os valores.', true); $('enviar').disabled = true; return; }
+    $('rCi').textContent = dataExt(P.ci); $('rCo').textContent = dataExt(P.co); $('rH').textContent = hospedes();
+    fetch(API.url + '/rest/v1/rpc/consultar_disponibilidade', {
+      method: 'POST', headers: { apikey: API.chave, 'Content-Type': 'application/json', 'Content-Profile': API.schema },
+      body: JSON.stringify({ p_checkin: P.ci, p_checkout: P.co, p_adultos: P.a, p_criancas: P.c, p_bebes: P.b })
+    }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (l) {
+      var r = l && l[0]; if (!r) throw 0; R = r;
+      if (!r.disponivel) {
+        estado(r.motivo === 'min_noites' ? 'Para essas datas, a estadia mínima é de ' + r.qtde_min_noites + ' noites.' : (MOTIVOS[r.motivo] || 'Essas datas não estão disponíveis.'), true);
+        $('enviar').disabled = true; return;
+      }
+      $('resEstado').classList.add('hide'); $('resCorpo').classList.remove('hide');
+      $('rN').textContent = r.qtde_noites;
+      $('rNoites').innerHTML = (r.ds_detalhe || []).map(function (n) { var d = dt(n.dt_ref); return '<li><span>' + d.getDate() + ' ' + MES[d.getMonth()].slice(0, 3) + '</span><span>' + brl(n.vl_noite) + '</span></li>'; }).join('');
+      $('rT').textContent = brl(r.vl_total); $('rS').textContent = brl(r.vl_sinal); $('rSd').textContent = brl(Number(r.vl_total) - Number(r.vl_sinal));
+    }).catch(function () { estado('Não foi possível consultar os valores agora. Atualize a página em instantes.', true); });
+  }
+
+  /* nacionalidade */
+  function nac() { return document.querySelector('input[name=nac]:checked').value; }
+  document.querySelectorAll('input[name=nac]').forEach(function (r) { r.addEventListener('change', function () {
+    $('blBR').classList.toggle('hide', nac() !== 'BR'); $('blEX').classList.toggle('hide', nac() === 'BR');
+  }); });
+  $('cpf').addEventListener('input', function () {
+    var d = this.value.replace(/\D/g, '').slice(0, 11), o = d;
+    if (d.length > 9) o = d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
+    else if (d.length > 6) o = d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6);
+    else if (d.length > 3) o = d.slice(0, 3) + '.' + d.slice(3);
+    this.value = o;
+  });
+  function cpfOk(s) {
+    s = s.replace(/\D/g, ''); if (s.length !== 11 || /^(\d)\1{10}$/.test(s)) return false;
+    for (var t = 9; t < 11; t++) { var soma = 0; for (var i = 0; i < t; i++) soma += +s[i] * (t + 1 - i); if ((soma * 10 % 11) % 10 !== +s[t]) return false; }
+    return true;
+  }
+
+  /* validação */
+  function erro(id, txt) { var m = document.querySelector('[data-m="' + id + '"]'); if (m) m.textContent = txt || ''; var e = $(id); if (e) e.classList.toggle('err', !!txt); return !txt; }
+  function validar() {
+    var bom = true, primeiro = null;
+    function v(id, cond, txt) { var ok = erro(id, cond ? '' : txt); if (!ok) { bom = false; primeiro = primeiro || $(id); } }
+    v('nome', $('nome').value.trim().length >= 2, 'Informe o nome.');
+    v('sobrenome', $('sobrenome').value.trim().length >= 2, 'Informe o sobrenome.');
+    v('email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('email').value.trim()), 'Informe um e-mail válido.');
+    v('tel', $('tel').value.replace(/\D/g, '').length >= 10, 'Informe um telefone com DDD.');
+    if (nac() === 'BR') v('cpf', cpfOk($('cpf').value), 'Informe um CPF válido.');
+    else {
+      v('pp', /^[A-Z0-9]{5,20}$/.test($('pp').value.trim().toUpperCase()), 'Informe o número do passaporte (letras e números).');
+      var val = $('ppVal').value;
+      v('ppVal', !!val && val >= P.co, 'O passaporte precisa valer até ' + (P.co ? dataExt(P.co) : 'o dia da saída') + '.');
+    }
+    document.querySelectorAll('[data-ad]').forEach(function (e) { v(e.id, e.value.trim().length >= 2, 'Obrigatório.'); });
+    var ac = $('aceite').checked; $('aceiteBox').classList.toggle('err', !ac); erro('aceite', ac ? '' : 'Para continuar, aceite a política de cancelamento e os termos.');
+    if (!ac) { bom = false; primeiro = primeiro || $('aceite'); }
+    if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return bom;
+  }
+
+  /* envio */
+  function dados() {
+    var br = nac() === 'BR', ac = [];
+    document.querySelectorAll('[data-ad]').forEach(function (e) { if (/n$/.test(e.id)) ac.push('Adulto: ' + e.value.trim() + ' ' + $(e.id.replace(/n$/, 's')).value.trim()); });
+    for (var i = 1; i <= P.c; i++) if ($('cr' + i).value.trim()) ac.push('Criança: ' + $('cr' + i).value.trim() + ($('cri' + i).value ? ' (' + $('cri' + i).value + ' anos)' : ''));
+    for (i = 1; i <= P.b; i++) if ($('bb' + i).value.trim()) ac.push('Bebê: ' + $('bb' + i).value.trim());
+    return {
+      titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(),
+        nacionalidade: br ? 'BR' : $('pais').value, cpf: br ? $('cpf').value.replace(/\D/g, '') : null,
+        passaporte: br ? null : $('pp').value.trim().toUpperCase(), paisPassaporte: br ? null : $('ppPais').value, validadePassaporte: br ? null : $('ppVal').value },
+      acompanhantes: ac, reserva: { checkin: P.ci, checkout: P.co, adultos: P.a, criancas: P.c, bebes: P.b },
+      aceite: { termos: VERSAO_TERMOS, em: new Date().toISOString() }
+    };
+  }
+  function textoEmail(d) {
+    var t = d.titular, l = ['SOLICITAÇÃO DE RESERVA · Casa do Mirante', '',
+      'Check-in: ' + dataExt(P.ci) + ' (a partir das 15h)', 'Check-out: ' + dataExt(P.co) + ' (até as 12h)', 'Hóspedes: ' + hospedes()];
+    if (R && R.disponivel) l.push('Total: ' + brl(R.vl_total) + ' · Sinal (50%): ' + brl(R.vl_sinal) + ' · Saldo no check-in: ' + brl(Number(R.vl_total) - Number(R.vl_sinal)));
+    l.push('', 'TITULAR', 'Nome: ' + t.nome, 'E-mail: ' + t.email, 'Telefone: ' + t.telefone);
+    l.push(t.cpf ? 'CPF: ' + t.cpf : 'Passaporte: ' + t.passaporte + ' (' + t.paisPassaporte + ') · validade ' + t.validadePassaporte + ' · nacionalidade ' + t.nacionalidade);
+    if (d.acompanhantes.length) l.push('', 'ACOMPANHANTES'), d.acompanhantes.forEach(function (a) { l.push(a); });
+    l.push('', 'Li e aceito a Política de cancelamento e os Termos e condições de uso (' + d.aceite.termos + ').');
+    return l.join('\n');
+  }
+  function concluir(html, mailto) {
+    $('form').classList.add('hide'); $('feito').classList.remove('hide');
+    $('feitoTxt').innerHTML = html;
+    var b = $('feitoBtn'); if (mailto) { b.href = mailto; b.classList.remove('hide'); } else b.classList.add('hide');
+    $('feito').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('feito').focus();
+  }
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (!R || !R.disponivel) { estado('Escolha datas disponíveis no site para continuar.', true); return; }
+    if (!validar()) return;
+    var d = dados();
+    if (ENDPOINT) {
+      $('enviar').disabled = true;
+      fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw j; return j; }); })
+        .then(function (j) { concluir('Reserva <b>' + j.cd_reserva + '</b> registrada. Nossa equipe entra em contato pelo e-mail <b>' + d.titular.email + '</b> e pelo WhatsApp para combinar o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>.'); })
+        .catch(function (j) { $('enviar').disabled = false; alert(j && j.mensagem ? j.mensagem : 'Não foi possível concluir agora. Tente de novo em instantes.'); });
+      return;
+    }
+    var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));
+    concluir('Tudo certo com os seus dados. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe, que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
+  });
+  document.querySelectorAll('input,select').forEach(function (e) { e.addEventListener('input', function () { if (e.classList.contains('err')) { e.classList.remove('err'); var m = document.querySelector('[data-m="' + e.id + '"]'); if (m) m.textContent = ''; } }); });
+
+  consultar();
+})();
+</script>
+</body>
+</html>
