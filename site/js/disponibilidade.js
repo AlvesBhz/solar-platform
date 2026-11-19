@@ -48,7 +48,7 @@ window.Disponibilidade = (function () {
     var d = function (id) { return document.getElementById(id).textContent; };
     var el = barra();
     el.innerHTML = '<span class="bka-resumo">' + d('checkinDisplay') + ' → ' + d('checkoutDisplay') + ' · ' + d('guestsDisplay') + '</span>' +
-      '<span class="bka-seta" aria-label="' + t('Pesquisar novamente') + '"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg></span>';
+      '<span class="bka-seta" aria-label="' + t('Pesquisar novamente') + '"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg></span>';
     el.setAttribute('aria-label', t('Pesquisar novamente'));
     el.classList.add('is-on');
     document.getElementById('bkPopup').classList.add('bk-collapsed');
@@ -125,7 +125,7 @@ window.Disponibilidade = (function () {
     mostrar(
       '<div class="bkr-head is-ok"><iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>' +
       '<span>' + t('Disponível') + ' · ' + r.nm_unidade + '</span></div>' +
-      '<details class="bkr-noites"><summary>' + qtd + ' · ' + t('ver valor de cada noite') + '</summary><ul>' + noites + '</ul></details>' +
+      '<details class="bkr-noites" open><summary>' + qtd + ' · ' + t('ver valor de cada noite') + '</summary><ul>' + noites + '</ul></details>' +
       '<dl class="bkr-valores">' +
         '<div class="bkr-total"><dt>' + t('Total da estadia') + '</dt><dd>' + moeda(r.vl_total) + '</dd></div>' +
         '<div><dt>' + t('Sinal para reservar (50%)') + '</dt><dd>' + moeda(r.vl_sinal) + '</dd></div>' +
