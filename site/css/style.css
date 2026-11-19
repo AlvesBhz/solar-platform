@@ -851,8 +851,8 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
   text-align: left; cursor: pointer; border: 0; }
 #bkAgain.is-on { display: flex; }
 #bkAgain .bka-seta { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center;
-  color: rgba(255,255,255,0.55); transition: color 0.2s ease, transform 0.2s ease; }   /* tom da borda do card */
-#bkAgain:hover .bka-seta { color: rgba(255,255,255,0.9); transform: translateY(-2px); }
+  color: #c9b98a; transition: color 0.2s ease, transform 0.2s ease; }   /* ouro do bloco de resultado */
+#bkAgain:hover .bka-seta { color: #e3d6ae; transform: translateY(-2px); }
 #bkResult { position: relative; }
 #bkResult .bkr-close { position: absolute; top: 0.6rem; right: 0.7rem; display: grid; place-items: center;
   width: 2rem; height: 2rem; border: 0; background: transparent; color: #a8a29e; cursor: pointer; }
