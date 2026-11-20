@@ -255,5 +255,7 @@ Testes da função: `supabase/functions/reservar/teste.mjs` (19 verificações c
 6. Envio da FNRH digital ao Ministério do Turismo a partir do cadastro do hóspede.
 7. Quando quiser cobrar online: Edge Function que cria a cobrança no Mercado Pago (`SIT_PAGAMENTO` `PENDENTE`) e recebe o aviso de aprovação; o banco já tem os campos e as regras.
 
+- `listar_hospedes.sql`: todos os cadastros de hóspedes com o resumo das reservas de cada um (quantas, confirmadas, aguardando sinal, total confirmado, códigos).
+- `listar_reservas.sql`: todas as reservas com situação (aguardando sinal, vencida, confirmada, cancelada…), titular, contato, valores, sinal e saldo recebidos, quanto falta receber e tempo para pagar.
 - `consultar_reserva.sql`: todos os dados de uma pré-reserva ou reserva numa linha (código, datas, hóspedes, valores, prazo, titular, acompanhantes, preço noite a noite e pagamentos). Rode no SQL Editor com o código entre as aspas; vazio mostra a pré-reserva mais recente.
 - **20/11/2026, preços novos:** diária, faixas de idade e feriados mudaram a estrutura (`SIT_TARIFA.PC_*`, `SIT_RESERVA.QTDE_CRIANCAS_MAIORES`, parâmetro `p_criancas_maiores`). Recrie o banco: `remover_se.sql` → `schema.sql` → `seed_exemplo.sql`.
