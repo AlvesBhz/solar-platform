@@ -395,6 +395,7 @@ const Booking = (() => {
       footer.appendChild(hint);
     }
     pop.appendChild(footer);
+    if (window.Disponibilidade) Disponibilidade.precosNoCalendario(pop, s.cy, s.cm);
     return pop;
   }
 

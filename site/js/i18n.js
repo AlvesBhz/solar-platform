@@ -180,6 +180,7 @@ window.I18N = (function () {
     'Saldo no check-in': ['Balance at check-in', 'Saldo en el check-in'],
     'Bebês até 1 ano não pagam. Valores consultados agora; as datas só ficam garantidas ao concluir a reserva.': ['Infants under 2 stay free. Prices checked just now; dates are only guaranteed once the booking is completed.', 'Los bebés hasta 1 año no pagan. Precios consultados ahora; las fechas solo quedan garantizadas al completar la reserva.'],
     'Falar com a pousada': ['Contact the inn', 'Contactar a la posada'],
+    'Valor por noite': ['Price per night', 'Precio por noche'],
     'Realizar reserva': ['Make a reservation', 'Realizar reserva'],
     'Pesquisar novamente': ['Search again', 'Buscar de nuevo'],
     'Fechar': ['Close', 'Cerrar'],

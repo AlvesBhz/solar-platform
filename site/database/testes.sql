@@ -320,6 +320,29 @@ do $$ declare n int; a jsonb; begin
   raise notice 'ok  Acompanhantes gravados (%) e e-mail atualizado no cadastro do hóspede', jsonb_array_length(a);
 end $$;
 
+\echo '── Preço por noite para o calendário'
+do $$ declare r record; n int; begin
+  select * into r from consultar_precos('2027-03-02', '2027-03-03', 2, 1, 0);
+  if r.vl_noite <> 2000 or not r.livre then raise exception 'FALHOU: casal + criança = % livre=%', r.vl_noite, r.livre; end if;
+  select * into r from consultar_precos('2027-03-02', '2027-03-03', 2, 1, 1);
+  if r.vl_noite <> 2000 then raise exception 'FALHOU: bebê não pode cobrar: %', r.vl_noite; end if;
+  select * into r from consultar_precos('2027-03-02', '2027-03-03', 1, 0, 0);
+  if r.vl_noite <> 1700 then raise exception 'FALHOU: 1 adulto = %', r.vl_noite; end if;
+  select * into r from consultar_precos('2026-12-30', '2026-12-31', 2, 1, 0);
+  if r.vl_noite <> 2800 then raise exception 'FALHOU: tarifa de maior prioridade (Réveillon) = %', r.vl_noite; end if;
+  select * into r from consultar_precos('2027-04-21', '2027-04-22', 2, 1, 0);
+  if r.vl_noite <> 2200 then raise exception 'FALHOU: ajuste do dia = %', r.vl_noite; end if;
+  select count(*) into n from consultar_precos('2027-03-12', '2027-03-20', 2, 0, 0) where not livre;
+  if n <> 4 then raise exception 'FALHOU: bloqueio (3 noites) + reserva (noite 19) deveriam dar 4 ocupadas, deu %', n; end if;
+  select count(*) into n from consultar_precos('2027-05-12', '2027-05-13', 2, 0, 0) where not livre;
+  if n <> 1 then raise exception 'FALHOU: noite fechada deve aparecer ocupada'; end if;
+  select count(*) into n from consultar_precos('2027-03-02', '2027-03-09', 3, 0, 0);
+  if n <> 0 then raise exception 'FALHOU: 3 adultos devolveu preço'; end if;
+  select count(*) into n from consultar_precos('2027-03-01', '2027-04-01', 2, 0, 0);
+  if n <> 31 then raise exception 'FALHOU: mês deveria ter 31 noites, veio %', n; end if;
+  raise notice 'ok  Preço por noite: criança paga, bebê não, tarifa de prioridade e ajuste valem, ocupadas e fechadas aparecem, excesso de hóspedes não devolve preço';
+end $$;
+
 \echo '── Proteção contra overbooking no próprio banco'
 do $$ begin
   insert into "SIT_RESERVA" ("ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM", "ID_HOSPEDE")
