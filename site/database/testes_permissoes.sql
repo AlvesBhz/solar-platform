@@ -3,6 +3,7 @@
 set search_path = "SE", extensions, public;
 set role anon;
 select 'ok  anon consulta disponibilidade: ' || count(*) || ' unidade(s)' from consultar_disponibilidade('2027-03-02','2027-03-04',2,0);
+select 'ok  anon consulta preços do calendário: ' || count(*) || ' noite(s)' from consultar_precos('2027-03-01','2027-04-01',2,1,0);
 -- no schema "SE" o visitante não tem nem permissão de leitura nas tabelas (além do RLS)
 do $$ declare t text; n int; begin
   foreach t in array array['SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO'] loop
