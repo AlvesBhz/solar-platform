@@ -30,3 +30,6 @@ echo "ok  a migração pode ser rodada de novo (idempotente)"
 SAIDA=$($P -f "$AQUI/database/testes_vistorias.sql" 2>&1 | sed -E 's/^psql:[^ ]+ (NOTICE|ERROR): +/\1 /') || true
 echo "$SAIDA" | grep -E "^(NOTICE ok|──|TODOS)|FALHOU|ERROR" | sed 's/^NOTICE //'
 echo "$SAIDA" | grep -q "TODOS OS TESTES PASSARAM" || exit 1
+if command -v node >/dev/null; then
+  node --experimental-strip-types --no-warnings "$AQUI/supabase/functions/teste.mjs" 2>&1 | grep -E "FALHOU|TODAS|FALHA"
+fi

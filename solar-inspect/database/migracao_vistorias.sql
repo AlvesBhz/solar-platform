@@ -70,7 +70,7 @@ create table if not exists "VST_USUARIO" (
   "NM_USUARIO"      text not null,
   "CD_LOGIN"        text not null,                         -- usuário de acesso (minúsculo)
   "CD_CPF"          text,                                  -- só números; também serve para entrar
-  "TP_PERFIL"       text not null,
+  "TP_PERFIL"       text not null,                         -- ASSESSOR, LIMPEZA, MANUTENCAO, GESTOR ou ADMIN
   "SG_ATIVO"        boolean not null default true,
   "DT_ACEITE_LGPD"  timestamptz,                           -- aceite do termo de localização e fotos
   "DT_CRIACAO"      timestamptz not null default now(),
@@ -79,10 +79,15 @@ create table if not exists "VST_USUARIO" (
   constraint "FK_VST_USUARIO_AUTH_USERS" foreign key ("ID_USUARIO") references auth.users ("id"),
   constraint "UQ_VST_USUARIO_CD_LOGIN" unique ("CD_LOGIN"),
   constraint "UQ_VST_USUARIO_CD_CPF" unique ("CD_CPF"),
-  constraint "CK_VST_USUARIO_CD_LOGIN" check ("CD_LOGIN" ~ '^[a-z0-9._-]{3,40}$'),
+  constraint "CK_VST_USUARIO_CD_LOGIN" check ("CD_LOGIN" ~ '^[a-z][a-z0-9._-]{2,39}$'),   -- começa por letra: nunca se confunde com CPF
   constraint "CK_VST_USUARIO_CD_CPF" check ("CD_CPF" is null or "SE".cpf_valido("CD_CPF")),
-  constraint "CK_VST_USUARIO_TP_PERFIL" check ("TP_PERFIL" in ('ASSESSOR', 'GESTOR', 'ADMIN'))
+  constraint "CK_VST_USUARIO_TP_PERFIL" check ("TP_PERFIL" in ('ASSESSOR', 'LIMPEZA', 'MANUTENCAO', 'GESTOR', 'ADMIN'))
 );
+-- perfis: ASSESSOR (vistoria), LIMPEZA e MANUTENCAO (equipe de campo, mesmas permissões do assessor), GESTOR e ADMIN (gestão)
+alter table "VST_USUARIO" drop constraint if exists "CK_VST_USUARIO_TP_PERFIL";
+alter table "VST_USUARIO" add constraint "CK_VST_USUARIO_TP_PERFIL" check ("TP_PERFIL" in ('ASSESSOR', 'LIMPEZA', 'MANUTENCAO', 'GESTOR', 'ADMIN'));
+alter table "VST_USUARIO" drop constraint if exists "CK_VST_USUARIO_CD_LOGIN";
+alter table "VST_USUARIO" add constraint "CK_VST_USUARIO_CD_LOGIN" check ("CD_LOGIN" ~ '^[a-z][a-z0-9._-]{2,39}$');
 
 -- ── VST_USUARIO_PROPRIEDADE: quais pousadas cada usuário vê ─────────────
 create table if not exists "VST_USUARIO_PROPRIEDADE" (
@@ -492,6 +497,47 @@ begin
 end;
 $$;
 
+-- Login por usuário ou CPF: a Edge Function (chave secreta, nunca no app) acha o e-mail do funcionário ativo.
+-- Só service_role executa. O e-mail é interno (criado junto com o usuário), o funcionário nunca o digita.
+create or replace function vst_localizar_login(p_login text)
+returns table (id_usuario uuid, ds_email text, sg_ativo boolean, tp_perfil text, nm_usuario text)
+language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
+  select u."ID_USUARIO", a.email::text, u."SG_ATIVO", u."TP_PERFIL", u."NM_USUARIO"
+  from "VST_USUARIO" u join auth.users a on a.id = u."ID_USUARIO"
+  where u."CD_LOGIN" = lower(btrim(p_login)) or u."CD_CPF" = regexp_replace(p_login, '\D', '', 'g')
+$$;
+
+-- Cadastro de funcionário (a Edge Function criar-usuario cria o login no Auth e chama esta função).
+create or replace function vst_cadastrar_usuario(p_id_usuario uuid, p_nm_usuario text, p_cd_login text, p_cd_cpf text,
+                                                 p_tp_perfil text, p_ids_propriedade bigint[] default '{}')
+returns uuid language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+declare v_cpf text := nullif(regexp_replace(coalesce(p_cd_cpf, ''), '\D', '', 'g'), '');
+begin
+  if p_tp_perfil is null or p_tp_perfil not in ('ASSESSOR', 'LIMPEZA', 'MANUTENCAO', 'GESTOR', 'ADMIN') then
+    raise exception 'perfil_invalido' using errcode = 'P0001';
+  end if;
+  if v_cpf is not null and not "SE".cpf_valido(v_cpf) then raise exception 'cpf_invalido' using errcode = 'P0001'; end if;
+  if exists (select 1 from unnest(coalesce(p_ids_propriedade, '{}')) i where not exists (select 1 from "SIT_PROPRIEDADE" p where p."ID_PROPRIEDADE" = i)) then
+    raise exception 'propriedade_inexistente' using errcode = 'P0001';
+  end if;
+  if p_tp_perfil <> 'ADMIN' and coalesce(cardinality(p_ids_propriedade), 0) = 0 then
+    raise exception 'propriedade_obrigatoria' using errcode = 'P0001';
+  end if;
+  begin
+    insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "CD_CPF", "TP_PERFIL")
+    values (p_id_usuario, btrim(p_nm_usuario), lower(btrim(p_cd_login)), v_cpf, p_tp_perfil);
+  exception
+    when unique_violation then
+      if exists (select 1 from "VST_USUARIO" where "CD_LOGIN" = lower(btrim(p_cd_login))) then raise exception 'login_em_uso' using errcode = 'P0001'; end if;
+      if v_cpf is not null and exists (select 1 from "VST_USUARIO" where "CD_CPF" = v_cpf) then raise exception 'cpf_em_uso' using errcode = 'P0001'; end if;
+      raise exception 'usuario_ja_cadastrado' using errcode = 'P0001';
+    when check_violation then raise exception 'dados_invalidos' using errcode = 'P0001';
+  end;
+  insert into "VST_USUARIO_PROPRIEDADE" ("ID_USUARIO", "ID_PROPRIEDADE") select p_id_usuario, i from unnest(coalesce(p_ids_propriedade, '{}')) i on conflict do nothing;
+  return p_id_usuario;
+end;
+$$;
+
 -- Troca de situação com as regras de perfil. LIBERADO encerra o bloqueio de manutenção
 -- (DT_FIM = amanhã) e só vale sem ocorrência crítica aberta.
 create or replace function vst_mudar_situacao(p_id_unidade bigint, p_tp_situacao text, p_perfil text, p_ignorar_ocorrencia bigint default null)
@@ -619,7 +665,7 @@ begin
   select "ID_TIPO_VISTORIA" into v_tipo from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = p_cd_tipo_vistoria and "SG_ATIVO";
   if v_tipo is null then raise exception 'tipo_inexistente' using errcode = 'P0001'; end if;
   if p_dt_agendada is null then raise exception 'data_obrigatoria' using errcode = 'P0001'; end if;
-  if u."TP_PERFIL" = 'ASSESSOR' then
+  if u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then
     if p_id_reserva is not null or (p_id_usuario is not null and p_id_usuario <> u."ID_USUARIO") then
       raise exception 'perfil_sem_permissao' using errcode = 'P0001';
     end if;
@@ -680,7 +726,7 @@ begin
     return;
   end if;
   if v."TP_STATUS" <> 'AGENDADA' then raise exception 'vistoria_nao_agendada' using errcode = 'P0001'; end if;
-  if v."ID_USUARIO" is not null and v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" = 'ASSESSOR' then
+  if v."ID_USUARIO" is not null and v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then
     raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001';
   end if;
   v_ini := coalesce(p_dt_inicio, now());
@@ -745,7 +791,7 @@ begin
     return;
   end if;
   if v."TP_STATUS" <> 'EM_ANDAMENTO' then raise exception 'vistoria_nao_iniciada' using errcode = 'P0001'; end if;
-  if v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" = 'ASSESSOR' then raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001'; end if;
+  if v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001'; end if;
   if jsonb_typeof(p_respostas) is distinct from 'array' or jsonb_array_length(p_respostas) = 0 then
     raise exception 'respostas_obrigatorias' using errcode = 'P0001';
   end if;
@@ -812,10 +858,19 @@ begin
     if rec."SG_CRITICO" then v_bloq := "SE".vst_criar_bloqueio_manutencao(v_oc); end if;
   end loop;
 
-  -- situação do chalé: ocorrência crítica manda; senão vale a escolha do assessor
+  -- situação do chalé: ocorrência crítica manda (MANUTENCAO); senão vale a escolha de quem concluiu; senão o padrão do tipo:
+  -- Entrada concluída → OCUPADO, Saída concluída → EM_LIMPEZA (a equipe libera depois da limpeza).
+  -- O padrão nunca tira o chalé de MANUTENCAO ou BLOQUEADO.
   v_situacao := case when v_bloq is not null then 'MANUTENCAO' else p_tp_situacao_resultante end;
   if v_bloq is null and p_tp_situacao_resultante is not null then
     perform "SE".vst_mudar_situacao(v."ID_UNIDADE", p_tp_situacao_resultante, u."TP_PERFIL");
+  elsif v_bloq is null then
+    v_situacao := case t."TP_COMPORTAMENTO" when 'ENTRADA' then 'OCUPADO' when 'SAIDA' then 'EM_LIMPEZA' end;
+    if v_situacao is not null and c.tp_situacao not in ('MANUTENCAO', 'BLOQUEADO') then
+      perform "SE".vst_mudar_situacao(v."ID_UNIDADE", v_situacao, u."TP_PERFIL");
+    else
+      v_situacao := null;
+    end if;
   end if;
 
   v_sin := coalesce(v."DS_SINALIZACOES", '{}');
@@ -844,7 +899,7 @@ begin
   if not found then raise exception 'vistoria_inexistente' using errcode = 'P0001'; end if;
   if not "SE".vst_tem_acesso_unidade(v."ID_UNIDADE") then raise exception 'sem_acesso' using errcode = 'P0001'; end if;
   if v."TP_STATUS" not in ('EM_ANDAMENTO', 'CONCLUIDA') then raise exception 'vistoria_nao_iniciada' using errcode = 'P0001'; end if;
-  if v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" = 'ASSESSOR' then raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001'; end if;
+  if v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001'; end if;
   if not exists (select 1 from "VST_RESPOSTA" where "ID_VISTORIA" = p_id_vistoria and "ID_ITEM" = p_id_item) then
     raise exception 'foto_de_item_nao_respondido' using errcode = 'P0001';
   end if;
@@ -1037,6 +1092,8 @@ do $$ declare f record; begin
   end loop;
 end $$;
 revoke all on function vst_coerencia_vistoria() from public, anon, authenticated;
+grant execute on function vst_localizar_login(text) to service_role;
+grant execute on function vst_cadastrar_usuario(uuid, text, text, text, text, bigint[]) to service_role;
 
 
 -- ════════════════════════════════════════════════════════════════════

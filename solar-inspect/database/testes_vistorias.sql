@@ -42,6 +42,8 @@ grant execute on all functions in schema teste to public;
 \set como_admin 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a3","role":"authenticated"}'', false); reset role; set role authenticated;'
 \set como_bia   'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}'', false); reset role; set role authenticated;'
 \set como_inat  'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000c1","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_lia  'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a4","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_beto 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a5","role":"authenticated"}'', false); reset role; set role authenticated;'
 \set como_ninguem 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000d1","role":"authenticated"}'', false); reset role; set role authenticated;'
 
 \echo '── 1. Estrutura'
@@ -304,6 +306,64 @@ select teste.ok(:'qr_novo' <> :'qr_a' and :qr_ver = 2, 'rotacionar gera novo có
 :como_ana
 select teste.ok((select count(*) = 0 from "SE".vst_resolver_qr(:'qr_a')), 'QR antigo deixa de valer');
 select teste.ok((select count(*) = 1 from "SE".vst_resolver_qr(:'qr_novo')), 'QR novo vale');
+-- ── situação do chalé pela vistoria (Entrada → OCUPADO, Saída → EM_LIMPEZA, nunca tira de MANUTENCAO)
+:como_ana
+select "SE".vst_criar_vistoria(:ua, 'ENTRADA', current_date) as v_e2 \gset
+select "SE".vst_criar_vistoria(:ua, 'ENTRADA', current_date) as v_e3 \gset
+select format('[{"id_item":%s,"tp_resposta":"OK"}]', :i_torneira) as resp_e \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_e2') as fotos_e2 \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_e3') as fotos_e3 \gset
+select tp_status from "SE".vst_iniciar_vistoria(:'v_e2', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select tp_status as e2_status, qtde_ocorrencias as e2_oc from "SE".vst_concluir_vistoria(:'v_e2', :'resp_e', :'fotos_e2') \gset
+:dono
+select teste.ok((select "TP_SITUACAO" = 'OCUPADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua)
+                 and (select "TP_SITUACAO_RESULTANTE" = 'OCUPADO' from "VST_VISTORIA" where "ID_VISTORIA" = :'v_e2'), 'Entrada concluída põe o chalé em OCUPADO');
+:servico
+insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA") values (:ua, :t_sai, :r2, current_date);
+select "ID_VISTORIA" as v_s2 from "SE"."VST_VISTORIA" where "ID_RESERVA" = :r2 and "ID_TIPO_VISTORIA" = :t_sai \gset
+:como_ana
+select format('[{"id_item":%s,"tp_resposta":"OK"},{"id_item":%s,"tp_resposta":"OK"},{"id_item":%s,"tp_resposta":"OK","qtde_encontrada":4}]', :i_sofa, :i_torneira, :i_toalhas) as resp_s \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_s2') as fotos_s2 \gset
+select tp_status from "SE".vst_iniciar_vistoria(:'v_s2', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select tp_status from "SE".vst_concluir_vistoria(:'v_s2', :'resp_s', :'fotos_s2', 'assinaturas/s2.png') \gset
+:dono
+select teste.ok((select "TP_SITUACAO" = 'EM_LIMPEZA' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'Saída concluída sem problema põe o chalé em EM_LIMPEZA (a equipe libera depois)');
+:como_gesto
+select "SE".vst_alterar_situacao_unidade(:ua, 'MANUTENCAO');
+:como_ana
+select tp_status from "SE".vst_iniciar_vistoria(:'v_e3', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select tp_status from "SE".vst_concluir_vistoria(:'v_e3', :'resp_e', :'fotos_e3') \gset
+:dono
+select teste.ok((select "TP_SITUACAO" = 'MANUTENCAO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'a regra padrão nunca tira o chalé de MANUTENCAO');
+:como_gesto
+select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO');
+:dono
+select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'gestor libera o chalé depois da limpeza');
+
+-- ── perfis de campo: limpeza e manutenção
+:dono
+select teste.erro($q$insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "TP_PERFIL") values ('00000000-0000-4000-8000-0000000000a4', 'x', 'zelador.x', 'ZELADOR')$q$, '23514', 'perfil fora da lista é recusado');
+select teste.erro($q$insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "TP_PERFIL") values ('00000000-0000-4000-8000-0000000000a4', 'x', '12345678901', 'LIMPEZA')$q$, '23514', 'usuário que começa por número (pareceria CPF) é recusado');
+insert into auth.users (id, email) values ('00000000-0000-4000-8000-0000000000a4', 'lia@exemplo.invalid'), ('00000000-0000-4000-8000-0000000000a5', 'beto@exemplo.invalid');
+insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "TP_PERFIL") values
+  ('00000000-0000-4000-8000-0000000000a4', 'Lia (limpeza)', 'lia.limpeza', 'LIMPEZA'), ('00000000-0000-4000-8000-0000000000a5', 'Beto (manutenção)', 'beto.manut', 'MANUTENCAO');
+insert into "VST_USUARIO_PROPRIEDADE" ("ID_USUARIO", "ID_PROPRIEDADE") values ('00000000-0000-4000-8000-0000000000a4', :pa), ('00000000-0000-4000-8000-0000000000a5', :pa);
+:como_lia
+select teste.ok((select count(*) > 0 from "SE".vst_agenda(current_date, current_date + 60) where id_unidade = :ua), 'limpeza vê a agenda da pousada dela');
+select teste.erro(format($q$select "SE".vst_atualizar_agenda('%s', null, current_date + 3)$q$, :'v_e2'), 'perfil_sem_permissao', 'limpeza não mexe na agenda');
+select teste.erro(format($q$select "SE".vst_alterar_situacao_unidade(%s, 'MANUTENCAO')$q$, :ua), 'perfil_sem_permissao', 'limpeza não coloca o chalé em MANUTENCAO');
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s)$q$, :oc), 'perfil_sem_permissao', 'limpeza não resolve ocorrência');
+select teste.erro($q$select "CD_HASH_QR" from "SE"."VST_UNIDADE"$q$, '42501', 'limpeza não lê o código do QR');
+select "SE".vst_alterar_situacao_unidade(:ua, 'EM_LIMPEZA') as _ \gset
+select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO') as _ \gset
+select teste.ok(true, 'limpeza marca EM_LIMPEZA e LIBERADO');
+select "SE".vst_criar_vistoria(:ua, 'ROTINA', current_date) as v_lia \gset
+select teste.ok((select "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a4' from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_lia'), 'limpeza cria vistoria avulsa para si');
+:como_beto
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s)$q$, :oc), 'perfil_sem_permissao', 'manutenção não resolve ocorrência (só a gestão)');
+select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s', '%s')$q$, :'v_lia', :'qr_novo'), 'vistoria_de_outro_usuario', 'manutenção não assume a vistoria de outra pessoa');
+select teste.ok((select count(*) = 1 from "SE".vst_unidades()), 'manutenção vê só os chalés da pousada dela');
+
 -- gestão da agenda e vistoria avulsa
 :como_gesto
 select "SE".vst_atualizar_agenda(:'v_ent', '00000000-0000-4000-8000-0000000000a1', current_date + 31) as _ \gset
@@ -342,6 +402,40 @@ select teste.erro(format($q$insert into storage.objects (bucket_id, name) values
 :como_anon
 select teste.ok(teste.conta($q$select 1 from storage.objects where bucket_id = 'vistorias'$q$) = 0, 'anon não lê o bucket vistorias');
 select teste.erro(format($q$insert into storage.objects (bucket_id, name) values ('vistorias', '%s/anon.jpg')$q$, :'v_sai'), '42501', 'anon não grava no bucket vistorias');
+
+\echo '── 6b. Login por usuário ou CPF e cadastro de funcionários (Edge Functions, service_role)'
+:como_anon
+select teste.erro($q$select * from "SE".vst_localizar_login('ana.teste')$q$, '42501', 'anon não localiza login');
+select teste.erro($q$select "SE".vst_cadastrar_usuario(gen_random_uuid(), 'x', 'xyz', null, 'ASSESSOR', array[1])$q$, '42501', 'anon não cadastra usuário');
+:como_admin
+select teste.erro($q$select * from "SE".vst_localizar_login('ana.teste')$q$, '42501', 'nem o ADMIN logado localiza login pelo app (só a Edge Function)');
+select teste.erro($q$select "SE".vst_cadastrar_usuario(gen_random_uuid(), 'x', 'xyz', null, 'ASSESSOR', array[1])$q$, '42501', 'nem o ADMIN logado cadastra pelo banco (só a Edge Function criar-usuario)');
+:servico
+select teste.ok((select count(*) = 1 and bool_and(sg_ativo and tp_perfil = 'ASSESSOR' and ds_email = 'ana@exemplo.invalid') from "SE".vst_localizar_login('ana.teste')), 'localiza pelo usuário');
+select teste.ok((select count(*) = 1 from "SE".vst_localizar_login('  ANA.Teste ')), 'usuário não diferencia maiúsculas nem espaços');
+select teste.ok((select count(*) = 1 and bool_and(nm_usuario = 'Ana (teste)') from "SE".vst_localizar_login('529.982.247-25')), 'localiza pelo CPF com pontuação');
+select teste.ok((select count(*) = 1 from "SE".vst_localizar_login('52998224725')), 'localiza pelo CPF só com números');
+select teste.ok((select count(*) = 0 from "SE".vst_localizar_login('ninguem.assim')), 'login inexistente não devolve nada');
+select teste.ok((select count(*) = 0 from "SE".vst_localizar_login('')), 'login vazio não devolve nada');
+select teste.ok((select sg_ativo is false from "SE".vst_localizar_login('inativo.teste')), 'usuário inativo vem marcado como inativo (a função recusa o login)');
+:dono
+insert into auth.users (id, email) values ('00000000-0000-4000-8000-0000000000e1', 'novo1@exemplo.invalid'), ('00000000-0000-4000-8000-0000000000e2', 'novo2@exemplo.invalid');
+:servico
+select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e1', '  Maria Limpeza ', ' Maria.Limpeza ', '111.444.777-35', 'LIMPEZA', array[:pa]::bigint[]) as _ \gset
+select teste.ok((select "NM_USUARIO" = 'Maria Limpeza' and "CD_LOGIN" = 'maria.limpeza' and "CD_CPF" = '11144477735' and "TP_PERFIL" = 'LIMPEZA' and "SG_ATIVO"
+                 from "SE"."VST_USUARIO" where "ID_USUARIO" = '00000000-0000-4000-8000-0000000000e1'), 'cadastra o funcionário (login minúsculo, CPF só com números, ativo)');
+select teste.ok((select count(*) = 1 from "SE"."VST_USUARIO_PROPRIEDADE" where "ID_USUARIO" = '00000000-0000-4000-8000-0000000000e1' and "ID_PROPRIEDADE" = :pa), 'liga o funcionário à pousada');
+select teste.ok((select count(*) = 1 from "SE".vst_localizar_login('111.444.777-35')), 'o funcionário novo já entra pelo CPF');
+select teste.erro(format($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'maria.limpeza', null, 'ASSESSOR', array[%s]::bigint[])$q$, :pa), 'login_em_uso', 'usuário repetido é recusado');
+select teste.erro(format($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'outro.func', '11144477735', 'ASSESSOR', array[%s]::bigint[])$q$, :pa), 'cpf_em_uso', 'CPF repetido é recusado');
+select teste.erro(format($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'outro.func', '11144477736', 'ASSESSOR', array[%s]::bigint[])$q$, :pa), 'cpf_invalido', 'CPF com dígito errado é recusado');
+select teste.erro(format($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'outro.func', null, 'ZELADOR', array[%s]::bigint[])$q$, :pa), 'perfil_invalido', 'perfil inexistente é recusado');
+select teste.erro($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'outro.func', null, 'ASSESSOR', array[999999]::bigint[])$q$, 'propriedade_inexistente', 'pousada inexistente é recusada');
+select teste.erro($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', 'outro.func', null, 'MANUTENCAO', '{}'::bigint[])$q$, 'propriedade_obrigatoria', 'funcionário de campo precisa de ao menos uma pousada');
+select teste.erro($q$select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Outro', '12345678901', null, 'ADMIN', '{}'::bigint[])$q$, 'dados_invalidos', 'usuário que parece CPF é recusado');
+select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Admin Novo', 'admin.novo', null, 'ADMIN', '{}'::bigint[]) as _ \gset
+select teste.ok((select count(*) = 1 from "SE"."VST_USUARIO" where "CD_LOGIN" = 'admin.novo'), 'ADMIN pode ser cadastrado sem pousada (vê todas)');
+:dono
 
 \echo '── 7. Auditoria (SIT_AUDITORIA)'
 :dono

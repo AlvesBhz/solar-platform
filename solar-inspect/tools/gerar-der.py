@@ -125,8 +125,8 @@ T["VST_USUARIO"] = dict(grupo="ace", cols=[
     col("NM_USUARIO", "text", desc="Nome completo."),
     col("CD_LOGIN", "text", uq=True, desc="Usuário de acesso (ex.: ana.souza), minúsculo."),
     col("CD_CPF", "text", False, uq=True, desc="CPF só com números (dígitos conferidos); também serve para entrar."),
-    col("TP_PERFIL", "text", desc="ASSESSOR (campo), GESTOR ou ADMIN (gestão)."),
-    col("SG_ATIVO", "boolean", desc="Inativo não entra no app."),
+    col("TP_PERFIL", "text", desc="ASSESSOR (vistoria), LIMPEZA ou MANUTENCAO (campo), GESTOR ou ADMIN (gestão)."),
+    col("SG_ATIVO", "boolean", desc="Inativo não entra no app (nem pelo login por CPF)."),
     col("DT_ACEITE_LGPD", "timestamptz", False, desc="Aceite do termo de uso de localização e fotos."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro."),
     col("DT_ATUALIZACAO", "timestamptz", desc="Última alteração.")])
@@ -427,7 +427,7 @@ PROPOSITO = {
     "SIT_UNIDADE": "Tabela do site, só leitura para a vistoria. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Situação, QR e ponto de GPS ficam em VST_UNIDADE.",
     "SIT_RESERVA": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).",
     "SIT_BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal). Só funções do banco escrevem aqui.",
-    "VST_USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. É convidado pela equipe no Supabase Auth; o cadastro aberto está desligado.",
+    "VST_USUARIO": "Os funcionários que usam o app: vistoria (assessor), limpeza, manutenção, gestão e administração. O ADMIN cadastra pelo app; entram por usuário ou CPF e senha. O cadastro aberto do Auth está desligado.",
     "VST_USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas VST_.",
     "VST_PROPRIEDADE": "Regras de presença da pousada: como o assessor prova que está no local, o raio aceito e o tempo mínimo de uma vistoria. Uma linha por SIT_PROPRIEDADE (1 para 1).",
     "VST_UNIDADE": "Dados do chalé que só a vistoria usa: situação operacional, QR da porta, ponto de GPS e andar. Uma linha por SIT_UNIDADE (1 para 1).",
@@ -451,11 +451,12 @@ REGRAS = {
                      "Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.",
                      "Só funções security definer escrevem aqui; o vínculo com a ocorrência fica em VST_OCORRENCIA.ID_BLOQUEIO."],
     "VST_USUARIO": ["ID_USUARIO = auth.users.id (login do Supabase Auth).", "CD_LOGIN minúsculo e único; CD_CPF único, com 11 números e dígitos válidos.",
-                    "TP_PERFIL: ASSESSOR, GESTOR ou ADMIN.", "Inativo não entra (checado em todas as funções e regras de acesso)."],
+                    "TP_PERFIL: ASSESSOR (vistoria), LIMPEZA, MANUTENCAO, GESTOR ou ADMIN; os três primeiros são equipe de campo, com as mesmas permissões.", "Usuário começa por letra (nunca parece CPF); CPF é opcional e entra no login.", "Inativo não entra (checado no login e em todas as funções e regras de acesso)."],
     "VST_USUARIO_PROPRIEDADE": ["Chave composta: um acesso por usuário e pousada.", "ADMIN vê todas as pousadas; os demais só as listadas aqui."],
     "VST_PROPRIEDADE": ["TP_VALIDACAO: QR, GPS ou QR_E_GPS.", "Raio entre 10 e 1.000 m; precisão máxima entre 5 e 500 m; tempo mínimo entre 0 e 240 minutos.",
                         "Latitude e longitude vêm juntas ou ficam vazias juntas.", "Sem coordenadas, o GPS não é conferido (a vistoria registra GPS_NAO_CONFIGURADO)."],
     "VST_UNIDADE": ["Valores vazios herdam os da propriedade (validação, ponto, raio).", "TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.",
+                    "Pela vistoria: Entrada concluída → OCUPADO; Saída concluída → EM_LIMPEZA (a equipe libera depois da limpeza); item crítico com problema → MANUTENCAO. O padrão nunca tira o chalé de MANUTENCAO ou BLOQUEADO.",
                     "Só muda pelas funções vst_alterar_situacao_unidade, vst_concluir_vistoria e vst_resolver_ocorrencia.",
                     "CD_HASH_QR único e invisível ao app; rotacionar soma 1 em NO_VERSAO_QR."],
     "VST_AMBIENTE": ["Nome único por unidade.", "NO_ORDEM define a ordem do checklist."],
@@ -492,7 +493,8 @@ INTEGRACAO = [
     ("Saída ligada à estadia", "VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como SIT_BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
     ("Manutenção tira da venda", "Ocorrência crítica cria um SIT_BLOQUEIO MANUTENCAO, só por função security definer. A consultar_disponibilidade do site e o iCal dos canais já respeitam SIT_BLOQUEIO: as datas saem da venda sem mudar nada no site. O bloqueio nasce com prazo provisório de 7 dias e é encurtado quando a unidade é liberada."),
     ("Liberar devolve à venda", "Ao resolver a ocorrência e liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis."),
-    ("Acesso e login", "VST_USUARIO.ID_USUARIO = auth.users.id; usuários são convidados pela equipe. O app usa só a chave publicável e o login do usuário, e lê reservas e chalés por funções que nunca devolvem CPF, passaporte nem telefone."),
+    ("Acesso e login", "Os funcionários (vistoria, limpeza, manutenção, gestão) entram por usuário ou CPF e senha, pela Edge Function login-vistoria; o ADMIN os cadastra no app pela Edge Function criar-usuario. VST_USUARIO.ID_USUARIO = auth.users.id. O app usa só a chave publicável e a sessão do usuário, e lê reservas e chalés por funções que nunca devolvem CPF, passaporte nem telefone."),
+    ("Situação do chalé", "A vistoria mantém a situação sozinha: Entrada concluída → OCUPADO, Saída concluída → EM_LIMPEZA, item crítico com problema → MANUTENCAO. Depois da limpeza, a equipe libera. O site continua decidindo a venda só por reservas e bloqueios."),
     ("Conflito", "Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede."),
 ]
 FUNCOES = [
@@ -509,6 +511,8 @@ FUNCOES = [
     ("vst_bloquear_por_ocorrencia(…)", "Gestão: cria o bloqueio de manutenção de uma ocorrência (prazo provisório de 7 dias)."),
     ("vst_alterar_situacao_unidade(…)", "Troca a situação do chalé (BLOQUEADO e MANUTENCAO só para a gestão)."),
     ("vst_obter_qr / vst_rotacionar_qr(id_unidade)", "Gestão: QR para imprimir e rotação que invalida as etiquetas antigas."),
+    ("login-vistoria (Edge Function)", "Login por usuário ou CPF e senha: acha o funcionário ativo (vst_localizar_login), entra no Auth e devolve a sessão; resposta igual para qualquer erro e limite de tentativas."),
+    ("criar-usuario (Edge Function)", "Só ADMIN: cria o login no Auth e o cadastro em VST_USUARIO e VST_USUARIO_PROPRIEDADE (vst_cadastrar_usuario) para qualquer perfil."),
     ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com SIT_BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
 ]
 PREFIXOS = [("ID_", "identificador"), ("NM_", "nome"), ("DS_", "descrição ou texto livre"), ("DT_", "data ou data e hora"),
@@ -714,11 +718,11 @@ def painel(n):
 
 PASSOS = [
     ("18/11 13:19", "O hóspede paga o sinal e o site confirma a reserva SE-7F3A2C1D. No mesmo momento cria as vistorias de Entrada (DT_AGENDADA = check-in) e de Saída (check-out), AGENDADA e sem responsável.", "SIT_RESERVA 1, VST_VISTORIA 1 e 2", "—"),
-    ("23/12 14:40", "Marina assume a Entrada, lê o QR da porta e confere o GPS (14 m do ponto). A vistoria vira CONCLUIDA às 14:52.", "VST_VISTORIA 1", "OCUPADO"),
+    ("23/12 14:40", "Marina assume a Entrada, lê o QR da porta e confere o GPS (14 m do ponto). A vistoria vira CONCLUIDA às 14:52 e o chalé passa a OCUPADO (regra padrão da Entrada).", "VST_VISTORIA 1", "OCUPADO"),
     ("26/12 12:00", "Check-out da reserva. A Saída está na agenda do dia (DT_AGENDADA = DT_CHECKOUT).", "SIT_RESERVA 1", "—"),
     ("26/12 15:05", "Marina inicia a Saída (vst_iniciar_vistoria): QR certo, GPS a 22 m, dentro do raio de 60 m. A vistoria passa a EM_ANDAMENTO e aponta a Entrada (ID_VISTORIA_ENTRADA = 1).", "VST_VISTORIA 2", "—"),
     ("26/12 15:10", "Em “Torneira e pia”, item crítico, responde PROBLEMA, descreve o defeito e tira 2 fotos (foto obrigatória).", "VST_RESPOSTA, VST_FOTO", "—"),
-    ("26/12 15:21", "Conclui (vst_concluir_vistoria), com assinatura. O banco abre a ocorrência 1 (CRITICA), cria o bloqueio 3 (MANUTENCAO, 26/12 a 02/01, prazo provisório) e muda o chalé. SIT_AUDITORIA registra cada gravação.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "MANUTENCAO"),
+    ("26/12 15:21", "Conclui (vst_concluir_vistoria), com assinatura. A regra padrão da Saída seria EM_LIMPEZA, mas o item crítico manda: o banco abre a ocorrência 1 (CRITICA), cria o bloqueio 3 (MANUTENCAO, 26/12 a 02/01, prazo provisório) e muda o chalé. SIT_AUDITORIA registra cada gravação.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "MANUTENCAO"),
     ("26/12 15:22", "No site, consultar_disponibilidade já devolve essas noites como ocupadas e o iCal leva a mesma janela ao Airbnb e ao Booking. Nada muda no código do site.", "SIT_BLOQUEIO 3", "MANUTENCAO"),
     ("28/12", "O gestor resolve a ocorrência e libera o chalé (vst_resolver_ocorrencia). O bloqueio é encerrado (DT_FIM = 29/12) e as datas voltam à venda.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "LIBERADO"),
 ]

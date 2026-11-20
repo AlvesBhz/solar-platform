@@ -1,0 +1,8 @@
+# Edge Functions do Solar Inspect (publicar com: supabase functions deploy <nome> --project-ref tnjpyjbqcjrowzjfnuln --workdir solar-inspect).
+# login-vistoria é chamada antes do login, por isso não exige JWT; a proteção está dentro dela (origem, validação, limite de tentativas).
+[functions.login-vistoria]
+verify_jwt = false
+
+# criar-usuario só aceita quem já está logado; dentro dela, só o perfil ADMIN passa.
+[functions.criar-usuario]
+verify_jwt = true

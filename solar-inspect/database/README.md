@@ -6,15 +6,18 @@ Tabelas do projeto Vistorias começam com **`VST_`**; as do site, com **`SIT_`**
 | Arquivo | O que é |
 |---|---|
 | `migracao_vistorias.sql` | A migração. Roda sobre o banco atual, sem alterar nem apagar nada do site; pode ser rodada de novo; tudo numa transação. |
-| `testes_vistorias.sql` | 129 verificações (estrutura, contrato com o site, permissões, isolamento, fluxo do app, Storage, auditoria). |
+| `testes_vistorias.sql` | 167 verificações (estrutura, contrato com o site, permissões, isolamento, fluxo do app, perfis, login e cadastro, Storage, auditoria). |
+| `../supabase/functions/` | Edge Functions `login-vistoria` e `criar-usuario` (44 verificações em `teste.mjs`). |
 | `simulado_supabase.sql` | Só para teste local: simula papéis, `auth.users`, `auth.uid()` e Storage. **Não rodar no Supabase.** |
 | `der.html` e `dicionario-de-dados.md` | DER navegável e dicionário de dados (gerados por `tools/gerar-der.py`). |
 
 ## Como aplicar no Supabase
 
 1. SQL Editor do projeto, colar `migracao_vistorias.sql` e rodar. Pré-requisito: `schema.sql` do site já aplicado (tabelas `SIT_`, função `auditar()`); a migração para com uma mensagem clara se faltar algo.
-2. Convidar a equipe em Authentication › Users › Invite (o cadastro aberto continua desligado) e criar a linha em `"VST_USUARIO"` (mesmo `ID_USUARIO` do `auth.users`) e em `"VST_USUARIO_PROPRIEDADE"`.
+2. Publicar as duas Edge Functions (seção abaixo) e criar o **primeiro ADMIN** à mão: convidar em Authentication › Users, copiar o `id` e rodar `select "SE".vst_cadastrar_usuario('<id>', 'Nome', 'usuario', '<cpf>', 'ADMIN', '{}')` no SQL Editor. Os demais funcionários o ADMIN cadastra pelo app.
 3. Cadastrar ambientes e itens de cada chalé (`"VST_AMBIENTE"`, `"VST_ITEM"`, `"VST_TIPO_VISTORIA_ITEM"`) e, em `"VST_PROPRIEDADE"`/`"VST_UNIDADE"`, o ponto de GPS e o raio.
+
+Conferir também em Project Settings › API que o schema **`SE`** está em *Exposed schemas* (o site já depende disso).
 
 Testar antes, num banco descartável (nunca no de produção): `PGHOST=… PGPORT=… PGUSER=… tools/testar-banco.sh`
 (o script também prova que tabelas, funções e gatilhos do site ficaram idênticos depois da migração).
@@ -25,6 +28,18 @@ Testar antes, num banco descartável (nunca no de produção): `PGHOST=… PGPOR
 `VST_TIPO_VISTORIA` (com `ENTRADA`, `SAIDA`, `ROTINA` e `MANUTENCAO` já cadastrados), `VST_USUARIO`, `VST_USUARIO_PROPRIEDADE`,
 `VST_PROPRIEDADE`, `VST_UNIDADE`, `VST_AMBIENTE`, `VST_ITEM`, `VST_TIPO_VISTORIA_ITEM`, `VST_VISTORIA`, `VST_RESPOSTA`, `VST_OCORRENCIA`, `VST_FOTO`.
 Mais: funções `vst_*`, o bucket `vistorias` e suas políticas.
+
+### Perfis (`VST_USUARIO.TP_PERFIL`)
+
+| Perfil | Quem é | Pode |
+|---|---|---|
+| `ASSESSOR` | vistoria | ver a agenda da pousada, iniciar e concluir vistorias, criar vistoria avulsa para si, mudar a situação (`EM_LIMPEZA`, `LIBERADO`, `OCUPADO`) |
+| `LIMPEZA` | limpeza | o mesmo que o assessor |
+| `MANUTENCAO` | manutenção | o mesmo que o assessor |
+| `GESTOR` | gestão da pousada | tudo do campo, mais agenda (atribuir, remarcar, cancelar), ocorrências, bloqueio, QR, `BLOQUEADO`/`MANUTENCAO`, checklist e GPS das pousadas dele |
+| `ADMIN` | administração | tudo, em todas as pousadas; cadastra funcionários |
+
+Os três perfis de campo hoje têm as mesmas permissões. Separar o que cada um faz (por exemplo, limpeza só em Saída e Rotina, manutenção tratando ocorrências) é uma regra a mais, fácil de acrescentar quando você definir.
 
 ### Colunas propostas em tabelas SIT_
 
@@ -77,9 +92,31 @@ Funções auxiliares (também só `authenticated`, devolvem verdadeiro/falso ou 
 
 - **Presença:** QR errado ou ausente (quando a validação exige QR) é recusado. GPS fora do raio, impreciso ou ausente **não bloqueia**: a vistoria é sinalizada (`FORA_RAIO`, `GPS_IMPRECISO`, `SEM_GPS`) e a gestão decide. Sem coordenadas cadastradas, registra `GPS_NAO_CONFIGURADO`.
 - **Conclusão:** todos os itens do checklist respondidos, foto nos itens com foto obrigatória, assinatura na Saída, observação em cada `PROBLEMA`. Sinaliza `RAPIDA` (menos que o tempo mínimo) e `SEM_ENTRADA`.
+- **Situação do chalé (pela vistoria):** Entrada concluída → `OCUPADO`; Saída concluída → `EM_LIMPEZA` (a equipe libera depois da limpeza); item crítico com problema → `MANUTENCAO`. Se quem conclui informar a situação, vale a informada. O padrão nunca tira o chalé de `MANUTENCAO` ou `BLOQUEADO`. O site não usa essa situação para vender: a venda continua por reservas e bloqueios.
 - **Ocorrência:** cada `PROBLEMA` abre uma ocorrência (`CRITICA` se o item é crítico, senão `BAIXA`). Item crítico cria `SIT_BLOQUEIO` `MANUTENCAO` (hoje, prazo provisório de 7 dias, sem `ID_CALENDARIO`) e põe o chalé em `MANUTENCAO`.
 - **Liberar:** `vst_resolver_ocorrencia(..., p_liberar := true)` encerra o bloqueio (`DT_FIM` = amanhã) e põe o chalé em `LIBERADO`; só se não restar ocorrência crítica aberta. Reserva confirmada que já existe nessas datas não é cancelada.
 - **O app nunca escreve em `SIT_BLOQUEIO`** (nem lê reservas ou hóspedes direto): o único caminho é `vst_criar_bloqueio_manutencao`, chamada pelas funções acima.
+
+## Login por usuário ou CPF e cadastro de funcionários (Edge Functions)
+
+O Supabase Auth entra por e-mail; os funcionários não precisam ter e-mail. Cada funcionário recebe um e-mail interno (`<usuario>@usuarios.inspect.invalid`, nunca digitado) criado junto com o cadastro.
+
+| Edge Function | Quem chama | O que faz |
+|---|---|---|
+| `login-vistoria` (sem JWT) | o app, antes do login | recebe `{login, senha}`; `login` é o usuário ou o CPF (com ou sem pontuação). Acha o funcionário ativo (`vst_localizar_login`), entra no Auth e devolve `{sessao, usuario}`. O app aplica a sessão com `supabase.auth.setSession`. A resposta de erro é a mesma para senha errada, usuário inexistente e inativo; no máximo 10 tentativas por usuário e 40 por IP, por hora (`registrar_tentativa`, do site). |
+| `criar-usuario` (JWT) | o ADMIN logado, no app | recebe `{nm_usuario, cd_login, cd_cpf?, tp_perfil, senha, ids_propriedade}`. Só ADMIN passa. Cria o login no Auth e o cadastro (`vst_cadastrar_usuario`); se o banco recusar, apaga o login criado. Senha de 8 a 72 caracteres. Devolve `201 {id_usuario}` ou `409 login_em_uso`/`cpf_em_uso`, `422` com o motivo. |
+
+Funções SQL só do `service_role` (nenhum usuário logado as executa): `vst_localizar_login(p_login)` e `vst_cadastrar_usuario(p_id_usuario, p_nm_usuario, p_cd_login, p_cd_cpf, p_tp_perfil, p_ids_propriedade)`.
+
+Publicar (a chave secreta é injetada pelo próprio Supabase e não vai ao app nem ao GitHub):
+
+```bash
+supabase functions deploy login-vistoria --project-ref tnjpyjbqcjrowzjfnuln --workdir solar-inspect
+supabase functions deploy criar-usuario  --project-ref tnjpyjbqcjrowzjfnuln --workdir solar-inspect
+supabase secrets set ALLOWED_ORIGINS=https://alvesbhz.github.io --project-ref tnjpyjbqcjrowzjfnuln   # origem(ns) do app, separadas por vírgula
+```
+
+Esqueceu a senha: o ADMIN redefine em Authentication › Users (redefinir pelo app é um próximo passo). Para desligar um funcionário, `SG_ATIVO = false` em `VST_USUARIO`: ele deixa de entrar e de usar as funções na hora.
 
 ## Acesso direto às tabelas (RLS)
 
@@ -99,8 +136,8 @@ Escrever vistoria, resposta, ocorrência, foto, situação e QR só pelas funç�
 2. A geração automática pode inserir direto em `"VST_VISTORIA"` como `service_role`. Na remarcação que troque de chalé, atualizar `ID_UNIDADE` junto com `ID_RESERVA`.
 3. O bloqueio de manutenção nasce com prazo provisório de 7 dias; se o site preferir outro prazo ou um aviso de conflito com reserva confirmada, é só combinar (o painel de gestão faria o aviso).
 
-## Pendências que dependem de decisão
+## Pendências
 
-- **Login por usuário ou CPF:** o Supabase Auth entra por e-mail. Para aceitar usuário/CPF é preciso uma Edge Function (com a chave secreta, nunca no app) que traduza `CD_LOGIN`/`CD_CPF` em e-mail. Não faz parte desta migração.
-- **`OCUPADO` automático no check-in:** hoje o chalé só fica `OCUPADO` por `vst_alterar_situacao_unidade` ou pela situação escolhida ao concluir a Entrada.
-- **Aplicação:** esta migração foi testada num PostgreSQL local; **ainda não foi aplicada** no projeto Supabase.
+- **Aplicação:** a migração e as Edge Functions foram testadas (banco local e simulação do Auth), mas **ainda não foram aplicadas nem publicadas** no projeto Supabase. O login real contra o Supabase Auth só é provado depois da publicação.
+- **Permissões por perfil de campo:** hoje assessor, limpeza e manutenção são iguais (ver a tabela de perfis).
+- **Redefinir senha pelo app** (hoje, pelo painel do Supabase) e **trocar a própria senha** no primeiro acesso.
