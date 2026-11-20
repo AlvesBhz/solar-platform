@@ -1,0 +1,355 @@
+-- ════════════════════════════════════════════════════════════════════
+--  Testes da migração das vistorias (rodar depois de migracao_vistorias.sql,
+--  num banco de TESTE com o schema.sql e o seed_exemplo.sql do site:
+--  os dados abaixo são criados só para os testes). Qualquer falha aborta.
+--  Uso: tools/testar-banco.sh
+-- ════════════════════════════════════════════════════════════════════
+\set ON_ERROR_STOP on
+\set QUIET on
+set client_min_messages = notice;
+set search_path = "SE", extensions, public;
+
+-- ajudantes (schema só de teste, removido no fim)
+create schema teste;
+grant usage on schema teste to public;
+create function teste.ok(p_cond boolean, p_msg text) returns void language plpgsql as $$
+begin
+  if p_cond is not true then raise exception 'FALHOU: %', p_msg; end if;
+  raise notice 'ok  %', p_msg;
+end $$;
+-- executa o comando como o papel atual e confere a mensagem do erro (ou o SQLSTATE)
+create function teste.erro(p_sql text, p_esperado text, p_msg text) returns void language plpgsql as $$
+declare v_m text; v_s text;
+begin
+  begin
+    execute p_sql;
+  exception when others then
+    get stacked diagnostics v_m = message_text, v_s = returned_sqlstate;
+    if v_m = p_esperado or v_s = p_esperado then raise notice 'ok  % (%)', p_msg, p_esperado; return; end if;
+    raise exception 'FALHOU: % — esperava %, veio % (%)', p_msg, p_esperado, v_m, v_s;
+  end;
+  raise exception 'FALHOU: % — deveria ter dado erro %', p_msg, p_esperado;
+end $$;
+create function teste.conta(p_sql text) returns bigint language plpgsql as $$
+declare n bigint; begin execute 'select count(*) from (' || p_sql || ') q' into n; return n; end $$;
+grant execute on all functions in schema teste to public;
+
+\set dono       'reset role;'
+\set servico    'reset role; set role service_role;'
+\set como_anon  'reset role; set role anon;'
+\set como_ana   'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_gesto 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a2","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_admin 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000a3","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_bia   'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_inat  'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000c1","role":"authenticated"}'', false); reset role; set role authenticated;'
+\set como_ninguem 'select set_config(''request.jwt.claims'', ''{"sub":"00000000-0000-4000-8000-0000000000d1","role":"authenticated"}'', false); reset role; set role authenticated;'
+
+\echo '── 1. Estrutura'
+:dono
+select teste.ok((select count(*) = 12 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                 where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%'), '12 tabelas VST_ em MAIÚSCULAS no schema "SE"');
+select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'public' and c.relkind = 'r' and upper(c.relname) like 'VST\_%'), 'nenhuma tabela VST_ em public');
+select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'vst%'), 'nenhuma tabela em minúsculas');
+select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%' and not c.relrowsecurity), 'RLS ligado em toda tabela VST_');
+select teste.ok(not exists (select 1 from information_schema.columns where table_schema = 'SE' and table_name like 'VST\_%' and column_name <> upper(column_name)),
+                'todas as colunas em MAIÚSCULAS');
+select teste.ok(not exists (select 1 from pg_constraint k join pg_class c on c.oid = k.conrelid join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'SE' and c.relname like 'VST\_%'
+                              and not (k.conname ~ ('^(PK|FK|UQ|CK)_' || c.relname || '(_|$)') or k.conname ~ '^(PK|FK|UQ|CK)_VST_')),
+                'restrições seguem PK_/FK_/UQ_/CK_ com o nome da tabela');
+select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'SE' and c.relkind = 'i' and c.relname ~ '^(IX|UQ)' = false
+                              and c.relname !~ '^(PK_|UQ_)' and exists (select 1 from pg_index i join pg_class t on t.oid = i.indrelid
+                                                                       where i.indexrelid = c.oid and t.relname like 'VST\_%')),
+                'índices IX_/UQ_/PK_');
+select teste.ok((select count(*) = 12 from pg_trigger tg join pg_class c on c.oid = tg.tgrelid
+                 where c.relname like 'VST\_%' and tg.tgname = 'TG_' || c.relname || '_AUDITORIA' and not tg.tgisinternal),
+                'gatilho TG_<TABELA>_AUDITORIA nas 12 tabelas');
+select teste.ok((select count(*) = 2 from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" in ('ENTRADA', 'SAIDA')), 'tipos ENTRADA e SAIDA cadastrados pela migração');
+select teste.ok((select count(*) from "VST_UNIDADE") = (select count(*) from "SIT_UNIDADE"), 'uma linha VST_UNIDADE para cada chalé do site');
+select teste.ok(not exists (
+  select 1 from pg_constraint k join pg_class c on c.oid = k.conrelid join pg_namespace n on n.oid = c.relnamespace
+  where k.contype = 'f' and n.nspname = 'SE' and c.relname like 'VST\_%'
+    and not exists (select 1 from pg_index i where i.indrelid = c.oid and i.indisvalid
+                    and (select array_agg(x order by x) from unnest((i.indkey::int2[])[0:cardinality(k.conkey) - 1]) x)
+                      = (select array_agg(x order by x) from unnest(k.conkey) x))), 'toda chave estrangeira VST_ tem índice');
+select teste.ok(not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                            where n.nspname = 'SE' and p.proname like 'vst\_%' and p.proname <> 'vst_distancia_metros' and (not p.prosecdef or p.proconfig is null
+                              or not (p.proconfig @> array['search_path="SE", extensions, pg_temp']))),
+                'funções vst_* são security definer com search_path fixo (exceto a distância, função pura)');
+select teste.ok(not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                            where n.nspname = 'SE' and p.proname like 'vst\_%'
+                              and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('public', p.oid, 'execute'))),
+                'nenhuma função vst_* executável por anon ou public');
+select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                            where n.nspname = 'SE' and c.relname like 'VST\_%' and c.relkind = 'r'
+                              and (has_table_privilege('anon', c.oid, 'select,insert,update,delete')
+                                   or has_table_privilege('public', c.oid, 'select,insert,update,delete'))), 'anon sem nenhum direito nas tabelas VST_');
+select teste.ok(not exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+                            where n.nspname = 'SE' and p.proname = 'vst_agenda' and p.pronargs > 0
+                              and p.proargnames::text ~* '(cpf|passaporte|telefone|email|hospede)'
+                              and exists (select 1 from unnest(p.proargnames) a where a ~* '(cpf|passaporte|telefone|email|hospede)')),
+                'vst_agenda não devolve dados pessoais do hóspede');
+
+-- ── dados de teste
+insert into auth.users (id, email) values
+  ('00000000-0000-4000-8000-0000000000a1', 'ana@exemplo.invalid'), ('00000000-0000-4000-8000-0000000000a2', 'gestor@exemplo.invalid'),
+  ('00000000-0000-4000-8000-0000000000a3', 'admin@exemplo.invalid'), ('00000000-0000-4000-8000-0000000000b1', 'bia@exemplo.invalid'),
+  ('00000000-0000-4000-8000-0000000000c1', 'inativo@exemplo.invalid'), ('00000000-0000-4000-8000-0000000000d1', 'ninguem@exemplo.invalid');
+insert into "SIT_PROPRIEDADE" ("NM_PROPRIEDADE") values ('Outra pousada (teste)');
+insert into "SIT_UNIDADE" ("ID_PROPRIEDADE", "CD_UNIDADE", "NM_UNIDADE", "QTDE_MAX_HOSPEDES", "QTDE_MAX_ADULTOS")
+  select "ID_PROPRIEDADE", 'chale-b', 'Chalé B (teste)', 2, 2 from "SIT_PROPRIEDADE" where "NM_PROPRIEDADE" = 'Outra pousada (teste)';
+select "ID_PROPRIEDADE" as pa from "SIT_PROPRIEDADE" where "NM_PROPRIEDADE" <> 'Outra pousada (teste)' order by 1 limit 1 \gset
+select "ID_PROPRIEDADE" as pb from "SIT_PROPRIEDADE" where "NM_PROPRIEDADE" = 'Outra pousada (teste)' \gset
+select "ID_UNIDADE" as ua from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante' \gset
+select "ID_UNIDADE" as ub from "SIT_UNIDADE" where "CD_UNIDADE" = 'chale-b' \gset
+insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "CD_CPF", "TP_PERFIL", "SG_ATIVO") values
+  ('00000000-0000-4000-8000-0000000000a1', 'Ana (teste)', 'ana.teste', '52998224725', 'ASSESSOR', true),
+  ('00000000-0000-4000-8000-0000000000a2', 'Gestor (teste)', 'gestor.teste', null, 'GESTOR', true),
+  ('00000000-0000-4000-8000-0000000000a3', 'Admin (teste)', 'admin.teste', null, 'ADMIN', true),
+  ('00000000-0000-4000-8000-0000000000b1', 'Bia (teste)', 'bia.teste', null, 'ASSESSOR', true),
+  ('00000000-0000-4000-8000-0000000000c1', 'Inativo (teste)', 'inativo.teste', null, 'ASSESSOR', false);
+insert into "VST_USUARIO_PROPRIEDADE" ("ID_USUARIO", "ID_PROPRIEDADE") values
+  ('00000000-0000-4000-8000-0000000000a1', :pa), ('00000000-0000-4000-8000-0000000000a2', :pa),
+  ('00000000-0000-4000-8000-0000000000b1', :pb), ('00000000-0000-4000-8000-0000000000c1', :pa);
+-- chalé A com ponto de GPS e raio de 60 m; chalé B sem GPS (só QR)
+update "VST_UNIDADE" set "VL_LATITUDE" = -19.0849, "VL_LONGITUDE" = -43.5969, "QTDE_RAIO_METROS" = 60 where "ID_UNIDADE" = :ua;
+update "VST_UNIDADE" set "TP_VALIDACAO" = 'QR' where "ID_UNIDADE" = :ub;
+insert into "VST_AMBIENTE" ("ID_UNIDADE", "NM_AMBIENTE", "NO_ORDEM") values (:ua, 'Sala', 1), (:ua, 'Banheiro', 2), (:ub, 'Quarto B', 1);
+insert into "VST_ITEM" ("ID_AMBIENTE", "NM_ITEM", "SG_CRITICO", "SG_FOTO_OBRIGATORIA", "QTDE_ESPERADA", "NO_ORDEM")
+  select a."ID_AMBIENTE", x.n, x.c, x.f, x.q, x.o from "VST_AMBIENTE" a join (values
+    ('Sala', 'Sofá', false, false, null::int, 1), ('Banheiro', 'Torneira', true, true, null, 1), ('Banheiro', 'Toalhas', false, false, 4, 2)) x(a, n, c, f, q, o)
+    on x.a = a."NM_AMBIENTE" and a."ID_UNIDADE" = :ua;
+insert into "VST_ITEM" ("ID_AMBIENTE", "NM_ITEM") select "ID_AMBIENTE", 'Cama B' from "VST_AMBIENTE" where "ID_UNIDADE" = :ub;
+insert into "VST_TIPO_VISTORIA_ITEM" ("ID_TIPO_VISTORIA", "ID_ITEM")
+  select t."ID_TIPO_VISTORIA", i."ID_ITEM" from "VST_TIPO_VISTORIA" t cross join "VST_ITEM" i
+  where (t."CD_TIPO_VISTORIA" = 'SAIDA') or (t."CD_TIPO_VISTORIA" = 'ENTRADA' and i."NM_ITEM" in ('Torneira', 'Cama B'));
+select "ID_ITEM" as i_sofa from "VST_ITEM" where "NM_ITEM" = 'Sofá' \gset
+select "ID_ITEM" as i_torneira from "VST_ITEM" where "NM_ITEM" = 'Torneira' \gset
+select "ID_ITEM" as i_toalhas from "VST_ITEM" where "NM_ITEM" = 'Toalhas' \gset
+select "ID_TIPO_VISTORIA" as t_ent from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = 'ENTRADA' \gset
+select "ID_TIPO_VISTORIA" as t_sai from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = 'SAIDA' \gset
+select "CD_HASH_QR" as qr_a from "VST_UNIDADE" where "ID_UNIDADE" = :ua \gset
+insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "CD_CPF") values ('Hóspede Vistoria (teste)', 'vistoria@exemplo.invalid', '11144477735');
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+  select :ua, "ID_HOSPEDE", current_date + 30, current_date + 32, 2, 'CONFIRMADA', 'TELEFONE', 3400 from "SIT_HOSPEDE" where "DS_EMAIL" = 'vistoria@exemplo.invalid';
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+  select :ua, "ID_HOSPEDE", current_date + 40, current_date + 42, 2, 'CONFIRMADA', 'TELEFONE', 3400 from "SIT_HOSPEDE" where "DS_EMAIL" = 'vistoria@exemplo.invalid';
+insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM")
+  select :ub, "ID_HOSPEDE", current_date + 30, current_date + 32, 2, 'CONFIRMADA', 'TELEFONE', 3400 from "SIT_HOSPEDE" where "DS_EMAIL" = 'vistoria@exemplo.invalid';
+select "ID_RESERVA" as r1 from "SIT_RESERVA" where "ID_UNIDADE" = :ua and "DT_CHECKIN" = current_date + 30 \gset
+select "ID_RESERVA" as r2 from "SIT_RESERVA" where "ID_UNIDADE" = :ua and "DT_CHECKIN" = current_date + 40 \gset
+select "ID_RESERVA" as rb from "SIT_RESERVA" where "ID_UNIDADE" = :ub \gset
+
+\echo '── 2. Contrato com o site (a sessão do site grava como service_role)'
+:servico
+-- reserva CONFIRMADA: o site cria Entrada em DT_CHECKIN e Saída em DT_CHECKOUT, AGENDADAS e sem responsável
+insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA")
+  select r."ID_UNIDADE", :t_ent, r."ID_RESERVA", r."DT_CHECKIN" from "SE"."SIT_RESERVA" r where r."ID_RESERVA" = :r1;
+insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA")
+  select r."ID_UNIDADE", :t_sai, r."ID_RESERVA", r."DT_CHECKOUT" from "SE"."SIT_RESERVA" r where r."ID_RESERVA" = :r1;
+select "ID_VISTORIA" as v_ent from "SE"."VST_VISTORIA" where "ID_RESERVA" = :r1 and "ID_TIPO_VISTORIA" = :t_ent \gset
+select "ID_VISTORIA" as v_sai from "SE"."VST_VISTORIA" where "ID_RESERVA" = :r1 and "ID_TIPO_VISTORIA" = :t_sai \gset
+select teste.ok((select "TP_STATUS" = 'AGENDADA' and "ID_USUARIO" is null from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_ent'), 'vistoria nasce AGENDADA e sem responsável');
+select teste.erro(format($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA") values (%s, %s, %s, current_date)$q$, :ua, :t_ent, :r1),
+                  '23505', 'UQ_VST_VISTORIA_RESERVA_TIPO: segunda Entrada da mesma reserva é recusada');
+insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "DT_AGENDADA") values (:ua, :t_ent, current_date + 5), (:ua, :t_ent, current_date + 5);
+select teste.ok(true, 'vistorias avulsas (sem reserva) do mesmo tipo e dia são permitidas');
+select teste.erro(format($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "DT_AGENDADA") values (%s, %s, null)$q$, :ua, :t_ent), '23502', 'DT_AGENDADA é obrigatória');
+select teste.erro(format($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "DT_AGENDADA", "TP_STATUS") values (%s, %s, current_date, 'ENVIADA')$q$, :ua, :t_ent), '23514', 'TP_STATUS fora da lista é recusado');
+select teste.erro(format($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA") values (%s, %s, %s, current_date)$q$, :ua, :t_ent, :rb),
+                  'reserva_de_outra_unidade', 'reserva de outro chalé é recusada');
+select teste.erro(format($q$delete from "SE"."SIT_RESERVA" where "ID_RESERVA" = %s$q$, :r1), '23503', 'FK para SIT_RESERVA não tem cascade (apagar a reserva é barrado)');
+-- reserva REMARCADA: as AGENDADAS passam para a reserva nova e as novas datas
+update "SE"."VST_VISTORIA" set "ID_RESERVA" = :r2, "DT_AGENDADA" = (select "DT_CHECKIN" from "SE"."SIT_RESERVA" where "ID_RESERVA" = :r2) where "ID_VISTORIA" = :'v_ent';
+select teste.ok((select "ID_RESERVA" = :r2 from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_ent'), 'remarcação: vistoria agendada passa para a reserva nova');
+update "SE"."VST_VISTORIA" set "ID_RESERVA" = :r1, "DT_AGENDADA" = (select "DT_CHECKIN" from "SE"."SIT_RESERVA" where "ID_RESERVA" = :r1) where "ID_VISTORIA" = :'v_ent';
+-- reserva CANCELADA: as AGENDADAS viram CANCELADA
+insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "ID_RESERVA", "DT_AGENDADA", "ID_VISTORIA_ENTRADA")
+  select :ua, :t_ent, :r2, current_date + 40, null;
+update "SE"."VST_VISTORIA" set "TP_STATUS" = 'CANCELADA' where "ID_RESERVA" = :r2 and "TP_STATUS" = 'AGENDADA';
+select teste.ok((select count(*) = 1 from "SE"."VST_VISTORIA" where "ID_RESERVA" = :r2 and "TP_STATUS" = 'CANCELADA'), 'cancelamento: vistoria agendada vira CANCELADA');
+update "SE"."VST_VISTORIA" set "ID_VISTORIA_ENTRADA" = :'v_ent' where "ID_VISTORIA" = :'v_sai';
+select teste.ok((select "ID_VISTORIA_ENTRADA" = :'v_ent' from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_sai'), 'a Saída aponta para a Entrada');
+select teste.erro(format($q$update "SE"."VST_VISTORIA" set "ID_VISTORIA_ENTRADA" = "ID_VISTORIA" where "ID_VISTORIA" = '%s'$q$, :'v_sai'), 'entrada_invalida', 'vistoria não pode ser a própria entrada');
+select teste.erro(format($q$update "SE"."VST_VISTORIA" set "TP_STATUS" = 'CONCLUIDA' where "ID_VISTORIA" = '%s'$q$, :'v_sai'), '23514', 'CONCLUIDA exige início, fim e responsável');
+select teste.ok((select count(*) = 0 from "SE"."SIT_BLOQUEIO" where "TP_MOTIVO" = 'MANUTENCAO'), 'o site não ganhou bloqueio de manutenção até aqui');
+
+\echo '── 3. Permissões'
+:como_anon
+select teste.erro($q$select * from "SE"."VST_VISTORIA"$q$, '42501', 'anon não lê VST_VISTORIA');
+select teste.erro($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "DT_AGENDADA") values (1, 1, current_date)$q$, '42501', 'anon não grava vistoria');
+select teste.erro($q$select * from "SE".vst_agenda(current_date, current_date + 7)$q$, '42501', 'anon não executa vst_agenda');
+select teste.erro($q$select "SE".vst_tem_acesso(1)$q$, '42501', 'anon não executa as funções auxiliares');
+:como_ninguem
+select teste.ok(teste.conta($q$select 1 from "SE"."VST_VISTORIA"$q$) = 0, 'login sem cadastro de equipe não vê vistorias');
+select teste.erro($q$select * from "SE".vst_agenda(current_date, current_date + 7)$q$, 'usuario_inativo_ou_inexistente', 'login sem cadastro de equipe não usa a agenda');
+:como_inat
+select teste.erro($q$select * from "SE".vst_agenda(current_date, current_date + 7)$q$, 'usuario_inativo_ou_inexistente', 'usuário inativo é barrado');
+select teste.ok(teste.conta($q$select 1 from "SE"."VST_VISTORIA"$q$) = 0, 'usuário inativo não lê vistorias');
+:como_ana
+select teste.erro($q$select * from "SE"."SIT_RESERVA"$q$, '42501', 'assessor não lê SIT_RESERVA direto (só por função)');
+select teste.erro($q$select * from "SE"."SIT_HOSPEDE"$q$, '42501', 'assessor não lê SIT_HOSPEDE (CPF, passaporte, telefone)');
+select teste.erro($q$insert into "SE"."SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO") values (1, current_date, current_date + 1, 'MANUTENCAO')$q$, '42501', 'app nunca escreve direto em SIT_BLOQUEIO');
+select teste.erro($q$update "SE"."SIT_UNIDADE" set "NM_UNIDADE" = 'x'$q$, '42501', 'app não altera tabelas SIT_');
+select teste.erro($q$insert into "SE"."VST_VISTORIA" ("ID_UNIDADE", "ID_TIPO_VISTORIA", "DT_AGENDADA") values (1, 1, current_date)$q$, '42501', 'assessor não insere vistoria direto (só por vst_criar_vistoria)');
+select teste.erro($q$update "SE"."VST_VISTORIA" set "TP_STATUS" = 'CANCELADA'$q$, '42501', 'assessor não altera vistoria direto');
+select teste.erro($q$select "CD_HASH_QR" from "SE"."VST_UNIDADE"$q$, '42501', 'assessor não lê o código do QR');
+select teste.erro($q$update "SE"."VST_UNIDADE" set "TP_SITUACAO" = 'LIBERADO'$q$, '42501', 'situação do chalé não muda por UPDATE direto');
+select teste.erro($q$insert into "SE"."VST_AMBIENTE" ("ID_UNIDADE", "NM_AMBIENTE") values (1, 'x')$q$, '42501', 'assessor não cadastra ambiente') ;
+select teste.erro($q$select * from "SE"."SIT_AUDITORIA"$q$, '42501', 'assessor não lê SIT_AUDITORIA');
+
+\echo '── 4. Isolamento por propriedade'
+:como_ana
+select teste.ok(teste.conta(format($q$select 1 from "SE"."VST_VISTORIA" where "ID_UNIDADE" = %s$q$, :ua)) > 0, 'Ana vê as vistorias do chalé da pousada dela');
+select teste.ok(teste.conta(format($q$select 1 from "SE"."VST_VISTORIA" where "ID_UNIDADE" = %s$q$, :ub)) = 0, 'Ana não vê vistorias da outra pousada');
+select teste.ok((select count(*) = 1 from "SE".vst_unidades()), 'vst_unidades devolve só o chalé da pousada da Ana');
+select teste.ok((select count(*) = 5 and count(*) filter (where tp_status = 'CANCELADA') = 1 from "SE".vst_agenda(current_date, current_date + 60) where id_unidade = :ua),
+                 'vst_agenda lista as vistorias do chalé A (2 da reserva, 2 avulsas e 1 cancelada)');
+select teste.ok((select count(*) = 0 from "SE".vst_agenda(current_date, current_date + 60) where id_unidade = :ub), 'vst_agenda não mostra o chalé B');
+select teste.ok((select cd_reserva is not null and dt_checkin is not null from "SE".vst_agenda(current_date, current_date + 60) where id_vistoria = :'v_sai'), 'agenda traz código e datas da reserva');
+select teste.erro(format($q$select * from "SE".vst_checklist(%s, %s)$q$, :ub, :t_sai), 'sem_acesso', 'checklist de chalé sem acesso é recusado');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'ROTINA', current_date)$q$, :ub), 'sem_acesso', 'não cria vistoria em chalé sem acesso');
+select teste.ok(teste.conta($q$select 1 from "SE"."VST_USUARIO"$q$) = 1, 'assessor vê só o próprio cadastro');
+:como_bia
+select teste.ok(teste.conta(format($q$select 1 from "SE"."VST_VISTORIA" where "ID_UNIDADE" = %s$q$, :ua)) = 0, 'Bia não vê a pousada A');
+select teste.ok((select count(*) = 1 from "SE".vst_unidades() where id_unidade = :ub), 'Bia vê o chalé B');
+select teste.erro(format($q$select "SE".vst_iniciar_vistoria('%s')$q$, :'v_sai'), 'sem_acesso', 'Bia não inicia vistoria da pousada A');
+:como_gesto
+select teste.ok(teste.conta($q$select 1 from "SE"."VST_USUARIO"$q$) = 3, 'gestor vê a equipe da pousada dele (Ana, ele e o inativo)');
+:como_admin
+select teste.ok((select count(*) = 2 from "SE".vst_unidades()), 'ADMIN vê os chalés de todas as pousadas');
+select teste.ok(teste.conta($q$select 1 from "SE"."VST_USUARIO"$q$) = 5, 'ADMIN vê toda a equipe');
+
+\echo '── 5. Fluxo do app: iniciar, concluir, ocorrência e bloqueio'
+:como_ana
+select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s')$q$, :'v_sai'), 'qr_obrigatorio', 'chalé A exige QR (herdado da propriedade)');
+select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s', 'qr-errado')$q$, :'v_sai'), 'qr_invalido', 'QR de outro chalé é recusado');
+select teste.ok((select count(*) = 1 from "SE".vst_resolver_qr(:'qr_a')), 'vst_resolver_qr acha o chalé pelo QR');
+select teste.ok((select count(*) = 0 from "SE".vst_resolver_qr('inexistente')), 'QR desconhecido não devolve nada');
+-- GPS a ~1,1 km do ponto: fora do raio de 60 m → inicia, mas sinaliza
+select teste.ok((select sg_fora_raio and 'FORA_RAIO' = any(ds_sinalizacoes) and qtde_distancia_metros > 1000
+                 from "SE".vst_iniciar_vistoria(:'v_sai', :'qr_a', -19.0749, -43.5969, 10)), 'GPS fora do raio inicia e sinaliza FORA_RAIO');
+select teste.ok((select "TP_STATUS" = 'EM_ANDAMENTO' and "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a1' and "ID_VISTORIA_ENTRADA" = :'v_ent'
+                 from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_sai'), 'Ana assumiu a vistoria; Entrada ligada');
+select teste.ok((select tp_status = 'EM_ANDAMENTO' from "SE".vst_iniciar_vistoria(:'v_sai', :'qr_a', -19.0749, -43.5969, 10)), 'reenviar o início não duplica nem falha');
+:como_bia
+select teste.erro(format($q$select "SE".vst_registrar_foto('%s', %s, '%s/x.jpg')$q$, :'v_sai', :i_torneira, :'v_sai'), 'sem_acesso', 'Bia não registra foto em vistoria da pousada A');
+:como_gesto
+select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s', '%s')$q$, :'v_sai', :'qr_a'), 'vistoria_nao_agendada', 'não se inicia vistoria já em andamento por outro');
+:como_ana
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '[]'::jsonb)$q$, :'v_sai'), 'respostas_obrigatorias', 'concluir sem respostas é recusado');
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '[{"id_item":%s,"tp_resposta":"OK"}]'::jsonb)$q$, :'v_sai', :i_sofa), 'itens_pendentes', 'faltam itens do checklist');
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '[{"id_item":999999,"tp_resposta":"OK"}]'::jsonb)$q$, :'v_sai'), 'item_fora_do_checklist', 'item fora do checklist é recusado');
+select format('[{"id_item":%s,"tp_resposta":"OK"},{"id_item":%s,"tp_resposta":"PROBLEMA","ds_observacao":"Torneira pingando"},{"id_item":%s,"tp_resposta":"OK","qtde_encontrada":4}]',
+              :i_sofa, :i_torneira, :i_toalhas) as resp \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/torneira-1.jpg","vl_latitude":-19.0849,"vl_longitude":-43.5969}]', :i_torneira, :'v_sai') as fotos \gset
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '%s'::jsonb, '[]'::jsonb, 'assinatura.png')$q$, :'v_sai', :'resp'), 'foto_obrigatoria', 'item com foto obrigatória sem foto é recusado');
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '%s'::jsonb, '%s'::jsonb)$q$, :'v_sai', :'resp', :'fotos'), 'assinatura_obrigatoria', 'Saída exige assinatura');
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '[{"id_item":%s,"tp_resposta":"OK"},{"id_item":%s,"tp_resposta":"PROBLEMA"},{"id_item":%s,"tp_resposta":"OK"}]'::jsonb, '%s'::jsonb, 'a.png')$q$,
+                         :'v_sai', :i_sofa, :i_torneira, :i_toalhas, :'fotos'), 'observacao_obrigatoria', 'PROBLEMA exige observação');
+select teste.ok(teste.conta(format($q$select 1 from "SE"."VST_RESPOSTA" where "ID_VISTORIA" = '%s'$q$, :'v_sai')) = 0, 'recusas não deixam respostas pela metade');
+select teste.erro(format($q$select * from "SE".vst_atualizar_agenda('%s', null, current_date + 3, false)$q$, :'v_ent'), 'perfil_sem_permissao', 'assessor não mexe na agenda');
+select tp_status as r_status, ds_sinalizacoes as r_sin, qtde_ocorrencias as r_oc, id_bloqueio as r_bloq
+  from "SE".vst_concluir_vistoria(:'v_sai', :'resp', :'fotos', 'assinaturas/x.png', 'Torneira vazando', 'EM_LIMPEZA') \gset
+select teste.ok(:'r_status' = 'CONCLUIDA' and :r_oc = 1 and :'r_bloq' <> '', 'conclui: 1 ocorrência e 1 bloqueio');
+select teste.ok(:'r_sin' like '%FORA_RAIO%' and :'r_sin' like '%RAPIDA%', 'sinalizações FORA_RAIO e RAPIDA registradas');
+select tp_status = 'CONCLUIDA' as reenvio_ok, id_bloqueio::text = :'r_bloq' as mesmo_bloqueio from "SE".vst_concluir_vistoria(:'v_sai', :'resp', :'fotos', 'assinaturas/x.png') \gset
+select teste.ok(:'reenvio_ok' = 't' and :'mesmo_bloqueio' = 't', 'reenviar a conclusão não duplica nada');
+select teste.ok((select count(*) = 1 from "SE"."VST_OCORRENCIA" where "ID_VISTORIA" = :'v_sai') and (select count(*) = 3 from "SE"."VST_RESPOSTA" where "ID_VISTORIA" = :'v_sai')
+                and (select count(*) = 1 from "SE"."VST_FOTO" where "ID_VISTORIA" = :'v_sai'), 'sem duplicatas após o reenvio');
+select teste.ok((select "TP_GRAVIDADE" = 'CRITICA' and "ID_BLOQUEIO" = :r_bloq from "SE"."VST_OCORRENCIA" where "ID_VISTORIA" = :'v_sai'), 'item crítico gera ocorrência CRITICA ligada ao bloqueio');
+select teste.ok((select "TP_SITUACAO_RESULTANTE" = 'MANUTENCAO' from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_sai'), 'ocorrência crítica manda na situação do chalé');
+:dono
+select teste.ok((select b."TP_MOTIVO" = 'MANUTENCAO' and b."ID_CALENDARIO" is null and b."DT_INI" = current_date and b."DT_FIM" = current_date + 7
+                 from "SIT_BLOQUEIO" b where b."ID_BLOQUEIO" = :r_bloq), 'bloqueio MANUTENCAO de hoje por 7 dias, sem ID_CALENDARIO');
+select teste.ok((select "TP_SITUACAO" = 'MANUTENCAO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'chalé em MANUTENCAO');
+-- o site já respeita BLOQUEIO: a consulta de disponibilidade recusa essas noites
+select teste.ok((select not disponivel and motivo = 'ocupado' from consultar_disponibilidade(current_date + 2, current_date + 4, 2, 0) where cd_unidade = 'casa-do-mirante'),
+                'consultar_disponibilidade do site recusa as noites bloqueadas (motivo ocupado)');
+-- foto registrada depois da conclusão
+:como_ana
+select "SE".vst_registrar_foto(:'v_sai', :i_torneira, :'v_sai' || '/torneira-2.png', -19.0849, -43.5969, 8) as f2 \gset
+select teste.ok((select count(*) = 2 from "SE"."VST_FOTO" where "ID_VISTORIA" = :'v_sai'), 'vst_registrar_foto grava foto tardia');
+select teste.erro(format($q$select "SE".vst_registrar_foto('%s', %s, 'outra-pasta/x.jpg')$q$, :'v_sai', :i_torneira), '23514', 'foto fora da pasta da vistoria é recusada');
+select teste.erro(format($q$select "SE".vst_registrar_foto('%s', %s, '%s/x.gif')$q$, :'v_sai', :i_torneira, :'v_sai'), '23514', 'foto que não é JPEG, PNG ou WEBP é recusada');
+-- situação do chalé
+select teste.erro(format($q$select "SE".vst_alterar_situacao_unidade(%s, 'MANUTENCAO')$q$, :ua), 'perfil_sem_permissao', 'assessor não coloca o chalé em MANUTENCAO');
+select teste.erro(format($q$select "SE".vst_alterar_situacao_unidade(%s, 'LIBERADO')$q$, :ua), 'ocorrencias_criticas_abertas', 'não libera com ocorrência crítica aberta');
+select teste.erro(format($q$select "SE".vst_rotacionar_qr(%s)$q$, :ua), 'perfil_sem_permissao', 'assessor não rotaciona o QR');
+:como_gesto
+select "ID_OCORRENCIA" as oc from "SE"."VST_OCORRENCIA" where "ID_VISTORIA" = :'v_sai' \gset
+:como_ana
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s)$q$, :oc), 'perfil_sem_permissao', 'assessor não resolve ocorrência');
+:como_bia
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s)$q$, :oc), 'perfil_sem_permissao', 'gestão de outra pousada não vale');
+:como_gesto
+select "SE".vst_resolver_ocorrencia(:oc, 'EM_TRATAMENTO', 'Encanador chamado');
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s, 'EM_TRATAMENTO', null, true)$q$, :oc), 'status_invalido', 'só libera quando a ocorrência está resolvida');
+select "SE".vst_resolver_ocorrencia(:oc, 'RESOLVIDA', 'Encanador trocou o reparo', true);
+:dono
+select teste.ok((select "TP_STATUS" = 'RESOLVIDA' and "DT_RESOLUCAO" is not null from "VST_OCORRENCIA" where "ID_OCORRENCIA" = :oc), 'ocorrência resolvida com data');
+select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'chalé liberado');
+select teste.ok((select "DT_FIM" = current_date + 1 from "SIT_BLOQUEIO" where "ID_BLOQUEIO" = :r_bloq), 'liberar encerra o bloqueio: DT_FIM = amanhã');
+select teste.ok((select coalesce(motivo, '') <> 'ocupado' from consultar_disponibilidade(current_date + 2, current_date + 4, 2, 0) where cd_unidade = 'casa-do-mirante'),
+                'o site volta a vender as noites depois da liberação');
+-- QR
+:como_gesto
+select "SE".vst_obter_qr(:ua) as qr_v1 \gset
+select cd_hash_qr as qr_novo, no_versao_qr as qr_ver from "SE".vst_rotacionar_qr(:ua) \gset
+select teste.ok(:'qr_novo' <> :'qr_a' and :qr_ver = 2, 'rotacionar gera novo código e soma 1 na versão');
+:como_ana
+select teste.ok((select count(*) = 0 from "SE".vst_resolver_qr(:'qr_a')), 'QR antigo deixa de valer');
+select teste.ok((select count(*) = 1 from "SE".vst_resolver_qr(:'qr_novo')), 'QR novo vale');
+-- gestão da agenda e vistoria avulsa
+:como_gesto
+select "SE".vst_atualizar_agenda(:'v_ent', '00000000-0000-4000-8000-0000000000a1', current_date + 31) as _ \gset
+select teste.ok((select "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a1' and "DT_AGENDADA" = current_date + 31 from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_ent'), 'gestor atribui responsável e remarca');
+select teste.erro(format($q$select "SE".vst_atualizar_agenda('%s', '00000000-0000-4000-8000-0000000000b1')$q$, :'v_ent'), 'responsavel_invalido', 'responsável de outra pousada é recusado');
+select teste.erro(format($q$select "SE".vst_atualizar_agenda('%s', null, null, true)$q$, :'v_sai'), 'vistoria_nao_agendada', 'não cancela vistoria concluída');
+:como_ana
+select "SE".vst_criar_vistoria(:ua, 'ROTINA', current_date, '0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4eaa') as v_av \gset
+select teste.ok(:'v_av' = '0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4eaa', 'vistoria avulsa usa o id gerado no celular');
+select teste.ok("SE".vst_criar_vistoria(:ua, 'ROTINA', current_date, '0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4eaa') = '0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4eaa', 'reenviar a criação devolve a mesma vistoria');
+select teste.ok((select "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a1' and "ID_RESERVA" is null from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_av'), 'assessor cria a avulsa para si, sem reserva');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'NAO_EXISTE', current_date)$q$, :ua), 'tipo_inexistente', 'tipo inexistente é recusado');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'ROTINA', current_date, null, %s)$q$, :ua, :r1), 'perfil_sem_permissao', 'assessor não liga vistoria a reserva');
+
+\echo '── 6. Storage (bucket vistorias)'
+:dono
+select teste.ok((select not public and file_size_limit = 5242880 and allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'] from storage.buckets where id = 'vistorias'),
+                'bucket vistorias privado, 5 MB, só JPEG/PNG/WEBP');
+select teste.ok(not exists (select 1 from storage.buckets where id = 'documentos'), 'o bucket documentos não foi tocado nem criado pela migração');
+:como_ana
+insert into storage.objects (bucket_id, name) values ('vistorias', :'v_sai' || '/storage-1.jpg');
+select teste.ok(true, 'Ana grava foto na pasta da vistoria dela');
+select teste.erro(format($q$insert into storage.objects (bucket_id, name) values ('vistorias', '%s/x.gif')$q$, :'v_sai'), '42501', 'extensão fora de JPEG/PNG/WEBP é recusada');
+select teste.erro($q$insert into storage.objects (bucket_id, name) values ('vistorias', 'qualquer/x.jpg')$q$, '42501', 'pasta que não é o id de uma vistoria é recusada');
+select teste.erro($q$insert into storage.objects (bucket_id, name) values ('documentos', 'x.jpg')$q$, '42501', 'ninguém grava no bucket documentos');
+select teste.ok(teste.conta($q$select 1 from storage.objects where bucket_id = 'vistorias'$q$) = 1, 'Ana lê a foto');
+do $$ declare n int; begin
+  update storage.objects set name = name || 'x' where bucket_id = 'vistorias'; get diagnostics n = row_count;
+  perform teste.ok(n = 0, 'foto não pode ser alterada pelo app (nenhuma linha atualizada)');
+  delete from storage.objects where bucket_id = 'vistorias'; get diagnostics n = row_count;
+  perform teste.ok(n = 0, 'foto não pode ser apagada pelo app (nenhuma linha removida)');
+end $$;
+:como_bia
+select teste.ok(teste.conta($q$select 1 from storage.objects where bucket_id = 'vistorias'$q$) = 0, 'Bia (outra pousada) não vê as fotos da pousada A');
+select teste.erro(format($q$insert into storage.objects (bucket_id, name) values ('vistorias', '%s/bia.jpg')$q$, :'v_sai'), '42501', 'Bia não grava na pasta de vistoria da pousada A');
+:como_anon
+select teste.ok(teste.conta($q$select 1 from storage.objects where bucket_id = 'vistorias'$q$) = 0, 'anon não lê o bucket vistorias');
+select teste.erro(format($q$insert into storage.objects (bucket_id, name) values ('vistorias', '%s/anon.jpg')$q$, :'v_sai'), '42501', 'anon não grava no bucket vistorias');
+
+\echo '── 7. Auditoria (SIT_AUDITORIA)'
+:dono
+select teste.ok((select count(distinct "NM_TABELA") >= 6 from "SIT_AUDITORIA" where "NM_TABELA" like 'VST\_%'), 'as tabelas VST_ gravam em SIT_AUDITORIA');
+select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'VST_VISTORIA' and "TP_OPERACAO" = 'UPDATE' and "DS_ANTES" is not null), 'UPDATE em VST_VISTORIA guarda o valor anterior');
+select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_BLOQUEIO' and "TP_OPERACAO" = 'INSERT'), 'o bloqueio criado pela vistoria também é auditado');
+
+\echo '── 8. Limpeza dos ajudantes'
+drop schema teste cascade;
+reset role;
+\echo 'TODOS OS TESTES PASSARAM'
