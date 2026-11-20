@@ -1004,7 +1004,7 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
   }
   .d2-img,
   .d2-slideshow { min-height: 0; height: auto; aspect-ratio: 4 / 3; max-height: 78svh; }
-  .d2-img-wrap { min-height: 0; }
+  .d2-img-wrap { min-height: 0; order: -1; }   /* celular: a foto vem antes do texto em todos os ambientes */
   .dep-grid { grid-template-columns: 1fr; }
 }
 

@@ -825,6 +825,12 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { goTo(i); startTimer(); });
     });
+    // tocar na foto passa para a próxima (os pontinhos continuam escolhendo a foto)
+    container.style.cursor = 'pointer';
+    container.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      goTo(current + 1); startTimer();
+    });
     startTimer();
   });
 })();
@@ -853,6 +859,12 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { goTo(i); startTimer(); });
+    });
+    // tocar na foto passa para a próxima (os pontinhos continuam escolhendo a foto)
+    container.style.cursor = 'pointer';
+    container.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      goTo(current + 1); startTimer();
     });
 
     startTimer();
