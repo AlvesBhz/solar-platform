@@ -6,11 +6,32 @@
 export interface Banco {
   rpc(nome: string, args: Record<string, unknown>): Promise<{ data: any; error: { message: string; code?: string } | null }>;
 }
+export interface Arquivos {
+  // grava no bucket privado "documentos" (Storage do Supabase)
+  enviar(caminho: string, bytes: Uint8Array, mime: string): Promise<{ error: { message: string } | null }>;
+}
 export interface Ambiente {
   origensPermitidas: string[];        // ex.: ["https://alvesbhz.github.io"]
   turnstileSecret?: string;           // se definido, exige o captcha Cloudflare Turnstile
-  limitePorHora?: number;             // tentativas por IP e por hora (por instância)
-  agora?: () => number;
+  limitePorHora?: number;             // pedidos por IP e por hora (contados no banco, valem para todas as cópias da função)
+  arquivos?: Arquivos;                // onde gravar as fotos dos documentos
+  documentoObrigatorio?: boolean;     // exige a foto do documento do titular (padrão: sim)
+}
+
+// fotos aceitas: até 8 arquivos, 5 MB cada, conferidas pelo conteúdo (não só pela extensão)
+const MAX_FOTOS = 8, MAX_BYTES = 5 * 1024 * 1024;
+const CAMPOS_FOTO = /^doc_(titular|acompanhante_[1-6])_(frente|verso)$/;
+function tipoImagem(b: Uint8Array): { mime: string; ext: string } | null {
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { mime: "image/jpeg", ext: "jpg" };
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return { mime: "image/png", ext: "png" };
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return { mime: "image/webp", ext: "webp" };
+  return null;
+}
+// valor de função escalar: o supabase-js devolve o valor; outros clientes, uma linha
+const escalar = (d: any) => (Array.isArray(d) ? Object.values(d[0] ?? {})[0] : d && typeof d === "object" ? Object.values(d)[0] : d);
+async function hash(texto: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("solar:" + texto));
+  return Array.from(new Uint8Array(d)).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
 const CHALE = "casa-do-mirante";
@@ -95,9 +116,6 @@ export function validar(corpo: any): { pedido?: Pedido; erros: string[] } {
 }
 
 export function criarHandler(banco: Banco, amb: Ambiente) {
-  const agora = amb.agora ?? Date.now;
-  const tentativas = new Map<string, number[]>();
-
   return async function handler(req: Request): Promise<Response> {
     const origem = req.headers.get("origin") ?? "";
     const permitida = amb.origensPermitidas.includes(origem);
@@ -109,22 +127,32 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     };
     const resp = (status: number, corpo: unknown) =>
       new Response(status === 204 ? null : JSON.stringify(corpo), { status, headers: { ...cors, "Content-Type": "application/json; charset=utf-8" } });
+    const interno = () => resp(500, { erro: "interno", mensagem: "Não foi possível concluir agora. Tente de novo em instantes." });
 
     if (req.method === "OPTIONS") return resp(204, null);
     if (req.method !== "POST") return resp(405, { erro: "metodo", mensagem: "Método não permitido." });
+    // a origem só barra navegadores; scripts são contidos pelo limite por IP, pelo captcha e pelas regras do banco
     if (!permitida) return resp(403, { erro: "origem", mensagem: "Origem não autorizada." });
+    if (Number(req.headers.get("content-length") ?? 0) > MAX_FOTOS * MAX_BYTES + 100_000) return resp(413, { erro: "tamanho", mensagem: "Arquivos grandes demais." });
 
-    let corpo: any;
-    try { corpo = await req.json(); } catch { return resp(400, { erro: "json", mensagem: "Pedido inválido." }); }
+    // limite por visitante, contado no banco antes de qualquer outra coisa. O IP vem da Cloudflare
+    // (cf-connecting-ip / sb-forwarded-for), que não deixa o visitante falsificar o cabeçalho.
+    const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("sb-forwarded-for") ?? req.headers.get("x-forwarded-for") ?? "desconhecido").split(",")[0].trim();
+    const tent = await banco.rpc("registrar_tentativa", { p_chave: await hash(ip), p_limite: amb.limitePorHora ?? 6 });
+    if (tent.error) return interno();
+    if (escalar(tent.data) === false) return resp(429, { erro: "limite", mensagem: "Muitas tentativas. Tente de novo mais tarde ou fale com a pousada." });
+
+    // o pedido chega como JSON ou como formulário com as fotos (campo "dados" com o JSON)
+    let corpo: any, form: FormData | null = null;
+    try {
+      if ((req.headers.get("content-type") ?? "").includes("multipart/form-data")) {
+        form = await req.formData();
+        corpo = JSON.parse(String(form.get("dados") ?? "{}"));
+      } else corpo = await req.json();
+    } catch { return resp(400, { erro: "json", mensagem: "Pedido inválido." }); }
 
     // isca para robôs: campo escondido no formulário que gente não preenche. Responde como se tivesse dado certo.
     if (texto(corpo?.site, 50)) return resp(200, { ok: true, cd_reserva: "SE-00000000", vl_total: 0, vl_sinal: 0 });
-
-    // limite por IP
-    const ip = (req.headers.get("x-forwarded-for") ?? "desconhecido").split(",")[0].trim();
-    const janela = (tentativas.get(ip) ?? []).filter((t) => agora() - t < 3_600_000);
-    if (janela.length >= (amb.limitePorHora ?? 6)) return resp(429, { erro: "limite", mensagem: "Muitas tentativas. Tente de novo mais tarde ou fale com a pousada." });
-    janela.push(agora()); tentativas.set(ip, janela);
 
     // captcha (opcional): só exige quando o segredo do Turnstile está configurado
     if (amb.turnstileSecret) {
@@ -137,8 +165,27 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     }
 
     const { pedido, erros } = validar(corpo);
-    if (!pedido) return resp(422, { erro: "validacao", mensagem: "Confira os dados: " + erros.join(", ") + ".", campos: erros });
+
+    // fotos dos documentos: confere tipo real e tamanho antes de reservar
+    const fotos: Array<{ campo: string; bytes: Uint8Array; mime: string; ext: string }> = [];
+    if (form) {
+      for (const [campo, valor] of form.entries()) {
+        if (!CAMPOS_FOTO.test(campo) || typeof valor === "string") continue;
+        const bytes = new Uint8Array(await (valor as Blob).arrayBuffer());
+        const tipo = tipoImagem(bytes);
+        if (!tipo || bytes.length > MAX_BYTES) { erros.push("foto do documento (envie JPG, PNG ou WEBP de até 5 MB)"); break; }
+        fotos.push({ campo, bytes, ...tipo });
+        if (fotos.length > MAX_FOTOS) { erros.push("fotos demais"); break; }
+      }
+    }
+    if ((amb.documentoObrigatorio ?? true) && !fotos.some((f) => f.campo === "doc_titular_frente")) erros.push("foto do documento do titular");
+    if (!pedido || erros.length) return resp(422, { erro: "validacao", mensagem: "Confira os dados: " + erros.join(", ") + ".", campos: erros });
     const { reserva: r, titular: t } = pedido;
+
+    // quem já segura datas sem ter pago o sinal não segura outras
+    const aberta = await banco.rpc("pre_reserva_em_aberto", { p_email: t.email, p_cpf: t.cpf, p_passaporte: t.passaporte });
+    if (aberta.error) return interno();
+    if (escalar(aberta.data) === true) return resp(409, { erro: "indisponivel", motivo: "pendente_em_aberto", mensagem: "Você já tem uma pré-reserva aguardando o Pix do sinal. Pague o Pix dela ou aguarde 30 minutos para fazer outra." });
 
     // 1) segura as datas por 30 minutos
     const pre = await banco.rpc("criar_pre_reserva", {
@@ -147,12 +194,25 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     if (pre.error) {
       const motivo = pre.error.message;
       if (MOTIVOS[motivo]) return resp(409, { erro: "indisponivel", motivo, mensagem: MOTIVOS[motivo] });
-      return resp(500, { erro: "interno", mensagem: "Não foi possível concluir agora. Tente de novo em instantes." });
+      return interno();
     }
     const cd = Array.isArray(pre.data) ? pre.data[0]?.cd_reserva : pre.data?.cd_reserva;
-    if (!cd) return resp(500, { erro: "interno", mensagem: "Não foi possível concluir agora. Tente de novo em instantes." });
+    if (!cd) return interno();
 
-    // 2) conclui: grava o hóspede com o documento, os acompanhantes e o aceite da política
+    // 2) grava as fotos na pasta da reserva (bucket privado); se falhar, a pré-reserva vence sozinha
+    const documentos: Array<Record<string, unknown>> = [];
+    for (const f of fotos) {
+      const [, quem, lado] = f.campo.match(CAMPOS_FOTO)!;
+      const n = quem.startsWith("acompanhante_") ? Number(quem.split("_")[1]) : 0;
+      const caminho = `${cd}/${quem.replace("_", "-")}-${lado}.${f.ext}`;
+      if (!amb.arquivos) return interno();
+      const up = await amb.arquivos.enviar(caminho, f.bytes, f.mime);
+      if (up.error) return interno();
+      const pessoa = n ? [pedido.acompanhantes.filter((a: any) => a.tipo === "adulto")[n - 1]].map((a: any) => a ? `${a.nome} ${a.sobrenome}`.trim() : `Acompanhante ${n}`)[0] : t.nome;
+      documentos.push({ pessoa, tipo: n ? "ACOMPANHANTE" : "TITULAR", lado: lado.toUpperCase(), caminho, mime: f.mime, bytes: f.bytes.length });
+    }
+
+    // 3) grava o hóspede com o documento, os acompanhantes e o aceite da política
     const conf = await banco.rpc("confirmar_reserva", {
       p_cd_reserva: cd, p_nome: t.nome, p_email: t.email, p_telefone: t.telefone, p_nacionalidade: t.nacionalidade,
       p_cpf: t.cpf, p_passaporte: t.passaporte, p_pais_passaporte: t.paisPassaporte, p_validade_passaporte: t.validadePassaporte,
@@ -162,9 +222,13 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
       // a pré-reserva sem confirmação vence sozinha em 30 minutos e libera as datas
       if (conf.error.message === "passaporte_vencido") return resp(422, { erro: "validacao", mensagem: "O passaporte precisa valer até o dia da saída." });
       if (conf.error.message === "pre_reserva_expirada") return resp(409, { erro: "expirada", mensagem: "O tempo para concluir passou. Consulte as datas de novo." });
-      return resp(500, { erro: "interno", mensagem: "Não foi possível concluir agora. Tente de novo em instantes." });
+      return interno();
+    }
+    if (documentos.length) {
+      const reg = await banco.rpc("registrar_documentos", { p_cd_reserva: cd, p_documentos: documentos });
+      if (reg.error) return interno();
     }
     const linha = Array.isArray(conf.data) ? conf.data[0] : conf.data;
-    return resp(200, { ok: true, cd_reserva: linha?.cd_reserva ?? cd, vl_total: Number(linha?.vl_total), vl_sinal: Number(linha?.vl_sinal), dt_expira: linha?.dt_expira ?? null });
+    return resp(200, { ok: true, cd_reserva: linha?.cd_reserva ?? cd, vl_total: Number(linha?.vl_total), vl_sinal: Number(linha?.vl_sinal), dt_expira: linha?.dt_expira ?? null, documentos: documentos.length });
   };
 }

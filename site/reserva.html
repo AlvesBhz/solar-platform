@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Realizar reserva · Solar do Espinhaço</title>
 <meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://tnjpyjbqcjrowzjfnuln.supabase.co; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self' mailto:">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -72,6 +74,8 @@ input.err,select.err{border-color:var(--bad)}
 .pix .prazo b{color:var(--gold2)}
 .pix textarea{width:100%;min-height:76px;resize:none;font:12px/1.4 ui-monospace,monospace;color:var(--fg);background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:10px}
 .pix .copiar{margin-top:0;background:transparent;color:var(--gold2);border:1px solid var(--gold)}
+.docs input[type=file]{padding:12px;font-size:13px;color:var(--mut)}
+.docs input[type=file]::file-selector-button{margin-right:10px;padding:8px 14px;border:1px solid var(--gold);border-radius:999px;background:transparent;color:var(--gold2);font:600 11px var(--sans);letter-spacing:.12em;text-transform:uppercase}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:16px 22px;border:0;border-radius:999px;background:#f5f5f4;color:#1c1917;font:600 12px var(--sans);letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
 .btn:hover{background:#fff}.btn[disabled]{opacity:.4;cursor:not-allowed}
 .nota{font-size:12px;color:var(--mut);margin:10px 0 0}
@@ -108,7 +112,11 @@ input.err,select.err{border-color:var(--bad)}
               <div class="f"><label class="l" for="ppVal">Validade do passaporte</label><input id="ppVal" type="date"><div class="msg" data-m="ppVal"></div></div>
             </div>
           </div>
-          <p class="nota">Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). Usamos seus dados só para a reserva e o registro obrigatório.</p>
+          <div class="fields docs">
+            <div class="f"><label class="l" for="docFrente">Foto do documento · frente</label><input id="docFrente" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_titular_frente"><div class="msg" data-m="docFrente"></div></div>
+            <div class="f"><label class="l" for="docVerso">Verso (opcional)</label><input id="docVerso" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_titular_verso"><div class="msg" data-m="docVerso"></div></div>
+          </div>
+          <p class="nota">Envie a foto do RG, da CNH ou do passaporte, com o rosto e os dados legíveis. Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). As fotos ficam guardadas com acesso restrito à equipe e são usadas só para a reserva e o registro obrigatório.</p>
         </section>
 
         <section class="card" id="cardAcomp">
@@ -165,6 +173,7 @@ input.err,select.err{border-color:var(--bad)}
             <p><b>Cláusula quinta — da conservação.</b> O LOCATÁRIO obriga-se a conservar o imóvel como se fosse seu, assim como móveis, objetos de decoração e utensílios, sob pena de rescisão e indenização por qualquer dano. Os objetos danificados serão repostos por outros de igual valor, marca e modelo, ou indenizados pelo valor correspondente.</p>
             <p><b>Cláusula sexta — da apresentação.</b> O LOCADOR, ou alguém de sua confiança, receberá o LOCATÁRIO na chegada. Na saída, conferirão conjuntamente os mesmos bens. O LOCATÁRIO autoriza o LOCADOR, ou quem este indicar, a acessar o imóvel para eventuais consertos necessários.</p>
             <p><b>Cláusula sétima — das particularidades.</b> A capacidade máxima do imóvel é de 2 adultos e até 2 crianças, cabendo ao LOCATÁRIO observar todas as condições informadas neste site e responsabilizar-se pelas escolhas.</p>
+            <p>§ 1º-A O valor da reserva considera as idades das crianças informadas pelo LOCATÁRIO (até 4 anos, 5 a 8 anos e 9 a 13 anos). O LOCADOR pode pedir documento das crianças no check-in e, havendo divergência, a diferença das diárias é cobrada no check-in.</p>
             <p>§ 1º Se o LOCATÁRIO exceder o número máximo de pessoas previsto na reserva, sem consentimento expresso do LOCADOR, incorrerá em multa equivalente ao valor da diária por pessoa, por cada dia de ocupação, além da possibilidade de rescisão e entrega imediata do imóvel, a critério do LOCADOR.</p>
             <p>§ 2º Não é permitida a presença de animais. § 3º Não é permitida a saída com qualquer objeto ou equipamento pertencente ao imóvel. § 4º O LOCADOR fornece roupa de cama, toalhas, utensílios e equipamentos de cozinha, estando o imóvel mobiliado e em bom estado de conservação. § 5º Deve ser observado o horário de silêncio das 22:00 às 07:00.</p>
             <p><b>Cláusula oitava — responsabilidades e advertências.</b> O LOCATÁRIO declara saber que o imóvel está em área natural, remota e/ou isolada, na região da Serra do Cipó e Lapinha da Serra, integrada à natureza, com riscos de quedas, picadas de insetos, carrapatos, animais peçonhentos, afogamento, rajadas de vento, raios, tromba d'água, entre outros, sendo o único responsável pela própria segurança e pela de seus convidados, e assumindo o risco de suas atividades nesse ambiente. Isenta o Solar do Espinhaço de responsabilidade por esses eventos e por problemas de saúde, mal súbito ou acidentes pessoais ocorridos consigo e com os demais ocupantes durante o período contratado.</p>
@@ -264,7 +273,8 @@ input.err,select.err{border-color:var(--bad)}
   /* acompanhantes: um campo de nome e sobrenome por adulto além do titular; crianças com nome e idade */
   (function () {
     var h = '', i;
-    for (i = 2; i <= P.a; i++) h += '<div class="f"><label class="l" for="ad' + i + 'n">Adulto ' + i + ' · nome</label><input id="ad' + i + 'n" data-ad required><div class="msg" data-m="ad' + i + 'n"></div></div><div class="f"><label class="l" for="ad' + i + 's">Adulto ' + i + ' · sobrenome</label><input id="ad' + i + 's" data-ad required><div class="msg" data-m="ad' + i + 's"></div></div>';
+    for (i = 2; i <= P.a; i++) h += '<div class="f"><label class="l" for="ad' + i + 'n">Adulto ' + i + ' · nome</label><input id="ad' + i + 'n" data-ad required><div class="msg" data-m="ad' + i + 'n"></div></div><div class="f"><label class="l" for="ad' + i + 's">Adulto ' + i + ' · sobrenome</label><input id="ad' + i + 's" data-ad required><div class="msg" data-m="ad' + i + 's"></div></div>' +
+      '<div class="f full docs"><label class="l" for="ad' + i + 'd">Adulto ' + i + ' · foto do documento (opcional)</label><input id="ad' + i + 'd" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_acompanhante_' + (i - 1) + '_frente"><div class="msg" data-m="ad' + i + 'd"></div></div>';
     var faixas = [];
     for (i = 0; i < P.m; i++) faixas.push([9, 13]);
     for (i = 0; i < P.c; i++) faixas.push([5, 8]);
@@ -332,6 +342,10 @@ input.err,select.err{border-color:var(--bad)}
       v('ppVal', !!val && val >= P.co, 'O passaporte precisa valer até ' + (P.co ? dataExt(P.co) : 'o dia da saída') + '.');
     }
     document.querySelectorAll('[data-ad]').forEach(function (e) { v(e.id, e.value.trim().length >= 2, 'Obrigatório.'); });
+    v('docFrente', $('docFrente').files.length > 0, 'Envie a foto da frente do documento.');
+    document.querySelectorAll('[data-doc]').forEach(function (e) {
+      var f = e.files[0]; if (f) v(e.id, /^image\//.test(f.type) && f.size <= 20 * 1024 * 1024, 'Envie uma foto (imagem de até 20 MB).');
+    });
     var ac = $('aceite').checked; $('aceiteBox').classList.toggle('err', !ac); erro('aceite', ac ? '' : 'Para continuar, aceite a política de cancelamento e os termos.');
     if (!ac) { bom = false; primeiro = primeiro || $('aceite'); }
     if (primeiro) primeiro.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -379,7 +393,7 @@ input.err,select.err{border-color:var(--bad)}
     var btn = $('enviar'), rotulo = btn.textContent;
     var liberar = function () { btn.disabled = false; btn.textContent = rotulo; };
     btn.disabled = true; btn.textContent = 'Enviando…';
-    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) })
+    montarEnvio(d).then(function (corpo) { return fetch(ENDPOINT, { method: 'POST', body: corpo }); })
       .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }, function () { return { s: r.status, j: null }; }); })
       .then(function (x) {
         liberar();
@@ -389,6 +403,28 @@ input.err,select.err{border-color:var(--bad)}
       })
       .catch(function () { liberar(); porEmail(d); });
   });
+  /* fotos: reduz para no máximo 1600 px e envia como JPEG (menos dados no celular, tipo conferido no servidor) */
+  function reduzir(file) {
+    return new Promise(function (ok, falha) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        c.toBlob(function (b) { b ? ok(b) : falha(new Error('foto')); }, 'image/jpeg', 0.82);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); falha(new Error('foto')); };
+      img.src = url;
+    });
+  }
+  function montarEnvio(d) {
+    var fd = new FormData(); fd.append('dados', JSON.stringify(d));
+    var campos = Array.prototype.filter.call(document.querySelectorAll('[data-doc]'), function (e) { return e.files[0]; });
+    return Promise.all(campos.map(function (e) {
+      return reduzir(e.files[0]).then(function (b) { fd.append(e.getAttribute('data-doc'), b, e.getAttribute('data-doc') + '.jpg'); });
+    })).then(function () { return fd; });
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function registrada(j, d) {
     var limite = j.dt_expira ? new Date(j.dt_expira) : new Date(Date.now() + 30 * 60000);
     var hora = limite.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -405,7 +441,7 @@ input.err,select.err{border-color:var(--bad)}
         '<textarea id="pixCodigo" readonly aria-label="Pix copia e cola">' + codigo + '</textarea>' +
         '<button type="button" class="btn copiar" id="pixCopiar">Copiar código Pix</button>' +
       '</div>' +
-      'Depois de pagar, envie o comprovante pelo WhatsApp. A equipe confere o pagamento e confirma a reserva pelo e-mail <b>' + d.titular.email + '</b>. Sem o sinal até ' + hora + ', as datas voltam a ficar disponíveis. O saldo de ' + brl(j.vl_total - j.vl_sinal) + ' é pago no check-in.',
+      'Depois de pagar, envie o comprovante pelo WhatsApp. A equipe confere o pagamento e confirma a reserva pelo e-mail <b>' + esc(d.titular.email) + '</b>. Sem o sinal até ' + hora + ', as datas voltam a ficar disponíveis. O saldo de ' + brl(j.vl_total - j.vl_sinal) + ' é pago no check-in.',
       wa, 'Enviar comprovante no WhatsApp', 'Pague o sinal por Pix', 'Pré-reserva registrada');
     $('pixCopiar').addEventListener('click', function () {
       var t = $('pixCodigo'), b = this;
@@ -424,7 +460,7 @@ input.err,select.err{border-color:var(--bad)}
   }
   function porEmail(d) {
     var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));
-    concluir('Não conseguimos registrar a reserva automaticamente agora. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe, que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
+    concluir('Não conseguimos registrar a reserva automaticamente agora. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe (anexe a foto do documento no e-mail), que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
   }
   document.querySelectorAll('input,select').forEach(function (e) { e.addEventListener('input', function () { if (e.classList.contains('err')) { e.classList.remove('err'); var m = document.querySelector('[data-m="' + e.id + '"]'); if (m) m.textContent = ''; } }); });
 

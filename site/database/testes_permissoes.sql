@@ -6,7 +6,7 @@ select 'ok  anon consulta disponibilidade: ' || count(*) || ' unidade(s)' from c
 select 'ok  anon consulta preços do calendário: ' || count(*) || ' noite(s)' from consultar_precos('2027-03-01','2027-04-01',2,1,0);
 -- no schema "SE" o visitante não tem nem permissão de leitura nas tabelas (além do RLS)
 do $$ declare t text; n int; begin
-  foreach t in array array['SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO'] loop
+  foreach t in array array['SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_TARIFA', 'SIT_DOCUMENTO', 'SIT_AUDITORIA', 'SIT_TENTATIVA'] loop
     begin
       execute format('select count(*) from "SE".%I', t) into n;
       if n > 0 then raise exception 'FALHOU: anon leu % linha(s) de %', n, t; end if;
@@ -27,9 +27,24 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok  anon não pode confirmar reserva (só a Edge Function)';
 end $$;
 do $$ begin
-  perform confirmar_sinal('SE-00000000','X');
+  perform confirmar_sinal('SE-00000000','X','E000000',1);
   raise exception 'FALHOU: anon conseguiu confirmar sinal';
 exception when insufficient_privilege then raise notice 'ok  anon não pode confirmar sinal (só a equipe)';
+end $$;
+do $$ begin
+  perform registrar_tentativa('x');
+  raise exception 'FALHOU: anon chamou registrar_tentativa';
+exception when insufficient_privilege then raise notice 'ok  anon não pode mexer no limite de tentativas';
+end $$;
+do $$ begin
+  perform registrar_documentos('SE-00000000', '[]');
+  raise exception 'FALHOU: anon registrou documentos';
+exception when insufficient_privilege then raise notice 'ok  anon não pode registrar documentos';
+end $$;
+do $$ begin
+  update "SE"."SIT_TARIFA" set "VL_NOITE" = 1;
+  raise exception 'FALHOU: anon alterou tarifa';
+exception when insufficient_privilege then raise notice 'ok  anon não pode alterar tarifa';
 end $$;
 do $$ begin
   perform * from calcular_estadia(1,'2027-08-10','2027-08-12',2,0);

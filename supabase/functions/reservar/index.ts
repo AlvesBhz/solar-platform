@@ -8,7 +8,16 @@ const banco = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE
   auth: { persistSession: false },
 });
 
+// fotos dos documentos: bucket privado "documentos" (storage.sql)
+const arquivos = {
+  async enviar(caminho: string, bytes: Uint8Array, mime: string) {
+    const { error } = await banco.storage.from("documentos").upload(caminho, bytes, { contentType: mime, upsert: false });
+    return { error };
+  },
+};
+
 Deno.serve(criarHandler(banco, {
   origensPermitidas: (Deno.env.get("ALLOWED_ORIGINS") ?? "https://alvesbhz.github.io").split(",").map((s) => s.trim()),
   turnstileSecret: Deno.env.get("TURNSTILE_SECRET") || undefined,
+  arquivos,
 }));
