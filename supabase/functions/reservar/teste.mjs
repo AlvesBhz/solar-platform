@@ -25,7 +25,7 @@ const gravados = new Map();
 const arquivos = { async enviar(caminho, bytes, mime) { if (gravados.has(caminho)) return { error: { message: 'existe' } }; gravados.set(caminho, { bytes, mime }); return { error: null }; } };
 // h: pedidos em JSON sem foto (regras de reserva); hf: formulário com fotos, como o site envia
 const h = criarHandler(banco, { origensPermitidas: ['https://alvesbhz.github.io'], limitePorHora: 6, arquivos, documentoObrigatorio: false });
-const hf = criarHandler(banco, { origensPermitidas: ['https://alvesbhz.github.io'], limitePorHora: 6, arquivos });
+const hf = criarHandler(banco, { origensPermitidas: ['https://alvesbhz.github.io'], limitePorHora: 6, arquivos, documentoObrigatorio: true });
 const JPG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 16, 74, 70, 73, 70, 0, 1]);
 const enviarForm = (dados, fotos, ip) => { const f = new FormData(); f.append('dados', JSON.stringify(dados));
   for (const [campo, bytes, tipo] of fotos) f.append(campo, new Blob([bytes], { type: tipo || 'image/jpeg' }), campo + '.jpg');
@@ -40,8 +40,8 @@ const cpfDe = (n) => { const d = String(100000000 + n).slice(-9).split('').map(N
 let nb = 0;
 const base = () => ({
   reserva: { checkin: '2027-03-09', checkout: '2027-03-12', adultos: 2, criancas: 1, bebes: 0 },
-  titular: ++nb === 1 ? { nome: 'Maria Souza', email: 'Maria@Exemplo.com', telefone: '31 99999-0001', nacionalidade: 'BR', cpf: '529.982.247-25' }
-                      : { nome: 'Hospede ' + nb, email: `h${nb}@exemplo.com`, telefone: '31 99999-0002', nacionalidade: 'BR', cpf: cpfDe(nb * 7919) },
+  titular: ++nb === 1 ? { nome: 'Maria Souza', email: 'Maria@Exemplo.com', telefone: '+55 (31) 99999-0001', nascimento: '1988-04-12', nacionalidade: 'BR', cpf: '529.982.247-25' }
+                      : { nome: 'Hospede ' + nb, email: `h${nb}@exemplo.com`, telefone: '+55 (31) 99999-0002', nascimento: '1985-01-20', nacionalidade: 'BR', cpf: cpfDe(nb * 7919) },
   acompanhantes: [{ tipo: 'adulto', nome: 'Joao', sobrenome: 'Souza' }, { tipo: 'crianca', nome: 'Lia', idade: 6 }],
 });
 let falhas = 0;
@@ -65,12 +65,16 @@ r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027
 ok('mais de 7 noites: recusa', r.s === 422, JSON.stringify(r.b.campos));
 r = await j(await post({ ...base(), titular: { ...base().titular, cpf: '11111111111' } }));
 ok('CPF inválido: recusa', r.s === 422 && r.b.campos.includes('CPF'));
-r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-05-04', checkout: '2027-05-07' }, titular: { nome: 'John Miller', email: 'j@x.com', telefone: '+1 415 555 0102', nacionalidade: 'US', passaporte: 'x12345678', paisPassaporte: 'US', validadePassaporte: '2027-05-05' } }));
+r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-05-04', checkout: '2027-05-07' }, titular: { nome: 'John Miller', email: 'j@x.com', telefone: '+1 415 555 0102', nascimento: '1979-09-09', nacionalidade: 'US', passaporte: 'x12345678', paisPassaporte: 'US', validadePassaporte: '2027-05-05' } }));
 ok('passaporte vence antes da saída: recusa', r.s === 422, JSON.stringify(r.b.campos));
-r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-05-04', checkout: '2027-05-07' }, titular: { nome: 'John Miller', email: 'j@x.com', telefone: '+1 415 555 0102', nacionalidade: 'US', passaporte: 'x12345678', paisPassaporte: 'US', validadePassaporte: '2030-01-01' }, acompanhantes: [{ tipo: 'adulto', nome: 'Anna', sobrenome: 'Miller' }] }));
+r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-05-04', checkout: '2027-05-07' }, titular: { nome: 'John Miller', email: 'j@x.com', telefone: '+1 415 555 0102', nascimento: '1979-09-09', nacionalidade: 'US', passaporte: 'x12345678', paisPassaporte: 'US', validadePassaporte: '2030-01-01' }, acompanhantes: [{ tipo: 'adulto', nome: 'Anna', sobrenome: 'Miller' }] }));
 ok('estrangeiro com passaporte válido: concluída', r.s === 200, JSON.stringify(r.b));
 r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-06-08', checkout: '2027-06-10' }, acompanhantes: [{ tipo: 'adulto', nome: 'Joao', sobrenome: '' }] }));
-ok('adulto sem sobrenome: recusa', r.s === 422 && r.b.campos.includes('nome e sobrenome dos adultos'));
+ok('acompanhantes ficam para depois do pagamento: pedido sem eles é aceito', r.s === 200, JSON.stringify(r.b));
+r = await j(await post({ ...base(), titular: { ...base().titular, nascimento: '2012-01-01' }, reserva: { ...base().reserva, checkin: '2027-06-15', checkout: '2027-06-17' } }));
+ok('titular menor de 18 anos: recusa', r.s === 422 && r.b.campos.includes('titular precisa ter 18 anos'), JSON.stringify(r.b.campos));
+r = await j(await post({ ...base(), titular: { ...base().titular, nascimento: '' }, reserva: { ...base().reserva, checkin: '2027-06-15', checkout: '2027-06-17' } }));
+ok('sem data de nascimento: recusa', r.s === 422 && r.b.campos.includes('data de nascimento'));
 r = await j(await post({ ...base(), reserva: { ...base().reserva, adultos: 3 } }));
 ok('3 adultos: recusa', r.s === 422);
 r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-08-03', checkout: '2027-08-05', criancas: 1, criancasMaiores: 1 }, acompanhantes: [{ tipo: 'adulto', nome: 'Joao', sobrenome: 'Souza' }] }));
