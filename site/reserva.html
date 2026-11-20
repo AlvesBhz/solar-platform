@@ -64,6 +64,14 @@ input.err,select.err{border-color:var(--bad)}
 .aceite{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
 .aceite input{width:22px;height:22px;min-height:0;margin:2px 0 0;flex:none;accent-color:#c9b98a}
 .aceite.err{border-color:var(--bad)}
+.pix{display:grid;gap:14px;justify-items:center;margin:18px 0 4px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel);text-align:center}
+.pix .qr{background:#fff;padding:12px;border-radius:12px;line-height:0}
+.pix .qr svg{width:220px;height:220px;max-width:62vw;max-height:62vw}
+.pix .valor{font:600 22px var(--sans);color:var(--fg)}
+.pix .prazo{font-size:14px;color:var(--mut)}
+.pix .prazo b{color:var(--gold2)}
+.pix textarea{width:100%;min-height:76px;resize:none;font:12px/1.4 ui-monospace,monospace;color:var(--fg);background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:12px;padding:10px}
+.pix .copiar{margin-top:0;background:transparent;color:var(--gold2);border:1px solid var(--gold)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:16px 22px;border:0;border-radius:999px;background:#f5f5f4;color:#1c1917;font:600 12px var(--sans);letter-spacing:.2em;text-transform:uppercase;cursor:pointer}
 .btn:hover{background:#fff}.btn[disabled]{opacity:.4;cursor:not-allowed}
 .nota{font-size:12px;color:var(--mut);margin:10px 0 0}
@@ -78,7 +86,7 @@ input.err,select.err{border-color:var(--bad)}
     <a class="brand" href="index.html">Solar do Espinhaço</a>
   </header>
   <h1>Realizar reserva</h1>
-  <p class="lead">Confira os valores, informe os hóspedes e aceite as condições. Nossa equipe entra em contato em seguida para combinar o pagamento do sinal.</p>
+  <p class="lead">Confira os valores, informe os hóspedes e aceite as condições. Ao concluir, pague o sinal de 50% por Pix em até 30 minutos para garantir as datas.</p>
 
   <div class="grid">
     <main>
@@ -142,8 +150,8 @@ input.err,select.err{border-color:var(--bad)}
 
             <h3>Como funciona a reserva</h3>
             <p>As solicitações de reserva são feitas neste site ou pelo e-mail <a href="mailto:reservas@solardoespinhaco.com.br">reservas@solardoespinhaco.com.br</a> e pelo WhatsApp <a href="https://wa.me/5531997555245">(31) 99755-5245</a>.</p>
-            <p>Ao concluir a reserva no site, as datas ficam registradas em seu nome e a equipe do Solar do Espinhaço entra em contato para combinar o pagamento. O valor correspondente a <b>50% do total</b> da hospedagem é o sinal; o saldo (50%) é pago no check-in, antes da entrada. A forma de pagamento (Pix, transferência, cartão ou dinheiro) é informada pela equipe no contato, e os comprovantes devem ser enviados ao e-mail ou ao WhatsApp acima.</p>
-            <p>Recebido o sinal, a equipe envia ao e-mail do titular a confirmação com os detalhes da estadia. Se o sinal não for identificado no prazo informado no contato, a reserva não será confirmada e as datas voltam a ser vendidas. Pago o sinal e não recebida a confirmação em até 24 horas, entre em contato informando o código da reserva e enviando o comprovante.</p>
+            <p>Ao concluir a reserva no site, as datas ficam seguradas em seu nome por <b>30 minutos</b> e a tela mostra o QR Code e o código Pix copia e cola do sinal, correspondente a <b>50% do total</b> da hospedagem. O saldo (50%) é pago no check-in, antes da entrada. O comprovante deve ser enviado ao WhatsApp ou ao e-mail acima, informando o código da reserva.</p>
+            <p>Recebido o sinal, a equipe confere o pagamento e envia ao titular a confirmação com os detalhes da estadia. Se o sinal não for pago em 30 minutos, a reserva não é confirmada e as datas voltam a ser vendidas; pagamento feito depois do prazo só confirma a reserva se as datas continuarem livres, e caso contrário é devolvido integralmente. Pago o sinal e não recebida a confirmação em até 24 horas, entre em contato informando o código da reserva e enviando o comprovante.</p>
             <p>A reserva fica garantida até a data de chegada. Depois disso, não estará mais garantida e o chalé poderá ser realocado.</p>
             <p>Todas as reservas devem conter nome e sobrenome dos adultos que ocuparão o chalé. Estrangeiros informam o passaporte, que deve estar válido até o dia da saída.</p>
             <p>A ocupação máxima é de 2 adultos e até 2 crianças. Não é permitida a presença de animais.</p>
@@ -152,7 +160,7 @@ input.err,select.err{border-color:var(--bad)}
             <p>Pelo presente instrumento, as partes ajustam a locação para fins de temporada do imóvel descrito abaixo, nos termos dos arts. 48 a 50 da Lei 8.245/1991. <b>LOCADOR:</b> Solar do Espinhaço. <b>LOCATÁRIO:</b> o titular, qualificado neste formulário no ato da reserva.</p>
             <p><b>Cláusula primeira — do imóvel.</b> O imóvel é a Casa do Mirante, com as características descritas neste site.</p>
             <p><b>Cláusula segunda — do prazo.</b> O período da locação é o selecionado na reserva. O prazo máximo da locação é de 7 noites.</p>
-            <p><b>Cláusula terceira — do valor.</b> O valor total da locação está descrito no ato da reserva. O sinal de 50% é pago após o contato da equipe, na forma por ela informada, e o saldo de 50% no check-in, antes da entrada. A quitação é dada na compensação dos valores.</p>
+            <p><b>Cláusula terceira — do valor.</b> O valor total da locação está descrito no ato da reserva. O sinal de 50% é pago por Pix em até 30 minutos após a reserva no site, e o saldo de 50% no check-in, antes da entrada. A quitação é dada na compensação dos valores.</p>
             <p><b>Cláusula quarta — da finalidade.</b> A locação é exclusivamente por temporada, com objetivo de turismo e lazer, em dias úteis, fins de semana e feriados, não podendo a destinação ser alterada, substituída ou acrescida de outra. Ficam vedadas a sublocação, a cessão ou transferência do contrato e o empréstimo, parcial ou total, do imóvel, sob pena de rescisão contratual e entrega imediata do imóvel. Todos os convidados do locatário devem pagar pela ocupação e utilização do imóvel.</p>
             <p><b>Cláusula quinta — da conservação.</b> O LOCATÁRIO obriga-se a conservar o imóvel como se fosse seu, assim como móveis, objetos de decoração e utensílios, sob pena de rescisão e indenização por qualquer dano. Os objetos danificados serão repostos por outros de igual valor, marca e modelo, ou indenizados pelo valor correspondente.</p>
             <p><b>Cláusula sexta — da apresentação.</b> O LOCADOR, ou alguém de sua confiança, receberá o LOCATÁRIO na chegada. Na saída, conferirão conjuntamente os mesmos bens. O LOCATÁRIO autoriza o LOCADOR, ou quem este indicar, a acessar o imóvel para eventuais consertos necessários.</p>
@@ -173,7 +181,7 @@ input.err,select.err{border-color:var(--bad)}
           <div id="captcha"></div>
           <div class="msg" id="erroEnvio" role="alert" style="margin-top:12px;font-size:14px"></div>
           <button class="btn" id="enviar" type="submit">Confirmar reserva</button>
-          <p class="nota" id="notaEnviar">Ao confirmar, as datas ficam registradas em seu nome. Nossa equipe entra em contato para combinar o pagamento do sinal.</p>
+          <p class="nota" id="notaEnviar">Ao confirmar, as datas ficam seguradas por 30 minutos e aparece o Pix do sinal para pagar na hora.</p>
         </section>
       </form>
 
@@ -206,12 +214,29 @@ input.err,select.err{border-color:var(--bad)}
   </div>
 </div>
 
+<script src="js/vendor/qrcode.js"></script>
 <script>
 (function () {
   var API = { url: 'https://tnjpyjbqcjrowzjfnuln.supabase.co', chave: 'sb_publishable_VJqLlw2XZu8v5GSAWWfOfw_qUYdyXDF', schema: 'SE' };
   var ENDPOINT = API.url + '/functions/v1/reservar';   /* função do Supabase; se ainda não estiver publicada, o envio cai no e-mail */
   var TURNSTILE_SITEKEY = '';  /* chave pública do captcha Cloudflare Turnstile (opcional) */
   var CONTATO = 'reservas@solardoespinhaco.com.br';
+  var WHATSAPP = '5531997555245';
+  var PIX = { chave: 'solardoespinhaco@gmail.com', nome: 'SOLAR DO ESPINHACO', cidade: 'LAPINHA SERRA' }; // nome até 25 e cidade até 15 caracteres
+  function pixCampo(id, v) { return id + String(v.length).padStart(2, '0') + v; }
+  function pixCrc(s) { // CRC16-CCITT (0x1021, início 0xFFFF)
+    var c = 0xFFFF;
+    for (var i = 0; i < s.length; i++) { c ^= s.charCodeAt(i) << 8; for (var k = 0; k < 8; k++) c = (c & 0x8000) ? ((c << 1) ^ 0x1021) & 0xFFFF : (c << 1) & 0xFFFF; }
+    return c.toString(16).toUpperCase().padStart(4, '0');
+  }
+  function pixCodigo(valor, txid) {
+    var s = pixCampo('00', '01') +
+      pixCampo('26', pixCampo('00', 'br.gov.bcb.pix') + pixCampo('01', PIX.chave)) +
+      pixCampo('52', '0000') + pixCampo('53', '986') + pixCampo('54', Number(valor).toFixed(2)) + pixCampo('58', 'BR') +
+      pixCampo('59', PIX.nome.slice(0, 25)) + pixCampo('60', PIX.cidade.slice(0, 15)) +
+      pixCampo('62', pixCampo('05', txid.replace(/[^A-Za-z0-9]/g, '').slice(0, 25) || '***')) + '6304';
+    return s + pixCrc(s);
+  }
   var VERSAO_TERMOS = 'v1 · 19/11/2026';
   var $ = function (id) { return document.getElementById(id); };
   var q = new URLSearchParams(location.search);
@@ -365,8 +390,37 @@ input.err,select.err{border-color:var(--bad)}
       .catch(function () { liberar(); porEmail(d); });
   });
   function registrada(j, d) {
-    var wa = 'https://wa.me/5531997555245?text=' + encodeURIComponent('Olá! Fiz a reserva ' + j.cd_reserva + ' (' + dataExt(P.ci) + ' a ' + dataExt(P.co) + ') no site do Solar do Espinhaço.');
-    concluir('As datas estão registradas em seu nome. Guarde o código da reserva: <b style="font-size:20px;letter-spacing:.06em">' + j.cd_reserva + '</b><br><br>Nossa equipe entra em contato pelo e-mail <b>' + d.titular.email + '</b> e pelo WhatsApp para combinar o pagamento do sinal de <b>' + brl(j.vl_sinal) + '</b>. Se preferir, avise a pousada agora pelo WhatsApp.', wa, 'Avisar a pousada no WhatsApp', 'Reserva registrada', 'Obrigado');
+    var limite = j.dt_expira ? new Date(j.dt_expira) : new Date(Date.now() + 30 * 60000);
+    var hora = limite.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    var codigo = pixCodigo(j.vl_sinal, j.cd_reserva);
+    var wa = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Paguei o sinal de ' + brl(j.vl_sinal) + ' da reserva ' + j.cd_reserva + ' (' + dataExt(P.ci) + ' a ' + dataExt(P.co) + '). Segue o comprovante.');
+    var qr = '';
+    try { var q = window.qrcode(0, 'M'); q.addData(codigo); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true }); } catch (e) { qr = ''; }
+    concluir('As datas estão seguradas em seu nome. Código da reserva: <b style="font-size:20px;letter-spacing:.06em">' + j.cd_reserva + '</b>' +
+      '<div class="pix">' +
+        '<div class="valor">Sinal: ' + brl(j.vl_sinal) + '</div>' +
+        '<div class="prazo">Pague até <b>' + hora + '</b> · faltam <b id="pixFalta">30:00</b></div>' +
+        (qr ? '<div class="qr" aria-label="QR Code Pix">' + qr + '</div>' : '') +
+        '<div class="prazo">Abra o app do banco, escolha Pix › Ler QR Code, ou copie o código abaixo (Pix copia e cola).</div>' +
+        '<textarea id="pixCodigo" readonly aria-label="Pix copia e cola">' + codigo + '</textarea>' +
+        '<button type="button" class="btn copiar" id="pixCopiar">Copiar código Pix</button>' +
+      '</div>' +
+      'Depois de pagar, envie o comprovante pelo WhatsApp. A equipe confere o pagamento e confirma a reserva pelo e-mail <b>' + d.titular.email + '</b>. Sem o sinal até ' + hora + ', as datas voltam a ficar disponíveis. O saldo de ' + brl(j.vl_total - j.vl_sinal) + ' é pago no check-in.',
+      wa, 'Enviar comprovante no WhatsApp', 'Pague o sinal por Pix', 'Pré-reserva registrada');
+    $('pixCopiar').addEventListener('click', function () {
+      var t = $('pixCodigo'), b = this;
+      function feito() { b.textContent = 'Código copiado'; setTimeout(function () { b.textContent = 'Copiar código Pix'; }, 2500); }
+      if (navigator.clipboard) navigator.clipboard.writeText(codigo).then(feito, function () { t.select(); document.execCommand('copy'); feito(); });
+      else { t.select(); document.execCommand('copy'); feito(); }
+    });
+    (function contar() {
+      var f = $('pixFalta'); if (!f) return;
+      var ms = limite - Date.now();
+      if (ms <= 0) { f.textContent = 'prazo encerrado'; f.parentNode.innerHTML = 'O prazo de 30 minutos terminou. Se já pagou, envie o comprovante pelo WhatsApp: a equipe confirma se as datas continuarem livres.'; return; }
+      var m = Math.floor(ms / 60000), s = Math.floor(ms % 60000 / 1000);
+      f.textContent = m + ':' + String(s).padStart(2, '0');
+      setTimeout(contar, 1000);
+    })();
   }
   function porEmail(d) {
     var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));

@@ -27,6 +27,11 @@ do $$ begin
 exception when insufficient_privilege then raise notice 'ok  anon não pode confirmar reserva (só a Edge Function)';
 end $$;
 do $$ begin
+  perform confirmar_sinal('SE-00000000','X');
+  raise exception 'FALHOU: anon conseguiu confirmar sinal';
+exception when insufficient_privilege then raise notice 'ok  anon não pode confirmar sinal (só a equipe)';
+end $$;
+do $$ begin
   perform * from calcular_estadia(1,'2027-08-10','2027-08-12',2,0);
   raise exception 'FALHOU: anon executou calcular_estadia';
 exception when insufficient_privilege then raise notice 'ok  anon não executa a função interna calcular_estadia';

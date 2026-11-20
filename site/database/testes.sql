@@ -137,22 +137,58 @@ do $$ begin
 exception when check_violation then raise notice 'ok  Reserva do site só confirma com a política aceita';
 end $$;
 -- o hóspede termina o formulário: o site confirma com os dados e o aceite
-select 'ok  Reserva confirmada pelo site: ' || cd_reserva || ' · total R$ ' || vl_total || ' · sinal R$ ' || vl_sinal
+select 'ok  Cadastro concluído pelo site: ' || cd_reserva || ' · total R$ ' || vl_total || ' · sinal R$ ' || vl_sinal
 from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06' and "TP_STATUS" = 'PENDENTE'),
                        'Maria Teste', 'maria@exemplo.invalid', '+55 31 90000-0000', 'BR', '52998224725');
 do $$ declare r record; begin
   select r2."TP_STATUS", r2."DT_EXPIRA", r2."DT_ACEITE_POLITICA", r2."NO_VERSAO_POLITICA", h."NM_HOSPEDE" into r
   from "SIT_RESERVA" r2 join "SIT_HOSPEDE" h using ("ID_HOSPEDE") where r2."DT_CHECKIN" = '2027-04-06';
-  if r."TP_STATUS" <> 'CONFIRMADA' or r."DT_EXPIRA" is not null or r."DT_ACEITE_POLITICA" is null or r."NO_VERSAO_POLITICA" is null or r."NM_HOSPEDE" <> 'Maria Teste' then
-    raise exception 'FALHOU: confirmação não gravou hóspede, aceite ou status: %', r;
+  if r."TP_STATUS" <> 'PENDENTE' or r."DT_EXPIRA" is null or r."DT_ACEITE_POLITICA" is null or r."NO_VERSAO_POLITICA" is null or r."NM_HOSPEDE" <> 'Maria Teste' then
+    raise exception 'FALHOU: cadastro não gravou hóspede ou aceite, ou não seguiu aguardando o sinal: %', r;
   end if;
-  raise notice 'ok  Confirmação grava o hóspede, o aceite da política (versão %) e libera o prazo', r."NO_VERSAO_POLITICA";
+  raise notice 'ok  Cadastro grava o hóspede e o aceite (versão %) e segue PENDENTE até o sinal', r."NO_VERSAO_POLITICA";
+end $$;
+select pg_temp.nao('Aguardando o sinal: datas seguem seguradas',        '2027-04-06','2027-04-08', 2,0, 'ocupado');
+do $$ begin
+  perform confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Outra', 'outra@exemplo.invalid', null, 'BR', '11144477735');
+  raise exception 'FALHOU: cadastro enviado duas vezes';
+exception when sqlstate 'P0001' then raise notice 'ok  Cadastro não é enviado de novo (%)', sqlerrm;
+end $$;
+-- a equipe confere o Pix do sinal e confirma
+select 'ok  Sinal confirmado pela equipe: ' || cd_reserva || ' · ' || tp_status || ' · saldo R$ ' || vl_saldo
+from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)', 'E0000TESTE1');
+do $$ declare r record; begin
+  select r2."TP_STATUS", r2."DT_EXPIRA", (select count(*) from "SIT_PAGAMENTO" p where p."ID_RESERVA" = r2."ID_RESERVA" and p."TP_PARCELA" = 'SINAL' and p."TP_STATUS" = 'RECEBIDO') n
+    into r from "SIT_RESERVA" r2 where r2."DT_CHECKIN" = '2027-04-06';
+  if r."TP_STATUS" <> 'CONFIRMADA' or r."DT_EXPIRA" is not null or r.n <> 1 then raise exception 'FALHOU: confirmar_sinal: %', r; end if;
+  raise notice 'ok  Sinal lançado (Pix) e reserva CONFIRMADA, sem prazo';
 end $$;
 select pg_temp.nao('Reserva confirmada continua ocupando as datas',     '2027-04-06','2027-04-08', 2,0, 'ocupado');
 do $$ begin
-  perform confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Outra', 'outra@exemplo.invalid', null, 'BR', '11144477735');
-  raise exception 'FALHOU: reserva já confirmada foi confirmada de novo';
-exception when sqlstate 'P0001' then raise notice 'ok  Reserva já confirmada não é confirmada de novo (%)', sqlerrm;
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)');
+  raise exception 'FALHOU: sinal confirmado duas vezes';
+exception when sqlstate 'P0001' then raise notice 'ok  Sinal não é confirmado duas vezes (%)', sqlerrm;
+end $$;
+-- pagou depois do prazo: confirma se as datas seguem livres; recusa se alguém segurou as datas no meio
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-21', '2027-09-23', 2, 0);
+select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'), 'Tardio', 'tardio@exemplo.invalid', null, 'BR', '12345678909');
+update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "DT_CHECKIN" = '2027-09-21';
+select 'ok  Pix depois do prazo, datas livres: ' || tp_status from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'), 'Equipe (teste)');
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-28', '2027-09-30', 2, 0);
+select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28'), 'Tardio Dois', 'tardio2@exemplo.invalid', null, 'BR', '98765432100');
+update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "DT_CHECKIN" = '2027-09-28';
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-28', '2027-09-30', 2, 0);
+do $$ begin
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is not null), 'Equipe (teste)');
+  raise exception 'FALHOU: confirmou sinal atrasado com as datas já seguradas por outro';
+exception when sqlstate 'P0001' then
+  if sqlerrm <> 'ocupado' then raise; end if;
+  raise notice 'ok  Pix depois do prazo com as datas já seguradas por outro: recusado (ocupado)';
+end $$;
+do $$ begin
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is null), 'Equipe (teste)');
+  raise exception 'FALHOU: confirmou sinal sem cadastro';
+exception when sqlstate 'P0001' then raise notice 'ok  Sinal sem o cadastro do hóspede: recusado (%)', sqlerrm;
 end $$;
 -- pré-reserva que venceu antes de o hóspede terminar
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-14', '2027-09-16', 2, 0);
@@ -164,10 +200,9 @@ exception when sqlstate 'P0001' then
   if sqlerrm <> 'pre_reserva_expirada' then raise; end if;
   raise notice 'ok  Pré-reserva vencida não confirma: o hóspede consulta de novo (%)', sqlerrm;
 end $$;
--- a equipe entra em contato e lança o sinal recebido por Pix
-insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_METODO", "VL_PAGAMENTO", "DT_PAGAMENTO", "CD_TRANSACAO", "NM_REGISTRADO_POR")
-select "ID_RESERVA", 'SINAL', 'PIX', "VL_SINAL", now(), 'E0000TESTE1', 'Equipe (teste)' from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06';
-select 'ok  Pagamento lançado pela equipe: ' || "TP_PARCELA" || ' · ' || "TP_METODO" || ' · R$ ' || "VL_PAGAMENTO" || ' · ' || "TP_STATUS" from "SIT_PAGAMENTO";
+-- o sinal lançado pelo confirmar_sinal aparece no SIT_PAGAMENTO
+select 'ok  Pagamento lançado pela equipe: ' || "TP_PARCELA" || ' · ' || "TP_METODO" || ' · R$ ' || "VL_PAGAMENTO" || ' · ' || p."TP_STATUS"
+from "SIT_PAGAMENTO" p join "SIT_RESERVA" r using ("ID_RESERVA") where r."DT_CHECKIN" = '2027-04-06';
 do $$ begin
   insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_METODO", "VL_PAGAMENTO", "NM_REGISTRADO_POR") select "ID_RESERVA", 'PIX', 10, 'Equipe (teste)' from "SIT_RESERVA" limit 1;
   raise exception 'FALHOU: pagamento sem data aceito';
