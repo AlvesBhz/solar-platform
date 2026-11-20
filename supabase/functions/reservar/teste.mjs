@@ -39,7 +39,7 @@ ok('reserva válida concluída', r.s === 200 && r.b.ok && /^SE-/.test(r.b.cd_res
 const cd = r.b.cd_reserva;
 const linha = (await c.query(`select r."TP_STATUS" st, r."DT_EXPIRA" ex, r."DS_ACOMPANHANTES" ac, r."DT_ACEITE_POLITICA" ap, h."NM_HOSPEDE" nm, h."DS_EMAIL" em, h."CD_CPF" cpf
   from "SIT_RESERVA" r join "SIT_HOSPEDE" h using ("ID_HOSPEDE") where r."CD_RESERVA" = $1`, [cd])).rows[0];
-ok('reserva ficou CONFIRMADA, sem prazo, com aceite', linha.st === 'CONFIRMADA' && linha.ex === null && linha.ap !== null);
+ok('reserva ficou PENDENTE aguardando o sinal, com prazo e aceite', linha.st === 'PENDENTE' && linha.ex !== null && linha.ap !== null && !!r.b.dt_expira);
 ok('hóspede gravado com e-mail minúsculo e CPF só dígitos', linha.nm === 'Maria Souza' && linha.em === 'maria@exemplo.com' && linha.cpf === '52998224725');
 ok('acompanhantes gravados', Array.isArray(linha.ac) && linha.ac.length === 2 && linha.ac[0].sobrenome === 'Souza');
 
@@ -78,8 +78,8 @@ ok('limite por IP: a 7ª tentativa na hora é barrada (429)', ult.s === 429);
 agora += 3_700_000;
 r = await j(await post({ ...base(), reserva: { ...base().reserva, adultos: 3 } }, '9.9.9.9'));
 ok('passada 1 hora o IP volta a poder tentar', r.s === 422);
-const sobra = (await c.query(`select count(*) n from "SIT_RESERVA" where "TP_STATUS" = 'PENDENTE'`)).rows[0].n;
-ok('nenhuma pré-reserva ficou pendente por erro de validação', sobra === '0', 'pendentes: ' + sobra);
+const sobra = (await c.query(`select count(*) n from "SIT_RESERVA" where "TP_STATUS" = 'PENDENTE' and "ID_HOSPEDE" is null`)).rows[0].n;
+ok('nenhuma pré-reserva ficou sem cadastro por erro de validação', sobra === '0', 'pendentes: ' + sobra);
 await c.end();
 console.log(falhas ? `\n${falhas} FALHA(S)` : '\nTodos os testes passaram');
 process.exit(falhas ? 1 : 0);

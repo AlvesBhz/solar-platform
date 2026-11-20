@@ -143,11 +143,13 @@ Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica 
 Duas chamadas, sempre por uma **Edge Function** do Supabase (nunca direto do navegador, para aplicar captcha e limite de tentativas):
 
 1. `criar_pre_reserva(unidade, check-in, check-out, adultos, crianças de 5 a 8, até 4 anos, crianças de 9 a 13)` — quando o hóspede escolhe as datas, segura o chalé por **30 minutos** enquanto ele preenche a reserva, e devolve o código (ex.: `SE-7F3A2C1D`), o total e o sinal.
-2. `confirmar_reserva(código, nome, e-mail, telefone, nacionalidade, CPF ou passaporte…)` — quando ele conclui o formulário: grava o hóspede (ou atualiza, se o e-mail já existe), com o documento e o aceite da versão vigente da política, e deixa a reserva `CONFIRMADA`. As datas ficam garantidas. O banco recusa se a pré-reserva já venceu (`pre_reserva_expirada`), se não está mais pendente (`reserva_nao_pendente`) ou se o passaporte do estrangeiro vence antes da saída.
+2. `confirmar_reserva(código, nome, e-mail, telefone, nacionalidade, CPF ou passaporte…)` — quando ele conclui o formulário: grava o hóspede (ou atualiza, se o e-mail já existe), com o documento, os acompanhantes e o aceite da versão vigente da política. A reserva **segue `PENDENTE`** até o fim dos 30 minutos, e a tela mostra o QR Code e o Pix copia e cola do sinal (identificador = código da reserva sem o hífen). O banco recusa se a pré-reserva já venceu (`pre_reserva_expirada`), se não está mais pendente (`reserva_nao_pendente`) ou se o passaporte do estrangeiro vence antes da saída.
 
-Se o hóspede não concluir em 30 minutos, a pré-reserva vence sozinha: a consulta já ignora pré-reservas vencidas, e um job (`expirar_pre_reservas`, via pg_cron) só atualiza o status.
+3. `confirmar_sinal(código, quem conferiu, id do Pix)` — a equipe confere o Pix no extrato e roda no SQL Editor, por exemplo `select * from "SE".confirmar_sinal('SE-7F3A2C1D', 'Ana', 'E1234...');`. Lança o sinal em `SIT_PAGAMENTO` e deixa a reserva `CONFIRMADA`. Se o Pix chegou depois do prazo, só confirma se as datas continuarem livres (senão recusa com `ocupado`, e o valor é devolvido). Para ver os dados de uma reserva, use `consultar_reserva.sql`.
 
-**Depois da reserva (fora do site):** a equipe entra em contato, combina o pagamento do sinal (50%) e lança o que recebeu em `SIT_PAGAMENTO` (`TP_PROVEDOR = MANUAL`: Pix, cartão, dinheiro ou transferência, com quem lançou e o comprovante). O saldo é lançado no check-in. Se o hóspede não pagar, a equipe cancela a reserva com o motivo `SEM_PAGAMENTO`, e as datas voltam para a venda.
+Se o hóspede não pagar em 30 minutos, a pré-reserva vence sozinha: a consulta já ignora pré-reservas vencidas, e um job (`expirar_pre_reservas`, via pg_cron) só atualiza o status.
+
+**Outros pagamentos (fora do site):** sinal por outro meio ou saldo no check-in são lançados em `SIT_PAGAMENTO` (`TP_PROVEDOR = MANUAL`: Pix, cartão, dinheiro ou transferência, com quem lançou e o comprovante). O saldo é lançado no check-in. Se o hóspede não pagar, a equipe cancela a reserva com o motivo `SEM_PAGAMENTO`, e as datas voltam para a venda.
 
 ### 3. Airbnb e Booking
 
@@ -231,7 +233,7 @@ Num projeto de produção não rode `testes.sql` nem `exemplos_der.sql` (gravam 
 
 ## Publicar a função de reserva (`supabase/functions/reservar`)
 
-A página `reserva.html` envia o pedido para uma Edge Function que segura as datas (`criar_pre_reserva`) e conclui a reserva (`confirmar_reserva`). Ela usa a chave de serviço, que o Supabase injeta sozinho: essa chave nunca vai para o site nem para o GitHub. Enquanto a função não estiver publicada, a página cai no envio por e-mail.
+A página `reserva.html` envia o pedido para uma Edge Function que segura as datas (`criar_pre_reserva`) e grava o cadastro (`confirmar_reserva`); a página mostra então o Pix do sinal. Ela usa a chave de serviço, que o Supabase injeta sozinho: essa chave nunca vai para o site nem para o GitHub. Enquanto a função não estiver publicada, a página cai no envio por e-mail.
 
 1. **Banco atualizado.** A reserva ganhou `DS_ACOMPANHANTES`; se o seu banco foi criado antes disso, recrie: `remover_se.sql`, `schema.sql`, `seed_exemplo.sql` (só antes de ter reservas reais).
 2. **Publicar.** Pelo painel: **Edge Functions › Deploy a new function › Via Editor**, nome `reservar`, com os arquivos `index.ts` e `handler.ts` da pasta `supabase/functions/reservar`, e **desligue "Verify JWT"** (o hóspede não faz login). Ou pela linha de comando: `supabase functions deploy reservar --no-verify-jwt --project-ref tnjpyjbqcjrowzjfnuln`.

@@ -664,7 +664,7 @@ create or replace function confirmar_reserva(
   p_emissao_passaporte    date default null,
   p_acompanhantes         jsonb default null
 )
-returns table (cd_reserva text, vl_total numeric(10,2), vl_sinal numeric(10,2))
+returns table (cd_reserva text, vl_total numeric(10,2), vl_sinal numeric(10,2), dt_expira timestamptz)
 language plpgsql
 volatile
 security definer
@@ -684,6 +684,9 @@ begin
   end if;
   if v_reserva."DT_EXPIRA" <= now() then
     raise exception 'pre_reserva_expirada' using errcode = 'P0001';   -- passou dos 30 minutos: consultar de novo
+  end if;
+  if v_reserva."ID_HOSPEDE" is not null then
+    raise exception 'reserva_ja_cadastrada' using errcode = 'P0001';  -- o cadastro já foi enviado; agora falta o sinal
   end if;
 
   -- reconhece quem já se hospedou pelo e-mail, pelo CPF ou pelo passaporte (o que casar primeiro)
@@ -713,14 +716,76 @@ begin
   from "SIT_UNIDADE" u join "SIT_PROPRIEDADE" p on p."ID_PROPRIEDADE" = u."ID_PROPRIEDADE"
   where u."ID_UNIDADE" = v_reserva."ID_UNIDADE";
 
+  -- a reserva segue PENDENTE, segurando as datas até DT_EXPIRA, enquanto o hóspede paga o sinal por Pix;
+  -- a equipe confere o Pix e confirma com confirmar_sinal. Sem sinal no prazo, as datas voltam a ficar livres.
   return query
-  update "SIT_RESERVA" r set "ID_HOSPEDE" = v_hospede, "TP_STATUS" = 'CONFIRMADA', "DT_EXPIRA" = null,
+  update "SIT_RESERVA" r set "ID_HOSPEDE" = v_hospede,
          "NO_VERSAO_POLITICA" = v_versao, "DT_ACEITE_POLITICA" = now(), "DT_ATUALIZACAO" = now(),
          "DS_ACOMPANHANTES" = p_acompanhantes
   where r."ID_RESERVA" = v_reserva."ID_RESERVA"
-  returning r."CD_RESERVA", r."VL_TOTAL", r."VL_SINAL";
+  returning r."CD_RESERVA", r."VL_TOTAL", r."VL_SINAL", r."DT_EXPIRA";
 end;
 $$;
+
+
+-- ════════════════════════════════════════════════════════════════════
+--  Sinal recebido: a equipe confere o Pix no extrato (identificador = código
+--  da reserva sem o hífen) e confirma. Lança o pagamento e deixa a reserva
+--  CONFIRMADA. Se o prazo já tinha passado, só confirma se as datas
+--  continuarem livres. Uso no SQL Editor:
+--    select * from "SE".confirmar_sinal('SE-7F3A2C1D', 'Nome de quem conferiu', 'E1234...');
+-- ════════════════════════════════════════════════════════════════════
+
+create or replace function confirmar_sinal(
+  p_cd_reserva     text,
+  p_registrado_por text,
+  p_cd_transacao   text default null,        -- id do Pix (E2E) que aparece no extrato
+  p_vl_pago        numeric default null,     -- vazio = valor do sinal
+  p_metodo         text default 'PIX'
+)
+returns table (cd_reserva text, tp_status text, vl_sinal numeric(10,2), vl_saldo numeric(10,2))
+language plpgsql
+volatile
+security definer
+set search_path = "SE", extensions, pg_temp
+as $$
+declare
+  v "SIT_RESERVA"%rowtype;
+begin
+  select r.* into v from "SIT_RESERVA" r where r."CD_RESERVA" = p_cd_reserva for update;
+  if not found then
+    raise exception 'reserva_inexistente' using errcode = 'P0001';
+  end if;
+  if v."TP_STATUS" not in ('PENDENTE', 'EXPIRADA') then
+    raise exception 'reserva_nao_pendente' using errcode = 'P0001';
+  end if;
+  if v."ID_HOSPEDE" is null then
+    raise exception 'cadastro_incompleto' using errcode = 'P0001';     -- o hóspede não terminou o formulário
+  end if;
+  if (v."TP_STATUS" = 'EXPIRADA' or v."DT_EXPIRA" <= now()) and (
+       exists (select 1 from "SIT_RESERVA" r
+               where r."ID_UNIDADE" = v."ID_UNIDADE" and r."ID_RESERVA" <> v."ID_RESERVA"
+                 and daterange(r."DT_CHECKIN", r."DT_CHECKOUT") && daterange(v."DT_CHECKIN", v."DT_CHECKOUT")
+                 and (r."TP_STATUS" = 'CONFIRMADA' or (r."TP_STATUS" = 'PENDENTE' and r."DT_EXPIRA" > now())))
+    or exists (select 1 from "SIT_BLOQUEIO" b
+               where b."ID_UNIDADE" = v."ID_UNIDADE"
+                 and daterange(b."DT_INI", b."DT_FIM") && daterange(v."DT_CHECKIN", v."DT_CHECKOUT"))) then
+    raise exception 'ocupado' using errcode = 'P0001';                 -- pagou depois do prazo e as datas já foram vendidas
+  end if;
+
+  insert into "SIT_PAGAMENTO" ("ID_RESERVA", "TP_PARCELA", "TP_PROVEDOR", "TP_METODO", "VL_PAGAMENTO", "TP_STATUS",
+                               "DT_PAGAMENTO", "CD_TRANSACAO", "NM_REGISTRADO_POR")
+  values (v."ID_RESERVA", 'SINAL', 'MANUAL', p_metodo, coalesce(p_vl_pago, v."VL_SINAL"), 'RECEBIDO',
+          now(), p_cd_transacao, p_registrado_por);
+
+  return query
+  update "SIT_RESERVA" r set "TP_STATUS" = 'CONFIRMADA', "DT_EXPIRA" = null, "DT_ATUALIZACAO" = now()
+  where r."ID_RESERVA" = v."ID_RESERVA"
+  returning r."CD_RESERVA", r."TP_STATUS", r."VL_SINAL", r."VL_SALDO";
+end;
+$$;
+revoke all on function confirmar_sinal(text, text, text, numeric, text) from public, anon, authenticated;
+grant execute on function confirmar_sinal(text, text, text, numeric, text) to service_role;
 
 -- Job periódico (pg_cron no Supabase): marca como expiradas as pré-reservas
 -- vencidas. A consulta de disponibilidade já ignora as vencidas; o job só

@@ -1,5 +1,6 @@
-// Lógica da função "reservar": valida o pedido do site, segura as datas (criar_pre_reserva) e conclui a
-// reserva (confirmar_reserva). Não cobra nada: a equipe combina o pagamento depois.
+// Lógica da função "reservar": valida o pedido do site, segura as datas (criar_pre_reserva) e grava o cadastro
+// e o aceite (confirmar_reserva). A reserva fica PENDENTE até o hóspede pagar o sinal por Pix (QR Code na tela)
+// e a equipe confirmar com confirmar_sinal; sem sinal no prazo (30 min), as datas voltam a ficar livres.
 // Só usa Request/Response, então roda no Supabase (Deno) e nos testes (Node).
 
 export interface Banco {
@@ -164,6 +165,6 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
       return resp(500, { erro: "interno", mensagem: "Não foi possível concluir agora. Tente de novo em instantes." });
     }
     const linha = Array.isArray(conf.data) ? conf.data[0] : conf.data;
-    return resp(200, { ok: true, cd_reserva: linha?.cd_reserva ?? cd, vl_total: Number(linha?.vl_total), vl_sinal: Number(linha?.vl_sinal) });
+    return resp(200, { ok: true, cd_reserva: linha?.cd_reserva ?? cd, vl_total: Number(linha?.vl_total), vl_sinal: Number(linha?.vl_sinal), dt_expira: linha?.dt_expira ?? null });
   };
 }
