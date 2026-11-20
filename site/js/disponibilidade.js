@@ -29,7 +29,7 @@ window.Disponibilidade = (function () {
     return Number(v).toLocaleString(loc, { style: 'currency', currency: 'BRL' });
   }
   function chaveDe(s) {
-    return [s.checkin && iso(s.checkin), s.checkout && iso(s.checkout), s.adults, s.children, s.babies].join('|');
+    return [s.checkin && iso(s.checkin), s.checkout && iso(s.checkout), s.adults, s.children, s.older, s.babies].join('|');
   }
   function barra() {
     var el = document.getElementById('bkAgain');
@@ -92,7 +92,7 @@ window.Disponibilidade = (function () {
     data_passada:    'Escolha uma data de check-in a partir de hoje.',
     estadia_longa:   'A estadia passa do máximo de noites permitido. Escolha um período menor.',
     unidade_inativa: 'O chalé não está disponível para reserva no momento.',
-    capacidade:      'O chalé recebe até 2 adultos e 2 crianças ou bebês.',
+    capacidade:      'O chalé recebe até 2 adultos e 2 crianças.',
     sem_tarifa:      'Ainda não abrimos a agenda para essas datas.',
     fechado:         'Uma das noites escolhidas não está disponível.',
     sem_chegada:     'Não há check-in nesse dia. Escolha outra data de chegada.',
@@ -118,7 +118,7 @@ window.Disponibilidade = (function () {
     var saldo = Number(r.vl_total) - Number(r.vl_sinal);
     var qtd = r.qtde_noites + ' ' + t(r.qtde_noites === 1 ? 'noite' : 'noites');
     var st = Booking.getState();
-    var urlReserva = 'reserva.html?ci=' + iso(st.checkin) + '&co=' + iso(st.checkout) + '&a=' + st.adults + '&c=' + st.children + '&b=' + st.babies;
+    var urlReserva = 'reserva.html?ci=' + iso(st.checkin) + '&co=' + iso(st.checkout) + '&a=' + st.adults + '&c=' + st.children + '&m=' + st.older + '&b=' + st.babies;
     mostrar(
       '<div class="bkr-head is-ok"><iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>' +
       '<span>' + t('Disponível') + ' · ' + r.nm_unidade + '</span></div>' +
@@ -128,7 +128,7 @@ window.Disponibilidade = (function () {
         '<div><dt>' + t('Sinal para reservar (50%)') + '</dt><dd>' + moeda(r.vl_sinal) + '</dd></div>' +
         '<div><dt>' + t('Saldo no check-in') + '</dt><dd>' + moeda(saldo) + '</dd></div>' +
       '</dl>' +
-      '<p class="bkr-nota">' + t('Bebês até 1 ano não pagam. Valores consultados agora; as datas só ficam garantidas ao concluir a reserva.') + '</p>' +
+      '<p class="bkr-nota">' + t('Crianças até 4 anos não pagam. Valores consultados agora; as datas só ficam garantidas ao concluir a reserva.') + '</p>' +
       '<a class="bkr-cta" href="' + urlReserva + '">' + t('Realizar reserva') +
       ' <iconify-icon icon="solar:arrow-right-linear" width="12"></iconify-icon></a>', 'is-ok');
     colapsar();
@@ -157,7 +157,7 @@ window.Disponibilidade = (function () {
       },
       body: JSON.stringify({
         p_checkin: iso(s.checkin), p_checkout: iso(s.checkout),
-        p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies
+        p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies, p_criancas_maiores: s.older || undefined
       })
     })
       .then(function (resp) { if (!resp.ok) throw new Error('HTTP ' + resp.status); return resp.json(); })
@@ -179,12 +179,12 @@ window.Disponibilidade = (function () {
   var cachePrecos = {};
   function precosDoMes(ano, mes0) {
     var s = Booking.getState(), ini = new Date(ano, mes0, 1), fim = new Date(ano, mes0 + 1, 1);
-    var chave = [iso(ini), s.adults, s.children, s.babies].join('|');
+    var chave = [iso(ini), s.adults, s.children, s.older, s.babies].join('|');
     if (!cachePrecos[chave]) {
       cachePrecos[chave] = fetch(CONFIG.url + '/rest/v1/rpc/consultar_precos', {
         method: 'POST',
         headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
-        body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies })
+        body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies, p_criancas_maiores: s.older || undefined })
       }).then(function (r) {
           if (r.status === 404) return precosPorDisponibilidade(ini, fim, s); // banco ainda sem consultar_precos
           if (!r.ok) throw new Error(); return r.json();
@@ -200,7 +200,7 @@ window.Disponibilidade = (function () {
     return fetch(CONFIG.url + '/rest/v1/rpc/consultar_disponibilidade', {
       method: 'POST',
       headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
-      body: JSON.stringify({ p_checkin: iso(ci), p_checkout: iso(co), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies })
+      body: JSON.stringify({ p_checkin: iso(ci), p_checkout: iso(co), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies, p_criancas_maiores: s.older || undefined })
     }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (l) { return l[0] || null; });
   }
   function soma(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
@@ -228,7 +228,7 @@ window.Disponibilidade = (function () {
       });
     })).then(function (ls) { return [].concat.apply([], ls); });
   }
-  function curto(v) { return Math.round(v).toLocaleString('pt-BR'); }
+  function curto(v) { return v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v)); } // 2k · 1.8k · 920
   function precosNoCalendario(cal, ano, mes0) {
     precosDoMes(ano, mes0).then(function (m) {
       if (!m) return;

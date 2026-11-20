@@ -19,7 +19,7 @@ const MOTIVOS: Record<string, string> = {
   data_passada: "A data de check-in já passou.",
   estadia_longa: "A estadia passa do máximo de 7 noites.",
   unidade_inativa: "O chalé não está disponível no momento.",
-  capacidade: "O chalé recebe até 2 adultos e 2 crianças ou bebês.",
+  capacidade: "O chalé recebe até 2 adultos e 2 crianças.",
   sem_tarifa: "A agenda ainda não está aberta para essas datas.",
   fechado: "Uma das noites escolhidas não está disponível.",
   sem_chegada: "Não há check-in nesse dia.",
@@ -44,7 +44,7 @@ export function cpfValido(cpf: string): boolean {
 }
 
 interface Pedido {
-  reserva: { checkin: string; checkout: string; adultos: number; criancas: number; bebes: number };
+  reserva: { checkin: string; checkout: string; adultos: number; criancas: number; criancasMaiores: number; bebes: number };
   titular: { nome: string; email: string; telefone: string; nacionalidade: string; cpf: string | null; passaporte: string | null; paisPassaporte: string | null; validadePassaporte: string | null };
   acompanhantes: Array<Record<string, unknown>>;
 }
@@ -55,9 +55,10 @@ export function validar(corpo: any): { pedido?: Pedido; erros: string[] } {
   const r = corpo?.reserva ?? {}, t = corpo?.titular ?? {};
   const checkin = dataIso(r.checkin), checkout = dataIso(r.checkout);
   const adultos = inteiro(r.adultos), criancas = inteiro(r.criancas), bebes = inteiro(r.bebes);
+  const criancasMaiores = r.criancasMaiores === undefined ? 0 : inteiro(r.criancasMaiores); // 9 a 13 anos
   if (!checkin || !checkout || checkout <= checkin) erros.push("datas inválidas");
   else if ((Date.parse(checkout) - Date.parse(checkin)) / 864e5 > MAX_NOITES) erros.push("estadia acima de 7 noites");
-  if (!(adultos >= 1 && adultos <= 2) || !(criancas >= 0) || !(bebes >= 0) || criancas + bebes > 2) erros.push("hóspedes inválidos");
+  if (!(adultos >= 1 && adultos <= 2) || !(criancas >= 0) || !(bebes >= 0) || !(criancasMaiores >= 0) || criancas + criancasMaiores + bebes > 2) erros.push("hóspedes inválidos");
 
   const nome = texto(t.nome, 120), email = texto(t.email, 160).toLowerCase(), telefone = texto(t.telefone, 30);
   if (nome.length < 3) erros.push("nome do titular");
@@ -89,7 +90,7 @@ export function validar(corpo: any): { pedido?: Pedido; erros: string[] } {
   if (adultosExtras < adultos - 1) erros.push("nome e sobrenome dos adultos");
 
   if (erros.length) return { erros };
-  return { erros, pedido: { reserva: { checkin, checkout, adultos, criancas, bebes }, titular: { nome, email, telefone, nacionalidade, cpf, passaporte, paisPassaporte, validadePassaporte: validade }, acompanhantes } };
+  return { erros, pedido: { reserva: { checkin, checkout, adultos, criancas, criancasMaiores, bebes }, titular: { nome, email, telefone, nacionalidade, cpf, passaporte, paisPassaporte, validadePassaporte: validade }, acompanhantes } };
 }
 
 export function criarHandler(banco: Banco, amb: Ambiente) {
@@ -140,7 +141,7 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
 
     // 1) segura as datas por 30 minutos
     const pre = await banco.rpc("criar_pre_reserva", {
-      p_cd_unidade: CHALE, p_checkin: r.checkin, p_checkout: r.checkout, p_adultos: r.adultos, p_criancas: r.criancas, p_bebes: r.bebes,
+      p_cd_unidade: CHALE, p_checkin: r.checkin, p_checkout: r.checkout, p_adultos: r.adultos, p_criancas: r.criancas, p_bebes: r.bebes, p_criancas_maiores: r.criancasMaiores,
     });
     if (pre.error) {
       const motivo = pre.error.message;

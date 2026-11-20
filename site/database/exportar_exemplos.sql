@@ -6,7 +6,8 @@ select jsonb_object_agg(t, rows) from (
   select 'SIT_PROPRIEDADE' t, jsonb_agg(to_jsonb(x)) rows from "SIT_PROPRIEDADE" x union all
   select 'SIT_UNIDADE', jsonb_agg(to_jsonb(x)) from "SIT_UNIDADE" x union all
   select 'SIT_TARIFA', jsonb_agg(to_jsonb(x) order by x."ID_TARIFA") from "SIT_TARIFA" x union all
-  select 'SIT_AJUSTE_DIARIO', jsonb_agg(to_jsonb(x) order by x."DT_REF") from "SIT_AJUSTE_DIARIO" x union all
+  select 'SIT_AJUSTE_DIARIO', jsonb_agg(to_jsonb(x) order by x."DT_REF") from "SIT_AJUSTE_DIARIO" x
+    where x."DT_REF" in ('2026-12-24', '2026-12-25', '2027-02-06', '2027-03-17') union all  -- amostra: os feriados do seed são muitos
   select 'SIT_HOSPEDE', jsonb_agg(to_jsonb(x) order by x."ID_HOSPEDE") from "SIT_HOSPEDE" x union all
   select 'SIT_RESERVA', jsonb_agg(to_jsonb(x) order by x."ID_RESERVA") from "SIT_RESERVA" x union all
   select 'SIT_PAGAMENTO', jsonb_agg(to_jsonb(x) order by x."ID_PAGAMENTO") from "SIT_PAGAMENTO" x union all

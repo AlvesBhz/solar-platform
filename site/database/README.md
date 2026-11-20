@@ -12,13 +12,13 @@ Estrutura para o site responder, ao clicar em **Ver disponibilidade**, se o chal
 
 O site **não cobra** nada hoje: não há Pix automático, cartão nem integração com gateway. A tabela `SIT_PAGAMENTO` já está pronta para isso: quando o Mercado Pago (ou outro meio de pagamento online) for integrado, a cobrança entra como `TP_PROVEDOR = MERCADO_PAGO`, nasce `PENDENTE` com o id da transação e o aviso do provedor (webhook) a muda para `RECEBIDO`, sem mudar nenhuma tabela.
 
-**Situação:** proposta em validação, ainda não ligada ao site. O schema roda num PostgreSQL 16 e passou em todos os testes desta pasta. Os dados iniciais usam os valores definidos em 16 e 17/11/2026: chalé Casa do Mirante, check-in 15h, R$ 1.700 a noite para o casal, R$ 300 por criança (2 a 13 anos) por noite, bebê não paga mas ocupa vaga, até 2 adultos e 2 crianças, até 7 noites, sinal não reembolsável com remarcação, reserva pelo site com 30 minutos para concluir, pagamento combinado depois pela equipe.
+**Situação:** proposta em validação, ainda não ligada ao site. O schema roda num PostgreSQL 16 e passou em todos os testes desta pasta. Os dados iniciais usam os valores definidos em 16 e 17/11/2026: chalé Casa do Mirante, check-in 15h, casal R$ 800 de domingo a quinta e R$ 1.700 sexta, sábado e feriados, criança de 5 a 8 anos 30% e de 9 a 13 anos 100% do valor por pessoa, até 4 anos não paga mas ocupa vaga, mínimo de 2 noites (feriado prolongado 3, Réveillon e Carnaval 4), até 2 adultos e 2 crianças, até 7 noites, sinal não reembolsável com remarcação, reserva pelo site com 30 minutos para concluir, pagamento combinado depois pela equipe.
 
 | Arquivo | Conteúdo |
 |---|---|
 | `schema.sql` | Tabelas, regras, funções e segurança |
 | `seed_exemplo.sql` | Dados iniciais reais: a pousada, o chalé e a tarifa padrão |
-| `testes.sql` | 68 verificações, no schema `"SE"`, de preço, bebê, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
+| `testes.sql` | 96 verificações, no schema `"SE"`, de preço, faixas de idade, feriados, regras de venda, ocupação, pré-reserva, confirmação pelo site, pagamento lançado pela equipe, remarcação, cancelamento e documento do hóspede (cria os próprios dados de teste) |
 | `exemplos_der.sql` / `exemplos_der.json` | Linhas fictícias mostradas no DER, aprovadas por todas as regras |
 | `exportar_estrutura.sql` / `exportar_exemplos.sql` / `gerar_der.py` | Extraem a estrutura e os exemplos do banco e geram o `der.html` |
 | `testes_permissoes.sql` | O que o visitante anônimo pode e não pode fazer |
@@ -62,11 +62,11 @@ O diagrama completo, com todos os campos, exemplos e regras de cada tabela, est�
 
 | Tabela | Para que serve |
 |---|---|
-| `SIT_PROPRIEDADE` | A pousada: fuso, horários de check-in/out, idade máxima de bebê e de criança, estadia máxima, percentual do sinal, minutos para pagar, regra de remarcação, prazo de arrependimento e versão da política de cancelamento |
-| `SIT_UNIDADE` | Cada chalé: capacidade (hóspedes, adultos, crianças + bebês) e taxa de limpeza |
-| `SIT_TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, valor por criança, valor por bebê (R$ 0), mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
+| `SIT_PROPRIEDADE` | A pousada: fuso, horários de check-in/out, faixas de idade das crianças (até 4, 5 a 8, 9 a 13), estadia máxima, percentual do sinal, minutos para pagar, regra de remarcação, prazo de arrependimento e versão da política de cancelamento |
+| `SIT_UNIDADE` | Cada chalé: capacidade (hóspedes, adultos, crianças de todas as idades) e taxa de limpeza |
+| `SIT_TARIFA` | Preço por período (`DT_INI`/`DT_FIM`): valor da noite, valor de sexta/sábado, adultos inclusos, adulto extra, percentual por criança de 5 a 8 anos (30%), de 9 a 13 anos (100%) e até 4 anos (0%) sobre o valor por pessoa, mínimo de noites. Períodos podem se sobrepor; vale o maior `NO_PRIORIDADE` |
 | `SIT_AJUSTE_DIARIO` | Exceção de um dia (`DT_REF`): preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída. Campo vazio não muda nada; o valor do ajuste substitui só o valor base da noite, e criança e bebê continuam vindo da tarifa (passo a passo no DER) |
-| `SIT_RESERVA` | Reservas feitas no site (ou por telefone e contato direto): adultos, crianças e bebês, preço noite a noite, sinal e saldo gravados no momento da reserva, aceite da política, motivo do cancelamento (inclusive `SEM_PAGAMENTO`) e a reserva original de uma remarcação |
+| `SIT_RESERVA` | Reservas feitas no site (ou por telefone e contato direto): adultos e crianças por faixa de idade, preço noite a noite, sinal e saldo gravados no momento da reserva, aceite da política, motivo do cancelamento (inclusive `SEM_PAGAMENTO`) e a reserva original de uma remarcação |
 | `SIT_PAGAMENTO` | Pagamentos da reserva (`TP_PARCELA`: SINAL, combinado depois da reserva; SALDO, no check-in). Hoje só lançamentos `MANUAL` da equipe, com método, comprovante e quem lançou; pronta para pagamento online (`MERCADO_PAGO`: `PENDENTE` → `RECEBIDO`) |
 | `SIT_BLOQUEIO` | Datas indisponíveis que não são reservas do site: manutenção, uso próprio e reservas do Airbnb/Booking |
 | `SIT_CALENDARIO_EXTERNO` | Links iCal do Airbnb e do Booking, importados periodicamente para `SIT_BLOQUEIO` |
@@ -79,7 +79,7 @@ A estadia são as **noites** de `DT_CHECKIN` até a véspera de `DT_CHECKOUT`. A
 Para cada noite da estadia:
 
 1. **Preço da noite:** o ajuste do dia, se houver. Senão, a tarifa de maior prioridade que cobre a noite: valor de sexta/sábado nas noites de sexta e sábado, valor normal nas demais.
-2. **Hóspedes:** o valor da noite cobre os adultos inclusos (o casal). Cada criança de 2 a 13 anos soma o valor de criança por noite, e cada adulto além dos inclusos soma o valor de adulto extra. Bebês abaixo de 2 anos não pagam, mas ocupam uma vaga de criança.
+2. **Hóspedes:** o valor da noite cobre os adultos inclusos (o casal). Cada criança soma um percentual do valor por pessoa da noite (valor da noite ÷ adultos inclusos): 5 a 8 anos 30%, 9 a 13 anos 100%; até 4 anos não paga, mas ocupa uma vaga de criança. Cada adulto além dos inclusos soma o valor de adulto extra.
 3. **Total:** soma das noites + taxa de limpeza (uma vez por estadia).
 
 A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que voltam para o site mostrar a mensagem certa:
@@ -89,7 +89,7 @@ A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que v
 | `datas_invalidas` | Check-out igual ou anterior ao check-in |
 | `data_passada` | Check-in antes de hoje (fuso de São Paulo) |
 | `estadia_longa` | Mais noites que o máximo da propriedade (7) |
-| `capacidade` | Mais hóspedes, adultos ou crianças + bebês que o chalé comporta |
+| `capacidade` | Mais hóspedes, adultos ou crianças (todas as idades somadas) que o chalé comporta |
 | `sem_tarifa` | Alguma noite sem tarifa cadastrada (venda ainda não aberta) |
 | `fechado` | Alguma noite marcada como fechada |
 | `sem_chegada` / `sem_saida` | Check-in ou check-out numa data que não permite |
@@ -100,7 +100,7 @@ A unidade fica **indisponível** quando ocorre qualquer um destes motivos, que v
 
 ### 1. Consultar (botão "Ver disponibilidade")
 
-Função pública `consultar_disponibilidade(check-in, check-out, adultos, crianças, bebês)`, chamada direto do navegador:
+Função pública `consultar_disponibilidade(check-in, check-out, adultos, crianças de 5 a 8, até 4 anos, crianças de 9 a 13)`, chamada direto do navegador:
 
 ```js
 const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`, {
@@ -116,7 +116,7 @@ const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`
 const [chale] = await resp.json();
 ```
 
-O calendário usa `consultar_precos(início, fim, adultos, crianças, bebês)`, que devolve uma linha por noite (`dt_ref`, `vl_noite`, `livre`) para até 62 noites; com hóspedes acima da capacidade não devolve nada.
+O calendário usa `consultar_precos(início, fim, adultos, crianças de 5 a 8, até 4 anos, crianças de 9 a 13)`, que devolve uma linha por noite (`dt_ref`, `vl_noite`, `livre`) para até 62 noites; com hóspedes acima da capacidade não devolve nada.
 
 Com a biblioteca `supabase-js`: `supabase.schema('SE').rpc('consultar_disponibilidade', { p_checkin: '2027-03-04', … })`. O schema `SE` precisa estar liberado em **Project Settings › API › Exposed schemas**.
 
@@ -142,7 +142,7 @@ Quando a unidade está indisponível, os valores vêm vazios e `motivo` explica 
 
 Duas chamadas, sempre por uma **Edge Function** do Supabase (nunca direto do navegador, para aplicar captcha e limite de tentativas):
 
-1. `criar_pre_reserva(unidade, check-in, check-out, adultos, crianças, bebês)` — quando o hóspede escolhe as datas, segura o chalé por **30 minutos** enquanto ele preenche a reserva, e devolve o código (ex.: `SE-7F3A2C1D`), o total e o sinal.
+1. `criar_pre_reserva(unidade, check-in, check-out, adultos, crianças de 5 a 8, até 4 anos, crianças de 9 a 13)` — quando o hóspede escolhe as datas, segura o chalé por **30 minutos** enquanto ele preenche a reserva, e devolve o código (ex.: `SE-7F3A2C1D`), o total e o sinal.
 2. `confirmar_reserva(código, nome, e-mail, telefone, nacionalidade, CPF ou passaporte…)` — quando ele conclui o formulário: grava o hóspede (ou atualiza, se o e-mail já existe), com o documento e o aceite da versão vigente da política, e deixa a reserva `CONFIRMADA`. As datas ficam garantidas. O banco recusa se a pré-reserva já venceu (`pre_reserva_expirada`), se não está mais pendente (`reserva_nao_pendente`) ou se o passaporte do estrangeiro vence antes da saída.
 
 Se o hóspede não concluir em 30 minutos, a pré-reserva vence sozinha: a consulta já ignora pré-reservas vencidas, e um job (`expirar_pre_reservas`, via pg_cron) só atualiza o status.
@@ -173,7 +173,7 @@ O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de ve
 
 ## Decisões
 
-Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; R$ 1.700 a noite para o casal; R$ 300 por criança (2 a 13 anos) por noite; adulto a partir de 14 anos; bebê até 1 ano não paga (`SIT_TARIFA.VL_BEBE` = 0, idade em `SIT_PROPRIEDADE.NO_IDADE_MAX_BEBE`), mas ocupa uma das 2 vagas de criança (`SIT_RESERVA.QTDE_BEBES` soma com as crianças contra `SIT_UNIDADE.QTDE_MAX_CRIANCAS`); até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; datas especiais com mínimo de 2 noites; sinal de 50%, não reembolsável, com possibilidade de remarcação, combinado e recebido pela equipe depois da reserva; saldo pago no check-in, antes de entrar; 30 minutos para o hóspede concluir a reserva no site; aceite da política e motivo do cancelamento registrados em cada reserva; prazo de arrependimento de 7 dias (CDC art. 49).
+Definidas em 16 e 17/11/2026 e já aplicadas: chalé Casa do Mirante; check-in às 15h e check-out às 12h; casal R$ 800 de domingo a quinta e R$ 1.700 sexta e sábado (regra de 20/11/2026); feriados prolongados a R$ 1.700 com mínimo de 3 noites, Réveillon e Carnaval 4 (`SIT_AJUSTE_DIARIO`, carregados no seed até o Réveillon 2028); criança de 5 a 8 anos paga 30% e de 9 a 13 anos 100% do valor por pessoa da noite; adulto a partir de 14 anos; criança até 4 anos não paga (`SIT_TARIFA.PC_BEBE` = 0, idade em `SIT_PROPRIEDADE.NO_IDADE_MAX_BEBE`), mas ocupa uma das 2 vagas de criança (as três faixas somam contra `SIT_UNIDADE.QTDE_MAX_CRIANCAS`); até 2 adultos e 2 crianças; sem taxa de limpeza; até 7 noites; mínimo de 2 noites; sinal de 50%, não reembolsável, com possibilidade de remarcação, combinado e recebido pela equipe depois da reserva; saldo pago no check-in, antes de entrar; 30 minutos para o hóspede concluir a reserva no site; aceite da política e motivo do cancelamento registrados em cada reserva; prazo de arrependimento de 7 dias (CDC art. 49).
 
 Proposta aguardando aprovação: remarcar até 7 dias antes do check-in (`QTDE_DIAS_LIMITE_REMARCACAO`), crédito válido por 12 meses (`QTDE_MESES_VALIDADE_CREDITO`), diferença paga se a nova data for mais cara e não devolvida se for mais barata.
 
@@ -253,4 +253,4 @@ Testes da função: `supabase/functions/reservar/teste.mjs` (19 verificações c
 6. Envio da FNRH digital ao Ministério do Turismo a partir do cadastro do hóspede.
 7. Quando quiser cobrar online: Edge Function que cria a cobrança no Mercado Pago (`SIT_PAGAMENTO` `PENDENTE`) e recebe o aviso de aprovação; o banco já tem os campos e as regras.
 
-- `migracao_consultar_precos.sql`: acrescenta ao banco já criado a função `consultar_precos` (preço por noite no calendário do site). Rode uma vez no SQL Editor; quem recriar com `schema.sql` já a recebe.
+- **20/11/2026, preços novos:** diária, faixas de idade e feriados mudaram a estrutura (`SIT_TARIFA.PC_*`, `SIT_RESERVA.QTDE_CRIANCAS_MAIORES`, parâmetro `p_criancas_maiores`). Recrie o banco: `remover_se.sql` → `schema.sql` → `seed_exemplo.sql`.
