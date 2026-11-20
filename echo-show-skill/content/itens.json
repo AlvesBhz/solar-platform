@@ -1,0 +1,15 @@
+{
+  "_ajuda": "Preencha o campo \"onde\" de cada item com a frase de onde ele fica (ex.: \"no closet, na prateleira de cima\"). Enquanto estiver vazio, a skill só diz \"Aqui está ...\" e o cartão mostra só o nome. Os sinônimos são as palavras que o hóspede pode usar.",
+  "itens": [
+    {"id": "cofre", "artigo": "o", "nome": "cofre", "sinonimos": ["caixa forte"], "icone": {"solar": "safe-square-linear"}, "onde": ""},
+    {"id": "ar-condicionado", "artigo": "o", "nome": "ar-condicionado", "sinonimos": ["ar condicionado", "ar", "climatizador", "controle do ar"], "icone": {"solar": "snowflake-linear"}, "onde": ""},
+    {"id": "tv", "artigo": "a", "nome": "TV e streaming", "sinonimos": ["tv", "televisão", "televisor", "streaming", "controle da tv"], "icone": {"solar": "tv-linear"}, "onde": ""},
+    {"id": "banheira", "artigo": "a", "nome": "banheira de imersão", "sinonimos": ["banheira", "banheira de banho"], "icone": {"svg": "banheira"}, "onde": ""},
+    {"id": "frigobar", "artigo": "o", "nome": "frigobar", "sinonimos": ["geladeira", "frigobar do quarto"], "icone": {"solar": "fridge-linear"}, "onde": ""},
+    {"id": "cafeteira", "artigo": "a", "nome": "cafeteira", "sinonimos": ["máquina de café", "café"], "icone": {"solar": "cup-hot-linear"}, "onde": ""},
+    {"id": "fechadura", "artigo": "a", "nome": "fechadura digital", "sinonimos": ["fechadura", "senha da porta", "trava da porta"], "icone": {"solar": "lock-linear"}, "onde": ""},
+    {"id": "wifi", "artigo": "o", "nome": "Wi-Fi", "sinonimos": ["wifi", "internet", "roteador", "senha do wifi"], "icone": {"solar": "wi-fi-router-linear"}, "onde": ""},
+    {"id": "piscina", "artigo": "a", "nome": "piscina aquecida", "sinonimos": ["piscina", "piscina do deck"], "icone": {"svg": "piscina"}, "onde": ""},
+    {"id": "aspirador", "artigo": "o", "nome": "aspirador robô", "sinonimos": ["aspirador", "robô de limpeza", "robô aspirador"], "icone": {"solar": "smart-vacuum-cleaner-linear"}, "onde": ""}
+  ]
+}

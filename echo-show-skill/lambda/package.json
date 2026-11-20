@@ -1,7 +1,7 @@
 {
   "name": "solar-do-espinhaco-echo-show",
-  "version": "2.0.0",
-  "description": "Abertura Solar do Espinha\u00e7o para Echo Show (v\u00eddeo)",
+  "version": "3.0.0",
+  "description": "Solar do Espinha\u00e7o para Echo Show: abertura e itens da casa em v\u00eddeo",
   "main": "index.js",
   "dependencies": {
     "ask-sdk-core": "^2.14.0",

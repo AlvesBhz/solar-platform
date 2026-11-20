@@ -36,9 +36,190 @@
             "ver de novo",
             "passar de novo"
           ]
+        },
+        {
+          "name": "ItemIntent",
+          "slots": [
+            {
+              "name": "item",
+              "type": "ITEM_CASA"
+            }
+          ],
+          "samples": [
+            "cadê a {item}",
+            "cadê as {item}",
+            "cadê o {item}",
+            "cadê os {item}",
+            "cadê {item}",
+            "como é a {item}",
+            "como é as {item}",
+            "como é o {item}",
+            "como é os {item}",
+            "como é {item}",
+            "me mostre a {item}",
+            "me mostre as {item}",
+            "me mostre o {item}",
+            "me mostre os {item}",
+            "me mostre {item}",
+            "mostrar a {item}",
+            "mostrar as {item}",
+            "mostrar o {item}",
+            "mostrar os {item}",
+            "mostrar {item}",
+            "mostre a {item}",
+            "mostre as {item}",
+            "mostre o {item}",
+            "mostre os {item}",
+            "mostre {item}",
+            "onde encontro a {item}",
+            "onde encontro as {item}",
+            "onde encontro o {item}",
+            "onde encontro os {item}",
+            "onde encontro {item}",
+            "onde está a {item}",
+            "onde está as {item}",
+            "onde está o {item}",
+            "onde está os {item}",
+            "onde está {item}",
+            "onde fica a {item}",
+            "onde fica as {item}",
+            "onde fica o {item}",
+            "onde fica os {item}",
+            "onde fica {item}"
+          ]
+        },
+        {
+          "name": "ListaItensIntent",
+          "slots": [],
+          "samples": [
+            "quais itens",
+            "quais itens você mostra",
+            "o que você mostra",
+            "lista de itens",
+            "o que posso ver",
+            "o que tem na casa",
+            "mostrar os itens",
+            "me mostre os itens",
+            "menu",
+            "menu de itens"
+          ]
         }
       ],
-      "types": []
+      "types": [
+        {
+          "name": "ITEM_CASA",
+          "values": [
+            {
+              "id": "cofre",
+              "name": {
+                "value": "cofre",
+                "synonyms": [
+                  "caixa forte"
+                ]
+              }
+            },
+            {
+              "id": "ar-condicionado",
+              "name": {
+                "value": "ar-condicionado",
+                "synonyms": [
+                  "ar condicionado",
+                  "ar",
+                  "climatizador",
+                  "controle do ar"
+                ]
+              }
+            },
+            {
+              "id": "tv",
+              "name": {
+                "value": "TV e streaming",
+                "synonyms": [
+                  "tv",
+                  "televisão",
+                  "televisor",
+                  "streaming",
+                  "controle da tv"
+                ]
+              }
+            },
+            {
+              "id": "banheira",
+              "name": {
+                "value": "banheira de imersão",
+                "synonyms": [
+                  "banheira",
+                  "banheira de banho"
+                ]
+              }
+            },
+            {
+              "id": "frigobar",
+              "name": {
+                "value": "frigobar",
+                "synonyms": [
+                  "geladeira",
+                  "frigobar do quarto"
+                ]
+              }
+            },
+            {
+              "id": "cafeteira",
+              "name": {
+                "value": "cafeteira",
+                "synonyms": [
+                  "máquina de café",
+                  "café"
+                ]
+              }
+            },
+            {
+              "id": "fechadura",
+              "name": {
+                "value": "fechadura digital",
+                "synonyms": [
+                  "fechadura",
+                  "senha da porta",
+                  "trava da porta"
+                ]
+              }
+            },
+            {
+              "id": "wifi",
+              "name": {
+                "value": "Wi-Fi",
+                "synonyms": [
+                  "wifi",
+                  "internet",
+                  "roteador",
+                  "senha do wifi"
+                ]
+              }
+            },
+            {
+              "id": "piscina",
+              "name": {
+                "value": "piscina aquecida",
+                "synonyms": [
+                  "piscina",
+                  "piscina do deck"
+                ]
+              }
+            },
+            {
+              "id": "aspirador",
+              "name": {
+                "value": "aspirador robô",
+                "synonyms": [
+                  "aspirador",
+                  "robô de limpeza",
+                  "robô aspirador"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   }
 }

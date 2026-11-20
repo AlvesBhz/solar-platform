@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Cartão · __NOME__</title>
+__FONTS__
+<link rel="stylesheet" href="../design-system/colors_and_type.css"/>
+<style>
+/* Cartão animado de um item da casa (1920x1080). Linguagem da abertura: fundo 100% preto, selo bone com a folha,
+   Cormorant nos títulos, Inter nas linhas de apoio. Começa e termina em preto. */
+:root{--c-bone:#EAE5D9}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
+body{font-family:var(--font-sans);-webkit-font-smoothing:antialiased;color:var(--c-cream)}
+.stage{position:absolute;inset:0;background:#000;opacity:0;animation:inout 9s cubic-bezier(.4,0,.2,1) both}
+@keyframes inout{0%{opacity:0}8%{opacity:1}86%{opacity:1}100%{opacity:0}}
+.logo{position:absolute;top:64px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:22px;opacity:0;animation:up 1000ms var(--ease-out) 300ms both}
+.logo .disc{width:64px;height:64px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);display:grid;place-items:center}
+.logo .disc svg{width:36px;height:36px;color:rgba(255,255,255,.9)}
+.logo .t{font-family:var(--font-serif);font-weight:500;font-size:40px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.9)}
+.seal{position:absolute;left:50%;top:230px;width:420px;height:420px;margin-left:-210px;opacity:0;transform:scale(.55);animation:pop 1400ms var(--ease-spring) 500ms both}
+.seal .bg{position:absolute;inset:0;border-radius:50%;background:var(--c-bone)}
+.seal .ring{position:absolute;inset:34px;border-radius:50%;border:1px solid rgba(28,41,34,.28)}
+.seal svg{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;color:var(--c-pine-deep)}
+@keyframes pop{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
+.name{position:absolute;left:0;right:0;top:700px;text-align:center;font-family:var(--font-serif);font-weight:500;font-size:116px;line-height:1;letter-spacing:-.01em;color:var(--c-cream);opacity:0;animation:up 1100ms var(--ease-out) 1500ms both}
+.onde{position:absolute;left:160px;right:160px;top:848px;text-align:center;font-size:40px;font-weight:300;line-height:1.45;color:rgba(255,255,255,.82);opacity:0;animation:up 1100ms var(--ease-out) 2100ms both}
+.foot{position:absolute;left:0;right:0;bottom:56px;text-align:center;display:flex;justify-content:center;align-items:center;gap:36px;font-size:22px;letter-spacing:.42em;text-transform:uppercase;color:rgba(255,255,255,.55);padding-left:.42em;opacity:0;animation:up 1000ms var(--ease-out) 2600ms both}
+.foot::before,.foot::after{content:"";width:100px;height:1.5px;background:var(--glass-bd-3)}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+</style></head>
+<body>
+<div class="stage">
+  <div class="logo"><div class="disc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="__LEAF__"/></svg></div><span class="t">Solar do Espinhaço</span></div>
+  <div class="seal"><div class="bg"></div><div class="ring"></div><svg viewBox="0 0 24 24">__ICON__</svg></div>
+  <div class="name">__NOME__</div>
+  __ONDE__
+  <div class="foot">Lapinha da Serra · MG</div>
+</div>
+</body></html>
