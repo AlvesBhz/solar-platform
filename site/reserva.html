@@ -51,7 +51,8 @@ h1{font:400 clamp(30px,5vw,44px)/1.1 var(--serif);margin:18px 0 6px}
 .f{display:flex;flex-direction:column;gap:5px}.f.full{grid-column:1/-1}
 label.l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
 input::placeholder{color:rgba(231,229,228,.38);opacity:1}
-input[type=date]:invalid,input[type=date]:invalid::-webkit-datetime-edit{color:rgba(231,229,228,.38)}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus{-webkit-text-fill-color:var(--fg);caret-color:var(--fg);-webkit-box-shadow:0 0 0 1000px #1c211e inset;box-shadow:0 0 0 1000px #1c211e inset;transition:background-color 99999s}
+input:not([type=radio]):not([type=checkbox]){-webkit-appearance:none;appearance:none;text-align:left}
 input,select{font:400 16px var(--sans);color:var(--fg);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:46px;color-scheme:dark}
 input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,185,138,.18)}
 input.err,select.err{border-color:var(--bad)}
@@ -129,7 +130,7 @@ input.err,select.err{border-color:var(--bad)}
             <div class="f"><label class="l" for="sobrenome">Sobrenome</label><input id="sobrenome" autocomplete="family-name" required><div class="msg" data-m="sobrenome"></div></div>
             <div class="f"><label class="l" for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" required><div class="msg" data-m="email"></div></div>
             <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+55 (00) 00000-0000" maxlength="20" required><div class="msg" data-m="tel"></div></div>
-            <div class="f"><label class="l" for="nasc">Data de nascimento</label><input id="nasc" type="date" autocomplete="bday" min="1900-01-02" required><div class="msg" data-m="nasc"></div></div>
+            <div class="f"><label class="l" for="nasc">Data de nascimento</label><input id="nasc" type="text" inputmode="numeric" autocomplete="bday" placeholder="dd/mm/aaaa" maxlength="10" data-data required><div class="msg" data-m="nasc"></div></div>
             <div class="f full"><span class="l">Nacionalidade</span>
               <div class="seg"><label><input type="radio" name="nac" value="BR" checked> Brasileiro(a)</label><label><input type="radio" name="nac" value="EX"> Estrangeiro(a)</label></div></div>
             <div class="f full" id="blBR"><label class="l" for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00"><div class="msg" data-m="cpf"></div></div>
@@ -137,7 +138,7 @@ input.err,select.err{border-color:var(--bad)}
               <div class="f"><label class="l" for="pais">País de nacionalidade</label><select id="pais"></select></div>
               <div class="f"><label class="l" for="pp">Nº do passaporte</label><input id="pp" autocapitalize="characters" autocomplete="off"><div class="msg" data-m="pp"></div></div>
               <div class="f"><label class="l" for="ppPais">País emissor</label><select id="ppPais"></select></div>
-              <div class="f"><label class="l" for="ppVal">Validade do passaporte</label><input id="ppVal" type="date"><div class="msg" data-m="ppVal"></div></div>
+              <div class="f"><label class="l" for="ppVal">Validade do passaporte</label><input id="ppVal" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" data-data><div class="msg" data-m="ppVal"></div></div>
             </div>
           </div>
           <p class="nota">Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). Usamos seus dados só para a reserva e o registro obrigatório. Os dados dos acompanhantes e as fotos dos documentos serão pedidos depois da confirmação do pagamento do sinal.</p>
@@ -354,6 +355,18 @@ input.err,select.err{border-color:var(--bad)}
     t.value = o;
   }
   $('tel').addEventListener('input', formatarTel);
+  /* datas digitadas como dd/mm/aaaa (o iPhone mostra o campo de data no formato dele) */
+  document.querySelectorAll('[data-data]').forEach(function (e) {
+    e.addEventListener('input', function () {
+      var d = e.value.replace(/\D/g, '').slice(0, 8);
+      e.value = d.length > 4 ? d.slice(0, 2) + '/' + d.slice(2, 4) + '/' + d.slice(4) : d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+    });
+  });
+  function isoDe(v) {
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v || ''); if (!m) return '';
+    var d = new Date(+m[3], +m[2] - 1, +m[1]);
+    return d.getFullYear() === +m[3] && d.getMonth() === +m[2] - 1 && d.getDate() === +m[1] ? m[3] + '-' + m[2] + '-' + m[1] : '';
+  }
   $('tel').addEventListener('focus', function () { if (!this.value) this.value = nac() === 'BR' ? '+55 ' : '+'; });
   $('tel').addEventListener('blur', function () { if (/^\+(55)?\s*$/.test(this.value)) this.value = ''; });  // vazio volta a mostrar o formato
   $('cpf').addEventListener('input', function () {
@@ -380,12 +393,12 @@ input.err,select.err{border-color:var(--bad)}
     var tel = $('tel').value.replace(/\D/g, '');
     if (nac() === 'BR') v('tel', /^55\d{10,11}$/.test(tel), 'Informe o celular com DDD: +55 (31) 99999-9999.');
     else v('tel', tel.length >= 8 && tel.length <= 15, 'Informe o telefone com o código do país, ex.: +1 415 555 0102.');
-    var nasc = $('nasc').value, lim = P.ci ? (Number(P.ci.slice(0, 4)) - 18) + P.ci.slice(4) : '';
-    v('nasc', !!nasc && nasc >= '1900-01-02' && (!lim || nasc <= lim), nasc && lim && nasc > lim ? 'O titular precisa ter 18 anos no check-in.' : 'Informe a data de nascimento.');
+    var nasc = isoDe($('nasc').value), lim = P.ci ? (Number(P.ci.slice(0, 4)) - 18) + P.ci.slice(4) : '';
+    v('nasc', !!nasc && nasc >= '1900-01-02' && (!lim || nasc <= lim), nasc && lim && nasc > lim ? 'O titular precisa ter 18 anos no check-in.' : 'Informe a data de nascimento (dd/mm/aaaa).');
     if (nac() === 'BR') v('cpf', cpfOk($('cpf').value), 'Informe um CPF válido.');
     else {
       v('pp', /^[A-Z0-9]{5,20}$/.test($('pp').value.trim().toUpperCase()), 'Informe o número do passaporte (letras e números).');
-      var val = $('ppVal').value;
+      var val = isoDe($('ppVal').value);
       v('ppVal', !!val && val >= P.co, 'O passaporte precisa valer até ' + (P.co ? dataExt(P.co) : 'o dia da saída') + '.');
     }
     document.querySelectorAll('[data-doc]').forEach(function (e) {
@@ -401,9 +414,9 @@ input.err,select.err{border-color:var(--bad)}
   function dados() {
     var br = nac() === 'BR', ac = [];
     return {
-      titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(), nascimento: $('nasc').value,
+      titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(), nascimento: isoDe($('nasc').value),
         nacionalidade: br ? 'BR' : $('pais').value, cpf: br ? $('cpf').value.replace(/\D/g, '') : null,
-        passaporte: br ? null : $('pp').value.trim().toUpperCase(), paisPassaporte: br ? null : $('ppPais').value, validadePassaporte: br ? null : $('ppVal').value },
+        passaporte: br ? null : $('pp').value.trim().toUpperCase(), paisPassaporte: br ? null : $('ppPais').value, validadePassaporte: br ? null : isoDe($('ppVal').value) },
       acompanhantes: ac, reserva: { checkin: P.ci, checkout: P.co, adultos: P.a, criancas: P.c, criancasMaiores: P.m, bebes: P.b },
       aceite: { termos: VERSAO_TERMOS, em: new Date().toISOString() },
       site: $('site').value, token: (window.turnstile && TURNSTILE_SITEKEY) ? window.turnstile.getResponse() : undefined
