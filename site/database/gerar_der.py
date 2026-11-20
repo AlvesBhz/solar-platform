@@ -209,7 +209,7 @@ CAMPO = {
   'DT_FIM': 'Dia seguinte à última noite coberta.',
   'NO_PRIORIDADE': 'Quando duas tarifas cobrem a mesma noite, vale a maior.',
   'VL_NOITE': 'Preço da noite para os adultos inclusos.',
-  'VL_NOITE_FDS': 'Preço das noites de sexta e sábado; vazio = VL_NOITE.',
+  'VL_NOITE_FDS': 'Preço das noites de sexta, sábado e domingo; vazio = VL_NOITE.',
   'QTDE_ADULTOS_INCLUSOS': 'Adultos já cobertos pelo VL_NOITE.',
   'VL_ADULTO_EXTRA': 'Por adulto além dos inclusos, por noite.',
   'PC_CRIANCA': 'Criança de 5 a 8 anos: % do valor por pessoa da noite (valor ÷ adultos inclusos). Hoje 30.',
@@ -400,7 +400,7 @@ for x in r1['ds_detalhe_precos']:
 ajuste_html = (
  '<section class="explica" id="como-ajuste">\n'
  '  <h2>Como funciona o SIT_AJUSTE_DIARIO</h2>\n'
- '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 800 de domingo a quinta e R$ 1.700 sexta e sábado, de 01/11/2026 a 31/12/2028). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 800 de segunda a quinta e R$ 1.700 sexta, sábado e domingo, de 01/11/2026 a 31/12/2028). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
  '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Crianças somam por cima um percentual do valor por pessoa da noite (PC_CRIANCA, PC_CRIANCA_MAIOR e PC_BEBE, da tarifa).</li></ol>\n'
  f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança de 5 a 8 anos + 1 criança até 4 anos</h3>\n'
  '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>5 a 13 anos</th><th>Até 4 anos</th><th>Noite</th></tr></thead>\n'

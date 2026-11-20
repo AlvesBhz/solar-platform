@@ -109,7 +109,7 @@ create table "SIT_TARIFA" (
   "DT_FIM"                  date not null,                -- dia seguinte à última noite
   "NO_PRIORIDADE"           smallint not null default 0,
   "VL_NOITE"                numeric(10,2) not null,       -- cobre os adultos inclusos
-  "VL_NOITE_FDS"            numeric(10,2),                -- noites de sex e sáb; vazio = VL_NOITE
+  "VL_NOITE_FDS"            numeric(10,2),                -- noites de sexta, sábado e domingo; vazio = VL_NOITE
   "QTDE_ADULTOS_INCLUSOS"   smallint not null default 2,
   "VL_ADULTO_EXTRA"         numeric(10,2) not null default 0,   -- por adulto além dos inclusos, por noite
   -- criança paga um percentual do valor por pessoa da noite (valor da noite ÷ adultos inclusos)
@@ -470,7 +470,7 @@ begin
            greatest(coalesce(a."QTDE_MIN_NOITES", t."QTDE_MIN_NOITES", 1), 1) as min_n,
            coalesce(
              a."VL_NOITE",
-             case when extract(isodow from n.data) in (5, 6)          -- sexta e sábado
+             case when extract(isodow from n.data) in (5, 6, 7)       -- sexta, sábado e domingo
                   then coalesce(t."VL_NOITE_FDS", t."VL_NOITE")
                   else t."VL_NOITE" end
            ) as valor_base,
@@ -856,10 +856,11 @@ alter table "SIT_BLOQUEIO"           enable row level security;
 --  Preço de cada noite para o calendário do site: valor da noite para a
 --  quantidade de hóspedes escolhida e se a noite está livre. Pública (anon).
 -- ════════════════════════════════════════════════════════════════════
+drop function if exists consultar_precos(date, date, int, int, int, int, text);
 create or replace function consultar_precos(
   p_inicio date, p_fim date, p_adultos int, p_criancas int default 0, p_bebes int default 0,
   p_criancas_maiores int default 0, p_cd_unidade text default 'casa-do-mirante')
-returns table (dt_ref date, vl_noite numeric(10,2), livre boolean)
+returns table (dt_ref date, vl_noite numeric(10,2), livre boolean, min_noites int)
 language sql
 stable
 security definer
@@ -874,7 +875,8 @@ as $$
                          where r."ID_UNIDADE" = u."ID_UNIDADE" and d.data >= r."DT_CHECKIN" and d.data < r."DT_CHECKOUT"
                            and (r."TP_STATUS" = 'CONFIRMADA' or (r."TP_STATUS" = 'PENDENTE' and r."DT_EXPIRA" > now())))
          and not exists (select 1 from "SIT_BLOQUEIO" b
-                         where b."ID_UNIDADE" = u."ID_UNIDADE" and d.data >= b."DT_INI" and d.data < b."DT_FIM")
+                         where b."ID_UNIDADE" = u."ID_UNIDADE" and d.data >= b."DT_INI" and d.data < b."DT_FIM"),
+         c.qtde_min_noites                       -- mínimo de noites de uma estadia que passe por esta noite
   from "SIT_UNIDADE" u
   cross join lateral generate_series(p_inicio::timestamp, (p_fim - 1)::timestamp, interval '1 day') d(data)
   cross join lateral calcular_estadia(u."ID_UNIDADE", d.data::date, d.data::date + 1,

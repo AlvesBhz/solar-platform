@@ -1,8 +1,8 @@
 -- ════════════════════════════════════════════════════════════════════
 --  Testes da proposta (rodar depois de schema.sql e seed_exemplo.sql,
 --  num banco de TESTE: os dados abaixo são criados só para os testes).
---  Valores reais: casal R$ 800 de domingo a quinta e R$ 1.700 sexta e
---  sábado · criança de 5 a 8 anos 30% e de 9 a 13 anos 100% do valor por
+--  Valores reais: casal R$ 800 de segunda a quinta e R$ 1.700 sexta,
+--  sábado e domingo · criança de 5 a 8 anos 30% e de 9 a 13 anos 100% do valor por
 --  pessoa · até 4 anos não paga mas ocupa vaga · feriados R$ 1.700 com
 --  mínimo de 3 noites (Réveillon e Carnaval, 4) · até 7 noites · sinal 50%.
 -- ════════════════════════════════════════════════════════════════════
@@ -54,7 +54,7 @@ end $$;
 \echo '── Preços'
 select pg_temp.ok ('Casal, 2 noites em dia de semana (R$ 800)',         '2027-03-02','2027-03-04', 2,0, 1600, 1600);
 select pg_temp.ok ('Casal, 2 noites no fim de semana (R$ 1.700)',       '2027-03-05','2027-03-07', 2,0, 3400, 3400);
-select pg_temp.ok ('Casal, domingo a terça (domingo é dia de semana)',  '2027-03-07','2027-03-09', 2,0, 1600, 1600);
+select pg_temp.ok ('Casal, domingo e segunda (domingo R$ 1.700)',       '2027-03-07','2027-03-09', 2,0, 2500, 2500);
 select pg_temp.ok ('Casal + 2 crianças de 5 a 8 (30% de R$ 400 cada)',  '2027-03-02','2027-03-04', 2,2, 2080, 2080);
 select pg_temp.ok ('1 adulto + 1 criança de 5 a 8',                     '2027-03-02','2027-03-04', 1,1, 1840, 1840);
 select pg_temp.ok ('Temporada de teste: 4 noites a R$ 2.500',           '2027-07-05','2027-07-09', 2,0, 10000, 10000);
@@ -88,7 +88,7 @@ select pg_temp.nao('Datas sem tarifa cadastrada (venda não aberta)',    '2029-0
 select pg_temp.nao('Check-out igual ao check-in',                       '2027-03-02','2027-03-02', 2,0, 'datas_invalidas');
 select pg_temp.nao('Data no passado',                                   '2026-01-10','2026-01-12', 2,0, 'data_passada');
 select pg_temp.nao('Estadia acima de 7 noites',                         '2027-03-01','2027-03-09', 2,0, 'estadia_longa');
-select pg_temp.ok ('Estadia de exatamente 7 noites',                    '2027-03-01','2027-03-08', 2,0, 7400, 7400);
+select pg_temp.ok ('Estadia de exatamente 7 noites',                    '2027-03-01','2027-03-08', 2,0, 8300, 8300);
 select pg_temp.nao('3 adultos (máximo 2)',                              '2027-03-02','2027-03-04', 3,0, 'capacidade');
 select pg_temp.nao('3 crianças (máximo 2)',                             '2027-03-02','2027-03-04', 2,3, 'capacidade');
 do $$ declare r record; begin
@@ -113,7 +113,7 @@ end $$;
 
 \echo '── Ocupação'
 select pg_temp.nao('Sobrepõe reserva confirmada (19–21/03)',            '2027-03-20','2027-03-22', 2,0, 'ocupado');
-select pg_temp.ok ('Entra no dia em que a reserva sai (21/03)',         '2027-03-21','2027-03-23', 2,0, 1600, 1600);
+select pg_temp.ok ('Entra no dia em que a reserva sai (21/03)',         '2027-03-21','2027-03-23', 2,0, 2500, 2500);
 select pg_temp.ok ('Sai no dia em que a reserva entra (19/03)',         '2027-03-17','2027-03-19', 2,0, 1600, 1600);
 select pg_temp.nao('Bloqueio importado do Airbnb (12–15/03)',           '2027-03-14','2027-03-16', 2,0, 'ocupado');
 
@@ -472,4 +472,17 @@ do $$ declare cd text := (select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECK
   perform confirmar_reserva(cd, 'Adulta', 'adulta@exemplo.invalid', null, 'BR', '39053344705', null, null, null, null, null, date '1990-05-01');
   if (select "DT_NASCIMENTO" from "SIT_HOSPEDE" where "DS_EMAIL" = 'adulta@exemplo.invalid') <> date '1990-05-01' then raise exception 'FALHOU: nascimento não gravado'; end if;
   raise notice 'ok  Nascimento do titular gravado; menor de 18 anos no check-in é recusado';
+end $$;
+
+\echo '── Calendário: mínimo de noites de cada dia'
+do $$ declare r record; begin
+  select * into r from consultar_precos('2027-03-02', '2027-03-03', 2, 0, 0);
+  if r.min_noites <> 2 then raise exception 'FALHOU: dia comum deveria pedir 2 noites, pede %', r.min_noites; end if;
+  select * into r from consultar_precos('2027-03-26', '2027-03-27', 2, 0, 0);
+  if r.min_noites <> 3 then raise exception 'FALHOU: Semana Santa deveria pedir 3 noites, pede %', r.min_noites; end if;
+  select * into r from consultar_precos('2026-12-31', '2027-01-01', 2, 0, 0);
+  if r.min_noites <> 4 then raise exception 'FALHOU: Réveillon deveria pedir 4 noites, pede %', r.min_noites; end if;
+  select * into r from consultar_precos('2027-03-07', '2027-03-08', 2, 0, 0);
+  if r.vl_noite <> 1700 then raise exception 'FALHOU: domingo deveria custar 1700, custa %', r.vl_noite; end if;
+  raise notice 'ok  Calendário recebe o mínimo de cada dia (2; feriado 3; Réveillon 4) e o domingo a R$ 1.700';
 end $$;

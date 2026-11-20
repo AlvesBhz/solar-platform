@@ -229,9 +229,36 @@ window.Disponibilidade = (function () {
     })).then(function (ls) { return [].concat.apply([], ls); });
   }
   function curto(v) { return v >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v)); } // 2k · 1.8k · 920
+  /* noites já consultadas (dos meses abertos), para o calendário validar a seleção:
+     dia ocupado não vira check-in, e a saída precisa cumprir o mínimo de noites e não atravessar dia ocupado */
+  var noites = {};
+  function registrar(m) { Object.keys(m || {}).forEach(function (k) { noites[k] = m[k]; }); }
+  function noiteOcupada(d) { var x = noites[iso(d)]; return !!x && (!x.livre || x.vl_noite == null); }
+  function saidaValida(ini, fim) {
+    var min = 2, n = Math.round((fim - ini) / 864e5);
+    for (var d = new Date(ini); d < fim; d.setDate(d.getDate() + 1)) {
+      var x = noites[iso(d)];
+      if (!x) continue;                                    // ainda não consultada: o banco confere ao reservar
+      if (!x.livre || x.vl_noite == null) return { ok: false, motivo: 'ocupado' };
+      min = Math.max(min, Number(x.min_noites) || 2);
+    }
+    return n >= min ? { ok: true, min: min } : { ok: false, motivo: 'min', min: min };
+  }
+  function marcarSelecao(cal) {
+    var st = Booking.getState();
+    cal.querySelectorAll('.cal-d').forEach(function (c) {
+      c.classList.remove('cal-nao', 'cal-saida');
+      if (!st.selecting || !st.start || !c._date || c.classList.contains('cal-off') || c._date <= st.start) return;
+      var v = saidaValida(st.start, c._date);
+      if (!v.ok) c.classList.add('cal-nao');
+      else if (c.classList.contains('cal-ocu')) c.classList.add('cal-saida');   // dá para sair na manhã do dia ocupado
+    });
+  }
   function precosNoCalendario(cal, ano, mes0) {
+    precosDoMes(ano, mes0 + 1 > 11 ? ano + 1 : ano, (mes0 + 1) % 12).then(registrar);  // mês seguinte: estadias que viram o mês
     precosDoMes(ano, mes0).then(function (m) {
       if (!m) return;
+      registrar(m);
       var achou = false;
       cal.querySelectorAll('.cal-d').forEach(function (c) {
         var x = c._date && m[iso(c._date)];
@@ -246,6 +273,7 @@ window.Disponibilidade = (function () {
         n.textContent = t('Valor por noite') + ' · ' + document.getElementById('guestsDisplay').textContent;
         cal.appendChild(n);
       }
+      marcarSelecao(cal);
     });
   }
 
@@ -256,5 +284,5 @@ window.Disponibilidade = (function () {
   /* Troca de idioma: redesenha o resultado no idioma novo. */
   function idiomaMudou() { if (ultimo) renderizar(ultimo.resposta); }
 
-  return { precosNoCalendario: precosNoCalendario, consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
+  return { precosNoCalendario: precosNoCalendario, noiteOcupada: noiteOcupada, saidaValida: saidaValida, consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
 })();
