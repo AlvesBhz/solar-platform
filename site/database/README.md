@@ -28,6 +28,8 @@ O site **não cobra** nada hoje: não há Pix automático, cartão nem integraç
 
 ---
 
+- **Sinal da reserva:** opções em aberto (QR Code Pix, WhatsApp automático, Mercado Pago) em [`OPCOES_SINAL.md`](OPCOES_SINAL.md).
+
 ## Por que Supabase
 
 O app de vistorias (`solar-inspect`) já especifica Supabase (PostgreSQL, Auth, RLS, RPC e Edge Functions). Usar o mesmo banco evita duas bases para a mesma pousada, e a proposta reaproveita o modelo **Propriedade → Unidade** de lá. Assim, quando a vistoria bloquear um chalé por manutenção, esse bloqueio pode tirar as datas da venda no site.
