@@ -11,16 +11,18 @@ EX = {t: [{k.lower(): v for k, v in r.items()} for r in (rows or [])] for t, row
 COMPLETO = '--completo' in sys.argv
 T = {t['name']: t for t in schema['tables']}
 W, HDR, RH = 330, 40, 19
-C0, C1, C2, C3 = 20, 440, 860, 1280
+C0, C1, C2, C3, C4 = 20, 440, 860, 1280, 1700
 
 POS = {
   'SIT_TARIFA': (C0, 20), 'SIT_PROPRIEDADE': (C0, 379), 'SIT_UNIDADE': (C1, 360), 'SIT_AJUSTE_DIARIO': (C1, 680),
   'SIT_RESERVA': (C2, 40), 'SIT_BLOQUEIO': (C2, 595),
   'SIT_PAGAMENTO': (C3, 21), 'SIT_HOSPEDE': (C3, 420), 'SIT_CALENDARIO_EXTERNO': (C3, 690),
+  'SIT_AUDITORIA': (C4, 20), 'SIT_DOCUMENTO': (C4, 420), 'SIT_TENTATIVA': (C4, 700),
 }
 GROUP = {'SIT_PROPRIEDADE': 'cad', 'SIT_UNIDADE': 'cad', 'SIT_TARIFA': 'pre', 'SIT_AJUSTE_DIARIO': 'pre',
-         'SIT_RESERVA': 'ven', 'SIT_HOSPEDE': 'ven', 'SIT_PAGAMENTO': 'ven', 'SIT_CALENDARIO_EXTERNO': 'can', 'SIT_BLOQUEIO': 'can'}
-GNAME = {'cad': 'CADASTRO', 'pre': 'PREÇO', 'ven': 'VENDA', 'can': 'CANAIS'}
+         'SIT_RESERVA': 'ven', 'SIT_HOSPEDE': 'ven', 'SIT_PAGAMENTO': 'ven', 'SIT_CALENDARIO_EXTERNO': 'can', 'SIT_BLOQUEIO': 'can',
+         'SIT_DOCUMENTO': 'ven', 'SIT_AUDITORIA': 'seg', 'SIT_TENTATIVA': 'seg'}
+GNAME = {'cad': 'CADASTRO', 'pre': 'PREÇO', 'ven': 'VENDA', 'can': 'CANAIS', 'seg': 'SEGURANÇA'}
 
 def idx(t, c):
     return [x['n'] for x in T[t]['cols']].index(c)
@@ -49,6 +51,10 @@ L = [
        pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_HOSPEDE','ID_HOSPEDE')), (C3, ry('SIT_HOSPEDE','ID_HOSPEDE'))]),
   dict(c='SIT_PAGAMENTO', f='ID_RESERVA', p='SIT_RESERVA', pk='ID_RESERVA', lbl='paga',
        pts=lambda: [(C3, ry('SIT_PAGAMENTO','ID_RESERVA')), (C2+W, ry('SIT_PAGAMENTO','ID_RESERVA'))]),
+  dict(c='SIT_DOCUMENTO', f='ID_RESERVA', p='SIT_RESERVA', pk='ID_RESERVA', lbl='documento de',
+       pts=lambda: [(C4, ry('SIT_DOCUMENTO','ID_RESERVA')), (C4-30, ry('SIT_DOCUMENTO','ID_RESERVA')), (C4-30, 372), (C3-14, 372), (C3-14, ry('SIT_RESERVA','ID_RESERVA')), (C2+W, ry('SIT_RESERVA','ID_RESERVA'))]),
+  dict(c='SIT_DOCUMENTO', f='ID_HOSPEDE', p='SIT_HOSPEDE', pk='ID_HOSPEDE', lbl='foto de',
+       pts=lambda: [(C4, ry('SIT_DOCUMENTO','ID_HOSPEDE')), (C4-50, ry('SIT_DOCUMENTO','ID_HOSPEDE')), (C4-50, ry('SIT_HOSPEDE','ID_HOSPEDE')), (C3+W, ry('SIT_HOSPEDE','ID_HOSPEDE'))]),
   dict(c='SIT_RESERVA', f='ID_RESERVA_ORIGINAL', p='SIT_RESERVA', pk='ID_RESERVA', lbl='remarcada de',
        pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA')), (C2+W, ry('SIT_RESERVA','ID_RESERVA'))]),
 ]
@@ -79,7 +85,7 @@ def ends(x, y, dx, kind):
 def esc(s): return html.escape(str(s), quote=True)
 
 svg = []
-VW, VH = C3 + W + 20, 880
+VW, VH = C4 + W + 20, 880
 svg.append(f'<svg id="der" viewBox="0 0 {VW} {VH}" role="img" aria-label="Diagrama entidade-relacionamento do banco de reservas: a SIT_UNIDADE (chalé) no centro, ligada à SIT_PROPRIEDADE, às tarifas, ajustes, reservas, bloqueios e calendários externos; a SIT_RESERVA liga hóspede, pagamentos e a reserva original de uma remarcação.">')
 
 # ligações primeiro (ficam atrás das tabelas)
@@ -144,6 +150,9 @@ PURPOSE = {
  'SIT_PAGAMENTO': 'Pagamentos da reserva. Hoje a equipe lança o que recebe fora do site (sinal combinado depois da reserva e saldo no check-in); a estrutura já aceita pagamento online (Mercado Pago) no futuro, sem mudar a tabela.',
  'SIT_CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
  'SIT_BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
+ 'SIT_DOCUMENTO': 'Fotos dos documentos enviadas no cadastro da reserva. As imagens ficam no bucket privado "documentos" do Storage; aqui fica de quem é e onde está. Só a equipe acessa.',
+ 'SIT_AUDITORIA': 'Registro automático de toda mudança em preços, regras, reservas, pagamentos e documentos: quem mudou, quando, valor anterior e novo.',
+ 'SIT_TENTATIVA': 'Pedidos de reserva por visitante (IP só como hash), para o limite de 6 por hora valer em todas as cópias da função.',
 }
 RULES = {
  'SIT_PROPRIEDADE': ['Faixas de idade em ordem (hoje: até 4 anos não paga, 5 a 8, 9 a 13; a partir de 14, adulto).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
@@ -154,6 +163,9 @@ RULES = {
  'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE (pré-reserva de 30 minutos enquanto o hóspede preenche a reserva) exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA); quem confirma é a função confirmar_reserva.', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO, SEM_PAGAMENTO (hóspede não pagou quando a equipe entrou em contato) ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
  'SIT_PAGAMENTO': ['Hoje o site não cobra: só há lançamentos MANUAL, feitos pela equipe depois de receber.', 'TP_PROVEDOR: MANUAL ou MERCADO_PAGO (reservado para o pagamento online futuro).', 'TP_PARCELA: SINAL ou SALDO.', 'TP_METODO: PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA; dinheiro e transferência só MANUAL.', 'TP_STATUS: PENDENTE, RECEBIDO, RECUSADO, CANCELADO ou ESTORNADO; MANUAL só RECEBIDO ou ESTORNADO, com NM_REGISTRADO_POR.', 'RECEBIDO e ESTORNADO exigem DT_PAGAMENTO; online exige CD_TRANSACAO, único por provedor.'],
  'SIT_CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
+ 'SIT_DOCUMENTO': ['Só imagens JPG, PNG ou WEBP de até 5 MB (o conteúdo é conferido, não só a extensão).', 'Caminho único e sempre dentro da pasta da reserva.', 'TP_PESSOA: TITULAR ou ACOMPANHANTE; TP_LADO: FRENTE ou VERSO.', 'Apagar a reserva apaga o registro das fotos.'],
+ 'SIT_AUDITORIA': ['Preenchida por gatilhos; ninguém de fora lê ou grava.', 'NM_USUARIO: postgres = SQL Editor, service_role = site.'],
+ 'SIT_TENTATIVA': ['Linhas com mais de 1 dia são apagadas sozinhas.'],
  'SIT_BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
 CAMPO = {
@@ -292,9 +304,35 @@ CAMPO = {
   'DS_OBSERVACAO': 'Anotação da equipe.',
   'DT_CRIACAO': 'Quando foi criado ou importado.',
  },
+ 'SIT_DOCUMENTO': {
+  'ID_DOCUMENTO': 'Número interno da foto.',
+  'ID_RESERVA': 'A reserva em que a foto foi enviada.',
+  'ID_HOSPEDE': 'O hóspede titular (vazio na foto de acompanhante).',
+  'NM_PESSOA': 'De quem é o documento.',
+  'TP_PESSOA': 'TITULAR ou ACOMPANHANTE.',
+  'TP_LADO': 'FRENTE ou VERSO.',
+  'DS_CAMINHO': 'Onde está no bucket privado "documentos" (pasta = código da reserva).',
+  'DS_MIME': 'Tipo da imagem: JPEG, PNG ou WEBP.',
+  'NO_BYTES': 'Tamanho do arquivo (até 5 MB).',
+  'DT_CRIACAO': 'Quando foi enviada.',
+ },
+ 'SIT_AUDITORIA': {
+  'ID_AUDITORIA': 'Número do registro.',
+  'NM_TABELA': 'Tabela alterada.',
+  'TP_OPERACAO': 'INSERT, UPDATE ou DELETE.',
+  'DS_ANTES': 'A linha antes da mudança (JSON).',
+  'DS_DEPOIS': 'A linha depois da mudança (JSON).',
+  'NM_USUARIO': 'Quem mudou: postgres (SQL Editor) ou service_role (site).',
+  'DT_CRIACAO': 'Quando mudou.',
+ },
+ 'SIT_TENTATIVA': {
+  'ID_TENTATIVA': 'Número do registro.',
+  'DS_CHAVE': 'Hash do IP do visitante (o IP em si não é guardado).',
+  'DT_CRIACAO': 'Quando o pedido chegou.',
+ },
 }
 
-ORDER = ['SIT_PROPRIEDADE', 'SIT_UNIDADE', 'SIT_TARIFA', 'SIT_AJUSTE_DIARIO', 'SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_CALENDARIO_EXTERNO', 'SIT_BLOQUEIO']
+ORDER = ['SIT_PROPRIEDADE', 'SIT_UNIDADE', 'SIT_TARIFA', 'SIT_AJUSTE_DIARIO', 'SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_DOCUMENTO', 'SIT_CALENDARIO_EXTERNO', 'SIT_BLOQUEIO', 'SIT_AUDITORIA', 'SIT_TENTATIVA']
 cards = []
 for n in ORDER:
     t = T[n]; g = GROUP[n]
@@ -339,7 +377,8 @@ CAP = {
 LONG = lambda v: ' class="long"' if isinstance(v, list) or (isinstance(v, str) and len(v) > 26) else ''
 exs = []
 for n in ORDER:
-    rows = EX[n]; g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    rows = EX.get(n, []); g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    if not rows: continue
     for r in rows: assert set(k.upper() for k in r) == set(cols), (n, set(cols) ^ set(k.upper() for k in r))
     assert len(CAP[n]) == len(rows), n
     head = ''.join(f'<th scope="col">{esc(c)}</th>' for c in CAP[n])
@@ -388,7 +427,7 @@ for _n in ORDER:
 COND = {('SIT_HOSPEDE', 'CD_CPF'): 'se brasileiro', ('SIT_HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('SIT_HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('SIT_HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
 paineis = []
 for n in ORDER:
-    t = T[n]; g = GROUP[n]; rs = EX[n][:2]; caps = CAP[n][:2]
+    t = T[n]; g = GROUP[n]; rs = EX.get(n, [])[:2]; caps = CAP.get(n, [])[:2]
     linhas = []
     for c in t['cols']:
         kk = ('<span class="k kp">PK</span> ' if c['pk'] else '') + ('<span class="k kf">FK</span> ' if c['fk'] else '')
@@ -423,18 +462,18 @@ page = f'''<title>DER das Reservas</title>
 :root {{
   --bg: #f3f5f2; --surface: #ffffff; --fg: #1d2622; --muted: #5e6c65; --line: #c8d0cb; --wire: #6d7b74;
   --zebra: #f6f8f6; --pk: #9a5b0b; --fk: #2d6a8a;
-  --cad: #dfe8e2; --pre: #efe6d6; --ven: #dde6ef; --can: #e9e1ec;
+  --cad: #dfe8e2; --pre: #efe6d6; --ven: #dde6ef; --can: #e9e1ec; --seg: #f0dede;
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }}
 @media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{
   --bg: #121614; --surface: #1a201d; --fg: #e3e9e5; --muted: #95a39c; --line: #34403a; --wire: #7f8f87;
   --zebra: #1e2521; --pk: #e2a64c; --fk: #74b6d4;
-  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; color-scheme: dark; }} }}
+  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; --seg: #3a2526; color-scheme: dark; }} }}
 :root[data-theme="dark"] {{
   --bg: #121614; --surface: #1a201d; --fg: #e3e9e5; --muted: #95a39c; --line: #34403a; --wire: #7f8f87;
   --zebra: #1e2521; --pk: #e2a64c; --fk: #74b6d4;
-  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; color-scheme: dark; }}
+  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; --seg: #3a2526; color-scheme: dark; }}
 * {{ box-sizing: border-box; }}
 body {{ background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }}
@@ -459,7 +498,7 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 #der .box {{ fill: var(--surface); stroke: var(--line); stroke-width: 1; }}
 #der .zebra {{ fill: var(--zebra); }}
 #der .g-cad .head {{ fill: var(--cad); }} #der .g-pre .head {{ fill: var(--pre); }}
-#der .g-ven .head {{ fill: var(--ven); }} #der .g-can .head {{ fill: var(--can); }}
+#der .g-ven .head {{ fill: var(--ven); }} #der .g-can .head {{ fill: var(--can); }} #der .g-seg .head {{ fill: var(--seg); }}
 #der .tname {{ fill: var(--fg); font: 600 13.5px var(--sans); letter-spacing: 0.02em; }}
 #der .tgroup {{ fill: var(--muted); font: 500 10px var(--sans); letter-spacing: 0.12em; }}
 #der .cname {{ fill: var(--fg); font: 500 11.5px var(--mono); }}
@@ -483,7 +522,7 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 .tcard header {{ display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
 .tcard h3 {{ margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }}
 .chip {{ font-size: 10px; letter-spacing: 0.12em; padding: 2px 8px; border-radius: 99px; color: var(--fg); white-space: nowrap; }}
-.g-cad .chip {{ background: var(--cad); }} .g-pre .chip {{ background: var(--pre); }} .g-ven .chip {{ background: var(--ven); }} .g-can .chip {{ background: var(--can); }}
+.g-cad .chip {{ background: var(--cad); }} .g-pre .chip {{ background: var(--pre); }} .g-ven .chip {{ background: var(--ven); }} .g-can .chip {{ background: var(--can); }} .g-seg .chip {{ background: var(--seg); }}
 .purpose {{ margin: 8px 0 4px; }}
 .meta {{ margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }}
 .tcard ul {{ margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }}
@@ -567,7 +606,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M30,7 L42,1 M30,7 L42,7 M30,7 L42,13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="24" cy="7" r="3.5" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/></svg> zero ou muitos</span>
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M35,1 V13 M30,1 V13" fill="none" stroke="currentColor" stroke-width="1.4"/></svg> exatamente um</span>
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M35,1 V13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="27" cy="7" r="3.5" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/></svg> zero ou um</span>
-    <span class="it"><span class="sw" style="background:var(--cad)"></span>cadastro <span class="sw" style="background:var(--pre)"></span>preço <span class="sw" style="background:var(--ven)"></span>venda <span class="sw" style="background:var(--can)"></span>canais</span>
+    <span class="it"><span class="sw" style="background:var(--cad)"></span>cadastro <span class="sw" style="background:var(--pre)"></span>preço <span class="sw" style="background:var(--ven)"></span>venda <span class="sw" style="background:var(--can)"></span>canais <span class="sw" style="background:var(--seg)"></span>segurança</span>
   </div>
 
   <figure>

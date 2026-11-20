@@ -156,7 +156,7 @@ exception when sqlstate 'P0001' then raise notice 'ok  Cadastro não é enviado 
 end $$;
 -- a equipe confere o Pix do sinal e confirma
 select 'ok  Sinal confirmado pela equipe: ' || cd_reserva || ' · ' || tp_status || ' · saldo R$ ' || vl_saldo
-from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)', 'E0000TESTE1');
+from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)', 'E0000TESTE1', (select "VL_SINAL" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'));
 do $$ declare r record; begin
   select r2."TP_STATUS", r2."DT_EXPIRA", (select count(*) from "SIT_PAGAMENTO" p where p."ID_RESERVA" = r2."ID_RESERVA" and p."TP_PARCELA" = 'SINAL' and p."TP_STATUS" = 'RECEBIDO') n
     into r from "SIT_RESERVA" r2 where r2."DT_CHECKIN" = '2027-04-06';
@@ -165,7 +165,7 @@ do $$ declare r record; begin
 end $$;
 select pg_temp.nao('Reserva confirmada continua ocupando as datas',     '2027-04-06','2027-04-08', 2,0, 'ocupado');
 do $$ begin
-  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)');
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-04-06'), 'Equipe (teste)', 'E0000TESTE9', 9999);
   raise exception 'FALHOU: sinal confirmado duas vezes';
 exception when sqlstate 'P0001' then raise notice 'ok  Sinal não é confirmado duas vezes (%)', sqlerrm;
 end $$;
@@ -173,20 +173,30 @@ end $$;
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-21', '2027-09-23', 2, 0);
 select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'), 'Tardio', 'tardio@exemplo.invalid', null, 'BR', '12345678909');
 update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "DT_CHECKIN" = '2027-09-21';
-select 'ok  Pix depois do prazo, datas livres: ' || tp_status from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'), 'Equipe (teste)');
+-- travas contra comprovante falso: sem id do Pix, valor menor que o sinal ou id repetido não confirma
+do $$ declare cd text := (select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'); begin
+  begin perform confirmar_sinal(cd, 'Equipe (teste)', null, 9999); raise exception 'FALHOU: confirmou sem id do Pix';
+  exception when sqlstate 'P0001' then if sqlerrm <> 'transacao_obrigatoria' then raise; end if; end;
+  begin perform confirmar_sinal(cd, 'Equipe (teste)', 'E0000TESTE2', 1); raise exception 'FALHOU: confirmou com valor menor que o sinal';
+  exception when sqlstate 'P0001' then if sqlerrm <> 'valor_menor_que_sinal' then raise; end if; end;
+  begin perform confirmar_sinal(cd, 'Equipe (teste)', 'E0000TESTE1', 9999); raise exception 'FALHOU: aceitou id de Pix já usado em outra reserva';
+  exception when unique_violation then null; end;
+  raise notice 'ok  Sinal só confirma com id do Pix novo e valor ≥ sinal (sem id, valor menor e id repetido recusados)';
+end $$;
+select 'ok  Pix depois do prazo, datas livres: ' || tp_status from confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-21'), 'Equipe (teste)', 'E0000TESTE3', 9999);
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-28', '2027-09-30', 2, 0);
 select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28'), 'Tardio Dois', 'tardio2@exemplo.invalid', null, 'BR', '98765432100');
 update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "DT_CHECKIN" = '2027-09-28';
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-09-28', '2027-09-30', 2, 0);
 do $$ begin
-  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is not null), 'Equipe (teste)');
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is not null), 'Equipe (teste)', 'E0000TESTE4', 9999);
   raise exception 'FALHOU: confirmou sinal atrasado com as datas já seguradas por outro';
 exception when sqlstate 'P0001' then
   if sqlerrm <> 'ocupado' then raise; end if;
   raise notice 'ok  Pix depois do prazo com as datas já seguradas por outro: recusado (ocupado)';
 end $$;
 do $$ begin
-  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is null), 'Equipe (teste)');
+  perform confirmar_sinal((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-09-28' and "ID_HOSPEDE" is null), 'Equipe (teste)', 'E0000TESTE5', 9999);
   raise exception 'FALHOU: confirmou sinal sem cadastro';
 exception when sqlstate 'P0001' then raise notice 'ok  Sinal sem o cadastro do hóspede: recusado (%)', sqlerrm;
 end $$;
@@ -413,3 +423,41 @@ end $$;
 \echo '── Detalhe noite a noite (o que o site recebe): casal + 1 criança, 3 noites'
 select cd_unidade, disponivel, qtde_noites, vl_hospedagem, vl_taxa_limpeza, vl_total, vl_medio_noite, vl_sinal, ds_detalhe
 from consultar_disponibilidade('2027-03-04', '2027-03-07', 2, 1);
+
+\echo '── Segurança: limites, documentos e auditoria'
+do $$ declare i int; begin
+  for i in 1..6 loop if not registrar_tentativa('ip-teste') then raise exception 'FALHOU: pedido % do mesmo IP bloqueado', i; end if; end loop;
+  if registrar_tentativa('ip-teste') then raise exception 'FALHOU: 7º pedido do mesmo IP na hora passou'; end if;
+  update "SIT_TENTATIVA" set "DT_CRIACAO" = now() - interval '2 hours' where "DS_CHAVE" = 'ip-teste';
+  if not registrar_tentativa('ip-teste') then raise exception 'FALHOU: IP não voltou após 1 hora'; end if;
+  raise notice 'ok  Limite por visitante no banco: 6 pedidos por hora; depois de 1 hora volta a poder';
+end $$;
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-10-26', '2027-10-28', 2, 0);
+select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-10-26'), 'Pendente Aberta', 'aberta@exemplo.invalid', null, 'BR', '86288366757');
+do $$ begin
+  if not pre_reserva_em_aberto('ABERTA@exemplo.invalid') or not pre_reserva_em_aberto('outro2@exemplo.invalid', '86288366757')
+     or pre_reserva_em_aberto('ninguem@exemplo.invalid', '11144477735') then
+    raise exception 'FALHOU: mesmo e-mail/CPF com pré-reserva aberta não foi barrado';
+  end if;
+  raise notice 'ok  Mesmo e-mail ou CPF com pré-reserva sem sinal não segura outras datas';
+end $$;
+do $$ declare cd text := (select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-10-26'); n int; begin
+  n := registrar_documentos(cd, jsonb_build_array(
+         jsonb_build_object('pessoa', 'Pendente Aberta', 'tipo', 'TITULAR', 'lado', 'FRENTE', 'caminho', cd || '/titular-frente.jpg', 'mime', 'image/jpeg', 'bytes', 120000),
+         jsonb_build_object('pessoa', 'Intruso', 'tipo', 'TITULAR', 'lado', 'FRENTE', 'caminho', 'SE-OUTRA/x.jpg', 'mime', 'image/jpeg', 'bytes', 1)));
+  if n <> 1 then raise exception 'FALHOU: registrou % documento(s), esperado 1 (o de outra pasta deve ser ignorado)', n; end if;
+  if (select "ID_HOSPEDE" from "SIT_DOCUMENTO" where "DS_CAMINHO" = cd || '/titular-frente.jpg') is null then raise exception 'FALHOU: documento do titular sem hóspede'; end if;
+  begin
+    perform registrar_documentos(cd, jsonb_build_array(jsonb_build_object('pessoa', 'X', 'tipo', 'TITULAR', 'lado', 'FRENTE', 'caminho', cd || '/a.pdf', 'mime', 'application/pdf', 'bytes', 10)));
+    raise exception 'FALHOU: aceitou arquivo que não é imagem';
+  exception when check_violation then null; end;
+  raise notice 'ok  Documentos: registra a foto do titular, ignora caminho de outra reserva e recusa o que não é imagem';
+end $$;
+do $$ declare n int; begin
+  update "SIT_TARIFA" set "VL_NOITE" = "VL_NOITE" where "NM_TARIFA" = 'Tarifa padrão';
+  select count(*) into n from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_TARIFA' and "TP_OPERACAO" = 'UPDATE' and "DS_ANTES" ? 'VL_NOITE';
+  if n < 1 then raise exception 'FALHOU: alteração de tarifa não ficou na auditoria'; end if;
+  select count(*) into n from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_RESERVA';
+  if n < 1 then raise exception 'FALHOU: reservas não aparecem na auditoria'; end if;
+  raise notice 'ok  Auditoria: alteração de tarifa e de reservas registrada com o valor anterior e quem mudou';
+end $$;
