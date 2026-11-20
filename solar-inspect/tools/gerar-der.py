@@ -12,23 +12,28 @@ from pathlib import Path
 APP = Path(__file__).resolve().parent.parent
 SITE_DIR = APP.parent / "site" / "database"
 SITE_SQL = SITE_DIR / "schema.sql"
-VERSAO = "proposta v2, 18/11/2026"
+MIGRACAO_SQL = APP / "database" / "migracao_vistorias.sql"
+VERSAO = "proposta v3, 20/11/2026"
 
 
 def esc(s):
     return html.escape(str(s), quote=True)
 
 
-# ---------------------------------------------------------------- tabelas do site (lidas do schema.sql)
-def ler_site():
-    sql = SITE_SQL.read_text(encoding="utf-8")
+# ---------------------------------------------------------------- leitura dos .sql (schema do site e migração das vistorias)
+def ler_tabelas(caminho):
+    """Lê os create table de um .sql (nomes com ou sem aspas) e devolve {tabela: [colunas]}."""
+    sql = caminho.read_text(encoding="utf-8")
     out = {}
-    for nome, corpo in re.findall(r"create table (\w+) \((.*?)\n\);", sql, re.S):
-        cols, pk, fks = [], set(), set()
+    for nome, corpo in re.findall(r'create table (?:if not exists )?"?(\w+)"? \((.*?)\n\);', sql, re.S):
+        corpo = corpo.replace('"', "")
+        cols, pk, fks, uqs = [], set(), set(), set()
         for m in re.finditer(r"constraint PK_\w+ primary key \(([^)]*)\)", corpo):
             pk |= {c.strip() for c in m.group(1).split(",")}
-        for m in re.finditer(r"foreign key \((\w+)\) references", corpo):
-            fks.add(m.group(1))
+        for m in re.finditer(r"foreign key \(([^)]*)\) references", corpo):
+            fks |= {c.strip() for c in m.group(1).split(",")}
+        for m in re.finditer(r"constraint UQ_\w+ unique \(([^),]*)\)", corpo):
+            uqs.add(m.group(1).strip())
         for ln in corpo.split("\n"):
             m = re.match(r"^  ([A-Z][A-Z0-9_]+)\s+(\w+(?:\(\d+(?:,\d+)?\))?(?:\[\])?)(.*)$", ln)
             if not m:
@@ -38,12 +43,13 @@ def ler_site():
             cols.append(dict(n=n, ty=ty, req="not null" in resto or "generated" in resto,
                              auto="as identity" in resto, gen="generated always as (" in resto, coment=coment))
         for c in cols:
-            c["pk"], c["fk"] = c["n"] in pk, c["n"] in fks
+            c["pk"], c["fk"], c["uq"] = c["n"] in pk, c["n"] in fks, c["n"] in uqs
         out[nome] = cols
     return out
 
 
-SITE = ler_site()
+SITE = ler_tabelas(SITE_SQL)
+MIGRACAO = ler_tabelas(MIGRACAO_SQL)
 
 
 def ler_campos_site():
@@ -92,48 +98,33 @@ T["SIT_PROPRIEDADE"] = comum(
     {"ID_PROPRIEDADE": "Identificador da pousada.", "NM_PROPRIEDADE": "Nome da pousada.",
      "HR_CHECKIN": "Horário de entrada: base da agenda de vistorias de Entrada.",
      "HR_CHECKOUT": "Horário de saída: base da agenda de vistorias de Saída."},
-    [col("TP_VALIDACAO", "text", desc=f"Como a presença do assessor é validada por padrão: {VALIDACAO}."),
-     col("VL_LATITUDE", "numeric(9,6)", False, "Latitude da sede, centro do raio de presença."),
-     col("VL_LONGITUDE", "numeric(9,6)", False, "Longitude da sede."),
-     col("QTDE_RAIO_METROS", "smallint", desc="Raio aceito em volta do ponto (padrão 100 m)."),
-     col("QTDE_PRECISAO_MAX_METROS", "smallint", desc="Pior precisão de GPS aceita (padrão 50 m)."),
-     col("QTDE_MINUTOS_MIN_VISTORIA", "smallint", desc="Duração mínima esperada; abaixo disso a vistoria é sinalizada.")],
-    "da política de venda")
+    [], "da política de venda")
 T["SIT_UNIDADE"] = comum(
     "SIT_UNIDADE", ["ID_UNIDADE", "ID_PROPRIEDADE", "CD_UNIDADE", "NM_UNIDADE", "TP_UNIDADE", "SG_ATIVO"],
     {"ID_UNIDADE": "Identificador do chalé, quarto ou suíte.", "ID_PROPRIEDADE": "Pousada dona da unidade.",
      "CD_UNIDADE": "Código curto (ex.: casa-do-mirante), também usado no site.", "NM_UNIDADE": "Nome exibido.",
      "TP_UNIDADE": "CHALE, QUARTO ou SUITE.", "SG_ATIVO": "Unidade inativa some da venda e da agenda de vistorias."},
-    [col("DS_ANDAR", "text", False, "Andar ou bloco, para o assessor se localizar."),
-     col("TP_VALIDACAO", "text", False, f"Validação desta unidade ({VALIDACAO}); vazio herda da propriedade."),
-     col("VL_LATITUDE", "numeric(9,6)", False, "Ponto da unidade; vazio usa o da propriedade."),
-     col("VL_LONGITUDE", "numeric(9,6)", False, "Longitude da unidade."),
-     col("QTDE_RAIO_METROS", "smallint", False, "Raio próprio; vazio usa o da propriedade."),
-     col("TP_SITUACAO", "text", desc="EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO."),
-     col("CD_HASH_QR", "text", uq=True, desc="Hash do código impresso no QR da porta."),
-     col("NO_VERSAO_QR", "smallint", desc="Versão do QR; rotacionar invalida as etiquetas antigas."),
-     col("DT_ATUALIZACAO", "timestamptz", desc="Última mudança de situação ou de QR.")],
-    "da venda")
+    [], "da venda")
 T["SIT_RESERVA"] = comum(
     "SIT_RESERVA", ["ID_RESERVA", "CD_RESERVA", "ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "TP_STATUS"],
     {"ID_RESERVA": "Identificador da estadia vendida.", "CD_RESERVA": "Código mostrado ao hóspede (SE-XXXXXXXX).",
      "ID_UNIDADE": "Unidade reservada.", "DT_CHECKIN": "Dia da entrada: gera a vistoria de Entrada na agenda.",
      "DT_CHECKOUT": "Dia da saída: gera a vistoria de Saída na agenda.",
-     "TP_STATUS": "Só reservas CONFIRMADA entram na agenda de vistorias."},
+     "TP_STATUS": "Só reservas CONFIRMADA geram vistoria (PENDENTE é pré-reserva aguardando o Pix)."},
     [], "da venda")
 T["SIT_BLOQUEIO"] = comum(
     "SIT_BLOQUEIO", ["ID_BLOQUEIO", "ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO", "DS_OBSERVACAO"],
     {"ID_BLOQUEIO": "Identificador do bloqueio.", "ID_UNIDADE": "Unidade fora da venda.",
      "DT_INI": "Primeira noite bloqueada.", "DT_FIM": "Dia seguinte à última noite; liberar a unidade encerra aqui.",
-     "TP_MOTIVO": "A vistoria cria bloqueios MANUTENCAO; CANAL_EXTERNO são estadias do Airbnb/Booking.",
+     "TP_MOTIVO": "A vistoria cria bloqueios MANUTENCAO (sem ID_CALENDARIO); CANAL_EXTERNO são estadias do Airbnb/Booking.",
      "DS_OBSERVACAO": "Resumo da ocorrência que motivou o bloqueio."},
     [], "do canal")
 
 T["VST_USUARIO"] = dict(grupo="ace", cols=[
-    col("ID_USUARIO", "uuid", pk=True, desc="Mesmo id do login no Supabase Auth (auth.users)."),
+    col("ID_USUARIO", "uuid", pk=True, fk=True, desc="Mesmo id do login no Supabase Auth (auth.users.id)."),
     col("NM_USUARIO", "text", desc="Nome completo."),
     col("CD_LOGIN", "text", uq=True, desc="Usuário de acesso (ex.: ana.souza), minúsculo."),
-    col("CD_CPF", "text", False, uq=True, desc="CPF só com números; também serve para entrar."),
+    col("CD_CPF", "text", False, uq=True, desc="CPF só com números (dígitos conferidos); também serve para entrar."),
     col("TP_PERFIL", "text", desc="ASSESSOR (campo), GESTOR ou ADMIN (gestão)."),
     col("SG_ATIVO", "boolean", desc="Inativo não entra no app."),
     col("DT_ACEITE_LGPD", "timestamptz", False, desc="Aceite do termo de uso de localização e fotos."),
@@ -143,22 +134,34 @@ T["VST_USUARIO_PROPRIEDADE"] = dict(grupo="ace", cols=[
     col("ID_USUARIO", "uuid", pk=True, fk=True, desc="Usuário."),
     col("ID_PROPRIEDADE", "bigint", pk=True, fk=True, desc="Pousada que ele pode ver."),
     col("DT_CRIACAO", "timestamptz", desc="Quando o acesso foi dado.")])
-T["VST_LOG_EVENTO"] = dict(grupo="ace", cols=[
-    col("ID_LOG_EVENTO", "bigint", pk=True, auto=True, desc="Sequencial."),
-    col("ID_USUARIO", "uuid", False, fk=True, desc="Quem fez; vazio para eventos do sistema."),
-    col("ID_PROPRIEDADE", "bigint", False, fk=True, desc="Pousada afetada."),
-    col("TP_EVENTO", "text", desc="LOGIN, VISTORIA_ENVIADA, SITUACAO_ALTERADA, QR_ROTACIONADO, CADASTRO…"),
-    col("NM_ENTIDADE", "text", False, desc="Tabela afetada."),
-    col("CD_REGISTRO", "text", False, desc="Id do registro afetado."),
-    col("DS_EVENTO", "text", desc="Frase legível para a tela de auditoria."),
-    col("DS_DADOS", "jsonb", False, desc="Antes e depois, quando houver."),
-    col("DT_EVENTO", "timestamptz", desc="Momento do evento.")])
+T["VST_PROPRIEDADE"] = dict(grupo="cad", cols=[
+    col("ID_PROPRIEDADE", "bigint", pk=True, fk=True, desc="A pousada (a mesma chave do site)."),
+    col("TP_VALIDACAO", "text", desc=f"Como a presença do assessor é validada por padrão: {VALIDACAO}."),
+    col("VL_LATITUDE", "numeric(9,6)", False, "Latitude da sede, centro do raio de presença."),
+    col("VL_LONGITUDE", "numeric(9,6)", False, "Longitude da sede."),
+    col("QTDE_RAIO_METROS", "smallint", desc="Raio aceito em volta do ponto (padrão 100 m)."),
+    col("QTDE_PRECISAO_MAX_METROS", "smallint", desc="Pior precisão de GPS aceita (padrão 50 m)."),
+    col("QTDE_MINUTOS_MIN_VISTORIA", "smallint", desc="Duração mínima esperada; abaixo disso a vistoria é sinalizada (padrão 10)."),
+    col("DT_CRIACAO", "timestamptz", desc="Cadastro."),
+    col("DT_ATUALIZACAO", "timestamptz", desc="Última alteração.")])
+T["VST_UNIDADE"] = dict(grupo="cad", cols=[
+    col("ID_UNIDADE", "bigint", pk=True, fk=True, desc="O chalé (a mesma chave do site)."),
+    col("DS_ANDAR", "text", False, "Andar ou bloco, para o assessor se localizar."),
+    col("TP_VALIDACAO", "text", False, f"Validação deste chalé ({VALIDACAO}); vazio herda da propriedade."),
+    col("VL_LATITUDE", "numeric(9,6)", False, "Ponto do chalé; vazio usa o da propriedade."),
+    col("VL_LONGITUDE", "numeric(9,6)", False, "Longitude do chalé."),
+    col("QTDE_RAIO_METROS", "smallint", False, "Raio próprio; vazio usa o da propriedade."),
+    col("TP_SITUACAO", "text", desc="EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO."),
+    col("CD_HASH_QR", "text", uq=True, desc="Código impresso no QR da porta (o app só o recebe ao ler o QR)."),
+    col("NO_VERSAO_QR", "smallint", desc="Versão do QR; rotacionar invalida as etiquetas antigas."),
+    col("DT_CRIACAO", "timestamptz", desc="Cadastro."),
+    col("DT_ATUALIZACAO", "timestamptz", desc="Última mudança de situação ou de QR.")])
 T["VST_AMBIENTE"] = dict(grupo="cad", cols=[
     col("ID_AMBIENTE", "bigint", pk=True, auto=True, desc="Sequencial."),
     col("ID_UNIDADE", "bigint", fk=True, desc="Unidade do cômodo."),
     col("NM_AMBIENTE", "text", desc="Sala, Quarto, Banheiro, Varanda…"),
     col("NO_ORDEM", "smallint", desc="Ordem de passagem no checklist."),
-    col("DS_FOTO_REFERENCIA", "text", False, desc="Caminho no Storage da foto de como deve ficar."),
+    col("DS_FOTO_REFERENCIA", "text", False, desc="Caminho da foto de como deve ficar."),
     col("SG_ATIVO", "boolean", desc="Inativo sai do checklist."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
 T["VST_ITEM"] = dict(grupo="cad", cols=[
@@ -166,17 +169,19 @@ T["VST_ITEM"] = dict(grupo="cad", cols=[
     col("ID_AMBIENTE", "bigint", fk=True, desc="Cômodo onde o item é conferido."),
     col("NM_ITEM", "text", desc="Ex.: Toalhas de banho, Frigobar."),
     col("DS_ORIENTACAO", "text", False, desc="Como conferir."),
-    col("SG_CRITICO", "boolean", desc="Problema em item crítico abre ocorrência CRITICA."),
+    col("SG_CRITICO", "boolean", desc="Problema em item crítico abre ocorrência CRITICA e tira o chalé da venda."),
     col("SG_FOTO_OBRIGATORIA", "boolean", desc="Exige foto mesmo quando está OK."),
     col("QTDE_ESPERADA", "smallint", False, desc="Quantidade que deve haver (contagem)."),
     col("NO_ORDEM", "smallint", desc="Ordem dentro do cômodo."),
-    col("SG_ATIVO", "boolean", desc="Inativo sai do checklist.")])
+    col("SG_ATIVO", "boolean", desc="Inativo sai do checklist."),
+    col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
 T["VST_TIPO_VISTORIA"] = dict(grupo="apo", cols=[
     col("ID_TIPO_VISTORIA", "bigint", pk=True, auto=True, desc="Sequencial."),
+    col("CD_TIPO_VISTORIA", "text", uq=True, desc="Código que o site usa: ENTRADA e SAIDA já vêm cadastrados."),
     col("NM_TIPO_VISTORIA", "text", uq=True, desc="Entrada, Saída, Rotina, Manutenção…"),
     col("TP_COMPORTAMENTO", "text", desc="ENTRADA, SAIDA, ROTINA ou MANUTENCAO: regra que o app aplica."),
     col("TP_PERIODICIDADE", "text", False, desc="DIARIA, SEMANAL ou MENSAL (só rotina)."),
-    col("SG_EXIGE_ENTRADA", "boolean", desc="Saída exige a vistoria de Entrada da mesma estadia."),
+    col("SG_EXIGE_ENTRADA", "boolean", desc="Saída compara com a Entrada da mesma estadia."),
     col("SG_EXIGE_ASSINATURA", "boolean", desc="Pede assinatura no fim."),
     col("SG_ATIVO", "boolean", desc="Inativo some da lista."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
@@ -185,26 +190,29 @@ T["VST_TIPO_VISTORIA_ITEM"] = dict(grupo="apo", cols=[
     col("ID_ITEM", "bigint", pk=True, fk=True, desc="Item que entra nesse tipo."),
     col("NO_ORDEM", "smallint", False, desc="Ordem própria do tipo; vazio segue a do item.")])
 T["VST_VISTORIA"] = dict(grupo="ope", cols=[
-    col("ID_VISTORIA", "uuid", pk=True, desc="uuid v7 gerado no celular: funciona offline sem duplicar."),
+    col("ID_VISTORIA", "uuid", pk=True, desc="uuid gerado pelo banco ou pelo celular (v7): reenviar não duplica."),
     col("ID_VISTORIA_ENTRADA", "uuid", False, fk=True, desc="Na Saída, a Entrada da mesma estadia (comparação)."),
-    col("ID_USUARIO", "uuid", fk=True, desc="Assessor que fez."),
+    col("ID_USUARIO", "uuid", False, fk=True, desc="Responsável; vazio até alguém assumir (a vistoria nasce sem responsável)."),
     col("ID_UNIDADE", "bigint", fk=True, desc="Unidade vistoriada."),
     col("ID_TIPO_VISTORIA", "bigint", fk=True, desc="Tipo aplicado."),
-    col("ID_RESERVA", "bigint", False, fk=True, desc="Estadia do site; vazio em rotina e em estadias de canal."),
-    col("TP_VALIDACAO", "text", desc=f"Validação usada: {VALIDACAO}."),
-    col("DT_INICIO", "timestamptz", desc="Início no celular."),
-    col("DT_FIM", "timestamptz", desc="Fim no celular."),
-    col("DT_RECEBIMENTO", "timestamptz", desc="Chegada ao servidor (pode ser bem depois, se offline)."),
+    col("ID_RESERVA", "bigint", False, fk=True, desc="Estadia do site; vazio em vistoria avulsa e em estadias de canal."),
+    col("DT_AGENDADA", "date", desc="Dia previsto: DT_CHECKIN na Entrada, DT_CHECKOUT na Saída."),
+    col("TP_STATUS", "text", desc="AGENDADA, EM_ANDAMENTO, CONCLUIDA ou CANCELADA."),
+    col("DT_INICIO", "timestamptz", False, desc="Início no celular."),
+    col("DT_FIM", "timestamptz", False, desc="Fim no celular."),
+    col("TP_VALIDACAO", "text", False, desc=f"Validação exigida no início: {VALIDACAO}."),
+    col("DT_RECEBIMENTO", "timestamptz", False, desc="Chegada ao servidor (pode ser bem depois, se offline)."),
     col("VL_LATITUDE", "numeric(9,6)", False, desc="Posição no início."),
     col("VL_LONGITUDE", "numeric(9,6)", False, desc="Posição no início."),
     col("QTDE_PRECISAO_METROS", "smallint", False, desc="Precisão do GPS."),
-    col("QTDE_DISTANCIA_METROS", "integer", False, desc="Distância até o ponto da unidade."),
+    col("QTDE_DISTANCIA_METROS", "integer", False, desc="Distância até o ponto do chalé."),
     col("SG_FORA_RAIO", "boolean", desc="Começou fora do raio aceito."),
-    col("TP_STATUS", "text", desc="ENVIADA ou SINALIZADA (algo fora do padrão)."),
-    col("DS_SINALIZACOES", "text[]", False, desc="Motivos: FORA_RAIO, RAPIDA, GPS_IMPRECISO, SEM_ENTRADA…"),
-    col("DS_ASSINATURA", "text", False, desc="Caminho no Storage da assinatura."),
-    col("TP_SITUACAO_RESULTANTE", "text", desc="Situação em que a unidade ficou (LIBERADO, MANUTENCAO…)."),
-    col("DS_OBSERVACAO", "text", False, desc="Observação geral.")])
+    col("DS_SINALIZACOES", "text[]", False, desc="Motivos: FORA_RAIO, GPS_IMPRECISO, SEM_GPS, RAPIDA, SEM_ENTRADA…"),
+    col("DS_ASSINATURA", "text", False, desc="Caminho da assinatura."),
+    col("TP_SITUACAO_RESULTANTE", "text", False, desc="Situação em que o chalé ficou (LIBERADO, MANUTENCAO…)."),
+    col("DS_OBSERVACAO", "text", False, desc="Observação geral."),
+    col("DT_CRIACAO", "timestamptz", desc="Quando foi agendada."),
+    col("DT_ATUALIZACAO", "timestamptz", desc="Última mudança.")])
 T["VST_RESPOSTA"] = dict(grupo="ope", cols=[
     col("ID_VISTORIA", "uuid", pk=True, fk=True, desc="Vistoria."),
     col("ID_ITEM", "bigint", pk=True, fk=True, desc="Item conferido."),
@@ -225,15 +233,25 @@ T["VST_OCORRENCIA"] = dict(grupo="ope", cols=[
     col("DT_ABERTURA", "timestamptz", desc="Abertura."),
     col("DT_RESOLUCAO", "timestamptz", False, desc="Exigida quando RESOLVIDA.")])
 T["VST_FOTO"] = dict(grupo="ope", cols=[
-    col("ID_FOTO", "uuid", pk=True, desc="uuid v7 gerado no celular."),
+    col("ID_FOTO", "uuid", pk=True, desc="uuid gerado pelo banco ou pelo celular."),
     col("ID_VISTORIA", "uuid", fk=True, desc="Vistoria (com ID_ITEM, aponta a resposta)."),
     col("ID_ITEM", "bigint", fk=True, desc="Item fotografado."),
-    col("CD_ARQUIVO", "text", uq=True, desc="Caminho no Storage (bucket privado)."),
+    col("CD_ARQUIVO", "text", uq=True, desc="Objeto no bucket privado vistorias: <ID_VISTORIA>/<arquivo> (JPEG, PNG ou WEBP)."),
     col("VL_LATITUDE", "numeric(9,6)", False, desc="Onde foi tirada."),
     col("VL_LONGITUDE", "numeric(9,6)", False, desc="Onde foi tirada."),
     col("QTDE_PRECISAO_METROS", "smallint", False, desc="Precisão do GPS."),
     col("SG_FORA_RAIO", "boolean", desc="Tirada fora do raio."),
     col("DT_CAPTURA", "timestamptz", desc="Momento da câmera, não do envio.")])
+
+# o DER tem de bater com a migração que vai para o Supabase: mesmas colunas, ordem, tipos, obrigatoriedade e chaves
+for _n, _t in T.items():
+    if _t["grupo"] == "site":
+        continue
+    _m = MIGRACAO[_n]
+    _a = [(c["n"], c["ty"], c["req"] or c["pk"], c["pk"], c["fk"], c["uq"]) for c in _t["cols"]]
+    _b = [(c["n"], c["ty"], c["req"] or c["pk"], c["pk"], c["fk"], c["uq"]) for c in _m]
+    assert _a == _b, (_n, [x for x in zip(_a, _b) if x[0] != x[1]][:3], len(_a), len(_b))
+assert {n for n in MIGRACAO} == {n for n in T if n.startswith("VST_")}, set(MIGRACAO) ^ set(T)
 
 for _t in T.values():
     _t.setdefault("todas", _t["cols"])
@@ -241,14 +259,14 @@ for _t in T.values():
 # ---------------------------------------------------------------- geometria
 W, HDR, RH = 310, 40, 19
 X = [56, 496, 936, 1376, 1816]
-FUNDO1, FUNDO2 = 1085, 1108
+FUNDO1, FUNDO2 = 1050, 1073
 LARG, ALT = X[4] + W + 68, FUNDO2 + 24
 POS = {
-    "VST_USUARIO": (X[0], 40), "VST_USUARIO_PROPRIEDADE": (X[0], 300), "VST_LOG_EVENTO": (X[0], 446),
-    "SIT_PROPRIEDADE": (X[1], 40), "SIT_BLOQUEIO": (X[1], 380),
-    "SIT_RESERVA": (X[2], 40), "SIT_UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 655), "VST_ITEM": (X[2], 858),
-    "VST_VISTORIA": (X[3], 40), "VST_RESPOSTA": (X[3], 490), "VST_OCORRENCIA": (X[3], 693),
-    "VST_TIPO_VISTORIA": (X[4], 116), "VST_TIPO_VISTORIA_ITEM": (X[4], 330), "VST_FOTO": (X[4], 471),
+    "VST_USUARIO": (X[0], 40), "VST_USUARIO_PROPRIEDADE": (X[0], 300),
+    "SIT_PROPRIEDADE": (X[1], 40), "VST_PROPRIEDADE": (X[1], 225), "SIT_BLOQUEIO": (X[1], 490), "VST_UNIDADE": (X[1], 720),
+    "SIT_RESERVA": (X[2], 40), "SIT_UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 520), "VST_ITEM": (X[2], 740),
+    "VST_VISTORIA": (X[3], 40), "VST_RESPOSTA": (X[3], 570), "VST_OCORRENCIA": (X[3], 775),
+    "VST_TIPO_VISTORIA": (X[4], 116), "VST_TIPO_VISTORIA_ITEM": (X[4], 380), "VST_FOTO": (X[4], 551),
 }
 assert set(POS) == set(T)
 
@@ -269,44 +287,49 @@ def lig(filho, f, pai, pk, lane, sf="d", sp="e"):
 
 
 c01, c12, c23, c34, c4 = (x + W for x in X)
+P, U, R, B = "SIT_PROPRIEDADE", "SIT_UNIDADE", "SIT_RESERVA", "SIT_BLOQUEIO"
+V, VR, VO, VF, VT, VI, VA = "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO", "VST_TIPO_VISTORIA", "VST_ITEM", "VST_AMBIENTE"
+VU, VUP, VTI, VP, VUN = "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_TIPO_VISTORIA_ITEM", "VST_PROPRIEDADE", "VST_UNIDADE"
 E = [  # filho, campo, pai, chave, rótulo, pontos (porta do filho primeiro)
-    ("SIT_UNIDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "pertence a", lig("SIT_UNIDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c12 + 74, "e", "d")),
-    ("SIT_RESERVA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "reserva", lig("SIT_RESERVA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 24, "d", "d")),
-    ("SIT_BLOQUEIO", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "bloqueia", lig("SIT_BLOQUEIO", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c12 + 54, "d", "e")),
-    ("VST_OCORRENCIA", "ID_BLOQUEIO", "SIT_BLOQUEIO", "ID_BLOQUEIO", "tira da venda",
-     [(X[3], ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, ry("VST_OCORRENCIA", "ID_BLOQUEIO")), (c23 + 12, FUNDO2),
-      (c01 + 100, FUNDO2), (c01 + 100, ry("SIT_BLOQUEIO", "ID_BLOQUEIO")), (X[1], ry("SIT_BLOQUEIO", "ID_BLOQUEIO"))]),
-    ("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "acessa", lig("VST_USUARIO_PROPRIEDADE", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 26, "e", "e")),
-    ("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "acesso a", lig("VST_USUARIO_PROPRIEDADE", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c01 + 74)),
-    ("VST_AMBIENTE", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "cômodo de", lig("VST_AMBIENTE", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 36, "d", "d")),
-    ("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", "conferido em", lig("VST_ITEM", "ID_AMBIENTE", "VST_AMBIENTE", "ID_AMBIENTE", X[2] - 30, "e", "e")),
-    ("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "compõe", lig("VST_TIPO_VISTORIA_ITEM", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", c4 + 22, "d", "d")),
-    ("VST_TIPO_VISTORIA_ITEM", "ID_ITEM", "VST_ITEM", "ID_ITEM", "inclui",
-     [(c4, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, ry("VST_TIPO_VISTORIA_ITEM", "ID_ITEM")), (c4 + 40, FUNDO1),
-      (c23 + 108, FUNDO1), (c23 + 108, ry("VST_ITEM", "ID_ITEM")), (c23, ry("VST_ITEM", "ID_ITEM"))]),
-    ("VST_VISTORIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "vistoria de", lig("VST_VISTORIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 72, "e", "d")),
-    ("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", "do tipo", lig("VST_VISTORIA", "ID_TIPO_VISTORIA", "VST_TIPO_VISTORIA", "ID_TIPO_VISTORIA", 0)),
-    ("VST_VISTORIA", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "feita por",
-     [(X[3], ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, ry("VST_VISTORIA", "ID_USUARIO")), (c23 + 104, 16),
-      (c01 + 34, 16), (c01 + 34, ry("VST_USUARIO", "ID_USUARIO")), (c01, ry("VST_USUARIO", "ID_USUARIO"))]),
-    ("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", "entrada de", lig("VST_VISTORIA", "ID_VISTORIA_ENTRADA", "VST_VISTORIA", "ID_VISTORIA", c34 + 26, "d", "d")),
-    ("VST_VISTORIA", "ID_RESERVA", "SIT_RESERVA", "ID_RESERVA", "da estadia", lig("VST_VISTORIA", "ID_RESERVA", "SIT_RESERVA", "ID_RESERVA", c23 + 48, "e", "d")),
-    ("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", "responde", lig("VST_RESPOSTA", "ID_VISTORIA", "VST_VISTORIA", "ID_VISTORIA", c34 + 96, "d", "d")),
-    ("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", "sobre", lig("VST_RESPOSTA", "ID_ITEM", "VST_ITEM", "ID_ITEM", c23 + 96, "e", "d")),
-    ("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "evidência de", lig("VST_FOTO", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", 0, "e", "d")),
-    ("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", "nasce de", lig("VST_OCORRENCIA", "ID_ITEM", "VST_RESPOSTA", "ID_ITEM", c34 + 44, "d", "d")),
-    ("VST_OCORRENCIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", "na unidade", lig("VST_OCORRENCIA", "ID_UNIDADE", "SIT_UNIDADE", "ID_UNIDADE", c23 + 84, "e", "d")),
-    ("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", "por", lig("VST_LOG_EVENTO", "ID_USUARIO", "VST_USUARIO", "ID_USUARIO", X[0] - 42, "e", "e")),
-    ("VST_LOG_EVENTO", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", "em", lig("VST_LOG_EVENTO", "ID_PROPRIEDADE", "SIT_PROPRIEDADE", "ID_PROPRIEDADE", c01 + 90)),
+    (U, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", "pertence a", lig(U, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", c12 + 74, "e", "d")),
+    (R, "ID_UNIDADE", U, "ID_UNIDADE", "reserva", lig(R, "ID_UNIDADE", U, "ID_UNIDADE", c23 + 24, "d", "d")),
+    (B, "ID_UNIDADE", U, "ID_UNIDADE", "bloqueia", lig(B, "ID_UNIDADE", U, "ID_UNIDADE", c12 + 54, "d", "e")),
+    (VO, "ID_BLOQUEIO", B, "ID_BLOQUEIO", "tira da venda",
+     [(X[3], ry(VO, "ID_BLOQUEIO")), (c23 + 12, ry(VO, "ID_BLOQUEIO")), (c23 + 12, FUNDO2),
+      (c01 + 100, FUNDO2), (c01 + 100, ry(B, "ID_BLOQUEIO")), (X[1], ry(B, "ID_BLOQUEIO"))]),
+    (VUP, "ID_USUARIO", VU, "ID_USUARIO", "acessa", lig(VUP, "ID_USUARIO", VU, "ID_USUARIO", X[0] - 26, "e", "e")),
+    (VUP, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", "acesso a", lig(VUP, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", c01 + 74)),
+    (VP, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", "complementa", lig(VP, "ID_PROPRIEDADE", P, "ID_PROPRIEDADE", X[1] - 10, "e", "e")),
+    (VUN, "ID_UNIDADE", U, "ID_UNIDADE", "complementa", lig(VUN, "ID_UNIDADE", U, "ID_UNIDADE", c12 + 34, "d", "e")),
+    (VA, "ID_UNIDADE", U, "ID_UNIDADE", "cômodo de", lig(VA, "ID_UNIDADE", U, "ID_UNIDADE", c23 + 36, "d", "d")),
+    (VI, "ID_AMBIENTE", VA, "ID_AMBIENTE", "conferido em", lig(VI, "ID_AMBIENTE", VA, "ID_AMBIENTE", X[2] - 30, "e", "e")),
+    (VTI, "ID_TIPO_VISTORIA", VT, "ID_TIPO_VISTORIA", "compõe", lig(VTI, "ID_TIPO_VISTORIA", VT, "ID_TIPO_VISTORIA", c4 + 22, "d", "d")),
+    (VTI, "ID_ITEM", VI, "ID_ITEM", "inclui",
+     [(c4, ry(VTI, "ID_ITEM")), (c4 + 40, ry(VTI, "ID_ITEM")), (c4 + 40, FUNDO1),
+      (c23 + 108, FUNDO1), (c23 + 108, ry(VI, "ID_ITEM")), (c23, ry(VI, "ID_ITEM"))]),
+    (V, "ID_UNIDADE", U, "ID_UNIDADE", "vistoria de", lig(V, "ID_UNIDADE", U, "ID_UNIDADE", c23 + 72, "e", "d")),
+    (V, "ID_TIPO_VISTORIA", VT, "ID_TIPO_VISTORIA", "do tipo", lig(V, "ID_TIPO_VISTORIA", VT, "ID_TIPO_VISTORIA", 0)),
+    (V, "ID_USUARIO", VU, "ID_USUARIO", "feita por",
+     [(X[3], ry(V, "ID_USUARIO")), (c23 + 104, ry(V, "ID_USUARIO")), (c23 + 104, 16),
+      (c01 + 34, 16), (c01 + 34, ry(VU, "ID_USUARIO")), (c01, ry(VU, "ID_USUARIO"))]),
+    (V, "ID_VISTORIA_ENTRADA", V, "ID_VISTORIA", "entrada de", lig(V, "ID_VISTORIA_ENTRADA", V, "ID_VISTORIA", c34 + 26, "d", "d")),
+    (V, "ID_RESERVA", R, "ID_RESERVA", "da estadia", lig(V, "ID_RESERVA", R, "ID_RESERVA", c23 + 48, "e", "d")),
+    (VR, "ID_VISTORIA", V, "ID_VISTORIA", "responde", lig(VR, "ID_VISTORIA", V, "ID_VISTORIA", c34 + 96, "d", "d")),
+    (VR, "ID_ITEM", VI, "ID_ITEM", "sobre", lig(VR, "ID_ITEM", VI, "ID_ITEM", c23 + 96, "e", "d")),
+    (VF, "ID_ITEM", VR, "ID_ITEM", "evidência de", lig(VF, "ID_ITEM", VR, "ID_ITEM", 0, "e", "d")),
+    (VO, "ID_ITEM", VR, "ID_ITEM", "nasce de", lig(VO, "ID_ITEM", VR, "ID_ITEM", c34 + 44, "d", "d")),
+    (VO, "ID_UNIDADE", U, "ID_UNIDADE", "na unidade", lig(VO, "ID_UNIDADE", U, "ID_UNIDADE", c23 + 84, "e", "d")),
 ]
-# FKs compostas: a outra coluna segue na mesma linha desenhada
-COMPOSTAS = {("VST_FOTO", "ID_VISTORIA"), ("VST_OCORRENCIA", "ID_VISTORIA")}
+# FKs compostas: a outra coluna segue na mesma linha desenhada; ID_USUARIO de VST_USUARIO referencia auth.users (fora do diagrama)
+COMPOSTAS = {(VF, "ID_VISTORIA"), (VO, "ID_VISTORIA")}
+FORA_DO_DIAGRAMA = {(VU, "ID_USUARIO")}
+UM_PARA_UM = {(VP, "ID_PROPRIEDADE"), (VUN, "ID_UNIDADE")}      # a chave da filha é a própria FK: zero ou um por pai
 marcadas = {(t, c["n"]) for t, d in T.items() for c in d["cols"] if c["fk"]}
-assert marcadas == {(e[0], e[1]) for e in E} | COMPOSTAS, marcadas ^ ({(e[0], e[1]) for e in E} | COMPOSTAS)
+assert marcadas == {(e[0], e[1]) for e in E} | COMPOSTAS | FORA_DO_DIAGRAMA, marcadas ^ ({(e[0], e[1]) for e in E} | COMPOSTAS | FORA_DO_DIAGRAMA)
 for e in E:
     assert any(c["n"] == e[3] and c["pk"] for c in T[e[2]]["cols"]), e
-ROTULO_LIVRE = {("VST_VISTORIA", "ID_VISTORIA_ENTRADA"): (c34 + 32, ry("VST_VISTORIA", "ID_VISTORIA_ENTRADA") - 6)}
-NOMES_FK = {("VST_VISTORIA", "ID_VISTORIA_ENTRADA"): "FK_VST_VISTORIA_VISTORIA_ENTRADA"}
+ROTULO_LIVRE = {(V, "ID_VISTORIA_ENTRADA"): (c34 + 32, ry(V, "ID_VISTORIA_ENTRADA") - 6)}
+NOMES_FK = {(V, "ID_VISTORIA_ENTRADA"): "FK_VST_VISTORIA_VST_VISTORIA_ENTRADA"}
 
 
 def obrig(t, c):
@@ -358,7 +381,7 @@ def svg():
     for i, (f, c, p, pk, rot, pts) in enumerate(E):
         s.append(f'<g class="edge" data-rel="{f} {p}"><title>{NOMES_FK.get((f, c), f"FK_{f}_{p}")}: {f}.{c} → {p}.{pk}</title>')
         s.append(f'<path class="wire" d="{caminho(i, pts)}"/>')
-        s.append('<g class="card">' + marcas(*pts[0], *unit(pts[0], pts[1]), "muitos") +
+        s.append('<g class="card">' + marcas(*pts[0], *unit(pts[0], pts[1]), "zeroum" if (f, c) in UM_PARA_UM else "muitos") +
                  marcas(*pts[-1], *unit(pts[-1], pts[-2]), "um" if obrig(f, c) else "zeroum") + "</g>")
         a, b = max(zip(pts, pts[1:]), key=lambda g: abs(g[0][0] - g[1][0]) + abs(g[0][1] - g[1][1]))
         mx, my = (a[0] + b[0]) / 2, (a[1] + b[1]) / 2
@@ -400,94 +423,99 @@ def svg():
 
 # ---------------------------------------------------------------- textos
 PROPOSITO = {
-    "SIT_PROPRIEDADE": "Tabela do site. A pousada: os horários de check-in e check-out montam a agenda; os campos novos (+) guardam a regra de presença (QR, GPS, raio).",
-    "SIT_UNIDADE": "Tabela do site. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Os campos novos (+) guardam a situação operacional, o QR da porta e o ponto de GPS.",
+    "SIT_PROPRIEDADE": "Tabela do site, só leitura para a vistoria. A pousada: os horários de check-in e check-out montam a agenda. As regras de presença (GPS, raio) ficam em VST_PROPRIEDADE.",
+    "SIT_UNIDADE": "Tabela do site, só leitura para a vistoria. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Situação, QR e ponto de GPS ficam em VST_UNIDADE.",
     "SIT_RESERVA": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out).",
-    "SIT_BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal).",
-    "VST_USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. O mesmo cadastro serve à gestão do site.",
-    "VST_USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas.",
-    "VST_LOG_EVENTO": "Auditoria: quem fez o quê e quando (login, envio, mudança de situação, rotação de QR, cadastros).",
+    "SIT_BLOQUEIO": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal). Só funções do banco escrevem aqui.",
+    "VST_USUARIO": "Quem usa o sistema: assessores no app, gestores e administradores no painel. É convidado pela equipe no Supabase Auth; o cadastro aberto está desligado.",
+    "VST_USUARIO_PROPRIEDADE": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas VST_.",
+    "VST_PROPRIEDADE": "Regras de presença da pousada: como o assessor prova que está no local, o raio aceito e o tempo mínimo de uma vistoria. Uma linha por SIT_PROPRIEDADE (1 para 1).",
+    "VST_UNIDADE": "Dados do chalé que só a vistoria usa: situação operacional, QR da porta, ponto de GPS e andar. Uma linha por SIT_UNIDADE (1 para 1).",
     "VST_AMBIENTE": "Cômodos de cada unidade, na ordem em que o assessor percorre.",
     "VST_ITEM": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada.",
-    "VST_TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma.",
+    "VST_TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma. O site identifica o tipo pelo código (ENTRADA, SAIDA).",
     "VST_TIPO_VISTORIA_ITEM": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo).",
-    "VST_VISTORIA": "Uma vistoria feita no celular: quem, onde, quando, presença validada, reserva e situação em que a unidade ficou.",
+    "VST_VISTORIA": "Uma vistoria, da agenda à conclusão: nasce AGENDADA (o site cria a Entrada e a Saída da reserva), o assessor assume, inicia e conclui pelo celular.",
     "VST_RESPOSTA": "A resposta de cada item: OK, PROBLEMA ou não se aplica.",
-    "VST_OCORRENCIA": "Problema encontrado que precisa de tratamento; pode tirar a unidade da venda.",
-    "VST_FOTO": "Evidência de uma resposta, com local e horário da câmera.",
+    "VST_OCORRENCIA": "Problema encontrado que precisa de tratamento; se o item é crítico, tira o chalé da venda.",
+    "VST_FOTO": "Evidência de uma resposta: guarda o caminho do arquivo no Storage, com local e horário da câmera.",
 }
 REGRAS = {
-    "SIT_PROPRIEDADE": ["Campos novos (+) são acrescentados à tabela do site; nada existente muda.",
-                    f"TP_VALIDACAO: {VALIDACAO}.", "Raio entre 10 e 1.000 m; precisão máxima entre 5 e 500 m.",
-                    "Substitui a antiga tabela CONFIGURACAO: os parâmetros ficam na pousada."],
-    "SIT_UNIDADE": ["Campos novos (+) acrescentados à tabela do site; TP_UNIDADE e SG_ATIVO valem para os dois produtos.",
-                "TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.",
-                "Só muda pela função alterar_situacao_unidade (grava VST_LOG_EVENTO).",
-                "CD_HASH_QR único; rotacionar soma 1 em NO_VERSAO_QR.",
-                "Latitude e longitude vêm juntas ou ficam vazias juntas."],
-    "SIT_RESERVA": ["A vistoria só lê: status, datas e unidade.", "Entrada no dia DT_CHECKIN, Saída no dia DT_CHECKOUT.",
-                "Estadias do Airbnb e do Booking não estão aqui: chegam como SIT_BLOQUEIO CANAL_EXTERNO."],
+    "SIT_PROPRIEDADE": ["A vistoria só lê: horários de check-in e check-out e o fuso.", "Nenhuma coluna foi acrescentada pela vistoria."],
+    "SIT_UNIDADE": ["A vistoria só lê o cadastro; TP_UNIDADE e SG_ATIVO valem para os dois produtos.", "Nenhuma coluna foi acrescentada pela vistoria: situação, QR e GPS estão em VST_UNIDADE."],
+    "SIT_RESERVA": ["A vistoria só lê: código, datas, unidade e status.", "Só CONFIRMADA gera vistoria; PENDENTE (pré-reserva de 30 minutos) não gera.",
+                    "Remarcada: a reserva nova aponta a antiga em ID_RESERVA_ORIGINAL e leva as vistorias AGENDADAS.",
+                    "O app nunca lê CPF, passaporte ou telefone: só código e datas, por função."],
     "SIT_BLOQUEIO": ["Ocorrência crítica cria bloqueio MANUTENCAO a partir de hoje, com prazo provisório de 7 dias (DT_FIM precisa ser depois de DT_INI).",
-                 "Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).",
-                 "Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.",
-                 "Nenhum campo novo: o vínculo fica em VST_OCORRENCIA.ID_BLOQUEIO."],
-    "VST_USUARIO": ["ID_USUARIO = auth.users.id (login do Supabase Auth).", "CD_LOGIN e CD_CPF únicos; CPF com 11 números e dígitos válidos.",
-                "TP_PERFIL: ASSESSOR, GESTOR ou ADMIN.", "Inativo não entra (checado no login e nas regras de acesso)."],
-    "VST_USUARIO_PROPRIEDADE": ["Chave composta: um acesso por usuário e pousada.", "ADMIN vê todas; os demais só as listadas aqui."],
-    "VST_LOG_EVENTO": ["Só inserção: ninguém altera nem apaga.", "Gravado pelas funções do banco, não pelo app."],
+                     "Liberar a unidade encerra o bloqueio (DT_FIM = amanhã).",
+                     "Reserva confirmada que já existe não é cancelada: o painel avisa o conflito.",
+                     "Só funções security definer escrevem aqui; o vínculo com a ocorrência fica em VST_OCORRENCIA.ID_BLOQUEIO."],
+    "VST_USUARIO": ["ID_USUARIO = auth.users.id (login do Supabase Auth).", "CD_LOGIN minúsculo e único; CD_CPF único, com 11 números e dígitos válidos.",
+                    "TP_PERFIL: ASSESSOR, GESTOR ou ADMIN.", "Inativo não entra (checado em todas as funções e regras de acesso)."],
+    "VST_USUARIO_PROPRIEDADE": ["Chave composta: um acesso por usuário e pousada.", "ADMIN vê todas as pousadas; os demais só as listadas aqui."],
+    "VST_PROPRIEDADE": ["TP_VALIDACAO: QR, GPS ou QR_E_GPS.", "Raio entre 10 e 1.000 m; precisão máxima entre 5 e 500 m; tempo mínimo entre 0 e 240 minutos.",
+                        "Latitude e longitude vêm juntas ou ficam vazias juntas.", "Sem coordenadas, o GPS não é conferido (a vistoria registra GPS_NAO_CONFIGURADO)."],
+    "VST_UNIDADE": ["Valores vazios herdam os da propriedade (validação, ponto, raio).", "TP_SITUACAO: EM_LIMPEZA, LIBERADO, OCUPADO, BLOQUEADO ou MANUTENCAO.",
+                    "Só muda pelas funções vst_alterar_situacao_unidade, vst_concluir_vistoria e vst_resolver_ocorrencia.",
+                    "CD_HASH_QR único e invisível ao app; rotacionar soma 1 em NO_VERSAO_QR."],
     "VST_AMBIENTE": ["Nome único por unidade.", "NO_ORDEM define a ordem do checklist."],
     "VST_ITEM": ["Nome único por cômodo.", "QTDE_ESPERADA ≥ 0 quando informada."],
-    "VST_TIPO_VISTORIA": ["TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.", "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL."],
+    "VST_TIPO_VISTORIA": ["CD_TIPO_VISTORIA único (ENTRADA e SAIDA vêm da migração; outros tipos podem existir).", "TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.",
+                          "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL."],
     "VST_TIPO_VISTORIA_ITEM": ["Chave composta: o item entra uma vez em cada tipo."],
-    "VST_VISTORIA": ["Id uuid v7 gerado no celular: reenviar não duplica.", "DT_FIM ≥ DT_INICIO.",
-                 "TP_STATUS: ENVIADA ou SINALIZADA; SINALIZADA exige DS_SINALIZACOES.",
-                 "Saída com SG_EXIGE_ENTRADA aponta a Entrada em ID_VISTORIA_ENTRADA.",
-                 "ID_RESERVA só aceita reserva da mesma unidade.", "Gravada só pela função enviar_vistoria."],
-    "VST_RESPOSTA": ["Chave composta: uma resposta por item na vistoria.", "TP_RESPOSTA: OK, PROBLEMA ou NAO_SE_APLICA.",
-                 "PROBLEMA exige DS_OBSERVACAO."],
-    "VST_OCORRENCIA": ["Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM).", "TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.",
-                   "TP_STATUS: ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA; RESOLVIDA exige DT_RESOLUCAO.",
-                   "ID_BLOQUEIO preenchido quando a unidade sai da venda."],
-    "VST_FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "Arquivo em bucket privado; CD_ARQUIVO único."],
+    "VST_VISTORIA": ["TP_STATUS: AGENDADA, EM_ANDAMENTO, CONCLUIDA ou CANCELADA.", "No máximo uma vistoria de cada tipo por reserva (UQ_VST_VISTORIA_RESERVA_TIPO); vistoria avulsa não tem reserva.",
+                     "A reserva e a Entrada têm de ser do mesmo chalé da vistoria.", "EM_ANDAMENTO e CONCLUIDA exigem responsável e início; CONCLUIDA exige fim.",
+                     "O site cria (AGENDADA), remarca e cancela; o app inicia e conclui por função."],
+    "VST_RESPOSTA": ["Chave composta: uma resposta por item na vistoria.", "TP_RESPOSTA: OK, PROBLEMA ou NAO_SE_APLICA.", "PROBLEMA exige DS_OBSERVACAO."],
+    "VST_OCORRENCIA": ["Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM); uma por resposta.", "TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.",
+                       "TP_STATUS: ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA; RESOLVIDA exige DT_RESOLUCAO.",
+                       "ID_BLOQUEIO preenchido quando o chalé sai da venda (se o bloqueio for apagado no site, o campo volta a ficar vazio)."],
+    "VST_FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "CD_ARQUIVO começa pelo ID_VISTORIA e termina em .jpg, .png ou .webp; único.",
+                 "Bucket privado vistorias, até 5 MB; o app não altera nem apaga fotos."],
 }
 ACESSO = {
-    "SIT_PROPRIEDADE": "Todos leem as pousadas a que têm acesso; ADMIN altera.",
-    "SIT_UNIDADE": "Leitura por acesso à pousada; situação muda só pela função; GESTOR e ADMIN cadastram.",
-    "SIT_RESERVA": "Leitura para GESTOR e ADMIN e para o assessor na agenda do dia; escrita só do site.",
-    "SIT_BLOQUEIO": "Leitura por acesso à pousada; criado e encerrado pelas funções da vistoria.",
-    "VST_USUARIO": "Cada um lê o próprio; GESTOR lê a equipe; ADMIN cadastra.",
-    "VST_USUARIO_PROPRIEDADE": "ADMIN mantém; cada um lê os próprios acessos.",
-    "VST_LOG_EVENTO": "GESTOR e ADMIN leem; só funções inserem.",
-    "VST_AMBIENTE": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
-    "VST_ITEM": "Leitura por acesso à pousada; GESTOR e ADMIN mantêm.",
-    "VST_TIPO_VISTORIA": "Todos leem; ADMIN mantém.",
-    "VST_TIPO_VISTORIA_ITEM": "Todos leem; GESTOR e ADMIN mantêm.",
-    "VST_VISTORIA": "Assessor lê as próprias; GESTOR e ADMIN leem as da pousada; insere só enviar_vistoria.",
-    "VST_RESPOSTA": "Mesma regra da vistoria.",
-    "VST_OCORRENCIA": "Leitura por acesso à pousada; GESTOR e ADMIN tratam.",
-    "VST_FOTO": "Mesma regra da vistoria; o arquivo sai por link assinado.",
+    "SIT_PROPRIEDADE": "O app não lê a tabela; recebe o necessário pelas funções.", "SIT_UNIDADE": "O app lê pelas funções vst_unidades e vst_agenda.",
+    "SIT_RESERVA": "O app não lê a tabela; vst_agenda devolve só código e datas.", "SIT_BLOQUEIO": "O app nunca escreve aqui: só as funções do banco.",
+    "VST_USUARIO": "Cada um lê o próprio; GESTOR lê a equipe das pousadas dele; ADMIN lê e mantém todos.",
+    "VST_USUARIO_PROPRIEDADE": "Cada um lê os próprios acessos; GESTOR lê os da pousada dele; ADMIN mantém.",
+    "VST_PROPRIEDADE": "Leitura por acesso à pousada; ADMIN altera a configuração.",
+    "VST_UNIDADE": "Leitura por acesso ao chalé, sem o código do QR; GESTOR e ADMIN ajustam GPS e andar; situação e QR só pelas funções.",
+    "VST_AMBIENTE": "Leitura por acesso ao chalé; GESTOR e ADMIN mantêm.", "VST_ITEM": "Leitura por acesso ao chalé; GESTOR e ADMIN mantêm.",
+    "VST_TIPO_VISTORIA": "Todo usuário ativo lê; ADMIN mantém.", "VST_TIPO_VISTORIA_ITEM": "Leitura por acesso ao chalé; GESTOR e ADMIN mantêm.",
+    "VST_VISTORIA": "Leitura por acesso ao chalé; escrita só pelas funções do app e pelo site (service_role).",
+    "VST_RESPOSTA": "Mesma regra da vistoria.", "VST_OCORRENCIA": "Leitura por acesso ao chalé; GESTOR e ADMIN tratam pela função vst_resolver_ocorrencia.",
+    "VST_FOTO": "Mesma regra da vistoria; o arquivo fica no Storage com política própria.",
 }
 INTEGRACAO = [
-    ("Cadastro único", "SIT_PROPRIEDADE e SIT_UNIDADE são as mesmas tabelas do site, no mesmo esquema public. O chalé cadastrado para a venda é o mesmo que o assessor vistoria; a vistoria só acrescenta campos (marcados com +)."),
-    ("Manutenção tira da venda", "Ocorrência crítica cria um SIT_BLOQUEIO MANUTENCAO. A consultar_disponibilidade do site e o iCal dos canais já respeitam SIT_BLOQUEIO: as datas saem da venda sem mudar nada no site. O bloqueio nasce com prazo provisório de 7 dias e é encurtado quando a unidade é liberada."),
-    ("Liberar devolve à venda", "Ao liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis."),
-    ("Reserva vira agenda", "Reservas CONFIRMADA geram a vistoria de Entrada no DT_CHECKIN e a de Saída no DT_CHECKOUT."),
+    ("Cadastro único", "SIT_PROPRIEDADE e SIT_UNIDADE são as tabelas do site, no mesmo schema \"SE\". A vistoria não acrescenta nenhuma coluna a elas: o que precisa fica em VST_PROPRIEDADE e VST_UNIDADE (1 para 1)."),
+    ("Reserva vira agenda", "Quando o site confirma o sinal (confirmar_sinal), cria a vistoria de Entrada (DT_CHECKIN) e a de Saída (DT_CHECKOUT), AGENDADA e sem responsável. Reserva remarcada: as AGENDADAS acompanham a reserva nova. Reserva cancelada: as AGENDADAS viram CANCELADA."),
     ("Saída ligada à estadia", "VST_VISTORIA.ID_RESERVA liga a vistoria à estadia do site. Estadias do Airbnb e do Booking chegam como SIT_BLOQUEIO CANAL_EXTERNO, sem reserva: nesse caso o campo fica vazio."),
-    ("Mesma equipe", "VST_USUARIO e VST_USUARIO_PROPRIEDADE servem também ao painel do site: um login para os dois produtos."),
+    ("Manutenção tira da venda", "Ocorrência crítica cria um SIT_BLOQUEIO MANUTENCAO, só por função security definer. A consultar_disponibilidade do site e o iCal dos canais já respeitam SIT_BLOQUEIO: as datas saem da venda sem mudar nada no site. O bloqueio nasce com prazo provisório de 7 dias e é encurtado quando a unidade é liberada."),
+    ("Liberar devolve à venda", "Ao resolver a ocorrência e liberar a unidade, o bloqueio aberto é encerrado (DT_FIM = amanhã) e as datas voltam a ficar disponíveis."),
+    ("Acesso e login", "VST_USUARIO.ID_USUARIO = auth.users.id; usuários são convidados pela equipe. O app usa só a chave publicável e o login do usuário, e lê reservas e chalés por funções que nunca devolvem CPF, passaporte nem telefone."),
     ("Conflito", "Um bloqueio não cancela reserva confirmada que já existe: o painel avisa o gestor para remanejar o hóspede."),
 ]
 FUNCOES = [
-    ("enviar_vistoria", "Recebe a vistoria do celular (com respostas e fotos), valida presença e regras, abre ocorrências, cria o bloqueio se preciso e muda a situação da unidade. Reenviar o mesmo id não duplica."),
-    ("validar_presenca", "Calcula a distância até o ponto da unidade e diz se está dentro do raio e com precisão aceitável."),
-    ("alterar_situacao_unidade", "Única porta para mudar TP_SITUACAO; liberar encerra o bloqueio de manutenção. Grava VST_LOG_EVENTO."),
-    ("rotacionar_qr", "Gera novo CD_HASH_QR e soma 1 em NO_VERSAO_QR: etiquetas antigas deixam de valer."),
+    ("vst_unidades()", "Chalés das pousadas do usuário, com a configuração efetiva de presença (sem o QR)."),
+    ("vst_agenda(dt_ini, dt_fim, id_unidade?)", "Vistorias do período, com código e datas da reserva; nunca dados do hóspede."),
+    ("vst_checklist(id_unidade, id_tipo_vistoria)", "Itens ativos do chalé para o tipo, na ordem de passagem."),
+    ("vst_resolver_qr(cd_hash_qr)", "Qual chalé é o do QR lido, se o usuário tem acesso."),
+    ("vst_criar_vistoria(…)", "Vistoria avulsa ou de rotina; reenviar o mesmo id não duplica."),
+    ("vst_atualizar_agenda(…)", "Gestão: atribui responsável, remarca ou cancela uma vistoria AGENDADA."),
+    ("vst_iniciar_vistoria(…)", "Assume a vistoria e valida a presença: QR errado é recusado; GPS fora do raio só sinaliza."),
+    ("vst_concluir_vistoria(…)", "Grava respostas e fotos, abre ocorrências, cria o bloqueio se item crítico e atualiza o chalé, numa transação."),
+    ("vst_registrar_foto(…)", "Registra foto enviada ao Storage depois da conclusão."),
+    ("vst_resolver_ocorrencia(…)", "Gestão: trata a ocorrência e, se pedido, libera o chalé e encerra o bloqueio."),
+    ("vst_bloquear_por_ocorrencia(…)", "Gestão: cria o bloqueio de manutenção de uma ocorrência (prazo provisório de 7 dias)."),
+    ("vst_alterar_situacao_unidade(…)", "Troca a situação do chalé (BLOQUEADO e MANUTENCAO só para a gestão)."),
+    ("vst_obter_qr / vst_rotacionar_qr(id_unidade)", "Gestão: QR para imprimir e rotação que invalida as etiquetas antigas."),
     ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com SIT_BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
 ]
 PREFIXOS = [("ID_", "identificador"), ("NM_", "nome"), ("DS_", "descrição ou texto livre"), ("DT_", "data ou data e hora"),
             ("HR_", "hora"), ("VL_", "valor (dinheiro, coordenada)"), ("QTDE_", "quantidade"), ("NO_", "número (ordem, versão)"),
             ("CD_", "código"), ("TP_", "lista fixa, valores em MAIÚSCULAS"), ("SG_", "sim/não (boolean)")]
 ORDEM = ["SIT_UNIDADE", "SIT_PROPRIEDADE", "SIT_RESERVA", "SIT_BLOQUEIO", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO",
-         "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_LOG_EVENTO"]
+         "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_PROPRIEDADE", "VST_UNIDADE", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE"]
 assert sorted(ORDEM) == sorted(T)
 
 
@@ -515,14 +543,16 @@ U1, U2 = "0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f01", "0192f3a0-6c1e-7b3a-9d11-5a2e4c
 V1, V2 = "0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4e01", "0193c9e0-1a2b-7c3d-8e4f-0a1b2c3d4e02"
 F1, F2 = "0193c9e8-5f6a-7b7c-8d9e-1f2a3b4c5d01", "0193c9e8-5f6a-7b7c-8d9e-1f2a3b4c5d02"
 SITE_TABS = ("SIT_PROPRIEDADE", "SIT_UNIDADE", "SIT_RESERVA", "SIT_BLOQUEIO")
-EX = {n: [dict(r) for r in EX_SITE[n]] for n in SITE_TABS}
-EX["SIT_PROPRIEDADE"][0].update(tp_validacao="QR_E_GPS", vl_latitude=-19.0847, vl_longitude=-43.5967, qtde_raio_metros=100,
-                                qtde_precisao_max_metros=50, qtde_minutos_min_vistoria=10)
-EX["SIT_UNIDADE"][0].update(ds_andar="Térreo", tp_validacao=None, vl_latitude=-19.0849, vl_longitude=-43.5969, qtde_raio_metros=60,
-                            tp_situacao="MANUTENCAO", cd_hash_qr="b7e2c91f4a6d", no_versao_qr=1, dt_atualizacao="2026-12-26T18:21:40+00:00")
+EX = {n: [{k.lower(): v for k, v in r.items()} for r in EX_SITE[n]] for n in SITE_TABS}
 EX["SIT_BLOQUEIO"].append(dict(id_bloqueio=3, id_unidade=1, dt_ini="2026-12-26", dt_fim="2027-01-02", tp_motivo="MANUTENCAO",
-                               id_calendario=None, cd_externo=None, ds_observacao="Torneira do banheiro (ocorrência 1)",
+                               id_calendario=None, cd_externo=None, ds_observacao="Vistoria · ocorrência 1: Torneira pingando sem parar; pia molhada.",
                                dt_criacao="2026-12-26T18:21:40+00:00"))
+EX["VST_PROPRIEDADE"] = [dict(id_propriedade=1, tp_validacao="QR_E_GPS", vl_latitude=-19.0847, vl_longitude=-43.5967, qtde_raio_metros=100,
+                              qtde_precisao_max_metros=50, qtde_minutos_min_vistoria=10, dt_criacao="2026-11-20T12:00:00+00:00",
+                              dt_atualizacao="2026-11-20T12:00:00+00:00")]
+EX["VST_UNIDADE"] = [dict(id_unidade=1, ds_andar="Térreo", tp_validacao=None, vl_latitude=-19.0849, vl_longitude=-43.5969, qtde_raio_metros=60,
+                          tp_situacao="MANUTENCAO", cd_hash_qr="b7e2c91f4a6d4c3e9a1f8d05c2b6e437", no_versao_qr=1,
+                          dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-12-26T18:21:40+00:00")]
 EX["VST_USUARIO"] = [
     dict(id_usuario=U1, nm_usuario="Marina Lopes", cd_login="marina.lopes", cd_cpf="39053344705", tp_perfil="ASSESSOR", sg_ativo=True,
          dt_aceite_lgpd="2026-11-20T12:30:00+00:00", dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-11-20T12:30:00+00:00"),
@@ -530,54 +560,50 @@ EX["VST_USUARIO"] = [
          dt_aceite_lgpd=None, dt_criacao="2026-11-20T12:05:00+00:00", dt_atualizacao="2026-11-20T12:05:00+00:00")]
 EX["VST_USUARIO_PROPRIEDADE"] = [dict(id_usuario=U1, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00"),
                                  dict(id_usuario=U2, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00")]
-EX["VST_LOG_EVENTO"] = [
-    dict(id_log_evento=1, id_usuario=U1, id_propriedade=1, tp_evento="VISTORIA_ENVIADA", nm_entidade="VST_VISTORIA", cd_registro=V2,
-         ds_evento="Marina Lopes enviou a vistoria de Saída da Casa do Mirante", ds_dados=None, dt_evento="2026-12-26T18:21:40+00:00"),
-    dict(id_log_evento=2, id_usuario=None, id_propriedade=1, tp_evento="SITUACAO_ALTERADA", nm_entidade="SIT_UNIDADE", cd_registro="1",
-         ds_evento="Casa do Mirante: EM_LIMPEZA → MANUTENCAO (ocorrência crítica)", ds_dados={"de": "EM_LIMPEZA", "para": "MANUTENCAO"},
-         dt_evento="2026-12-26T18:21:41+00:00")]
 EX["VST_AMBIENTE"] = [
     dict(id_ambiente=1, id_unidade=1, nm_ambiente="Sala", no_ordem=1, ds_foto_referencia="ambientes/1/sala.jpg", sg_ativo=True, dt_criacao="2026-11-20T13:00:00+00:00"),
     dict(id_ambiente=2, id_unidade=1, nm_ambiente="Quarto", no_ordem=2, ds_foto_referencia="ambientes/1/quarto.jpg", sg_ativo=True, dt_criacao="2026-11-20T13:02:00+00:00"),
     dict(id_ambiente=3, id_unidade=1, nm_ambiente="Banheiro", no_ordem=3, ds_foto_referencia=None, sg_ativo=True, dt_criacao="2026-11-20T13:04:00+00:00")]
 EX["VST_ITEM"] = [
-    dict(id_item=1, id_ambiente=1, nm_item="Sofá e almofadas", ds_orientacao="Sem manchas ou rasgos; almofadas no lugar.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True),
-    dict(id_item=2, id_ambiente=2, nm_item="Cama e roupa de cama", ds_orientacao="Cama arrumada, sem manchas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True),
-    dict(id_item=3, id_ambiente=3, nm_item="Torneira e pia", ds_orientacao="Abrir e fechar; ver se pinga ou vaza.", sg_critico=True, sg_foto_obrigatoria=True, qtde_esperada=None, no_ordem=1, sg_ativo=True),
-    dict(id_item=4, id_ambiente=3, nm_item="Toalhas de banho", ds_orientacao="Contar e ver se estão limpas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=4, no_ordem=2, sg_ativo=True)]
+    dict(id_item=1, id_ambiente=1, nm_item="Sofá e almofadas", ds_orientacao="Sem manchas ou rasgos; almofadas no lugar.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True, dt_criacao="2026-11-20T13:10:00+00:00"),
+    dict(id_item=2, id_ambiente=2, nm_item="Cama e roupa de cama", ds_orientacao="Cama arrumada, sem manchas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=None, no_ordem=1, sg_ativo=True, dt_criacao="2026-11-20T13:11:00+00:00"),
+    dict(id_item=3, id_ambiente=3, nm_item="Torneira e pia", ds_orientacao="Abrir e fechar; ver se pinga ou vaza.", sg_critico=True, sg_foto_obrigatoria=True, qtde_esperada=None, no_ordem=1, sg_ativo=True, dt_criacao="2026-11-20T13:12:00+00:00"),
+    dict(id_item=4, id_ambiente=3, nm_item="Toalhas de banho", ds_orientacao="Contar e ver se estão limpas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=4, no_ordem=2, sg_ativo=True, dt_criacao="2026-11-20T13:13:00+00:00")]
 EX["VST_TIPO_VISTORIA"] = [
-    dict(id_tipo_vistoria=1, nm_tipo_vistoria="Entrada", tp_comportamento="ENTRADA", tp_periodicidade=None, sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T13:10:00+00:00"),
-    dict(id_tipo_vistoria=2, nm_tipo_vistoria="Saída", tp_comportamento="SAIDA", tp_periodicidade=None, sg_exige_entrada=True, sg_exige_assinatura=True, sg_ativo=True, dt_criacao="2026-11-20T13:11:00+00:00"),
-    dict(id_tipo_vistoria=3, nm_tipo_vistoria="Rotina semanal", tp_comportamento="ROTINA", tp_periodicidade="SEMANAL", sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T13:12:00+00:00")]
+    dict(id_tipo_vistoria=1, cd_tipo_vistoria="ENTRADA", nm_tipo_vistoria="Entrada", tp_comportamento="ENTRADA", tp_periodicidade=None, sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00"),
+    dict(id_tipo_vistoria=2, cd_tipo_vistoria="SAIDA", nm_tipo_vistoria="Saída", tp_comportamento="SAIDA", tp_periodicidade=None, sg_exige_entrada=True, sg_exige_assinatura=True, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00"),
+    dict(id_tipo_vistoria=3, cd_tipo_vistoria="ROTINA", nm_tipo_vistoria="Rotina", tp_comportamento="ROTINA", tp_periodicidade="SEMANAL", sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00")]
 EX["VST_TIPO_VISTORIA_ITEM"] = [dict(id_tipo_vistoria=1, id_item=3, no_ordem=1), dict(id_tipo_vistoria=2, id_item=3, no_ordem=1),
                                 dict(id_tipo_vistoria=2, id_item=4, no_ordem=2)]
 EX["VST_VISTORIA"] = [
-    dict(id_vistoria=V1, id_vistoria_entrada=None, id_usuario=U1, id_unidade=1, id_tipo_vistoria=1, id_reserva=1, tp_validacao="QR_E_GPS",
-         dt_inicio="2026-12-23T17:40:00+00:00", dt_fim="2026-12-23T17:52:00+00:00", dt_recebimento="2026-12-23T17:52:30+00:00",
-         vl_latitude=-19.0850, vl_longitude=-43.5970, qtde_precisao_metros=8, qtde_distancia_metros=14, sg_fora_raio=False, tp_status="ENVIADA",
-         ds_sinalizacoes=None, ds_assinatura=None, tp_situacao_resultante="OCUPADO", ds_observacao=None),
-    dict(id_vistoria=V2, id_vistoria_entrada=V1, id_usuario=U1, id_unidade=1, id_tipo_vistoria=2, id_reserva=1, tp_validacao="QR_E_GPS",
-         dt_inicio="2026-12-26T18:05:00+00:00", dt_fim="2026-12-26T18:21:00+00:00", dt_recebimento="2026-12-26T18:21:40+00:00",
-         vl_latitude=-19.0851, vl_longitude=-43.5971, qtde_precisao_metros=11, qtde_distancia_metros=22, sg_fora_raio=False, tp_status="ENVIADA",
-         ds_sinalizacoes=None, ds_assinatura="assinaturas/2026/12/" + V2 + ".png", tp_situacao_resultante="MANUTENCAO", ds_observacao="Torneira do banheiro vazando.")]
+    dict(id_vistoria=V1, id_vistoria_entrada=None, id_usuario=U1, id_unidade=1, id_tipo_vistoria=1, id_reserva=1, dt_agendada="2026-12-23", tp_status="CONCLUIDA",
+         dt_inicio="2026-12-23T17:40:00+00:00", dt_fim="2026-12-23T17:52:00+00:00", tp_validacao="QR_E_GPS", dt_recebimento="2026-12-23T17:52:30+00:00",
+         vl_latitude=-19.0850, vl_longitude=-43.5970, qtde_precisao_metros=8, qtde_distancia_metros=14, sg_fora_raio=False,
+         ds_sinalizacoes=None, ds_assinatura=None, tp_situacao_resultante="OCUPADO", ds_observacao=None,
+         dt_criacao="2026-11-18T13:19:00+00:00", dt_atualizacao="2026-12-23T17:52:30+00:00"),
+    dict(id_vistoria=V2, id_vistoria_entrada=V1, id_usuario=U1, id_unidade=1, id_tipo_vistoria=2, id_reserva=1, dt_agendada="2026-12-26", tp_status="CONCLUIDA",
+         dt_inicio="2026-12-26T18:05:00+00:00", dt_fim="2026-12-26T18:21:00+00:00", tp_validacao="QR_E_GPS", dt_recebimento="2026-12-26T18:21:40+00:00",
+         vl_latitude=-19.0851, vl_longitude=-43.5971, qtde_precisao_metros=11, qtde_distancia_metros=22, sg_fora_raio=False,
+         ds_sinalizacoes=None, ds_assinatura="assinaturas/2026/12/" + V2 + ".png", tp_situacao_resultante="MANUTENCAO", ds_observacao="Torneira do banheiro vazando.",
+         dt_criacao="2026-11-18T13:19:00+00:00", dt_atualizacao="2026-12-26T18:21:40+00:00")]
 EX["VST_RESPOSTA"] = [
     dict(id_vistoria=V1, id_item=3, tp_resposta="OK", qtde_encontrada=None, ds_observacao=None, dt_resposta="2026-12-23T17:45:00+00:00"),
     dict(id_vistoria=V2, id_item=3, tp_resposta="PROBLEMA", qtde_encontrada=None, ds_observacao="Torneira pingando sem parar; pia molhada.", dt_resposta="2026-12-26T18:10:00+00:00"),
     dict(id_vistoria=V2, id_item=4, tp_resposta="OK", qtde_encontrada=4, ds_observacao=None, dt_resposta="2026-12-26T18:14:00+00:00")]
 EX["VST_OCORRENCIA"] = [
     dict(id_ocorrencia=1, id_vistoria=V2, id_item=3, id_unidade=1, id_bloqueio=3, tp_gravidade="CRITICA", tp_status="EM_TRATAMENTO",
-         ds_ocorrencia="Torneira do banheiro vazando.", ds_tratamento="Encanador agendado para 28/12.", dt_abertura="2026-12-26T18:21:40+00:00", dt_resolucao=None)]
+         ds_ocorrencia="Torneira pingando sem parar; pia molhada.", ds_tratamento="Encanador agendado para 28/12.", dt_abertura="2026-12-26T18:21:00+00:00", dt_resolucao=None)]
 EX["VST_FOTO"] = [
-    dict(id_foto=F1, id_vistoria=V2, id_item=3, cd_arquivo="vistorias/2026/12/" + V2 + "/torneira-1.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
+    dict(id_foto=F1, id_vistoria=V2, id_item=3, cd_arquivo=V2 + "/torneira-1.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
          qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:11:00+00:00"),
-    dict(id_foto=F2, id_vistoria=V2, id_item=3, cd_arquivo="vistorias/2026/12/" + V2 + "/torneira-2.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
+    dict(id_foto=F2, id_vistoria=V2, id_item=3, cd_arquivo=V2 + "/torneira-2.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
          qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:12:00+00:00")]
 CAP = {
     "SIT_PROPRIEDADE": ["A pousada"], "SIT_UNIDADE": ["A Casa do Mirante"],
     "SIT_RESERVA": ["1 · Confirmada no site", "2 · Pré-reserva aguardando Pix"],
     "SIT_BLOQUEIO": ["Reserva vinda do Airbnb", "Manutenção marcada pela equipe", "Aberta pela vistoria"],
     "VST_USUARIO": ["Assessora", "Gestor"], "VST_USUARIO_PROPRIEDADE": ["Marina na pousada", "Carlos na pousada"],
-    "VST_LOG_EVENTO": ["Envio de vistoria", "Mudança de situação (sistema)"],
+    "VST_PROPRIEDADE": ["A pousada"], "VST_UNIDADE": ["A Casa do Mirante"],
     "VST_AMBIENTE": ["Sala", "Quarto", "Banheiro"], "VST_ITEM": ["Item comum", "Item comum", "Item crítico", "Item com contagem"],
     "VST_TIPO_VISTORIA": ["Entrada", "Saída", "Rotina"], "VST_TIPO_VISTORIA_ITEM": ["Entrada confere a torneira", "Saída confere a torneira", "Saída conta as toalhas"],
     "VST_VISTORIA": ["Entrada de 23/12", "Saída de 26/12"],
@@ -602,7 +628,11 @@ def fmt(col, v):
     if isinstance(v, bool):
         return "sim" if v else "não"
     if isinstance(v, list):
-        return f"{len(v)} noites: " + " + ".join(brl(x["vl_noite"]).replace("R$ ", "") for x in v)
+        if col == "DS_DETALHE_PRECOS":
+            return f"{len(v)} noites: " + " + ".join(brl(x["vl_noite"]).replace("R$ ", "") for x in v)
+        if col == "DS_ACOMPANHANTES":
+            return f"{len(v)} acompanhantes: " + ", ".join(esc(x.get("nome", "")) for x in v)
+        return esc(json.dumps(v, ensure_ascii=False))
     if isinstance(v, dict):
         return esc(json.dumps(v, ensure_ascii=False))
     if col in ("VL_LATITUDE", "VL_LONGITUDE"):
@@ -661,9 +691,15 @@ def painel(n):
     lig = []
     for f, c, p, pk, rot, _ in E:
         if f == n:
+            if (f, c) in UM_PARA_UM:
+                lig.append(f'<li><code>{c}</code> → {p} <i>({esc(rot)})</i>: é a própria chave; cada {n} aponta para exatamente 1 {p}.</li>')
+                continue
             lig.append(f'<li><code>{c}</code> → {p} <i>({esc(rot)})</i>: cada {n} aponta para {"exatamente" if obrig(f, c) else "no máximo"} 1 {p}.</li>')
     for f, c, p, pk, rot, _ in E:
         if p == n and f != n:
+            if (f, c) in UM_PARA_UM:
+                lig.append(f'<li>{f}.<code>{c}</code> <i>({esc(rot)})</i>: cada {n} tem zero ou um {f} (1 para 1).</li>')
+                continue
             lig.append(f'<li>{f}.<code>{c}</code> <i>({esc(rot)})</i>: cada {n} pode ter zero ou vários {f}.</li>')
     nota = '<p class="dlink">Os demais campos e regras desta tabela estão no DER das Reservas (projeto Site).</p>' if g == "site" else ""
     return f'''<template id="d-{n}"><div class="dt g-{g}">
@@ -677,13 +713,14 @@ def painel(n):
 
 
 PASSOS = [
-    ("23/12 14:40", "Marina faz a vistoria de Entrada antes de a hóspede chegar, com QR e GPS a 14 m da casa.", "VST_VISTORIA 1", "OCUPADO"),
-    ("26/12 12:00", "Check-out da reserva SE-7F3A2C1D. A Saída aparece na agenda a partir do DT_CHECKOUT.", "SIT_RESERVA 1", "—"),
-    ("26/12 15:05", "Marina começa a Saída. A vistoria aponta a Entrada (ID_VISTORIA_ENTRADA = 1) e a estadia (ID_RESERVA = 1). GPS a 22 m, dentro do raio de 60 m.", "VST_VISTORIA 2", "—"),
+    ("18/11 13:19", "O hóspede paga o sinal e o site confirma a reserva SE-7F3A2C1D. No mesmo momento cria as vistorias de Entrada (DT_AGENDADA = check-in) e de Saída (check-out), AGENDADA e sem responsável.", "SIT_RESERVA 1, VST_VISTORIA 1 e 2", "—"),
+    ("23/12 14:40", "Marina assume a Entrada, lê o QR da porta e confere o GPS (14 m do ponto). A vistoria vira CONCLUIDA às 14:52.", "VST_VISTORIA 1", "OCUPADO"),
+    ("26/12 12:00", "Check-out da reserva. A Saída está na agenda do dia (DT_AGENDADA = DT_CHECKOUT).", "SIT_RESERVA 1", "—"),
+    ("26/12 15:05", "Marina inicia a Saída (vst_iniciar_vistoria): QR certo, GPS a 22 m, dentro do raio de 60 m. A vistoria passa a EM_ANDAMENTO e aponta a Entrada (ID_VISTORIA_ENTRADA = 1).", "VST_VISTORIA 2", "—"),
     ("26/12 15:10", "Em “Torneira e pia”, item crítico, responde PROBLEMA, descreve o defeito e tira 2 fotos (foto obrigatória).", "VST_RESPOSTA, VST_FOTO", "—"),
-    ("26/12 15:21", "Envia. A função enviar_vistoria grava tudo, abre a ocorrência 1 (CRITICA), cria o bloqueio 3 (MANUTENCAO, 26/12 a 02/01, prazo provisório) e muda a unidade. O log registra.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3, VST_LOG_EVENTO", "MANUTENCAO"),
-    ("26/12 15:22", "No site, consultar_disponibilidade já devolve essas noites como bloqueadas e o iCal leva a mesma janela ao Airbnb e ao Booking. Nada muda no código do site.", "SIT_BLOQUEIO 3", "MANUTENCAO"),
-    ("28/12", "O gestor marca a ocorrência como RESOLVIDA e libera a unidade. O bloqueio é encerrado (DT_FIM = 29/12) e as datas voltam à venda.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "LIBERADO"),
+    ("26/12 15:21", "Conclui (vst_concluir_vistoria), com assinatura. O banco abre a ocorrência 1 (CRITICA), cria o bloqueio 3 (MANUTENCAO, 26/12 a 02/01, prazo provisório) e muda o chalé. SIT_AUDITORIA registra cada gravação.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "MANUTENCAO"),
+    ("26/12 15:22", "No site, consultar_disponibilidade já devolve essas noites como ocupadas e o iCal leva a mesma janela ao Airbnb e ao Booking. Nada muda no código do site.", "SIT_BLOQUEIO 3", "MANUTENCAO"),
+    ("28/12", "O gestor resolve a ocorrência e libera o chalé (vst_resolver_ocorrencia). O bloqueio é encerrado (DT_FIM = 29/12) e as datas voltam à venda.", "VST_OCORRENCIA 1, SIT_BLOQUEIO 3", "LIBERADO"),
 ]
 
 
@@ -1005,16 +1042,15 @@ def pagina():
   <header class="top">
     <div>
       <h1>DER das Vistorias</h1>
-      <p class="sub">Solar do Espinhaço · integrado ao banco de reservas do site · PostgreSQL (Supabase), esquema public · {VERSAO} · prefixo VST_ = projeto Vistorias, SIT_ = projeto Site</p>
+      <p class="sub">Solar do Espinhaço · integrado ao banco de reservas do site · PostgreSQL (Supabase), schema "SE" · {VERSAO} · prefixo VST_ = projeto Vistorias, SIT_ = projeto Site</p>
     </div>
-    <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>4</b> do site</span><span><b>{ncols}</b> campos</span><span><b>{novos}</b> novos no site</span><span><b>{len(E)}</b> ligações</span></div>
+    <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>4</b> do site</span><span><b>{ncols}</b> campos</span><span><b>0</b> colunas novas no site</span><span><b>{len(E)}</b> ligações</span></div>
   </header>
 
   <div class="legend" aria-label="Legenda">
     <span class="it"><span class="k kp">PK</span> chave primária</span>
     <span class="it"><span class="k kf">FK</span> chave estrangeira</span>
     <span class="it"><span class="k">CAMPO?</span> opcional (aceita vazio)</span>
-    <span class="it"><span class="k ka">+ CAMPO</span> novo numa tabela do site</span>
     <span class="it"><span class="k">gerado · auto</span> preenchido pelo banco</span>
     {leg}
     {grupos}
@@ -1056,7 +1092,7 @@ def pagina():
 {passo_a_passo()}
 
   <h2>Exemplos de dados</h2>
-  <p class="hint">Linhas fictícias que contam uma história só: a Marina faz a Entrada e a Saída da reserva SE-7F3A2C1D, acha uma torneira vazando e o chalé sai da venda. Os IDs batem entre as tabelas (a vistoria 2 aponta a reserva 1, a ocorrência 1 aponta o bloqueio 3). As tabelas do site usam as linhas do DER das Reservas; os campos novos (+) estão em verde. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
+  <p class="hint">Linhas fictícias que contam uma história só: a Marina faz a Entrada e a Saída da reserva SE-7F3A2C1D, acha uma torneira vazando e o chalé sai da venda. Os IDs batem entre as tabelas (a vistoria 2 aponta a reserva 1, a ocorrência 1 aponta o bloqueio 3). As tabelas do site usam as linhas do DER das Reservas. Clique numa tabela do diagrama para destacar o exemplo dela.</p>
   <div class="exs">
 {chr(10).join(exemplo(n) for n in ORDEM)}
   </div>
@@ -1067,7 +1103,7 @@ def pagina():
   </ul>
 
   <h2>Nomenclatura</h2>
-  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): toda tabela do projeto Vistorias começa com <b>VST_</b> e as do projeto Site com <b>SIT_</b>, para separar os projetos no mesmo banco. Tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições com o nome completo da tabela (PK_VST_VISTORIA, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_, EX_, IX_). Os campos não levam o prefixo da tabela. Ids bigint identity; uuid v7 onde o celular cria o registro offline (VST_VISTORIA, VST_FOTO).</p>
+  <p class="nota">Mesmo padrão do banco do site (site/database/README.md): tudo no schema <b>"SE"</b>, em MAIÚSCULAS entre aspas (select * from "SE"."VST_VISTORIA"). Toda tabela do projeto Vistorias começa com <b>VST_</b> e as do projeto Site com <b>SIT_</b>, para separar os projetos no mesmo banco; as funções do app começam com <b>vst_</b>. Tabelas no singular, nomes em MAIÚSCULAS, valores de TP_ em MAIÚSCULAS, restrições com o nome completo da tabela (PK_VST_VISTORIA, FK_&lt;FILHA&gt;_&lt;PAI&gt;, UQ_, CK_, EX_, IX_). Os campos não levam o prefixo da tabela. Ids bigint identity; uuid onde o celular pode criar o registro offline (VST_VISTORIA, VST_FOTO).</p>
   <ul class="pref">{"".join(f"<li><code>{a}</code> {esc(b)}</li>" for a, b in PREFIXOS)}</ul>
 </div>
 
@@ -1095,7 +1131,11 @@ def markdown():
         l.append("")
     l += ["## Ligações\n", "| Filha | Campo | Pai | Obrigatória | Leitura |", "|---|---|---|---|---|"]
     l += [f"| `{f}` | {'`ID_VISTORIA` + ' if (f, 'ID_VISTORIA') in COMPOSTAS else ''}`{c}` | `{p}` | {'sim' if obrig(f, c) else 'não'} | {r} |" for f, c, p, pk, r, _ in E]
-    l += ["", "`VST_USUARIO.ID_USUARIO` também referencia `auth.users` (Supabase Auth).", ""]
+    l += ["", "`VST_USUARIO.ID_USUARIO` também referencia `auth.users` (Supabase Auth).", "",
+          "## Funções do app\n", "Todas em minúsculas, `security definer`, executáveis só pelo usuário logado (`authenticated`). Detalhes e parâmetros em [`README.md`](./README.md).\n",
+          "| Função | Para que serve |", "|---|---|"]
+    l += [f"| `{a}` | {b} |" for a, b in FUNCOES]
+    l.append("")
     return "\n".join(l)
 
 

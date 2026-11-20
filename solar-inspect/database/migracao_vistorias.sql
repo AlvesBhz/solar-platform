@@ -951,6 +951,7 @@ do $$ declare t text; begin
                    'TG_' || t || '_AUDITORIA', t);
   end loop;
 end $$;
+grant usage on schema "SE" to authenticated, service_role;      -- o site já concede; repetir não faz mal
 grant usage, select on all sequences in schema "SE" to service_role;
 
 -- o app (authenticated) lê o catálogo e os registros; escrever só pelas funções, exceto cadastros da gestão
