@@ -202,8 +202,9 @@ const Booking = (() => {
     checkin:   null,
     checkout:  null,
     adults:    2,
-    children:  1,
-    babies:    0,
+    children:  0,   // 5 a 8 anos
+    older:     0,   // 9 a 13 anos
+    babies:    0,   // até 4 anos
     active:    null,
     selecting: false,
     start:     null,
@@ -211,6 +212,7 @@ const Booking = (() => {
     cy: TODAY.getFullYear(),
     cm: TODAY.getMonth(),
     blocked:   [],
+    aviso:     '',
   };
 
   /* helpers */
@@ -229,10 +231,11 @@ const Booking = (() => {
     const g = document.getElementById('guestsDisplay');
     if (g) {
       const parts = [`${s.adults} ${I18N.t(s.adults === 1 ? 'Adulto' : 'Adultos')}`];
-      if (s.children) parts.push(`${s.children} ${I18N.t(s.children === 1 ? 'Criança' : 'Crianças')}`);
-      if (s.babies)   parts.push(`${s.babies} ${I18N.t(s.babies === 1 ? 'Bebê' : 'Bebês')}`);
+      const kids = s.children + s.older + s.babies;
+      if (kids) parts.push(`${kids} ${I18N.t(kids === 1 ? 'Criança' : 'Crianças')}`);
       g.textContent = parts.join(', ');
     }
+    if (window.Disponibilidade) Disponibilidade.estadoMudou();
   }
 
   /* ── Fecha popovers ── */
@@ -257,7 +260,9 @@ const Booking = (() => {
 
   /* ── Seleciona data ── */
   function pickDay(date) {
+    const D = window.Disponibilidade;
     if (!s.selecting) {
+      if (D && D.noiteOcupada(date)) return;            // dia indisponível não vira check-in
       s.start     = date;
       s.selecting = true;
       s.checkin   = null;
@@ -271,6 +276,12 @@ const Booking = (() => {
         s.hover = null;
         refresh();
       } else {
+        const v = D ? D.saidaValida(s.start, date) : { ok: true };
+        if (!v.ok) {
+          if (v.motivo === 'min') { s.aviso = I18N.t('Mínimo de {n} noites para essas datas').replace('{n}', v.min); refresh(); }
+          else if (!D.noiteOcupada(date)) { s.start = date; s.hover = null; refresh(); }  // atravessa dia ocupado: recomeça daqui
+          return;
+        }
         s.checkin   = s.start;
         s.checkout  = date;
         s.selecting = false;
@@ -390,10 +401,13 @@ const Booking = (() => {
     } else {
       const hint = document.createElement('span');
       hint.className = 'cal-hint';
-      hint.textContent = I18N.t(s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado');
+      hint.textContent = s.aviso || I18N.t(s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado');
+      if (s.aviso) hint.classList.add('cal-aviso');
+      s.aviso = '';
       footer.appendChild(hint);
     }
     pop.appendChild(footer);
+    if (window.Disponibilidade) Disponibilidade.precosNoCalendario(pop, s.cy, s.cm);
     return pop;
   }
 
@@ -420,17 +434,19 @@ const Booking = (() => {
 
   /* ── Hóspedes ──
      Capacidade da Casa do Mirante (mesmas regras do banco, tabela UNIDADE):
-     até 2 adultos (14+ anos) e até 2 crianças e bebês somados (sofá-cama).
-     Bebês (até 1 ano) não pagam, mas ocupam vaga. */
-  const CAPACIDADE = { adultos: 2, criancasEBebes: 2 };
+     até 2 adultos (14+ anos) e até 2 crianças somadas (sofá-cama), de qualquer idade.
+     Criança paga um percentual do valor por pessoa da diária: 9 a 13 anos 100%, 5 a 8 anos 30%,
+     até 4 anos não paga (mas ocupa vaga). */
+  const CAPACIDADE = { adultos: 2, criancas: 2 };
   function buildGuests() {
     const pop = document.createElement('div');
     pop.className = 'bk-pop bk-pop-guests';
     const rows = {};
     const limite = {
       adults:   () => ({ min: 1, max: CAPACIDADE.adultos }),
-      children: () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.babies }),
-      babies:   () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.children }),
+      older:    () => ({ min: 0, max: CAPACIDADE.criancas - s.children - s.babies }),
+      children: () => ({ min: 0, max: CAPACIDADE.criancas - s.older - s.babies }),
+      babies:   () => ({ min: 0, max: CAPACIDADE.criancas - s.older - s.children }),
     };
     function sync() {
       Object.keys(rows).forEach(key => {
@@ -465,10 +481,11 @@ const Booking = (() => {
       return r;
     }
     pop.appendChild(row(I18N.t('Adultos'),  I18N.t('14+ anos'),  'adults'));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children'));
-    pop.appendChild(row(I18N.t('Bebês'),    I18N.t('até 1 ano · não paga'), 'babies'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('9 a 13 anos · 100%'), 'older'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('5 a 8 anos · 30%'), 'children'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('até 4 anos · não paga'), 'babies'));
     const nota = document.createElement('div'); nota.className = 'gst-note';
-    nota.textContent = I18N.t('Bebês contam como criança na ocupação, mas não pagam. Máximo: 2 adultos e 2 crianças ou bebês.');
+    nota.textContent = I18N.t('Criança paga um percentual do valor por pessoa da diária. Máximo: 2 adultos e 2 crianças.');
     pop.appendChild(nota);
     sync();
     return pop;
@@ -539,6 +556,7 @@ function setLang(l) {
   Booking.close();
   Booking.updateDisplays();
   if (window.refreshFilterLabel) window.refreshFilterLabel();
+  if (window.Disponibilidade) Disponibilidade.idiomaMudou();
 }
 
 // inicializa no idioma escolhido na última visita (padrão: PT)
@@ -753,12 +771,21 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
 function openBkPopup(e) {
   if (e) e.stopPropagation();
   document.getElementById('bkPopup').classList.add('is-open');
-  document.body.style.overflow = 'hidden';
+  if (!document.body.classList.contains('bk-lock')) {
+    window._bkY = window.scrollY;
+    document.body.style.top = '-' + window._bkY + 'px';
+    document.body.classList.add('bk-lock');
+  }
   Booking.updateDisplays();
 }
 function closeBkPopup() {
   document.getElementById('bkPopup').classList.remove('is-open');
-  document.body.style.overflow = '';
+  if (document.body.classList.contains('bk-lock')) {
+    document.body.classList.remove('bk-lock');
+    document.body.style.top = '';
+    window.scrollTo({ top: window._bkY || 0, behavior: 'instant' });
+  }
+  if (window.Disponibilidade) Disponibilidade.esconder();
   Booking.close();
 }
 document.addEventListener('click', function(e) {
@@ -768,7 +795,11 @@ document.addEventListener('click', function(e) {
   // o clique foi dentro do popup — não fechar.
   if (!e.target.isConnected) return;
   var bar = document.getElementById('bookingBar');
-  if (bar && !bar.contains(e.target)) closeBkPopup();
+  var res = document.getElementById('bkResult');
+  if (res && res.classList.contains('is-on')) return;   /* com resultado na tela, só fecha pelo X */
+  var ag = document.getElementById('bkAgain');
+  if (ag && ag.contains(e.target)) return;               /* a seta de pesquisar de novo não fecha a janela */
+  if (bar && !bar.contains(e.target) && !(res && res.contains(e.target))) closeBkPopup();
 });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBkPopup(); });
 
@@ -793,6 +824,12 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
     }
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { goTo(i); startTimer(); });
+    });
+    // tocar na foto passa para a próxima (os pontinhos continuam escolhendo a foto)
+    container.style.cursor = 'pointer';
+    container.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      goTo(current + 1); startTimer();
     });
     startTimer();
   });
@@ -822,6 +859,12 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
 
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { goTo(i); startTimer(); });
+    });
+    // tocar na foto passa para a próxima (os pontinhos continuam escolhendo a foto)
+    container.style.cursor = 'pointer';
+    container.addEventListener('click', function (e) {
+      if (e.target.closest('button')) return;
+      goTo(current + 1); startTimer();
     });
 
     startTimer();

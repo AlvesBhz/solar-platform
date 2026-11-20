@@ -1,4 +1,4 @@
--- Extrai tabelas, campos, FKs e regras do schema public em JSON (entrada do gerar_der.py).
+-- Extrai tabelas, campos, FKs e regras do schema "SE" em JSON (entrada do gerar_der.py).
 -- Uso: psql -At -f exportar_estrutura.sql > schema.json
 with cols as (
   select c.table_name t, c.ordinal_position o, upper(c.column_name) n,
@@ -9,13 +9,13 @@ with cols as (
               when c.data_type='numeric' then 'numeric('||c.numeric_precision||','||c.numeric_scale||')'
               else c.data_type end ty,
          c.is_nullable='NO' req, c.is_generated='ALWAYS' gen, c.is_identity='YES' ident
-  from information_schema.columns c where c.table_schema='public'),
-pk as (select tc.table_name t, upper(k.column_name) n from information_schema.table_constraints tc join information_schema.key_column_usage k using (constraint_name, table_schema) where tc.constraint_type='PRIMARY KEY' and tc.table_schema='public'),
+  from information_schema.columns c where c.table_schema='SE'),
+pk as (select tc.table_name t, upper(k.column_name) n from information_schema.table_constraints tc join information_schema.key_column_usage k using (constraint_name, table_schema) where tc.constraint_type='PRIMARY KEY' and tc.table_schema='SE'),
 fk as (select upper(cl.relname) t, upper(a.attname) n, upper(cf.relname) rt, upper(af.attname) rn, upper(co.conname) nm
   from pg_constraint co join pg_class cl on cl.oid=co.conrelid join pg_class cf on cf.oid=co.confrelid
   join pg_attribute a on a.attrelid=co.conrelid and a.attnum=co.conkey[1] join pg_attribute af on af.attrelid=co.confrelid and af.attnum=co.confkey[1]
-  where co.contype='f' and cl.relnamespace='public'::regnamespace),
-ck as (select upper(cl.relname) t, upper(co.conname) nm, pg_get_constraintdef(co.oid) d from pg_constraint co join pg_class cl on cl.oid=co.conrelid where co.contype in ('c','x','u') and cl.relnamespace='public'::regnamespace)
+  where co.contype='f' and cl.relnamespace='"SE"'::regnamespace),
+ck as (select upper(cl.relname) t, upper(co.conname) nm, pg_get_constraintdef(co.oid) d from pg_constraint co join pg_class cl on cl.oid=co.conrelid where co.contype in ('c','x','u') and cl.relnamespace='"SE"'::regnamespace)
 select json_build_object(
  'tables', (select json_agg(json_build_object('name', upper(t), 'cols', (select json_agg(json_build_object('n',n,'ty',ty,'req',req,'gen',gen,'ident',ident,
       'pk', exists(select 1 from pk where pk.t=c2.t and pk.n=c2.n),

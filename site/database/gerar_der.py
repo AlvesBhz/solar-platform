@@ -6,19 +6,23 @@ import json, sys, html
 schema = json.load(open(sys.argv[1]))
 out = sys.argv[2]
 EX = json.load(open(sys.argv[3]))
+# campos em maiúsculas (schema "SE") ou minúsculas: lê tudo do mesmo jeito
+EX = {t: [{k.lower(): v for k, v in r.items()} for r in (rows or [])] for t, rows in EX.items()}
 COMPLETO = '--completo' in sys.argv
 T = {t['name']: t for t in schema['tables']}
 W, HDR, RH = 330, 40, 19
-C0, C1, C2, C3 = 20, 440, 860, 1280
+C0, C1, C2, C3, C4 = 20, 440, 860, 1280, 1700
 
 POS = {
   'SIT_TARIFA': (C0, 20), 'SIT_PROPRIEDADE': (C0, 379), 'SIT_UNIDADE': (C1, 360), 'SIT_AJUSTE_DIARIO': (C1, 680),
   'SIT_RESERVA': (C2, 40), 'SIT_BLOQUEIO': (C2, 595),
   'SIT_PAGAMENTO': (C3, 21), 'SIT_HOSPEDE': (C3, 420), 'SIT_CALENDARIO_EXTERNO': (C3, 690),
+  'SIT_AUDITORIA': (C4, 20), 'SIT_DOCUMENTO': (C4, 420), 'SIT_TENTATIVA': (C4, 700),
 }
 GROUP = {'SIT_PROPRIEDADE': 'cad', 'SIT_UNIDADE': 'cad', 'SIT_TARIFA': 'pre', 'SIT_AJUSTE_DIARIO': 'pre',
-         'SIT_RESERVA': 'ven', 'SIT_HOSPEDE': 'ven', 'SIT_PAGAMENTO': 'ven', 'SIT_CALENDARIO_EXTERNO': 'can', 'SIT_BLOQUEIO': 'can'}
-GNAME = {'cad': 'CADASTRO', 'pre': 'PREÇO', 'ven': 'VENDA', 'can': 'CANAIS'}
+         'SIT_RESERVA': 'ven', 'SIT_HOSPEDE': 'ven', 'SIT_PAGAMENTO': 'ven', 'SIT_CALENDARIO_EXTERNO': 'can', 'SIT_BLOQUEIO': 'can',
+         'SIT_DOCUMENTO': 'ven', 'SIT_AUDITORIA': 'seg', 'SIT_TENTATIVA': 'seg'}
+GNAME = {'cad': 'CADASTRO', 'pre': 'PREÇO', 'ven': 'VENDA', 'can': 'CANAIS', 'seg': 'SEGURANÇA'}
 
 def idx(t, c):
     return [x['n'] for x in T[t]['cols']].index(c)
@@ -47,6 +51,10 @@ L = [
        pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_RESERVA','ID_HOSPEDE')), (C3-40, ry('SIT_HOSPEDE','ID_HOSPEDE')), (C3, ry('SIT_HOSPEDE','ID_HOSPEDE'))]),
   dict(c='SIT_PAGAMENTO', f='ID_RESERVA', p='SIT_RESERVA', pk='ID_RESERVA', lbl='paga',
        pts=lambda: [(C3, ry('SIT_PAGAMENTO','ID_RESERVA')), (C2+W, ry('SIT_PAGAMENTO','ID_RESERVA'))]),
+  dict(c='SIT_DOCUMENTO', f='ID_RESERVA', p='SIT_RESERVA', pk='ID_RESERVA', lbl='documento de',
+       pts=lambda: [(C4, ry('SIT_DOCUMENTO','ID_RESERVA')), (C4-30, ry('SIT_DOCUMENTO','ID_RESERVA')), (C4-30, 372), (C3-14, 372), (C3-14, ry('SIT_RESERVA','ID_RESERVA')), (C2+W, ry('SIT_RESERVA','ID_RESERVA'))]),
+  dict(c='SIT_DOCUMENTO', f='ID_HOSPEDE', p='SIT_HOSPEDE', pk='ID_HOSPEDE', lbl='foto de',
+       pts=lambda: [(C4, ry('SIT_DOCUMENTO','ID_HOSPEDE')), (C4-50, ry('SIT_DOCUMENTO','ID_HOSPEDE')), (C4-50, ry('SIT_HOSPEDE','ID_HOSPEDE')), (C3+W, ry('SIT_HOSPEDE','ID_HOSPEDE'))]),
   dict(c='SIT_RESERVA', f='ID_RESERVA_ORIGINAL', p='SIT_RESERVA', pk='ID_RESERVA', lbl='remarcada de',
        pts=lambda: [(C2+W, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA_ORIGINAL')), (C2+W+24, ry('SIT_RESERVA','ID_RESERVA')), (C2+W, ry('SIT_RESERVA','ID_RESERVA'))]),
 ]
@@ -77,7 +85,7 @@ def ends(x, y, dx, kind):
 def esc(s): return html.escape(str(s), quote=True)
 
 svg = []
-VW, VH = C3 + W + 20, 880
+VW, VH = C4 + W + 20, 880
 svg.append(f'<svg id="der" viewBox="0 0 {VW} {VH}" role="img" aria-label="Diagrama entidade-relacionamento do banco de reservas: a SIT_UNIDADE (chalé) no centro, ligada à SIT_PROPRIEDADE, às tarifas, ajustes, reservas, bloqueios e calendários externos; a SIT_RESERVA liga hóspede, pagamentos e a reserva original de uma remarcação.">')
 
 # ligações primeiro (ficam atrás das tabelas)
@@ -133,25 +141,31 @@ for name, (x, y) in POS.items():
 svg.append('</svg>')
 
 PURPOSE = {
- 'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para pagar, remarcação, prazo de arrependimento e versão da política de cancelamento.',
- 'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
+ 'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para concluir a reserva no site, remarcação, prazo de arrependimento e versão da política de cancelamento.',
+ 'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade (crianças de todas as idades somam nas vagas de criança) e taxa de limpeza.',
  'SIT_TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'SIT_AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
  'SIT_HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
- 'SIT_RESERVA': 'Estadia vendida, com preço, sinal e saldo gravados no momento da reserva.',
- 'SIT_PAGAMENTO': 'Tentativas de pagamento de cada parcela: sinal no site e saldo no check-in (Pix ou dinheiro).',
+ 'SIT_RESERVA': 'Estadia reservada pelo site (ou por telefone/contato direto), com preço, sinal e saldo gravados no momento da reserva. O site não cobra: depois da confirmação a equipe entra em contato para o pagamento.',
+ 'SIT_PAGAMENTO': 'Pagamentos da reserva. Hoje a equipe lança o que recebe fora do site (sinal combinado depois da reserva e saldo no check-in); a estrutura já aceita pagamento online (Mercado Pago) no futuro, sem mudar a tabela.',
  'SIT_CALENDARIO_EXTERNO': 'Link iCal do Airbnb e do Booking, lido periodicamente.',
  'SIT_BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
+ 'SIT_DOCUMENTO': 'Fotos dos documentos enviadas no cadastro da reserva. As imagens ficam no bucket privado "documentos" do Storage; aqui fica de quem é e onde está. Só a equipe acessa.',
+ 'SIT_AUDITORIA': 'Registro automático de toda mudança em preços, regras, reservas, pagamentos e documentos: quem mudou, quando, valor anterior e novo.',
+ 'SIT_TENTATIVA': 'Pedidos de reserva por visitante (IP só como hash), para o limite de 6 por hora valer em todas as cópias da função.',
 }
 RULES = {
- 'SIT_PROPRIEDADE': ['Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
- 'SIT_UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
- 'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
+ 'SIT_PROPRIEDADE': ['Faixas de idade em ordem (hoje: até 4 anos não paga, 5 a 8, 9 a 13; a partir de 14, adulto).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
+ 'SIT_UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Crianças até 4 anos também contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
+ 'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'Percentuais de criança entre 0 e 100 (hoje 30% de 5 a 8 anos, 100% de 9 a 13, 0% até 4 anos).', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
  'SIT_AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
  'SIT_HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_SIT_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
- 'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA).', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
- 'SIT_PAGAMENTO': ['TP_PARCELA: SINAL ou SALDO.', 'TP_PROVEDOR: MERCADO_PAGO ou MANUAL.', 'TP_METODO: PIX, CARTAO_CREDITO ou DINHEIRO; DINHEIRO só com TP_PROVEDOR MANUAL.', 'TP_STATUS: PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.', 'Valor > 0; APROVADO exige DT_PAGAMENTO; CD_EXTERNO único.'],
+ 'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE (pré-reserva de 30 minutos enquanto o hóspede preenche a reserva) exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA); quem confirma é a função confirmar_reserva.', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO, SEM_PAGAMENTO (hóspede não pagou quando a equipe entrou em contato) ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
+ 'SIT_PAGAMENTO': ['Hoje o site não cobra: só há lançamentos MANUAL, feitos pela equipe depois de receber.', 'TP_PROVEDOR: MANUAL ou MERCADO_PAGO (reservado para o pagamento online futuro).', 'TP_PARCELA: SINAL ou SALDO.', 'TP_METODO: PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA; dinheiro e transferência só MANUAL.', 'TP_STATUS: PENDENTE, RECEBIDO, RECUSADO, CANCELADO ou ESTORNADO; MANUAL só RECEBIDO ou ESTORNADO, com NM_REGISTRADO_POR.', 'RECEBIDO e ESTORNADO exigem DT_PAGAMENTO; online exige CD_TRANSACAO, único por provedor.'],
  'SIT_CALENDARIO_EXTERNO': ['TP_CANAL: AIRBNB, BOOKING ou OUTRO.', 'Um calendário por canal em cada chalé.'],
+ 'SIT_DOCUMENTO': ['Só imagens JPG, PNG ou WEBP de até 5 MB (o conteúdo é conferido, não só a extensão).', 'Caminho único e sempre dentro da pasta da reserva.', 'TP_PESSOA: TITULAR ou ACOMPANHANTE; TP_LADO: FRENTE ou VERSO.', 'Apagar a reserva apaga o registro das fotos.'],
+ 'SIT_AUDITORIA': ['Preenchida por gatilhos; ninguém de fora lê ou grava.', 'NM_USUARIO: postgres = SQL Editor, service_role = site.'],
+ 'SIT_TENTATIVA': ['Linhas com mais de 1 dia são apagadas sozinhas.'],
  'SIT_BLOQUEIO': ['DT_FIM depois de DT_INI.', 'TP_MOTIVO: CANAL_EXTERNO, MANUTENCAO, USO_PROPRIO ou OUTRO.', 'Só CANAL_EXTERNO tem ID_CALENDARIO, e ele é obrigatório nesse caso.', 'CD_EXTERNO único por calendário.'],
 }
 CAMPO = {
@@ -161,11 +175,12 @@ CAMPO = {
   'DS_FUSO_HORARIO': 'Fuso usado para "hoje", check-in e prazos (America/Sao_Paulo).',
   'HR_CHECKIN': 'Hora a partir da qual o hóspede pode entrar.',
   'HR_CHECKOUT': 'Hora limite para sair.',
-  'NO_IDADE_MAX_BEBE': 'Até esta idade é bebê: não paga, mas ocupa vaga de criança.',
+  'NO_IDADE_MAX_BEBE': 'Até esta idade a criança não paga (PC_BEBE), mas ocupa vaga. Hoje 4.',
+  'NO_IDADE_MAX_CRIANCA_MENOR': 'Até esta idade paga PC_CRIANCA (hoje 5 a 8 anos).',
   'NO_IDADE_MAX_CRIANCA': 'Até esta idade é criança; acima disso conta como adulto.',
   'QTDE_MAX_NOITES': 'Estadia máxima vendida pelo site.',
-  'VL_PERCENTUAL_SINAL': 'Percentual do total pago na hora de reservar.',
-  'QTDE_MINUTOS_PRE_RESERVA': 'Tempo que as datas ficam seguras enquanto o hóspede paga o sinal.',
+  'VL_PERCENTUAL_SINAL': 'Percentual do total cobrado como sinal; a equipe combina o pagamento depois da reserva.',
+  'QTDE_MINUTOS_PRE_RESERVA': 'Tempo que as datas ficam seguras enquanto o hóspede preenche a reserva no site.',
   'QTDE_DIAS_LIMITE_REMARCACAO': 'Remarcação permitida até N dias antes do check-in.',
   'QTDE_MESES_VALIDADE_CREDITO': 'Prazo para usar o crédito do sinal numa nova data.',
   'QTDE_DIAS_ARREPENDIMENTO': 'Dias para desistir com reembolso integral (CDC art. 49).',
@@ -178,9 +193,9 @@ CAMPO = {
   'CD_UNIDADE': 'Código público usado pelo site para consultar e reservar.',
   'NM_UNIDADE': 'Nome mostrado ao hóspede.',
   'TP_UNIDADE': 'Tipo: CHALE, QUARTO ou SUITE.',
-  'QTDE_MAX_HOSPEDES': 'Total de pessoas, contando adultos, crianças e bebês.',
+  'QTDE_MAX_HOSPEDES': 'Total de pessoas, contando adultos e crianças de todas as idades.',
   'QTDE_MAX_ADULTOS': 'Máximo de adultos (14 anos ou mais).',
-  'QTDE_MAX_CRIANCAS': 'Máximo de crianças e bebês somados (sofá-cama).',
+  'QTDE_MAX_CRIANCAS': 'Máximo de crianças somadas, de qualquer idade (sofá-cama).',
   'VL_TAXA_LIMPEZA': 'Taxa única por estadia; hoje R$ 0 (em avaliação).',
   'SG_ATIVO': 'Se o chalé aparece para venda.',
   'NO_ORDEM': 'Ordem de exibição quando houver mais de um chalé.',
@@ -194,11 +209,12 @@ CAMPO = {
   'DT_FIM': 'Dia seguinte à última noite coberta.',
   'NO_PRIORIDADE': 'Quando duas tarifas cobrem a mesma noite, vale a maior.',
   'VL_NOITE': 'Preço da noite para os adultos inclusos.',
-  'VL_NOITE_FDS': 'Preço das noites de sexta e sábado; vazio = VL_NOITE.',
+  'VL_NOITE_FDS': 'Preço das noites de sexta, sábado e domingo; vazio = VL_NOITE.',
   'QTDE_ADULTOS_INCLUSOS': 'Adultos já cobertos pelo VL_NOITE.',
   'VL_ADULTO_EXTRA': 'Por adulto além dos inclusos, por noite.',
-  'VL_CRIANCA': 'Por criança (2 a 13 anos), por noite.',
-  'VL_BEBE': 'Por bebê, por noite: R$ 0, bebê não paga.',
+  'PC_CRIANCA': 'Criança de 5 a 8 anos: % do valor por pessoa da noite (valor ÷ adultos inclusos). Hoje 30.',
+  'PC_CRIANCA_MAIOR': 'Criança de 9 a 13 anos: % do valor por pessoa da noite. Hoje 100.',
+  'PC_BEBE': 'Criança até 4 anos: % do valor por pessoa da noite. Hoje 0 (não paga).',
   'QTDE_MIN_NOITES': 'Mínimo de noites quando a estadia passa por este período.',
   'SG_ATIVO': 'Desligar sem apagar o histórico.',
   'DT_CRIACAO': 'Quando a tarifa foi cadastrada.',
@@ -224,27 +240,30 @@ CAMPO = {
   'SG_PAIS_PASSAPORTE': 'País que emitiu o passaporte; obrigatório junto com ele.',
   'DT_EMISSAO_PASSAPORTE': 'Data de emissão do passaporte (opcional).',
   'DT_VALIDADE_PASSAPORTE': 'Data de validade; precisa cobrir a estadia até o dia da saída.',
+  'DT_NASCIMENTO': 'Data de nascimento do titular (precisa ter 18 anos no check-in).',
   'DT_CRIACAO': 'Primeiro contato com a pousada.',
  },
  'SIT_RESERVA': {
   'ID_RESERVA': 'Número interno da reserva.',
   'CD_RESERVA': 'Código mostrado ao hóspede (SE- + 8 caracteres aleatórios).',
   'ID_UNIDADE': 'O chalé reservado.',
-  'ID_HOSPEDE': 'Quem reservou; vazio só enquanto a pré-reserva não foi paga.',
+  'ID_HOSPEDE': 'Quem reservou; vazio só enquanto a pré-reserva não foi concluída.',
   'DT_CHECKIN': 'Dia de chegada.',
   'DT_CHECKOUT': 'Dia de saída (não é cobrado).',
   'QTDE_ADULTOS': 'Adultos (14 anos ou mais).',
-  'QTDE_CRIANCAS': 'Crianças de 2 a 13 anos (pagam VL_CRIANCA).',
-  'QTDE_BEBES': 'Bebês até 1 ano: ocupam vaga de criança, não pagam.',
-  'TP_STATUS': 'PENDENTE → CONFIRMADA; ou CANCELADA, EXPIRADA, REMARCADA.',
+  'QTDE_CRIANCAS': 'Crianças de 5 a 8 anos (pagam PC_CRIANCA).',
+  'QTDE_CRIANCAS_MAIORES': 'Crianças de 9 a 13 anos (pagam PC_CRIANCA_MAIOR).',
+  'QTDE_BEBES': 'Crianças até 4 anos: ocupam vaga, não pagam.',
+  'TP_STATUS': 'PENDENTE (preenchendo no site) → CONFIRMADA (reserva feita, aguardando contato da equipe); ou CANCELADA, EXPIRADA, REMARCADA.',
   'TP_CANAL': 'Por onde entrou: SITE, DIRETO ou TELEFONE.',
   'VL_HOSPEDAGEM': 'Soma das noites, congelada no momento da reserva.',
   'VL_TAXA_LIMPEZA': 'Taxa de limpeza congelada na reserva.',
   'VL_TOTAL': 'Hospedagem + limpeza (calculado pelo banco).',
-  'VL_SINAL': 'Parte paga ao reservar (50%).',
+  'VL_SINAL': 'Sinal de 50%, combinado e recebido pela equipe depois da reserva.',
   'VL_SALDO': 'Total − sinal, pago no check-in (calculado pelo banco).',
-  'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa, criança e bebê (JSON).',
-  'DT_EXPIRA': 'Até quando a pré-reserva segura as datas.',
+  'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa e crianças por faixa de idade (JSON).',
+  'DS_ACOMPANHANTES': 'Nome e sobrenome dos adultos e nome e idade das crianças que vão junto (JSON); a reserva exige os adultos.',
+  'DT_EXPIRA': 'Até quando a pré-reserva segura as datas (30 minutos para concluir no site).',
   'ID_RESERVA_ORIGINAL': 'Em remarcação, a reserva antiga que deu origem a esta.',
   'TP_MOTIVO_CANCELAMENTO': 'Por que foi cancelada; obrigatório só se CANCELADA.',
   'NO_VERSAO_POLITICA': 'Versão da política que o hóspede aceitou.',
@@ -255,16 +274,16 @@ CAMPO = {
  'SIT_PAGAMENTO': {
   'ID_PAGAMENTO': 'Número interno do pagamento.',
   'ID_RESERVA': 'A reserva paga.',
-  'TP_PARCELA': 'SINAL (no site) ou SALDO (no check-in).',
-  'TP_PROVEDOR': 'MERCADO_PAGO ou MANUAL (recebido na pousada).',
-  'TP_METODO': 'PIX, CARTAO_CREDITO ou DINHEIRO.',
-  'VL_PAGAMENTO': 'Valor desta tentativa.',
-  'TP_STATUS': 'PENDENTE, APROVADO, RECUSADO, CANCELADO ou ESTORNADO.',
-  'CD_EXTERNO': 'Id do pagamento no Mercado Pago, para conciliar.',
-  'DS_PIX_COPIA_E_COLA': 'Código Pix mostrado ao hóspede.',
-  'DT_EXPIRA': 'Validade do Pix gerado.',
-  'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se APROVADO.',
-  'DT_CRIACAO': 'Quando a cobrança foi gerada.',
+  'TP_PARCELA': 'SINAL (combinado depois da reserva) ou SALDO (no check-in).',
+  'TP_PROVEDOR': 'MANUAL (lançado pela equipe, hoje) ou MERCADO_PAGO (pagamento online, quando for integrado).',
+  'TP_METODO': 'PIX, CARTAO_CREDITO, CARTAO_DEBITO, DINHEIRO ou TRANSFERENCIA.',
+  'VL_PAGAMENTO': 'Valor do pagamento.',
+  'TP_STATUS': 'RECEBIDO ou ESTORNADO no manual; PENDENTE, RECUSADO e CANCELADO servem ao pagamento online.',
+  'DT_PAGAMENTO': 'Quando o dinheiro entrou; obrigatório se RECEBIDO.',
+  'CD_TRANSACAO': 'Id do Pix, autorização do cartão ou id da transação no provedor.',
+  'NM_REGISTRADO_POR': 'Quem da equipe lançou (obrigatório no manual).',
+  'DS_OBSERVACAO': 'Anotação da equipe (ex.: combinado por WhatsApp).',
+  'DT_CRIACAO': 'Quando o lançamento (ou a cobrança online) foi criado.',
  },
  'SIT_CALENDARIO_EXTERNO': {
   'ID_CALENDARIO': 'Número interno do calendário.',
@@ -286,9 +305,35 @@ CAMPO = {
   'DS_OBSERVACAO': 'Anotação da equipe.',
   'DT_CRIACAO': 'Quando foi criado ou importado.',
  },
+ 'SIT_DOCUMENTO': {
+  'ID_DOCUMENTO': 'Número interno da foto.',
+  'ID_RESERVA': 'A reserva em que a foto foi enviada.',
+  'ID_HOSPEDE': 'O hóspede titular (vazio na foto de acompanhante).',
+  'NM_PESSOA': 'De quem é o documento.',
+  'TP_PESSOA': 'TITULAR ou ACOMPANHANTE.',
+  'TP_LADO': 'FRENTE ou VERSO.',
+  'DS_CAMINHO': 'Onde está no bucket privado "documentos" (pasta = código da reserva).',
+  'DS_MIME': 'Tipo da imagem: JPEG, PNG ou WEBP.',
+  'NO_BYTES': 'Tamanho do arquivo (até 5 MB).',
+  'DT_CRIACAO': 'Quando foi enviada.',
+ },
+ 'SIT_AUDITORIA': {
+  'ID_AUDITORIA': 'Número do registro.',
+  'NM_TABELA': 'Tabela alterada.',
+  'TP_OPERACAO': 'INSERT, UPDATE ou DELETE.',
+  'DS_ANTES': 'A linha antes da mudança (JSON).',
+  'DS_DEPOIS': 'A linha depois da mudança (JSON).',
+  'NM_USUARIO': 'Quem mudou: postgres (SQL Editor) ou service_role (site).',
+  'DT_CRIACAO': 'Quando mudou.',
+ },
+ 'SIT_TENTATIVA': {
+  'ID_TENTATIVA': 'Número do registro.',
+  'DS_CHAVE': 'Hash do IP do visitante (o IP em si não é guardado).',
+  'DT_CRIACAO': 'Quando o pedido chegou.',
+ },
 }
 
-ORDER = ['SIT_PROPRIEDADE', 'SIT_UNIDADE', 'SIT_TARIFA', 'SIT_AJUSTE_DIARIO', 'SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_CALENDARIO_EXTERNO', 'SIT_BLOQUEIO']
+ORDER = ['SIT_PROPRIEDADE', 'SIT_UNIDADE', 'SIT_TARIFA', 'SIT_AJUSTE_DIARIO', 'SIT_RESERVA', 'SIT_HOSPEDE', 'SIT_PAGAMENTO', 'SIT_DOCUMENTO', 'SIT_CALENDARIO_EXTERNO', 'SIT_BLOQUEIO', 'SIT_AUDITORIA', 'SIT_TENTATIVA']
 cards = []
 for n in ORDER:
     t = T[n]; g = GROUP[n]
@@ -307,8 +352,10 @@ def brl(v): return 'R$ ' + f'{v:,.2f}'.replace(',', 'X').replace('.', ',').repla
 def fmt(col, v):
     if v is None: return '<span class="nul">vazio</span>'
     if isinstance(v, bool): return 'sim' if v else 'não'
-    if isinstance(v, list):  # DS_DETALHE_PRECOS
+    if isinstance(v, list) and col == 'DS_DETALHE_PRECOS':
         return f'{len(v)} noites: ' + ' + '.join(brl(x['vl_noite']).replace('R$ ', '') for x in v)
+    if isinstance(v, list):  # ex.: DS_ACOMPANHANTES
+        return f'{len(v)} pessoas: ' + ', '.join(esc(x.get('nome', '')) for x in v)
     if col.startswith('VL_PERCENTUAL'): return f'{v:g}%'
     if col.startswith('VL_'): return brl(v)
     if isinstance(v, str):
@@ -320,18 +367,19 @@ def fmt(col, v):
     return esc(v)
 CAP = {
  'SIT_PROPRIEDADE': ['A pousada'], 'SIT_UNIDADE': ['O chalé'],
- 'SIT_TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
- 'SIT_AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
+ 'SIT_TARIFA': ['Vale o ano todo', 'Férias de julho: prioridade 10 vence a padrão'],
+ 'SIT_AJUSTE_DIARIO': ['Natal: preço de feriado e mínimo de 3 noites', 'Natal: noite seguinte', 'Sábado de Carnaval sem chegada', 'Noite fechada'],
  'SIT_HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
- 'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva aguardando Pix'],
- 'SIT_PAGAMENTO': ['Sinal pago (reserva 1)', 'Saldo no check-in (reserva 1)', 'Pix gerado (reserva 2)'],
+ 'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva: hóspede preenchendo (30 min)'],
+ 'SIT_PAGAMENTO': ['Sinal por Pix, lançado pela equipe (reserva 1)'],
  'SIT_CALENDARIO_EXTERNO': ['Airbnb', 'Booking'],
  'SIT_BLOQUEIO': ['Reserva vinda do Airbnb', 'Manutenção'],
 }
 LONG = lambda v: ' class="long"' if isinstance(v, list) or (isinstance(v, str) and len(v) > 26) else ''
 exs = []
 for n in ORDER:
-    rows = EX[n]; g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    rows = EX.get(n, []); g = GROUP[n]; cols = [c['n'] for c in T[n]['cols']]
+    if not rows: continue
     for r in rows: assert set(k.upper() for k in r) == set(cols), (n, set(cols) ^ set(k.upper() for k in r))
     assert len(CAP[n]) == len(rows), n
     head = ''.join(f'<th scope="col">{esc(c)}</th>' for c in CAP[n])
@@ -352,16 +400,16 @@ for x in r1['ds_detalhe_precos']:
 ajuste_html = (
  '<section class="explica" id="como-ajuste">\n'
  '  <h2>Como funciona o SIT_AJUSTE_DIARIO</h2>\n'
- '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
- '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
- f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>\n'
- '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>\n'
+ '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 800 de segunda a quinta e R$ 1.700 sexta, sábado e domingo, de 01/11/2026 a 31/12/2028). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Crianças somam por cima um percentual do valor por pessoa da noite (PC_CRIANCA, PC_CRIANCA_MAIOR e PC_BEBE, da tarifa).</li></ol>\n'
+ f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança de 5 a 8 anos + 1 criança até 4 anos</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>5 a 13 anos</th><th>Até 4 anos</th><th>Noite</th></tr></thead>\n'
  f'  <tbody>{"".join(linhas)}</tbody>\n'
  f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em SIT_RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
  '  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>\n'
  '  <ul class="fn">\n'
- '    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>\n'
- '    <li><code>QTDE_MIN_NOITES = 2 em 24/12</code><span>Pedido só de 24 para 25/12 volta como <i>min_noites</i>: quem passa por esse dia fica pelo menos 2 noites.</span></li>\n'
+ '    <li><code>VL_NOITE = 1.700 de 24 a 26/12</code><span>As noites do feriado custam como fim de semana, mesmo caindo entre domingo e quinta.</span></li>\n'
+ '    <li><code>QTDE_MIN_NOITES = 3 de 24 a 26/12</code><span>Pedido de 2 noites que passe pelo Natal volta como <i>min_noites</i>: feriado prolongado pede 3 noites; Réveillon e Carnaval, 4.</span></li>\n'
  '    <li><code>SG_SEM_CHEGADA em 06/02/2027</code><span>Check-in em 06/02 volta como <i>sem_chegada</i>. Quem chegou no dia 05 e continua hospedado não é afetado.</span></li>\n'
  '    <li><code>SG_SEM_SAIDA</code><span>O inverso: ninguém faz check-out nessa data.</span></li>\n'
  '    <li><code>SG_FECHADO em 17/03/2027</code><span>Qualquer estadia que inclua a noite de 17/03 volta como <i>fechado</i>.</span></li>\n'
@@ -380,7 +428,7 @@ for _n in ORDER:
 COND = {('SIT_HOSPEDE', 'CD_CPF'): 'se brasileiro', ('SIT_HOSPEDE', 'CD_PASSAPORTE'): 'se estrangeiro', ('SIT_HOSPEDE', 'SG_PAIS_PASSAPORTE'): 'com passaporte', ('SIT_HOSPEDE', 'DT_VALIDADE_PASSAPORTE'): 'com passaporte'}
 paineis = []
 for n in ORDER:
-    t = T[n]; g = GROUP[n]; rs = EX[n][:2]; caps = CAP[n][:2]
+    t = T[n]; g = GROUP[n]; rs = EX.get(n, [])[:2]; caps = CAP.get(n, [])[:2]
     linhas = []
     for c in t['cols']:
         kk = ('<span class="k kp">PK</span> ' if c['pk'] else '') + ('<span class="k kf">FK</span> ' if c['fk'] else '')
@@ -415,18 +463,18 @@ page = f'''<title>DER das Reservas</title>
 :root {{
   --bg: #f3f5f2; --surface: #ffffff; --fg: #1d2622; --muted: #5e6c65; --line: #c8d0cb; --wire: #6d7b74;
   --zebra: #f6f8f6; --pk: #9a5b0b; --fk: #2d6a8a;
-  --cad: #dfe8e2; --pre: #efe6d6; --ven: #dde6ef; --can: #e9e1ec;
+  --cad: #dfe8e2; --pre: #efe6d6; --ven: #dde6ef; --can: #e9e1ec; --seg: #f0dede;
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }}
 @media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{
   --bg: #121614; --surface: #1a201d; --fg: #e3e9e5; --muted: #95a39c; --line: #34403a; --wire: #7f8f87;
   --zebra: #1e2521; --pk: #e2a64c; --fk: #74b6d4;
-  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; color-scheme: dark; }} }}
+  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; --seg: #3a2526; color-scheme: dark; }} }}
 :root[data-theme="dark"] {{
   --bg: #121614; --surface: #1a201d; --fg: #e3e9e5; --muted: #95a39c; --line: #34403a; --wire: #7f8f87;
   --zebra: #1e2521; --pk: #e2a64c; --fk: #74b6d4;
-  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; color-scheme: dark; }}
+  --cad: #233229; --pre: #352d1f; --ven: #1f2c38; --can: #2e2533; --seg: #3a2526; color-scheme: dark; }}
 * {{ box-sizing: border-box; }}
 body {{ background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; }}
@@ -451,7 +499,7 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 #der .box {{ fill: var(--surface); stroke: var(--line); stroke-width: 1; }}
 #der .zebra {{ fill: var(--zebra); }}
 #der .g-cad .head {{ fill: var(--cad); }} #der .g-pre .head {{ fill: var(--pre); }}
-#der .g-ven .head {{ fill: var(--ven); }} #der .g-can .head {{ fill: var(--can); }}
+#der .g-ven .head {{ fill: var(--ven); }} #der .g-can .head {{ fill: var(--can); }} #der .g-seg .head {{ fill: var(--seg); }}
 #der .tname {{ fill: var(--fg); font: 600 13.5px var(--sans); letter-spacing: 0.02em; }}
 #der .tgroup {{ fill: var(--muted); font: 500 10px var(--sans); letter-spacing: 0.12em; }}
 #der .cname {{ fill: var(--fg); font: 500 11.5px var(--mono); }}
@@ -475,7 +523,7 @@ figcaption {{ font-size: 13px; color: var(--muted); padding: 10px 2px 0; max-wid
 .tcard header {{ display: flex; justify-content: space-between; align-items: center; gap: 10px; }}
 .tcard h3 {{ margin: 0; font-family: var(--mono); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }}
 .chip {{ font-size: 10px; letter-spacing: 0.12em; padding: 2px 8px; border-radius: 99px; color: var(--fg); white-space: nowrap; }}
-.g-cad .chip {{ background: var(--cad); }} .g-pre .chip {{ background: var(--pre); }} .g-ven .chip {{ background: var(--ven); }} .g-can .chip {{ background: var(--can); }}
+.g-cad .chip {{ background: var(--cad); }} .g-pre .chip {{ background: var(--pre); }} .g-ven .chip {{ background: var(--ven); }} .g-can .chip {{ background: var(--can); }} .g-seg .chip {{ background: var(--seg); }}
 .purpose {{ margin: 8px 0 4px; }}
 .meta {{ margin: 0 0 8px; font-size: 12.5px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; }}
 .tcard ul {{ margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }}
@@ -546,7 +594,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <header class="top">
     <div>
       <h1>DER das Reservas</h1>
-      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase) · proposta v3, 18/11/2026 · prefixo SIT_ = tabelas do projeto Site</p>
+      <p class="sub">Solar do Espinhaço · Casa do Mirante · PostgreSQL (Supabase), schema "SE" · proposta v3, 18/11/2026 · prefixo SIT_ = tabelas do projeto Site · nomes em maiúsculas (use aspas no SQL)</p>
     </div>
     <div class="stats"><span><b>{len(T)}</b> tabelas</span><span><b>{ncols}</b> campos</span><span><b>{len(L)}</b> ligações</span><span><b>{len(schema['rules'])}</b> regras</span></div>
   </header>
@@ -559,7 +607,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M30,7 L42,1 M30,7 L42,7 M30,7 L42,13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="24" cy="7" r="3.5" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/></svg> zero ou muitos</span>
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M35,1 V13 M30,1 V13" fill="none" stroke="currentColor" stroke-width="1.4"/></svg> exatamente um</span>
     <span class="it"><svg width="44" height="14" viewBox="0 0 44 14" aria-hidden="true"><path d="M2,7 H42 M35,1 V13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="27" cy="7" r="3.5" fill="var(--surface)" stroke="currentColor" stroke-width="1.3"/></svg> zero ou um</span>
-    <span class="it"><span class="sw" style="background:var(--cad)"></span>cadastro <span class="sw" style="background:var(--pre)"></span>preço <span class="sw" style="background:var(--ven)"></span>venda <span class="sw" style="background:var(--can)"></span>canais</span>
+    <span class="it"><span class="sw" style="background:var(--cad)"></span>cadastro <span class="sw" style="background:var(--pre)"></span>preço <span class="sw" style="background:var(--ven)"></span>venda <span class="sw" style="background:var(--can)"></span>canais <span class="sw" style="background:var(--seg)"></span>segurança</span>
   </div>
 
   <figure>
@@ -586,9 +634,12 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <h2>Funções do banco</h2>
   <ul class="fn">
     <li><code>consultar_disponibilidade</code><span>Pública: o botão "Ver disponibilidade" do site chama esta função; devolve disponibilidade, preço noite a noite, total e sinal, sem expor nenhuma tabela.</span></li>
-    <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede paga o sinal; só a Edge Function do Supabase executa.</span></li>
+    <li><code>consultar_precos</code><span>Pública: o calendário do site chama esta função para mostrar o valor de cada noite para os hóspedes escolhidos e marcar as noites ocupadas ou fechadas.</span></li>
+    <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede preenche a reserva no site; só a Edge Function do Supabase executa.</span></li>
+    <li><code>confirmar_reserva</code><span>Conclui a reserva do site: grava o hóspede com o documento (reconhece quem já se hospedou por e-mail, CPF ou passaporte), os acompanhantes e o aceite da política. A reserva segue PENDENTE por 30 minutos enquanto o hóspede paga o sinal pelo Pix mostrado na tela.</span></li>
+    <li><code>confirmar_sinal</code><span>A equipe confere o Pix no extrato e confirma: lança o sinal em SIT_PAGAMENTO e deixa a reserva CONFIRMADA. Pix pago depois do prazo só confirma se as datas continuarem livres.</span></li>
     <li><code>calcular_estadia</code><span>Interna: valida datas e capacidade, soma as noites e verifica reservas e bloqueios.</span></li>
-    <li><code>expirar_pre_reservas</code><span>Job periódico (pg_cron) que marca como EXPIRADA a pré-reserva não paga.</span></li>
+    <li><code>expirar_pre_reservas</code><span>Job periódico (pg_cron) que marca como EXPIRADA a pré-reserva não concluída em 30 minutos.</span></li>
   </ul>
 </div>
 

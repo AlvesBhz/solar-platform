@@ -1,0 +1,4 @@
+# A função é chamada pelo navegador do hóspede, sem login: por isso não exige JWT.
+# A proteção está dentro dela (origem permitida, validação, limite por IP, captcha opcional).
+[functions.reservar]
+verify_jwt = false

@@ -361,6 +361,14 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 .cal-d:hover:not(.cal-off):not(.cal-empty) {
   background:rgba(255,255,255,0.10); color:#fff;
 }
+.bk-pop-cal .cal-d:not(.cal-empty) { min-height:2.3rem; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.15; }
+.cal-p { font-size:.52rem; letter-spacing:.02em; color:#c9b98a; font-variant-numeric:tabular-nums; }
+.cal-sel .cal-p, .cal-range .cal-p { color:inherit; opacity:.85; }
+.cal-ocu { color:rgba(255,255,255,0.28); text-decoration:line-through; cursor:not-allowed; pointer-events:none; }
+.bk-pop-cal .cal-nao { opacity:.28; cursor:not-allowed; }
+.bk-pop-cal .cal-saida { pointer-events:auto; cursor:pointer; color:inherit; text-decoration:none; }
+.cal-aviso { color:#e3d6ae; }
+.cal-pnota { margin-top:.45rem; font-size:.6rem; text-align:center; color:rgba(255,255,255,0.45); }
 .cal-today { color:#fff; font-weight:600; }
 .cal-today::after {
   content:''; position:absolute; bottom:2px; left:50%;
@@ -837,6 +845,59 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
 #bookingAnchor { position: relative; }
 .bk-pop { z-index: 920; }
 
+/* resultado da consulta de disponibilidade (abaixo da barra) */
+#bkPopup { flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto; }
+/* o calendário aberto fica sempre por cima do resultado */
+#bookingBar { position: relative; z-index: 2; }
+#bkResult { position: relative; z-index: 1; }
+/* tela de trás travada enquanto a janela de reserva está aberta (iOS inclusive) */
+body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden; }
+/* barra recolhida: resumo da busca + seta verde para pesquisar de novo */
+#bkPopup.bk-collapsed #bookingBar { display: none; }
+#bkAgain { display: none; width: 100%; max-width: 48rem; margin: 0 auto; padding: 0.7rem 0.7rem 0.7rem 1.4rem;
+  align-items: center; justify-content: space-between; gap: 1rem; color: #e7e5e4; font: inherit; font-size: 0.78rem;
+  text-align: left; cursor: pointer; border: 0; }
+#bkAgain.is-on { display: flex; }
+#bkAgain .bka-seta { flex: none; width: 2.75rem; height: 2.75rem; display: grid; place-items: center;
+  color: #c9b98a; transition: color 0.2s ease, transform 0.2s ease; }   /* ouro do bloco de resultado */
+#bkAgain:hover .bka-seta { color: #e3d6ae; transform: translateY(2px); }
+#bkResult { position: relative; }
+#bkResult .bkr-close { position: absolute; top: 0.6rem; right: 0.7rem; display: grid; place-items: center;
+  width: 2rem; height: 2rem; border: 0; background: transparent; color: #a8a29e; cursor: pointer; }
+#bkResult .bkr-close:hover { color: #fafaf9; }
+/* campo de data que falta: destaque curto */
+.bk-need { animation: bkNeed 1.8s ease both; }
+@keyframes bkNeed {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(201,185,138,0); }
+  15%, 70% { box-shadow: inset 0 0 0 1.5px rgba(201,185,138,0.85); background: rgba(201,185,138,0.08); }
+}
+@media (prefers-reduced-motion: reduce) { .bk-need { animation: none; box-shadow: inset 0 0 0 1.5px rgba(201,185,138,0.85); } }
+#bkResult {
+  display: none; width: 100%; max-width: 48rem; margin: 0.75rem auto 0;
+  padding: 1.1rem 1.4rem 1.2rem; color: #e7e5e4; font-size: 0.8rem; line-height: 1.5;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.35s var(--ease-spring);
+}
+#bkResult.is-on { display: block; opacity: 1; transform: translateY(0); }
+#bkResult .bkr-head { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: #d6d3d1; }
+#bkResult .bkr-head.is-ok { color: #c9b98a; }
+#bkResult .bkr-msg { margin: 0.4rem 0 0; color: #e7e5e4; }
+#bkResult .bkr-load { color: #a8a29e; }
+#bkResult .bkr-noites { margin: 0.7rem 0 0.2rem; color: #a8a29e; }
+#bkResult .bkr-noites summary { cursor: pointer; font-size: 0.74rem; }
+#bkResult .bkr-noites ul { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.2rem; }
+#bkResult .bkr-noites li, #bkResult .bkr-valores > div { display: flex; justify-content: space-between; gap: 1rem; }
+#bkResult .bkr-valores { margin: 0.6rem 0 0; padding-top: 0.6rem; border-top: 1px solid rgba(255,255,255,0.08); display: grid; gap: 0.25rem; }
+#bkResult .bkr-valores dt { color: #a8a29e; }
+#bkResult .bkr-valores dd { margin: 0; font-variant-numeric: tabular-nums; }
+#bkResult .bkr-total dt, #bkResult .bkr-total dd { color: #fafaf9; font-size: 0.95rem; font-weight: 600; }
+#bkResult .bkr-nota { margin: 0.6rem 0 0; font-size: 0.7rem; color: #a8a29e; }
+#bkResult .bkr-cta { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.8rem; padding: 0.55rem 1.1rem;
+  border-radius: 999px; background: #f5f5f4; color: #1c1917; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em;
+  text-transform: uppercase; text-decoration: none; }
+#bkResult .bkr-cta:hover { background: #fff; }
+@media (prefers-reduced-motion: reduce) { #bkResult { transition: none; } }
+
 /* ═══════════════════════════════════════
    DOBRA 2 — ROOM CARD EDITORIAL
 ═══════════════════════════════════════ */
@@ -943,7 +1004,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   }
   .d2-img,
   .d2-slideshow { min-height: 0; height: auto; aspect-ratio: 4 / 3; max-height: 78svh; }
-  .d2-img-wrap { min-height: 0; }
+  .d2-img-wrap { min-height: 0; order: -1; }   /* celular: a foto vem antes do texto em todos os ambientes */
   .dep-grid { grid-template-columns: 1fr; }
 }
 
@@ -1790,3 +1851,4 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
   font-size: var(--fs-label); line-height: 1.45;
   color: rgba(255,255,255,0.45);
 }
+@media (pointer:coarse){ .cal-p { font-size:.58rem; } }
