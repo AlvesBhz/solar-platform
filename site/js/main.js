@@ -212,6 +212,7 @@ const Booking = (() => {
     cy: TODAY.getFullYear(),
     cm: TODAY.getMonth(),
     blocked:   [],
+    aviso:     '',
   };
 
   /* helpers */
@@ -259,7 +260,9 @@ const Booking = (() => {
 
   /* ── Seleciona data ── */
   function pickDay(date) {
+    const D = window.Disponibilidade;
     if (!s.selecting) {
+      if (D && D.noiteOcupada(date)) return;            // dia indisponível não vira check-in
       s.start     = date;
       s.selecting = true;
       s.checkin   = null;
@@ -273,6 +276,12 @@ const Booking = (() => {
         s.hover = null;
         refresh();
       } else {
+        const v = D ? D.saidaValida(s.start, date) : { ok: true };
+        if (!v.ok) {
+          if (v.motivo === 'min') { s.aviso = I18N.t('Mínimo de {n} noites para essas datas').replace('{n}', v.min); refresh(); }
+          else if (!D.noiteOcupada(date)) { s.start = date; s.hover = null; refresh(); }  // atravessa dia ocupado: recomeça daqui
+          return;
+        }
         s.checkin   = s.start;
         s.checkout  = date;
         s.selecting = false;
@@ -392,7 +401,9 @@ const Booking = (() => {
     } else {
       const hint = document.createElement('span');
       hint.className = 'cal-hint';
-      hint.textContent = I18N.t(s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado');
+      hint.textContent = s.aviso || I18N.t(s.selecting ? 'Selecione a data de saída' : 'Selecione o período desejado');
+      if (s.aviso) hint.classList.add('cal-aviso');
+      s.aviso = '';
       footer.appendChild(hint);
     }
     pop.appendChild(footer);

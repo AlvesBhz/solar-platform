@@ -21,8 +21,8 @@ select "ID_PROPRIEDADE", 'casa-do-mirante', 'Casa do Mirante', 'CHALE', 4, 2, 2,
 from "SE"."SIT_PROPRIEDADE" where "NM_PROPRIEDADE" = 'Solar do Espinhaço'
 on conflict ("CD_UNIDADE") do nothing;
 
--- Tarifa padrão (20/11/2026): noites de segunda a quinta (e domingo) R$ 800 para o casal; noites de sexta e
--- sábado R$ 1.700. Criança paga um percentual do valor por pessoa da noite (valor ÷ 2 adultos):
+-- Tarifa padrão (20/11/2026): noites de segunda a quinta R$ 800 para o casal; noites de sexta, sábado e
+-- domingo R$ 1.700. Criança paga um percentual do valor por pessoa da noite (valor ÷ 2 adultos):
 -- até 4 anos não paga (mas ocupa vaga), 5 a 8 anos 30%, 9 a 13 anos 100%; a partir de 14, adulto.
 -- Mínimo de 2 noites. Vale até o fim de 2028.
 insert into "SE"."SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "VL_NOITE_FDS",
