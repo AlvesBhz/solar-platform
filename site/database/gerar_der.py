@@ -591,6 +591,7 @@ h2 {{ font-size: 1.1rem; margin: 6px 0 0; }}
   <h2>Funções do banco</h2>
   <ul class="fn">
     <li><code>consultar_disponibilidade</code><span>Pública: o botão "Ver disponibilidade" do site chama esta função; devolve disponibilidade, preço noite a noite, total e sinal, sem expor nenhuma tabela.</span></li>
+    <li><code>consultar_precos</code><span>Pública: o calendário do site chama esta função para mostrar o valor de cada noite para os hóspedes escolhidos e marcar as noites ocupadas ou fechadas.</span></li>
     <li><code>criar_pre_reserva</code><span>Segura as datas por 30 minutos enquanto o hóspede preenche a reserva no site; só a Edge Function do Supabase executa.</span></li>
     <li><code>confirmar_reserva</code><span>Conclui a reserva do site: grava o hóspede com o documento (reconhece quem já se hospedou por e-mail, CPF ou passaporte), os acompanhantes e o aceite da política, e deixa a reserva CONFIRMADA. Não cobra nada: a equipe entra em contato para o pagamento.</span></li>
     <li><code>calcular_estadia</code><span>Interna: valida datas e capacidade, soma as noites e verifica reservas e bloqueios.</span></li>

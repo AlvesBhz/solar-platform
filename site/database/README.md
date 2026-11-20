@@ -114,6 +114,8 @@ const resp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/consultar_disponibilidade`
 const [chale] = await resp.json();
 ```
 
+O calendário usa `consultar_precos(início, fim, adultos, crianças, bebês)`, que devolve uma linha por noite (`dt_ref`, `vl_noite`, `livre`) para até 62 noites; com hóspedes acima da capacidade não devolve nada.
+
 Com a biblioteca `supabase-js`: `supabase.schema('SE').rpc('consultar_disponibilidade', { p_checkin: '2027-03-04', … })`. O schema `SE` precisa estar liberado em **Project Settings › API › Exposed schemas**.
 
 Resposta de exemplo, gerada pelos testes (casal + 1 criança, 3 noites de qui a dom):
@@ -163,7 +165,7 @@ O iCal tem atraso de minutos a horas, então ainda existe um risco pequeno de ve
 ## Segurança
 
 - **RLS em todas as tabelas,** sem nenhuma política para visitante: o navegador não lê nem grava tabela alguma. Testado como `anon`: 0 linhas em `SIT_RESERVA`, `SIT_HOSPEDE` e `SIT_PAGAMENTO`, inserção recusada.
-- **Uma única porta para o visitante:** `consultar_disponibilidade`, que não devolve dados de hóspedes nem de outras reservas.
+- **Só duas portas para o visitante:** `consultar_disponibilidade` e `consultar_precos` (preço por noite do calendário), que não devolvem dados de hóspedes nem de outras reservas.
 - **Revogação explícita:** no Supabase as funções novas recebem permissão de execução para `anon` e `authenticated` por padrão, então o schema revoga essa permissão papel a papel. A pré-reserva, a confirmação e a função interna de cálculo só rodam com `service_role`.
 - **Equipe:** as políticas de acesso do painel (para cadastrar tarifas e ver reservas) entram junto com o login do Supabase, no mesmo modelo de perfis do `solar-inspect`.
 
