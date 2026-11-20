@@ -50,6 +50,8 @@ h1{font:400 clamp(30px,5vw,44px)/1.1 var(--serif);margin:18px 0 6px}
 @media(max-width:560px){.fields{grid-template-columns:1fr}}
 .f{display:flex;flex-direction:column;gap:5px}.f.full{grid-column:1/-1}
 label.l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+input::placeholder{color:rgba(231,229,228,.38);opacity:1}
+input[type=date]:invalid,input[type=date]:invalid::-webkit-datetime-edit{color:rgba(231,229,228,.38)}
 input,select{font:400 16px var(--sans);color:var(--fg);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;min-height:46px;color-scheme:dark}
 input:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,185,138,.18)}
 input.err,select.err{border-color:var(--bad)}
@@ -113,7 +115,7 @@ input.err,select.err{border-color:var(--bad)}
             <div class="f"><label class="l" for="nome">Nome</label><input id="nome" autocomplete="given-name" required><div class="msg" data-m="nome"></div></div>
             <div class="f"><label class="l" for="sobrenome">Sobrenome</label><input id="sobrenome" autocomplete="family-name" required><div class="msg" data-m="sobrenome"></div></div>
             <div class="f"><label class="l" for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" required><div class="msg" data-m="email"></div></div>
-            <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" value="+55 " placeholder="+55 (31) 99999-9999" maxlength="20" required><div class="msg" data-m="tel"></div></div>
+            <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+55 (00) 00000-0000" maxlength="20" required><div class="msg" data-m="tel"></div></div>
             <div class="f"><label class="l" for="nasc">Data de nascimento</label><input id="nasc" type="date" autocomplete="bday" min="1900-01-02" required><div class="msg" data-m="nasc"></div></div>
             <div class="f full"><span class="l">Nacionalidade</span>
               <div class="seg"><label><input type="radio" name="nac" value="BR" checked> Brasileiro(a)</label><label><input type="radio" name="nac" value="EX"> Estrangeiro(a)</label></div></div>
@@ -301,9 +303,9 @@ input.err,select.err{border-color:var(--bad)}
   function nac() { return document.querySelector('input[name=nac]:checked').value; }
   document.querySelectorAll('input[name=nac]').forEach(function (r) { r.addEventListener('change', function () {
     $('blBR').classList.toggle('hide', nac() !== 'BR'); $('blEX').classList.toggle('hide', nac() === 'BR');
-    var t = $('tel'), d = t.value.replace(/\D/g, '');
-    if (nac() === 'BR') { if (!d || d === '55' || t.value.indexOf('+55') !== 0) t.value = '+55 ' + (d === '55' || !d ? '' : (t.value.indexOf('+') === 0 ? '' : d)); formatarTel(); t.placeholder = '+55 (31) 99999-9999'; }
-    else { if (/^\+55\s*$/.test(t.value)) t.value = '+'; t.placeholder = '+1 415 555 0102'; }
+    var t = $('tel');
+    if (nac() === 'BR') { if (t.value && t.value.indexOf('+55') !== 0) t.value = ''; else if (t.value) formatarTel(); t.placeholder = '+55 (00) 00000-0000'; }
+    else { if (/^\+55/.test(t.value)) t.value = ''; t.placeholder = '+1 000 000 0000'; }
   }); });
   function formatarTel() {
     var t = $('tel'), v = t.value;
@@ -317,6 +319,7 @@ input.err,select.err{border-color:var(--bad)}
   }
   $('tel').addEventListener('input', formatarTel);
   $('tel').addEventListener('focus', function () { if (!this.value) this.value = nac() === 'BR' ? '+55 ' : '+'; });
+  $('tel').addEventListener('blur', function () { if (/^\+(55)?\s*$/.test(this.value)) this.value = ''; });  // vazio volta a mostrar o formato
   $('cpf').addEventListener('input', function () {
     var d = this.value.replace(/\D/g, '').slice(0, 11), o = d;
     if (d.length > 9) o = d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
