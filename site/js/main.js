@@ -202,7 +202,7 @@ const Booking = (() => {
     checkin:   null,
     checkout:  null,
     adults:    2,
-    children:  1,   // 5 a 8 anos
+    children:  0,   // 5 a 8 anos
     older:     0,   // 9 a 13 anos
     babies:    0,   // até 4 anos
     active:    null,
