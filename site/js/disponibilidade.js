@@ -185,13 +185,50 @@ window.Disponibilidade = (function () {
         method: 'POST',
         headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
         body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies })
-      }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      }).then(function (r) {
+          if (r.status === 404) return precosPorDisponibilidade(ini, fim, s); // banco ainda sem consultar_precos
+          if (!r.ok) throw new Error(); return r.json();
+        })
         .then(function (l) { var m = {}; l.forEach(function (x) { m[x.dt_ref] = x; }); return m; })
         .catch(function () { delete cachePrecos[chave]; return null; });
     }
     return cachePrecos[chave];
   }
-  function curto(v) { return v >= 1000 ? (v / 1000).toFixed(1).replace('.', ',') + 'k' : String(Math.round(v)); }
+  /* Alternativa enquanto consultar_precos não existe no banco: usa consultar_disponibilidade em blocos de
+     até 7 noites; num bloco indisponível, consulta noite a noite para saber quais estão livres. */
+  function rpcDisp(ci, co, s) {
+    return fetch(CONFIG.url + '/rest/v1/rpc/consultar_disponibilidade', {
+      method: 'POST',
+      headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
+      body: JSON.stringify({ p_checkin: iso(ci), p_checkout: iso(co), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies })
+    }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); }).then(function (l) { return l[0] || null; });
+  }
+  function soma(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function precosPorDisponibilidade(ini, fim, s) {
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    var d = ini < hoje ? hoje : ini, blocos = [];
+    for (; d < fim; d = soma(d, 7)) blocos.push([d, soma(d, 7) < fim ? soma(d, 7) : fim]);
+    function noites(r, a, b, livre) {
+      var det = {}; ((r && r.ds_detalhe) || []).forEach(function (x) { det[x.dt_ref] = x.vl_noite; });
+      var out = [];
+      for (var x = a; x < b; x = soma(x, 1)) out.push({ dt_ref: iso(x), vl_noite: det[iso(x)] != null ? det[iso(x)] : null, livre: livre && det[iso(x)] != null });
+      return out;
+    }
+    return Promise.all(blocos.map(function (bl) {
+      return rpcDisp(bl[0], bl[1], s).then(function (r) {
+        if (r && r.disponivel) return noites(r, bl[0], bl[1], true);
+        var um = [];
+        for (var x = bl[0]; x < bl[1]; x = soma(x, 1)) um.push(x);
+        return Promise.all(um.map(function (x) {
+          return rpcDisp(x, soma(x, 1), s).then(function (r1) {
+            var ok = r1 && (r1.disponivel || r1.motivo === 'min_noites');
+            return noites(r1, x, soma(x, 1), !!ok)[0];
+          });
+        }));
+      });
+    })).then(function (ls) { return [].concat.apply([], ls); });
+  }
+  function curto(v) { return Math.round(v).toLocaleString('pt-BR'); }
   function precosNoCalendario(cal, ano, mes0) {
     precosDoMes(ano, mes0).then(function (m) {
       if (!m) return;

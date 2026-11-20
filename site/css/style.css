@@ -362,7 +362,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   background:rgba(255,255,255,0.10); color:#fff;
 }
 .bk-pop-cal .cal-d:not(.cal-empty) { min-height:2.3rem; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.15; }
-.cal-p { font-size:.5rem; letter-spacing:.02em; color:#c9b98a; font-variant-numeric:tabular-nums; }
+.cal-p { font-size:.52rem; letter-spacing:.02em; color:#c9b98a; font-variant-numeric:tabular-nums; }
 .cal-sel .cal-p, .cal-range .cal-p { color:inherit; opacity:.85; }
 .cal-ocu { color:rgba(255,255,255,0.28); text-decoration:line-through; cursor:not-allowed; }
 .cal-pnota { margin-top:.45rem; font-size:.6rem; text-align:center; color:rgba(255,255,255,0.45); }
@@ -1848,3 +1848,4 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
   font-size: var(--fs-label); line-height: 1.45;
   color: rgba(255,255,255,0.45);
 }
+@media (pointer:coarse){ .cal-p { font-size:.58rem; } }
