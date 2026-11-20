@@ -175,6 +175,43 @@ window.Disponibilidade = (function () {
       });
   }
 
+  /* Preço de cada noite no calendário, para os hóspedes escolhidos (cache por mês e hóspedes). */
+  var cachePrecos = {};
+  function precosDoMes(ano, mes0) {
+    var s = Booking.getState(), ini = new Date(ano, mes0, 1), fim = new Date(ano, mes0 + 1, 1);
+    var chave = [iso(ini), s.adults, s.children, s.babies].join('|');
+    if (!cachePrecos[chave]) {
+      cachePrecos[chave] = fetch(CONFIG.url + '/rest/v1/rpc/consultar_precos', {
+        method: 'POST',
+        headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
+        body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies })
+      }).then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+        .then(function (l) { var m = {}; l.forEach(function (x) { m[x.dt_ref] = x; }); return m; })
+        .catch(function () { delete cachePrecos[chave]; return null; });
+    }
+    return cachePrecos[chave];
+  }
+  function curto(v) { return v >= 1000 ? (v / 1000).toFixed(1).replace('.', ',') + 'k' : String(Math.round(v)); }
+  function precosNoCalendario(cal, ano, mes0) {
+    precosDoMes(ano, mes0).then(function (m) {
+      if (!m) return;
+      var achou = false;
+      cal.querySelectorAll('.cal-d').forEach(function (c) {
+        var x = c._date && m[iso(c._date)];
+        if (!x || c.classList.contains('cal-off')) return;
+        if (x.livre && x.vl_noite != null) {
+          var p = document.createElement('span'); p.className = 'cal-p'; p.textContent = curto(Number(x.vl_noite));
+          c.title = moeda(x.vl_noite) + ' / ' + t('noite'); c.appendChild(p); achou = true;
+        } else c.classList.add('cal-ocu');
+      });
+      if (achou && !cal.querySelector('.cal-pnota')) {
+        var n = document.createElement('div'); n.className = 'cal-pnota';
+        n.textContent = t('Valor por noite') + ' · ' + document.getElementById('guestsDisplay').textContent;
+        cal.appendChild(n);
+      }
+    });
+  }
+
   /* Datas ou hóspedes mudaram: o resultado mostrado deixa de valer. */
   function estadoMudou() {
     if (ultimo && ultimo.chave !== chaveDe(Booking.getState())) esconder();
@@ -182,5 +219,5 @@ window.Disponibilidade = (function () {
   /* Troca de idioma: redesenha o resultado no idioma novo. */
   function idiomaMudou() { if (ultimo) renderizar(ultimo.resposta); }
 
-  return { consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
+  return { precosNoCalendario: precosNoCalendario, consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
 })();

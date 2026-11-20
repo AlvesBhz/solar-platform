@@ -248,3 +248,5 @@ Testes da função: `supabase/functions/reservar/teste.mjs` (19 verificações c
 5. Painel da equipe para tarifas, ajustes, reservas e lançamento de pagamentos.
 6. Envio da FNRH digital ao Ministério do Turismo a partir do cadastro do hóspede.
 7. Quando quiser cobrar online: Edge Function que cria a cobrança no Mercado Pago (`SIT_PAGAMENTO` `PENDENTE`) e recebe o aviso de aprovação; o banco já tem os campos e as regras.
+
+- `migracao_consultar_precos.sql`: acrescenta ao banco já criado a função `consultar_precos` (preço por noite no calendário do site). Rode uma vez no SQL Editor; quem recriar com `schema.sql` já a recebe.
