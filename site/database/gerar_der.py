@@ -136,7 +136,7 @@ svg.append('</svg>')
 
 PURPOSE = {
  'SIT_PROPRIEDADE': 'A pousada: horários, idade de criança, estadia máxima, sinal, tempo para concluir a reserva no site, remarcação, prazo de arrependimento e versão da política de cancelamento.',
- 'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade, com bebês contando como criança na ocupação, e taxa de limpeza.',
+ 'SIT_UNIDADE': 'Cada chalé (hoje, só a Casa do Mirante): capacidade (crianças de todas as idades somam nas vagas de criança) e taxa de limpeza.',
  'SIT_TARIFA': 'Preço por período. Onde duas tarifas cobrem a mesma noite, vale a de maior prioridade.',
  'SIT_AJUSTE_DIARIO': 'Exceção de uma data: preço especial, mínimo de noites, noite fechada, sem chegada ou sem saída.',
  'SIT_HOSPEDE': 'Quem reserva: nome, contato e o documento exigido pela FNRH digital (CPF para brasileiro, passaporte para estrangeiro).',
@@ -146,9 +146,9 @@ PURPOSE = {
  'SIT_BLOQUEIO': 'Datas fora da venda: reservas dos canais, manutenção e uso próprio.',
 }
 RULES = {
- 'SIT_PROPRIEDADE': ['Idade do bebê menor que a de criança (hoje: bebê até 1 ano, criança até 13).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
- 'SIT_UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Bebês contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
- 'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'VL_BEBE = R$ 0: bebê não paga, mas ocupa vaga de criança.', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
+ 'SIT_PROPRIEDADE': ['Faixas de idade em ordem (hoje: até 4 anos não paga, 5 a 8, 9 a 13; a partir de 14, adulto).', 'Estadia máxima entre 1 e 365 noites (hoje 7).', 'Sinal entre 0% e 100% (hoje 50%).', 'Pré-reserva entre 5 e 1.440 minutos (hoje 30).', 'Prazo de remarcação ≥ 0 dias e validade do crédito ≥ 1 mês.', 'Prazo de arrependimento ≥ 7 dias (mínimo do CDC, art. 49).'],
+ 'SIT_UNIDADE': ['CD_UNIDADE único, só letras minúsculas, números e hífen.', 'TP_UNIDADE: CHALE, QUARTO ou SUITE.', 'Capacidades: hóspedes e adultos ≥ 1, crianças ≥ 0. Crianças até 4 anos também contam em QTDE_MAX_CRIANCAS e em QTDE_MAX_HOSPEDES.', 'Taxa de limpeza ≥ 0.'],
+ 'SIT_TARIFA': ['DT_FIM depois de DT_INI.', 'Valores ≥ 0; adultos inclusos e mínimo de noites ≥ 1.', 'Percentuais de criança entre 0 e 100 (hoje 30% de 5 a 8 anos, 100% de 9 a 13, 0% até 4 anos).', 'Duas tarifas ativas com a mesma prioridade não cobrem a mesma noite (EX_SIT_TARIFA_SOBREPOSICAO).'],
  'SIT_AJUSTE_DIARIO': ['Chave composta: um ajuste por chalé e data (ID_UNIDADE + DT_REF).', 'Valor ≥ 0 e mínimo de noites ≥ 1.'],
  'SIT_HOSPEDE': ['E-mail único, sem diferenciar maiúsculas de minúsculas.', 'Brasileiro (SG_NACIONALIDADE = BR) exige CD_CPF; estrangeiro exige CD_PASSAPORTE.', 'CPF: 11 dígitos sem pontuação, com dígitos verificadores conferidos; único.', 'Passaporte: 5 a 20 letras maiúsculas e números, sempre com SG_PAIS_PASSAPORTE e DT_VALIDADE_PASSAPORTE; único por país.', 'Validade depois da emissão. Reserva ativa de estrangeiro é recusada se o passaporte vence antes da saída (TG_SIT_RESERVA_PASSAPORTE).', 'O CPF não é a chave: ID_HOSPEDE segue como número interno (estrangeiro não tem CPF; LGPD).'],
  'SIT_RESERVA': ['CD_RESERVA único.', 'DT_CHECKOUT depois de DT_CHECKIN; pelo menos 1 adulto.', 'TP_STATUS: PENDENTE, CONFIRMADA, CANCELADA, EXPIRADA ou REMARCADA.', 'TP_CANAL: SITE, DIRETO ou TELEFONE.', 'Sinal ≤ total.', 'PENDENTE (pré-reserva de 30 minutos enquanto o hóspede preenche a reserva) exige DT_EXPIRA; CONFIRMADA exige hóspede.', 'Reserva do site só fica CONFIRMADA com a política aceita (DT_ACEITE_POLITICA e NO_VERSAO_POLITICA); quem confirma é a função confirmar_reserva.', 'CANCELADA exige TP_MOTIVO_CANCELAMENTO: ARREPENDIMENTO, DESISTENCIA, FORCA_MAIOR, NAO_COMPARECIMENTO, SEM_PAGAMENTO (hóspede não pagou quando a equipe entrou em contato) ou POUSADA.', 'Duas reservas PENDENTE ou CONFIRMADA do mesmo chalé nunca ocupam a mesma noite (EX_SIT_RESERVA_SEM_CONFLITO).', 'Hóspede estrangeiro: o passaporte precisa valer até DT_CHECKOUT (TG_SIT_RESERVA_PASSAPORTE).'],
@@ -163,7 +163,8 @@ CAMPO = {
   'DS_FUSO_HORARIO': 'Fuso usado para "hoje", check-in e prazos (America/Sao_Paulo).',
   'HR_CHECKIN': 'Hora a partir da qual o hóspede pode entrar.',
   'HR_CHECKOUT': 'Hora limite para sair.',
-  'NO_IDADE_MAX_BEBE': 'Até esta idade é bebê: não paga, mas ocupa vaga de criança.',
+  'NO_IDADE_MAX_BEBE': 'Até esta idade a criança não paga (PC_BEBE), mas ocupa vaga. Hoje 4.',
+  'NO_IDADE_MAX_CRIANCA_MENOR': 'Até esta idade paga PC_CRIANCA (hoje 5 a 8 anos).',
   'NO_IDADE_MAX_CRIANCA': 'Até esta idade é criança; acima disso conta como adulto.',
   'QTDE_MAX_NOITES': 'Estadia máxima vendida pelo site.',
   'VL_PERCENTUAL_SINAL': 'Percentual do total cobrado como sinal; a equipe combina o pagamento depois da reserva.',
@@ -180,9 +181,9 @@ CAMPO = {
   'CD_UNIDADE': 'Código público usado pelo site para consultar e reservar.',
   'NM_UNIDADE': 'Nome mostrado ao hóspede.',
   'TP_UNIDADE': 'Tipo: CHALE, QUARTO ou SUITE.',
-  'QTDE_MAX_HOSPEDES': 'Total de pessoas, contando adultos, crianças e bebês.',
+  'QTDE_MAX_HOSPEDES': 'Total de pessoas, contando adultos e crianças de todas as idades.',
   'QTDE_MAX_ADULTOS': 'Máximo de adultos (14 anos ou mais).',
-  'QTDE_MAX_CRIANCAS': 'Máximo de crianças e bebês somados (sofá-cama).',
+  'QTDE_MAX_CRIANCAS': 'Máximo de crianças somadas, de qualquer idade (sofá-cama).',
   'VL_TAXA_LIMPEZA': 'Taxa única por estadia; hoje R$ 0 (em avaliação).',
   'SG_ATIVO': 'Se o chalé aparece para venda.',
   'NO_ORDEM': 'Ordem de exibição quando houver mais de um chalé.',
@@ -199,8 +200,9 @@ CAMPO = {
   'VL_NOITE_FDS': 'Preço das noites de sexta e sábado; vazio = VL_NOITE.',
   'QTDE_ADULTOS_INCLUSOS': 'Adultos já cobertos pelo VL_NOITE.',
   'VL_ADULTO_EXTRA': 'Por adulto além dos inclusos, por noite.',
-  'VL_CRIANCA': 'Por criança (2 a 13 anos), por noite.',
-  'VL_BEBE': 'Por bebê, por noite: R$ 0, bebê não paga.',
+  'PC_CRIANCA': 'Criança de 5 a 8 anos: % do valor por pessoa da noite (valor ÷ adultos inclusos). Hoje 30.',
+  'PC_CRIANCA_MAIOR': 'Criança de 9 a 13 anos: % do valor por pessoa da noite. Hoje 100.',
+  'PC_BEBE': 'Criança até 4 anos: % do valor por pessoa da noite. Hoje 0 (não paga).',
   'QTDE_MIN_NOITES': 'Mínimo de noites quando a estadia passa por este período.',
   'SG_ATIVO': 'Desligar sem apagar o histórico.',
   'DT_CRIACAO': 'Quando a tarifa foi cadastrada.',
@@ -236,8 +238,9 @@ CAMPO = {
   'DT_CHECKIN': 'Dia de chegada.',
   'DT_CHECKOUT': 'Dia de saída (não é cobrado).',
   'QTDE_ADULTOS': 'Adultos (14 anos ou mais).',
-  'QTDE_CRIANCAS': 'Crianças de 2 a 13 anos (pagam VL_CRIANCA).',
-  'QTDE_BEBES': 'Bebês até 1 ano: ocupam vaga de criança, não pagam.',
+  'QTDE_CRIANCAS': 'Crianças de 5 a 8 anos (pagam PC_CRIANCA).',
+  'QTDE_CRIANCAS_MAIORES': 'Crianças de 9 a 13 anos (pagam PC_CRIANCA_MAIOR).',
+  'QTDE_BEBES': 'Crianças até 4 anos: ocupam vaga, não pagam.',
   'TP_STATUS': 'PENDENTE (preenchendo no site) → CONFIRMADA (reserva feita, aguardando contato da equipe); ou CANCELADA, EXPIRADA, REMARCADA.',
   'TP_CANAL': 'Por onde entrou: SITE, DIRETO ou TELEFONE.',
   'VL_HOSPEDAGEM': 'Soma das noites, congelada no momento da reserva.',
@@ -245,8 +248,8 @@ CAMPO = {
   'VL_TOTAL': 'Hospedagem + limpeza (calculado pelo banco).',
   'VL_SINAL': 'Sinal de 50%, combinado e recebido pela equipe depois da reserva.',
   'VL_SALDO': 'Total − sinal, pago no check-in (calculado pelo banco).',
-  'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa, criança e bebê (JSON).',
-  'DS_ACOMPANHANTES': 'Nome e sobrenome dos adultos e nome e idade das crianças e bebês que vão junto (JSON); a reserva exige os adultos.',
+  'DS_DETALHE_PRECOS': 'Preço noite a noite, com tarifa e crianças por faixa de idade (JSON).',
+  'DS_ACOMPANHANTES': 'Nome e sobrenome dos adultos e nome e idade das crianças que vão junto (JSON); a reserva exige os adultos.',
   'DT_EXPIRA': 'Até quando a pré-reserva segura as datas (30 minutos para concluir no site).',
   'ID_RESERVA_ORIGINAL': 'Em remarcação, a reserva antiga que deu origem a esta.',
   'TP_MOTIVO_CANCELAMENTO': 'Por que foi cancelada; obrigatório só se CANCELADA.',
@@ -325,8 +328,8 @@ def fmt(col, v):
     return esc(v)
 CAP = {
  'SIT_PROPRIEDADE': ['A pousada'], 'SIT_UNIDADE': ['O chalé'],
- 'SIT_TARIFA': ['Vale o ano todo', 'Réveillon: prioridade 10 vence a padrão'],
- 'SIT_AJUSTE_DIARIO': ['Preço especial num dia', 'Dia sem chegada', 'Noite fechada'],
+ 'SIT_TARIFA': ['Vale o ano todo', 'Férias de julho: prioridade 10 vence a padrão'],
+ 'SIT_AJUSTE_DIARIO': ['Natal: preço de feriado e mínimo de 3 noites', 'Natal: noite seguinte', 'Sábado de Carnaval sem chegada', 'Noite fechada'],
  'SIT_HOSPEDE': ['Brasileira, com CPF (reserva 1)', 'Estrangeiro, com passaporte (reserva 2)'],
  'SIT_RESERVA': ['1 · Confirmada no site', '2 · Pré-reserva: hóspede preenchendo (30 min)'],
  'SIT_PAGAMENTO': ['Sinal por Pix, lançado pela equipe (reserva 1)'],
@@ -357,16 +360,16 @@ for x in r1['ds_detalhe_precos']:
 ajuste_html = (
  '<section class="explica" id="como-ajuste">\n'
  '  <h2>Como funciona o SIT_AJUSTE_DIARIO</h2>\n'
- '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 1.700 de 01/11/2026 a 31/12/2027). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
- '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Criança (VL_CRIANCA) e bebê (VL_BEBE) vêm sempre da tarifa e somam por cima.</li></ol>\n'
- f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança + 1 bebê</h3>\n'
- '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>Criança</th><th>Bebê</th><th>Noite</th></tr></thead>\n'
+ '  <p>A <b>SIT_TARIFA</b> dá o preço de um <b>período</b> (ex.: R$ 800 de domingo a quinta e R$ 1.700 sexta e sábado, de 01/11/2026 a 31/12/2028). O <b>SIT_AJUSTE_DIARIO</b> é a <b>exceção de um dia só</b>: muda o preço ou a regra de venda daquela data sem criar uma tarifa nova. Os campos vazios não mudam nada. Para cada noite, o banco decide assim:</p>\n'
+ '  <ol class="ordem"><li>Existe SIT_AJUSTE_DIARIO para a data com VL_NOITE preenchido? Esse é o valor base.</li><li>Senão, vale a SIT_TARIFA ativa de maior NO_PRIORIDADE que cobre a data.</li><li>Crianças somam por cima um percentual do valor por pessoa da noite (PC_CRIANCA, PC_CRIANCA_MAIOR e PC_BEBE, da tarifa).</li></ol>\n'
+ f'  <h3>Exemplo: reserva {esc(r1["cd_reserva"])}, 23 a 26/12/2026, casal + 1 criança de 5 a 8 anos + 1 criança até 4 anos</h3>\n'
+ '  <div class="tscroll"><table class="passo"><thead><tr><th>Noite</th><th>De onde vem o preço</th><th>Valor base</th><th>5 a 13 anos</th><th>Até 4 anos</th><th>Noite</th></tr></thead>\n'
  f'  <tbody>{"".join(linhas)}</tbody>\n'
  f'  <tfoot><tr><td colspan="5">Total da hospedagem, gravado em SIT_RESERVA.VL_HOSPEDAGEM (sinal de 50%: {brl(r1["vl_sinal"])})</td><td><b>{brl(r1["vl_hospedagem"])}</b></td></tr></tfoot></table></div>\n'
  '  <h3>O que cada campo faz (resultado real da consulta no banco de teste)</h3>\n'
  '  <ul class="fn">\n'
- '    <li><code>VL_NOITE = 2.200 em 24/12</code><span>Troca o valor base só da véspera de Natal. As outras noites seguem a tarifa.</span></li>\n'
- '    <li><code>QTDE_MIN_NOITES = 2 em 24/12</code><span>Pedido só de 24 para 25/12 volta como <i>min_noites</i>: quem passa por esse dia fica pelo menos 2 noites.</span></li>\n'
+ '    <li><code>VL_NOITE = 1.700 de 24 a 26/12</code><span>As noites do feriado custam como fim de semana, mesmo caindo entre domingo e quinta.</span></li>\n'
+ '    <li><code>QTDE_MIN_NOITES = 3 de 24 a 26/12</code><span>Pedido de 2 noites que passe pelo Natal volta como <i>min_noites</i>: feriado prolongado pede 3 noites; Réveillon e Carnaval, 4.</span></li>\n'
  '    <li><code>SG_SEM_CHEGADA em 06/02/2027</code><span>Check-in em 06/02 volta como <i>sem_chegada</i>. Quem chegou no dia 05 e continua hospedado não é afetado.</span></li>\n'
  '    <li><code>SG_SEM_SAIDA</code><span>O inverso: ninguém faz check-out nessa data.</span></li>\n'
  '    <li><code>SG_FECHADO em 17/03/2027</code><span>Qualquer estadia que inclua a noite de 17/03 volta como <i>fechado</i>.</span></li>\n'

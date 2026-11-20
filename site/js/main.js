@@ -202,8 +202,9 @@ const Booking = (() => {
     checkin:   null,
     checkout:  null,
     adults:    2,
-    children:  1,
-    babies:    0,
+    children:  1,   // 5 a 8 anos
+    older:     0,   // 9 a 13 anos
+    babies:    0,   // até 4 anos
     active:    null,
     selecting: false,
     start:     null,
@@ -229,8 +230,8 @@ const Booking = (() => {
     const g = document.getElementById('guestsDisplay');
     if (g) {
       const parts = [`${s.adults} ${I18N.t(s.adults === 1 ? 'Adulto' : 'Adultos')}`];
-      if (s.children) parts.push(`${s.children} ${I18N.t(s.children === 1 ? 'Criança' : 'Crianças')}`);
-      if (s.babies)   parts.push(`${s.babies} ${I18N.t(s.babies === 1 ? 'Bebê' : 'Bebês')}`);
+      const kids = s.children + s.older + s.babies;
+      if (kids) parts.push(`${kids} ${I18N.t(kids === 1 ? 'Criança' : 'Crianças')}`);
       g.textContent = parts.join(', ');
     }
     if (window.Disponibilidade) Disponibilidade.estadoMudou();
@@ -422,17 +423,19 @@ const Booking = (() => {
 
   /* ── Hóspedes ──
      Capacidade da Casa do Mirante (mesmas regras do banco, tabela UNIDADE):
-     até 2 adultos (14+ anos) e até 2 crianças e bebês somados (sofá-cama).
-     Bebês (até 1 ano) não pagam, mas ocupam vaga. */
-  const CAPACIDADE = { adultos: 2, criancasEBebes: 2 };
+     até 2 adultos (14+ anos) e até 2 crianças somadas (sofá-cama), de qualquer idade.
+     Criança paga um percentual do valor por pessoa da diária: 9 a 13 anos 100%, 5 a 8 anos 30%,
+     até 4 anos não paga (mas ocupa vaga). */
+  const CAPACIDADE = { adultos: 2, criancas: 2 };
   function buildGuests() {
     const pop = document.createElement('div');
     pop.className = 'bk-pop bk-pop-guests';
     const rows = {};
     const limite = {
       adults:   () => ({ min: 1, max: CAPACIDADE.adultos }),
-      children: () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.babies }),
-      babies:   () => ({ min: 0, max: CAPACIDADE.criancasEBebes - s.children }),
+      older:    () => ({ min: 0, max: CAPACIDADE.criancas - s.children - s.babies }),
+      children: () => ({ min: 0, max: CAPACIDADE.criancas - s.older - s.babies }),
+      babies:   () => ({ min: 0, max: CAPACIDADE.criancas - s.older - s.children }),
     };
     function sync() {
       Object.keys(rows).forEach(key => {
@@ -467,10 +470,11 @@ const Booking = (() => {
       return r;
     }
     pop.appendChild(row(I18N.t('Adultos'),  I18N.t('14+ anos'),  'adults'));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('2–13 anos'), 'children'));
-    pop.appendChild(row(I18N.t('Bebês'),    I18N.t('até 1 ano · não paga'), 'babies'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('9 a 13 anos · 100%'), 'older'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('5 a 8 anos · 30%'), 'children'));
+    pop.appendChild(row(I18N.t('Crianças'), I18N.t('até 4 anos · não paga'), 'babies'));
     const nota = document.createElement('div'); nota.className = 'gst-note';
-    nota.textContent = I18N.t('Bebês contam como criança na ocupação, mas não pagam. Máximo: 2 adultos e 2 crianças ou bebês.');
+    nota.textContent = I18N.t('Criança paga um percentual do valor por pessoa da diária. Máximo: 2 adultos e 2 crianças.');
     pop.appendChild(nota);
     sync();
     return pop;

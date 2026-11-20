@@ -1,16 +1,17 @@
 -- ════════════════════════════════════════════════════════════════════
 --  Testes da proposta (rodar depois de schema.sql e seed_exemplo.sql,
 --  num banco de TESTE: os dados abaixo são criados só para os testes).
---  Valores reais: R$ 1.700 a noite para o casal · R$ 300 por criança
---  (2 a 13 anos) por noite · bebê não paga mas ocupa vaga · sem taxa de
---  limpeza · até 2 adultos e 2 crianças/bebês · até 7 noites · sinal 50%.
+--  Valores reais: casal R$ 800 de domingo a quinta e R$ 1.700 sexta e
+--  sábado · criança de 5 a 8 anos 30% e de 9 a 13 anos 100% do valor por
+--  pessoa · até 4 anos não paga mas ocupa vaga · feriados R$ 1.700 com
+--  mínimo de 3 noites (Réveillon e Carnaval, 4) · até 7 noites · sinal 50%.
 -- ════════════════════════════════════════════════════════════════════
 
 -- Dados SÓ PARA TESTE: uma temporada, ajustes, um bloqueio do Airbnb e uma reserva
 set search_path = "SE", extensions, public;   -- tabelas do site ficam no schema "SE"
 
-insert into "SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "QTDE_ADULTOS_INCLUSOS", "VL_CRIANCA", "QTDE_MIN_NOITES")
-select "ID_UNIDADE", 'Réveillon (teste)', '2026-12-29', '2027-01-02', 20, 2500.00, 2, 300.00, 4 from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+insert into "SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "QTDE_ADULTOS_INCLUSOS", "QTDE_MIN_NOITES")
+select "ID_UNIDADE", 'Julho (teste)', '2027-07-05', '2027-07-09', 20, 2500.00, 2, 4 from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
 insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "VL_NOITE", "DS_OBSERVACAO") select "ID_UNIDADE", '2027-04-21', 1900.00, 'Tiradentes (teste)' from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
 insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_FECHADO")             select "ID_UNIDADE", '2027-05-12', true from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
 insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_SEM_CHEGADA")         select "ID_UNIDADE", '2027-06-04', true from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
@@ -51,25 +52,43 @@ begin
 end $$;
 
 \echo '── Preços'
-select pg_temp.ok ('Casal, 2 noites em dia de semana',                  '2027-03-02','2027-03-04', 2,0, 3400, 3400);
-select pg_temp.ok ('Casal, 2 noites no fim de semana (mesmo preço)',    '2027-03-05','2027-03-07', 2,0, 3400, 3400);
-select pg_temp.ok ('Casal + 2 crianças (R$ 300 cada por noite)',        '2027-03-02','2027-03-04', 2,2, 4600, 4600);
-select pg_temp.ok ('1 adulto + 1 criança (criança paga à parte)',       '2027-03-02','2027-03-04', 1,1, 4000, 4000);
-select pg_temp.ok ('Temporada de teste: Réveillon 4 noites a R$ 2.500', '2026-12-29','2027-01-02', 2,0, 10000, 10000);
-select pg_temp.ok ('Ajuste de preço numa data (R$ 1.900)',              '2027-04-20','2027-04-22', 2,0, 3600, 3600);
+select pg_temp.ok ('Casal, 2 noites em dia de semana (R$ 800)',         '2027-03-02','2027-03-04', 2,0, 1600, 1600);
+select pg_temp.ok ('Casal, 2 noites no fim de semana (R$ 1.700)',       '2027-03-05','2027-03-07', 2,0, 3400, 3400);
+select pg_temp.ok ('Casal, domingo a terça (domingo é dia de semana)',  '2027-03-07','2027-03-09', 2,0, 1600, 1600);
+select pg_temp.ok ('Casal + 2 crianças de 5 a 8 (30% de R$ 400 cada)',  '2027-03-02','2027-03-04', 2,2, 2080, 2080);
+select pg_temp.ok ('1 adulto + 1 criança de 5 a 8',                     '2027-03-02','2027-03-04', 1,1, 1840, 1840);
+select pg_temp.ok ('Temporada de teste: 4 noites a R$ 2.500',           '2027-07-05','2027-07-09', 2,0, 10000, 10000);
+select pg_temp.ok ('Ajuste de preço numa data (R$ 1.900)',              '2027-04-20','2027-04-22', 2,0, 2700, 2700);
+select pg_temp.ok ('Réveillon: 4 noites a R$ 1.700',                    '2026-12-30','2027-01-03', 2,0, 6800, 6800);
+select pg_temp.ok ('Feriado (Semana Santa): 3 noites a R$ 1.700',       '2027-03-25','2027-03-28', 2,0, 5100, 5100);
+do $$ declare r record; begin
+  select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 0, 0, 1);
+  if not r.disponivel or r.vl_total <> 2400 then raise exception 'FALHOU: casal + criança de 9 a 13 na semana = %', r.vl_total; end if;
+  select * into r from consultar_disponibilidade('2027-03-05','2027-03-07', 2, 1, 0, 1);
+  if not r.disponivel or r.vl_total <> 5610 then raise exception 'FALHOU: casal + 5 a 8 + 9 a 13 no fim de semana = %', r.vl_total; end if;
+  if (r.ds_detalhe->0->>'vl_criancas')::numeric <> 1105 or (r.ds_detalhe->0->>'qtde_criancas_maiores')::int <> 1 then
+    raise exception 'FALHOU: detalhe da noite com crianças: %', r.ds_detalhe->0; end if;
+  select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 1, 1, 1);
+  if r.disponivel or r.motivo <> 'capacidade' then raise exception 'FALHOU: 3 crianças de idades diferentes aceitas'; end if;
+  raise notice 'ok  Criança de 9 a 13 paga 100%% (R$ 400 na semana, R$ 850 no fim de semana); as 3 faixas somam na capacidade';
+end $$;
 
 \echo '── Regras de venda'
-select pg_temp.nao('Réveillon com 3 noites (mínimo 4)',                 '2026-12-29','2027-01-01', 2,0, 'min_noites');
+select pg_temp.nao('Réveillon com 3 noites (mínimo 4)',                 '2026-12-30','2027-01-02', 2,0, 'min_noites');
+select pg_temp.nao('Temporada de teste com 3 noites (mínimo 4)',        '2027-07-05','2027-07-08', 2,0, 'min_noites');
+select pg_temp.nao('Feriado com 2 noites (mínimo 3)',                   '2027-03-25','2027-03-27', 2,0, 'min_noites');
+select pg_temp.nao('Atravessa 1 noite de feriado: vale o mínimo dele',  '2027-03-24','2027-03-26', 2,0, 'min_noites');
+select pg_temp.nao('1 noite em dia de semana (mínimo 2)',               '2027-03-02','2027-03-03', 2,0, 'min_noites');
 select pg_temp.nao('Noite fechada',                                     '2027-05-11','2027-05-13', 2,0, 'fechado');
 select pg_temp.nao('Check-in em data sem chegada',                      '2027-06-04','2027-06-06', 2,0, 'sem_chegada');
-select pg_temp.ok ('…mas atravessar essa data é permitido',             '2027-06-03','2027-06-05', 2,0, 3400, 3400);
-select pg_temp.nao('Datas sem tarifa cadastrada (venda não aberta)',    '2028-01-05','2028-01-07', 2,0, 'sem_tarifa');
+select pg_temp.ok ('…mas atravessar essa data é permitido',             '2027-06-03','2027-06-05', 2,0, 2500, 2500);
+select pg_temp.nao('Datas sem tarifa cadastrada (venda não aberta)',    '2029-01-05','2029-01-07', 2,0, 'sem_tarifa');
 
 \echo '── Validações'
 select pg_temp.nao('Check-out igual ao check-in',                       '2027-03-02','2027-03-02', 2,0, 'datas_invalidas');
 select pg_temp.nao('Data no passado',                                   '2026-01-10','2026-01-12', 2,0, 'data_passada');
 select pg_temp.nao('Estadia acima de 7 noites',                         '2027-03-01','2027-03-09', 2,0, 'estadia_longa');
-select pg_temp.ok ('Estadia de exatamente 7 noites',                    '2027-03-01','2027-03-08', 2,0, 11900, 11900);
+select pg_temp.ok ('Estadia de exatamente 7 noites',                    '2027-03-01','2027-03-08', 2,0, 7400, 7400);
 select pg_temp.nao('3 adultos (máximo 2)',                              '2027-03-02','2027-03-04', 3,0, 'capacidade');
 select pg_temp.nao('3 crianças (máximo 2)',                             '2027-03-02','2027-03-04', 2,3, 'capacidade');
 do $$ declare r record; begin
@@ -77,15 +96,15 @@ do $$ declare r record; begin
   if r.disponivel or r.motivo <> 'capacidade' then raise exception 'FALHOU: 2 adultos + 2 crianças + 1 bebê foi aceito'; end if;
   raise notice 'ok  2 adultos + 2 crianças + 1 bebê (bebê ocupa vaga)                indisponível: capacidade';
   select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 1, 1);
-  if not r.disponivel or r.vl_total <> 4000 then raise exception 'FALHOU: casal + 1 criança + 1 bebê = %', r.vl_total; end if;
+  if not r.disponivel or r.vl_total <> 1840 then raise exception 'FALHOU: casal + 1 criança + 1 bebê = %', r.vl_total; end if;
   raise notice 'ok  Casal + 1 criança + 1 bebê (bebê não paga)                       R$ %', r.vl_total;
   if (r.ds_detalhe->0->>'qtde_bebes')::int <> 1 or (r.ds_detalhe->0->>'vl_bebes')::numeric <> 0
-     or (r.ds_detalhe->0->>'vl_criancas')::numeric <> 300 then
+     or (r.ds_detalhe->0->>'vl_criancas')::numeric <> 120 then
     raise exception 'FALHOU: detalhe da noite não separa criança e bebê: %', r.ds_detalhe->0;
   end if;
   raise notice 'ok  Detalhe da noite: 1 criança R$ %, 1 bebê R$ %', r.ds_detalhe->0->>'vl_criancas', r.ds_detalhe->0->>'vl_bebes';
   select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 0, 2);
-  if not r.disponivel or r.vl_total <> 3400 then raise exception 'FALHOU: casal + 2 bebês = %', r.vl_total; end if;
+  if not r.disponivel or r.vl_total <> 1600 then raise exception 'FALHOU: casal + 2 bebês = %', r.vl_total; end if;
   raise notice 'ok  Casal + 2 bebês (ocupam as 2 vagas de criança, não pagam)        R$ %', r.vl_total;
   select * into r from consultar_disponibilidade('2027-03-02','2027-03-04', 2, 0, 3);
   if r.disponivel or r.motivo <> 'capacidade' then raise exception 'FALHOU: 3 bebês aceitos'; end if;
@@ -94,8 +113,8 @@ end $$;
 
 \echo '── Ocupação'
 select pg_temp.nao('Sobrepõe reserva confirmada (19–21/03)',            '2027-03-20','2027-03-22', 2,0, 'ocupado');
-select pg_temp.ok ('Entra no dia em que a reserva sai (21/03)',         '2027-03-21','2027-03-23', 2,0, 3400, 3400);
-select pg_temp.ok ('Sai no dia em que a reserva entra (19/03)',         '2027-03-17','2027-03-19', 2,0, 3400, 3400);
+select pg_temp.ok ('Entra no dia em que a reserva sai (21/03)',         '2027-03-21','2027-03-23', 2,0, 1600, 1600);
+select pg_temp.ok ('Sai no dia em que a reserva entra (19/03)',         '2027-03-17','2027-03-19', 2,0, 1600, 1600);
 select pg_temp.nao('Bloqueio importado do Airbnb (12–15/03)',           '2027-03-14','2027-03-16', 2,0, 'ocupado');
 
 \echo '── Pré-reserva, confirmação no site e pagamento lançado pela equipe'
@@ -197,7 +216,7 @@ end $$;
 -- simula o vencimento da pré-reserva de outra estadia
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-08-10', '2027-08-12', 2, 0);
 update "SIT_RESERVA" set "DT_EXPIRA" = now() - interval '1 minute' where "TP_STATUS" = 'PENDENTE' and "DT_CHECKIN" = '2027-08-10';
-select pg_temp.ok ('Pré-reserva vencida libera as datas',               '2027-08-10','2027-08-12', 2,0, 3400, 3400);
+select pg_temp.ok ('Pré-reserva vencida libera as datas',               '2027-08-10','2027-08-12', 2,0, 1600, 1600);
 
 \echo '── Remarcação (o sinal não é devolvido, vira crédito)'
 -- a reserva confirmada e com sinal recebido é remarcada para outra data
@@ -208,7 +227,7 @@ with antiga as (
 )
 insert into "SIT_RESERVA" ("ID_UNIDADE", "ID_HOSPEDE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "QTDE_CRIANCAS", "TP_STATUS", "VL_HOSPEDAGEM", "VL_SINAL", "ID_RESERVA_ORIGINAL", "NO_VERSAO_POLITICA", "DT_ACEITE_POLITICA")
 select "ID_UNIDADE", "ID_HOSPEDE", '2027-05-18', '2027-05-20', "QTDE_ADULTOS", "QTDE_CRIANCAS", 'CONFIRMADA', "VL_HOSPEDAGEM", "VL_SINAL", "ID_RESERVA", "NO_VERSAO_POLITICA", "DT_ACEITE_POLITICA" from antiga;
-select pg_temp.ok ('Datas antigas liberadas após a remarcação',         '2027-04-06','2027-04-08', 2,0, 3400, 3400);
+select pg_temp.ok ('Datas antigas liberadas após a remarcação',         '2027-04-06','2027-04-08', 2,0, 1600, 1600);
 select pg_temp.nao('Novas datas ocupadas pela reserva remarcada',       '2027-05-18','2027-05-20', 2,0, 'ocupado');
 select 'ok  Crédito na nova reserva: R$ ' || sum(pg."VL_PAGAMENTO") || ' de sinal pago na reserva original'
 from "SIT_RESERVA" nova join "SIT_PAGAMENTO" pg on pg."ID_RESERVA" = nova."ID_RESERVA_ORIGINAL" and pg."TP_STATUS" = 'RECEBIDO' and pg."TP_PARCELA" = 'SINAL'
@@ -222,13 +241,13 @@ do $$ begin
 exception when check_violation then raise notice 'ok  Cancelamento exige o motivo';
 end $$;
 update "SIT_RESERVA" set "TP_STATUS" = 'CANCELADA', "TP_MOTIVO_CANCELAMENTO" = 'ARREPENDIMENTO', "DT_ATUALIZACAO" = now() where "DT_CHECKIN" = '2027-10-05';
-select pg_temp.ok ('Cancelada por arrependimento libera as datas',      '2027-10-05','2027-10-07', 2,0, 3400, 3400);
+select pg_temp.ok ('Cancelada por arrependimento libera as datas',      '2027-10-05','2027-10-07', 2,0, 1600, 1600);
 -- hóspede confirmou no site, mas não pagou quando a equipe entrou em contato
 select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-10-19', '2027-10-21', 2, 0);
 select cd_reserva like 'SE-%' from confirmar_reserva((select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-10-19'),
        'Sem Pagar', 'sempagar@exemplo.invalid', null, 'BR', '12345678909');
 update "SIT_RESERVA" set "TP_STATUS" = 'CANCELADA', "TP_MOTIVO_CANCELAMENTO" = 'SEM_PAGAMENTO', "DT_ATUALIZACAO" = now() where "DT_CHECKIN" = '2027-10-19';
-select pg_temp.ok ('Cancelada sem pagamento pela equipe libera as datas', '2027-10-19','2027-10-21', 2,0, 3400, 3400);
+select pg_temp.ok ('Cancelada sem pagamento pela equipe libera as datas', '2027-10-19','2027-10-21', 2,0, 1600, 1600);
 
 \echo '── Documento do hóspede: CPF para brasileiro, passaporte para estrangeiro'
 do $$ begin
@@ -323,15 +342,19 @@ end $$;
 \echo '── Preço por noite para o calendário'
 do $$ declare r record; n int; begin
   select * into r from consultar_precos('2027-03-02', '2027-03-03', 2, 1, 0);
-  if r.vl_noite <> 2000 or not r.livre then raise exception 'FALHOU: casal + criança = % livre=%', r.vl_noite, r.livre; end if;
+  if r.vl_noite <> 920 or not r.livre then raise exception 'FALHOU: casal + criança = % livre=%', r.vl_noite, r.livre; end if;
   select * into r from consultar_precos('2027-03-02', '2027-03-03', 2, 1, 1);
-  if r.vl_noite <> 2000 then raise exception 'FALHOU: bebê não pode cobrar: %', r.vl_noite; end if;
+  if r.vl_noite <> 920 then raise exception 'FALHOU: bebê não pode cobrar: %', r.vl_noite; end if;
+  select * into r from consultar_precos('2027-03-05', '2027-03-06', 2, 0, 0, 1);
+  if r.vl_noite <> 2550 then raise exception 'FALHOU: sexta com criança de 9 a 13 = %', r.vl_noite; end if;
   select * into r from consultar_precos('2027-03-02', '2027-03-03', 1, 0, 0);
-  if r.vl_noite <> 1700 then raise exception 'FALHOU: 1 adulto = %', r.vl_noite; end if;
-  select * into r from consultar_precos('2026-12-30', '2026-12-31', 2, 1, 0);
-  if r.vl_noite <> 2800 then raise exception 'FALHOU: tarifa de maior prioridade (Réveillon) = %', r.vl_noite; end if;
+  if r.vl_noite <> 800 then raise exception 'FALHOU: 1 adulto = %', r.vl_noite; end if;
+  select * into r from consultar_precos('2027-07-06', '2027-07-07', 2, 1, 0);
+  if r.vl_noite <> 2875 or not r.livre then raise exception 'FALHOU: tarifa de maior prioridade = % livre=%', r.vl_noite, r.livre; end if;
   select * into r from consultar_precos('2027-04-21', '2027-04-22', 2, 1, 0);
-  if r.vl_noite <> 2200 then raise exception 'FALHOU: ajuste do dia = %', r.vl_noite; end if;
+  if r.vl_noite <> 2185 then raise exception 'FALHOU: ajuste do dia = %', r.vl_noite; end if;
+  select * into r from consultar_precos('2026-12-31', '2027-01-01', 2, 0, 0);
+  if r.vl_noite <> 1700 or not r.livre then raise exception 'FALHOU: noite de Réveillon = % livre=%', r.vl_noite, r.livre; end if;
   select count(*) into n from consultar_precos('2027-03-12', '2027-03-20', 2, 0, 0) where not livre;
   if n <> 4 then raise exception 'FALHOU: bloqueio (3 noites) + reserva (noite 19) deveriam dar 4 ocupadas, deu %', n; end if;
   select count(*) into n from consultar_precos('2027-05-12', '2027-05-13', 2, 0, 0) where not livre;

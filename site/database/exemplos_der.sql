@@ -4,18 +4,18 @@
 --  passam por todas as regras do banco.
 -- ════════════════════════════════════════════════════════════════════
 
--- Tarifa de Réveillon por cima da padrão (prioridade maior, mínimo 3 noites)
+-- Tarifa de férias de julho por cima da padrão (prioridade maior, mínimo 3 noites)
 set search_path = "SE", extensions, public;   -- tabelas do site ficam no schema "SE"
 
 insert into "SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "VL_NOITE_FDS",
-                    "QTDE_ADULTOS_INCLUSOS", "VL_ADULTO_EXTRA", "VL_CRIANCA", "VL_BEBE", "QTDE_MIN_NOITES")
-values (1, 'Réveillon 2027', '2026-12-29', '2027-01-02', 10, 2500.00, null, 2, 0.00, 300.00, 0.00, 3);
+                    "QTDE_ADULTOS_INCLUSOS", "VL_ADULTO_EXTRA", "PC_CRIANCA", "PC_CRIANCA_MAIOR", "PC_BEBE", "QTDE_MIN_NOITES")
+values (1, 'Férias de julho 2027', '2027-07-01', '2027-08-01', 10, 1000.00, 1900.00, 2, 0.00, 30, 100, 0, 3);
 
 -- Exceções de um dia só
-insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "VL_NOITE", "QTDE_MIN_NOITES", "DS_OBSERVACAO")
-values (1, '2026-12-24', 2200.00, 2, 'Véspera de Natal: preço especial e mínimo de 2 noites');
+-- (os feriados do seed já trazem noites com preço próprio e mínimo de 3 ou 4 noites, como o Natal de 24/12)
 insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_SEM_CHEGADA", "DS_OBSERVACAO")
-values (1, '2027-02-06', true, 'Sábado de Carnaval: ninguém faz check-in neste dia');
+values (1, '2027-02-06', true, 'Sábado de Carnaval: ninguém faz check-in neste dia')
+on conflict ("ID_UNIDADE", "DT_REF") do update set "SG_SEM_CHEGADA" = true, "DS_OBSERVACAO" = excluded."DS_OBSERVACAO";
 insert into "SIT_AJUSTE_DIARIO" ("ID_UNIDADE", "DT_REF", "SG_FECHADO", "DS_OBSERVACAO")
 values (1, '2027-03-17', true, 'Folga da equipe: noite fora da venda');
 

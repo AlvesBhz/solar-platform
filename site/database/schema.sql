@@ -48,8 +48,9 @@ create table "SIT_PROPRIEDADE" (
   "DS_FUSO_HORARIO"          text not null default 'America/Sao_Paulo',
   "HR_CHECKIN"               time not null default '15:00',
   "HR_CHECKOUT"              time not null default '12:00',
-  "NO_IDADE_MAX_BEBE"        smallint not null default 1,           -- bebês: até 1 ano (abaixo de 2); não pagam, mas ocupam vaga de criança
-  "NO_IDADE_MAX_CRIANCA"     smallint not null default 13,          -- crianças: 2 a 13 anos; a partir de 14, adulto
+  "NO_IDADE_MAX_BEBE"        smallint not null default 4,           -- até 4 anos: não pagam (PC_BEBE), mas ocupam vaga de criança
+  "NO_IDADE_MAX_CRIANCA_MENOR" smallint not null default 8,         -- 5 a 8 anos: pagam PC_CRIANCA
+  "NO_IDADE_MAX_CRIANCA"     smallint not null default 13,          -- 9 a 13 anos: pagam PC_CRIANCA_MAIOR; a partir de 14, adulto
   "QTDE_MAX_NOITES"          smallint not null default 7,
   "VL_PERCENTUAL_SINAL"      numeric(5,2) not null default 50,      -- % do total pago na reserva
   "QTDE_MINUTOS_PRE_RESERVA" smallint not null default 30,          -- tempo para pagar o sinal
@@ -62,7 +63,8 @@ create table "SIT_PROPRIEDADE" (
   constraint "CK_SIT_PROPRIEDADE_REMARCACAO" check ("QTDE_DIAS_LIMITE_REMARCACAO" >= 0 and "QTDE_MESES_VALIDADE_CREDITO" >= 1),
   constraint "CK_SIT_PROPRIEDADE_ARREPENDIMENTO" check ("QTDE_DIAS_ARREPENDIMENTO" >= 7),     -- o mínimo é o da lei
   constraint "CK_SIT_PROPRIEDADE_MAX_NOITES" check ("QTDE_MAX_NOITES" between 1 and 365),
-  constraint "CK_SIT_PROPRIEDADE_IDADES" check ("NO_IDADE_MAX_BEBE" >= 0 and "NO_IDADE_MAX_BEBE" < "NO_IDADE_MAX_CRIANCA"),
+  constraint "CK_SIT_PROPRIEDADE_IDADES" check ("NO_IDADE_MAX_BEBE" >= 0 and "NO_IDADE_MAX_BEBE" < "NO_IDADE_MAX_CRIANCA_MENOR"
+                                         and "NO_IDADE_MAX_CRIANCA_MENOR" < "NO_IDADE_MAX_CRIANCA"),
   constraint "CK_SIT_PROPRIEDADE_SINAL" check ("VL_PERCENTUAL_SINAL" between 0 and 100),
   constraint "CK_SIT_PROPRIEDADE_PRE_RESERVA" check ("QTDE_MINUTOS_PRE_RESERVA" between 5 and 1440)
 );
@@ -78,7 +80,7 @@ create table "SIT_UNIDADE" (
   "TP_UNIDADE"         text not null default 'CHALE',
   "QTDE_MAX_HOSPEDES"  smallint not null,
   "QTDE_MAX_ADULTOS"   smallint not null,
-  "QTDE_MAX_CRIANCAS"  smallint not null default 0,     -- crianças + bebês
+  "QTDE_MAX_CRIANCAS"  smallint not null default 0,     -- crianças de todas as idades somadas (até 13 anos)
   "VL_TAXA_LIMPEZA"    numeric(10,2) not null default 0,
   "SG_ATIVO"           boolean not null default true,
   "NO_ORDEM"           smallint not null default 0,
@@ -110,8 +112,10 @@ create table "SIT_TARIFA" (
   "VL_NOITE_FDS"            numeric(10,2),                -- noites de sex e sáb; vazio = VL_NOITE
   "QTDE_ADULTOS_INCLUSOS"   smallint not null default 2,
   "VL_ADULTO_EXTRA"         numeric(10,2) not null default 0,   -- por adulto além dos inclusos, por noite
-  "VL_CRIANCA"              numeric(10,2) not null default 0,   -- por criança (2 a 13 anos), por noite
-  "VL_BEBE"                 numeric(10,2) not null default 0,   -- por bebê (até 1 ano), por noite: R$ 0, bebê não paga
+  -- criança paga um percentual do valor por pessoa da noite (valor da noite ÷ adultos inclusos)
+  "PC_CRIANCA"              numeric(5,2) not null default 30,   -- 5 a 8 anos
+  "PC_CRIANCA_MAIOR"        numeric(5,2) not null default 100,  -- 9 a 13 anos
+  "PC_BEBE"                 numeric(5,2) not null default 0,    -- até 4 anos: não paga
   "QTDE_MIN_NOITES"         smallint not null default 1,
   "SG_ATIVO"                boolean not null default true,
   "DT_CRIACAO"              timestamptz not null default now(),
@@ -119,7 +123,8 @@ create table "SIT_TARIFA" (
   constraint "FK_SIT_TARIFA_SIT_UNIDADE" foreign key ("ID_UNIDADE") references "SIT_UNIDADE" ("ID_UNIDADE") on delete cascade,
   constraint "CK_SIT_TARIFA_PERIODO" check ("DT_FIM" > "DT_INI"),
   constraint "CK_SIT_TARIFA_VALORES" check ("VL_NOITE" >= 0 and coalesce("VL_NOITE_FDS", 0) >= 0
-                                      and "VL_ADULTO_EXTRA" >= 0 and "VL_CRIANCA" >= 0 and "VL_BEBE" >= 0),
+                                      and "VL_ADULTO_EXTRA" >= 0 and "PC_CRIANCA" between 0 and 100
+                                      and "PC_CRIANCA_MAIOR" between 0 and 100 and "PC_BEBE" between 0 and 100),
   constraint "CK_SIT_TARIFA_QUANTIDADES" check ("QTDE_ADULTOS_INCLUSOS" >= 1 and "QTDE_MIN_NOITES" >= 1),
   constraint "EX_SIT_TARIFA_SOBREPOSICAO" exclude using gist
     ("ID_UNIDADE" with =, "NO_PRIORIDADE" with =, daterange("DT_INI", "DT_FIM") with &&) where ("SG_ATIVO")
@@ -216,8 +221,9 @@ create table "SIT_RESERVA" (
   "DT_CHECKIN"           date not null,
   "DT_CHECKOUT"          date not null,
   "QTDE_ADULTOS"         smallint not null,
-  "QTDE_CRIANCAS"        smallint not null default 0,  -- 2 a 13 anos
-  "QTDE_BEBES"           smallint not null default 0,  -- abaixo de 2 anos: não pagam, mas ocupam vaga
+  "QTDE_CRIANCAS"        smallint not null default 0,  -- 5 a 8 anos
+  "QTDE_CRIANCAS_MAIORES" smallint not null default 0, -- 9 a 13 anos
+  "QTDE_BEBES"           smallint not null default 0,  -- até 4 anos: não pagam, mas ocupam vaga
   "TP_STATUS"            text not null default 'PENDENTE',
   "TP_CANAL"             text not null default 'SITE',
   "VL_HOSPEDAGEM"        numeric(10,2) not null,
@@ -240,7 +246,7 @@ create table "SIT_RESERVA" (
   constraint "FK_SIT_RESERVA_SIT_HOSPEDE" foreign key ("ID_HOSPEDE") references "SIT_HOSPEDE" ("ID_HOSPEDE"),
   constraint "FK_SIT_RESERVA_RESERVA_ORIGINAL" foreign key ("ID_RESERVA_ORIGINAL") references "SIT_RESERVA" ("ID_RESERVA"),
   constraint "CK_SIT_RESERVA_PERIODO" check ("DT_CHECKOUT" > "DT_CHECKIN"),
-  constraint "CK_SIT_RESERVA_OCUPACAO" check ("QTDE_ADULTOS" >= 1 and "QTDE_CRIANCAS" >= 0 and "QTDE_BEBES" >= 0),
+  constraint "CK_SIT_RESERVA_OCUPACAO" check ("QTDE_ADULTOS" >= 1 and "QTDE_CRIANCAS" >= 0 and "QTDE_CRIANCAS_MAIORES" >= 0 and "QTDE_BEBES" >= 0),
   constraint "CK_SIT_RESERVA_TP_STATUS" check ("TP_STATUS" in ('PENDENTE', 'CONFIRMADA', 'CANCELADA', 'EXPIRADA', 'REMARCADA')),
   constraint "CK_SIT_RESERVA_TP_CANAL" check ("TP_CANAL" in ('SITE', 'DIRETO', 'TELEFONE')),
   constraint "CK_SIT_RESERVA_VALORES" check ("VL_HOSPEDAGEM" >= 0 and "VL_TAXA_LIMPEZA" >= 0 and "VL_SINAL" >= 0
@@ -392,7 +398,8 @@ create or replace function calcular_estadia(
   p_checkout   date,
   p_adultos    int,
   p_criancas   int default 0,
-  p_bebes      int default 0
+  p_bebes      int default 0,
+  p_criancas_maiores int default 0
 )
 returns table (
   disponivel        boolean,
@@ -421,6 +428,7 @@ declare
 begin
   p_criancas := coalesce(p_criancas, 0);
   p_bebes    := coalesce(p_bebes, 0);
+  p_criancas_maiores := coalesce(p_criancas_maiores, 0);
   select * into u from "SIT_UNIDADE" where "ID_UNIDADE" = p_id_unidade;
   if not found then
     return query select false, 'unidade_inativa', 0, 0, 0::numeric(10,2), 0::numeric(10,2), 0::numeric(10,2), '[]'::jsonb;
@@ -437,10 +445,10 @@ begin
     when p_checkin < v_hoje                                                then 'data_passada'
     when v_noites > p."QTDE_MAX_NOITES"                                      then 'estadia_longa'
     when not u."SG_ATIVO"                                                    then 'unidade_inativa'
-    when coalesce(p_adultos, 0) < 1 or p_criancas < 0 or p_bebes < 0
+    when coalesce(p_adultos, 0) < 1 or p_criancas < 0 or p_bebes < 0 or p_criancas_maiores < 0
       or p_adultos > u."QTDE_MAX_ADULTOS"
-      or p_criancas + p_bebes > u."QTDE_MAX_CRIANCAS"                        -- bebês ocupam vaga de criança
-      or p_adultos + p_criancas + p_bebes > u."QTDE_MAX_HOSPEDES"            then 'capacidade'
+      or p_criancas + p_criancas_maiores + p_bebes > u."QTDE_MAX_CRIANCAS"   -- até 4 anos também ocupa vaga
+      or p_adultos + p_criancas + p_criancas_maiores + p_bebes > u."QTDE_MAX_HOSPEDES" then 'capacidade'
   end;
   if motivo is not null then
     return query select false, motivo, greatest(coalesce(v_noites, 0), 0), 0,
@@ -453,7 +461,7 @@ begin
     select gs::date as data
     from generate_series(p_checkin::timestamp, (p_checkout - 1)::timestamp, interval '1 day') gs
   ),
-  calc as (
+  base as (
     select n.data,
            t."NM_TARIFA" as tarifa,
            a."SG_FECHADO" as fechado,
@@ -464,13 +472,8 @@ begin
                   then coalesce(t."VL_NOITE_FDS", t."VL_NOITE")
                   else t."VL_NOITE" end
            ) as valor_base,
-           -- o valor da noite cobre os adultos inclusos; cada criança paga à parte;
-           -- bebês ocupam vaga de criança (checado acima) mas pagam VL_BEBE, hoje R$ 0
-           greatest(p_adultos - t."QTDE_ADULTOS_INCLUSOS", 0) * t."VL_ADULTO_EXTRA" as vl_adultos_extra,
-           p_criancas * t."VL_CRIANCA" as vl_criancas,
-           p_bebes * t."VL_BEBE" as vl_bebes,
-           greatest(p_adultos - t."QTDE_ADULTOS_INCLUSOS", 0) * t."VL_ADULTO_EXTRA"
-           + p_criancas * t."VL_CRIANCA" + p_bebes * t."VL_BEBE" as extras,
+           t."QTDE_ADULTOS_INCLUSOS" as inclusos, t."VL_ADULTO_EXTRA" as vl_adulto_extra,
+           t."PC_CRIANCA" as pc_crianca, t."PC_CRIANCA_MAIOR" as pc_maior, t."PC_BEBE" as pc_bebe,
            t."ID_TARIFA" is null as sem_tarifa
     from noites n
     left join lateral (
@@ -481,7 +484,17 @@ begin
       limit 1
     ) t on true
     left join "SIT_AJUSTE_DIARIO" a on a."ID_UNIDADE" = p_id_unidade and a."DT_REF" = n.data
-  )
+  ),
+  -- o valor da noite cobre os adultos inclusos; cada criança paga um percentual do valor por pessoa
+  -- (valor da noite ÷ adultos inclusos): 5 a 8 anos PC_CRIANCA, 9 a 13 PC_CRIANCA_MAIOR, até 4 PC_BEBE (hoje 0)
+  calc0 as (
+    select b.*,
+           greatest(p_adultos - b.inclusos, 0) * b.vl_adulto_extra as vl_adultos_extra,
+           round(b.valor_base / b.inclusos * (p_criancas * b.pc_crianca + p_criancas_maiores * b.pc_maior) / 100, 2) as vl_criancas,
+           round(b.valor_base / b.inclusos * p_bebes * b.pc_bebe / 100, 2) as vl_bebes
+    from base b
+  ),
+  calc as (select c0.*, c0.vl_adultos_extra + c0.vl_criancas + c0.vl_bebes as extras from calc0 c0)
   select bool_or(c.sem_tarifa),
          bool_or(coalesce(c.fechado, false)),
          max(c.min_n),
@@ -489,7 +502,7 @@ begin
          jsonb_agg(jsonb_build_object(
            'dt_ref', c.data, 'nm_tarifa', c.tarifa,
            'vl_base', c.valor_base,
-           'qtde_criancas', p_criancas, 'vl_criancas', c.vl_criancas,
+           'qtde_criancas', p_criancas, 'qtde_criancas_maiores', p_criancas_maiores, 'vl_criancas', c.vl_criancas,
            'qtde_bebes', p_bebes, 'vl_bebes', c.vl_bebes,
            'vl_adultos_extra', c.vl_adultos_extra,
            'vl_extras', c.extras,
@@ -536,7 +549,8 @@ create or replace function consultar_disponibilidade(
   p_checkout  date,
   p_adultos   int,
   p_criancas  int default 0,
-  p_bebes     int default 0
+  p_bebes     int default 0,
+  p_criancas_maiores int default 0
 )
 returns table (
   cd_unidade        text,
@@ -566,7 +580,7 @@ as $$
          case when c.disponivel then c.ds_detalhe end
   from "SIT_UNIDADE" u
   join "SIT_PROPRIEDADE" p on p."ID_PROPRIEDADE" = u."ID_PROPRIEDADE"
-  cross join lateral calcular_estadia(u."ID_UNIDADE", p_checkin, p_checkout, p_adultos, p_criancas, p_bebes) c
+  cross join lateral calcular_estadia(u."ID_UNIDADE", p_checkin, p_checkout, p_adultos, p_criancas, p_bebes, p_criancas_maiores) c
   where u."SG_ATIVO"
   order by c.disponivel desc, c.vl_total, u."NO_ORDEM";
 $$;
@@ -585,7 +599,8 @@ create or replace function criar_pre_reserva(
   p_checkout   date,
   p_adultos    int,
   p_criancas   int default 0,
-  p_bebes      int default 0
+  p_bebes      int default 0,
+  p_criancas_maiores int default 0
 )
 returns table (cd_reserva text, dt_expira timestamptz, vl_total numeric(10,2), vl_sinal numeric(10,2))
 language plpgsql
@@ -614,16 +629,16 @@ begin
   update "SIT_RESERVA" r set "TP_STATUS" = 'EXPIRADA', "DT_ATUALIZACAO" = now()
   where r."ID_UNIDADE" = v_id_unidade and r."TP_STATUS" = 'PENDENTE' and r."DT_EXPIRA" <= now();
 
-  select * into c from calcular_estadia(v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes);
+  select * into c from calcular_estadia(v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes, p_criancas_maiores);
   if not c.disponivel then
     raise exception '%', c.motivo using errcode = 'P0001';
   end if;
 
   return query
-  insert into "SIT_RESERVA" as r ("ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "QTDE_CRIANCAS", "QTDE_BEBES",
+  insert into "SIT_RESERVA" as r ("ID_UNIDADE", "DT_CHECKIN", "DT_CHECKOUT", "QTDE_ADULTOS", "QTDE_CRIANCAS", "QTDE_BEBES", "QTDE_CRIANCAS_MAIORES",
                             "TP_STATUS", "TP_CANAL", "VL_HOSPEDAGEM", "VL_TAXA_LIMPEZA", "VL_SINAL",
                             "DS_DETALHE_PRECOS", "DT_EXPIRA")
-  values (v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes,
+  values (v_id_unidade, p_checkin, p_checkout, p_adultos, p_criancas, p_bebes, coalesce(p_criancas_maiores, 0),
           'PENDENTE', 'SITE', c.vl_hospedagem, c.vl_taxa_limpeza,
           round(c.vl_total * v_percentual / 100, 2),
           c.ds_detalhe, now() + make_interval(mins => v_minutos))
@@ -760,47 +775,41 @@ alter table "SIT_BLOQUEIO"           enable row level security;
 -- ════════════════════════════════════════════════════════════════════
 create or replace function consultar_precos(
   p_inicio date, p_fim date, p_adultos int, p_criancas int default 0, p_bebes int default 0,
-  p_cd_unidade text default 'casa-do-mirante')
+  p_criancas_maiores int default 0, p_cd_unidade text default 'casa-do-mirante')
 returns table (dt_ref date, vl_noite numeric(10,2), livre boolean)
 language sql
 stable
 security definer
 set search_path = "SE", extensions, pg_temp
 as $$
+  -- cada noite é calculada como uma estadia de 1 noite; "livre" ignora as regras que dependem da
+  -- estadia inteira (mínimo de noites, dia sem chegada ou sem saída) e confere reservas e bloqueios
   select d.data::date,
-         case when t."ID_TARIFA" is null then null::numeric else
-           (coalesce(a."VL_NOITE", case when extract(isodow from d.data) in (5, 6) then coalesce(t."VL_NOITE_FDS", t."VL_NOITE") else t."VL_NOITE" end)
-            + greatest(p_adultos - t."QTDE_ADULTOS_INCLUSOS", 0) * t."VL_ADULTO_EXTRA"
-            + p_criancas * t."VL_CRIANCA" + p_bebes * t."VL_BEBE")::numeric(10,2) end,
-         (t."ID_TARIFA" is not null and not coalesce(a."SG_FECHADO", false)
-          and d.data::date >= (now() at time zone pr."DS_FUSO_HORARIO")::date
-          and not exists (select 1 from "SIT_RESERVA" r
-                          where r."ID_UNIDADE" = u."ID_UNIDADE" and d.data::date >= r."DT_CHECKIN" and d.data::date < r."DT_CHECKOUT"
-                            and (r."TP_STATUS" = 'CONFIRMADA' or (r."TP_STATUS" = 'PENDENTE' and r."DT_EXPIRA" > now())))
-          and not exists (select 1 from "SIT_BLOQUEIO" b
-                          where b."ID_UNIDADE" = u."ID_UNIDADE" and d.data::date >= b."DT_INI" and d.data::date < b."DT_FIM"))
+         (c.ds_detalhe -> 0 ->> 'vl_noite')::numeric(10,2),
+         coalesce(c.motivo, '') in ('', 'min_noites', 'sem_chegada', 'sem_saida')
+         and not exists (select 1 from "SIT_RESERVA" r
+                         where r."ID_UNIDADE" = u."ID_UNIDADE" and d.data >= r."DT_CHECKIN" and d.data < r."DT_CHECKOUT"
+                           and (r."TP_STATUS" = 'CONFIRMADA' or (r."TP_STATUS" = 'PENDENTE' and r."DT_EXPIRA" > now())))
+         and not exists (select 1 from "SIT_BLOQUEIO" b
+                         where b."ID_UNIDADE" = u."ID_UNIDADE" and d.data >= b."DT_INI" and d.data < b."DT_FIM")
   from "SIT_UNIDADE" u
-  join "SIT_PROPRIEDADE" pr on pr."ID_PROPRIEDADE" = u."ID_PROPRIEDADE"
   cross join lateral generate_series(p_inicio::timestamp, (p_fim - 1)::timestamp, interval '1 day') d(data)
-  left join lateral (select * from "SIT_TARIFA" tr
-                     where tr."ID_UNIDADE" = u."ID_UNIDADE" and tr."SG_ATIVO" and d.data::date >= tr."DT_INI" and d.data::date < tr."DT_FIM"
-                     order by tr."NO_PRIORIDADE" desc limit 1) t on true
-  left join "SIT_AJUSTE_DIARIO" a on a."ID_UNIDADE" = u."ID_UNIDADE" and a."DT_REF" = d.data::date
+  cross join lateral calcular_estadia(u."ID_UNIDADE", d.data::date, d.data::date + 1,
+                                      p_adultos, p_criancas, p_bebes, p_criancas_maiores) c
   where u."CD_UNIDADE" = p_cd_unidade and u."SG_ATIVO" and p_fim > p_inicio and p_fim - p_inicio <= 62
-    and p_adultos between 1 and u."QTDE_MAX_ADULTOS" and p_criancas >= 0 and p_bebes >= 0
-    and p_criancas + p_bebes <= u."QTDE_MAX_CRIANCAS" and p_adultos + p_criancas + p_bebes <= u."QTDE_MAX_HOSPEDES"
+    and c.motivo is distinct from 'capacidade'
   order by d.data
 $$;
-revoke all on function consultar_precos(date, date, int, int, int, text) from public, anon, authenticated;
-grant execute on function consultar_precos(date, date, int, int, int, text) to anon, authenticated;
+revoke all on function consultar_precos(date, date, int, int, int, int, text) from public, anon, authenticated;
+grant execute on function consultar_precos(date, date, int, int, int, int, text) to anon, authenticated;
 
-revoke all on function calcular_estadia(bigint, date, date, int, int, int)      from public, anon, authenticated;
-revoke all on function consultar_disponibilidade(date, date, int, int, int)     from public, anon, authenticated;
-revoke all on function criar_pre_reserva(text, date, date, int, int, int)       from public, anon, authenticated;
+revoke all on function calcular_estadia(bigint, date, date, int, int, int, int)    from public, anon, authenticated;
+revoke all on function consultar_disponibilidade(date, date, int, int, int, int)    from public, anon, authenticated;
+revoke all on function criar_pre_reserva(text, date, date, int, int, int, int)      from public, anon, authenticated;
 revoke all on function expirar_pre_reservas()                                   from public, anon, authenticated;
 revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) from public, anon, authenticated;
 
-grant execute on function consultar_disponibilidade(date, date, int, int, int)  to anon, authenticated;
-grant execute on function criar_pre_reserva(text, date, date, int, int, int)    to service_role;
+grant execute on function consultar_disponibilidade(date, date, int, int, int, int) to anon, authenticated;
+grant execute on function criar_pre_reserva(text, date, date, int, int, int, int)   to service_role;
 grant execute on function expirar_pre_reservas()                                to service_role;
 grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) to service_role;

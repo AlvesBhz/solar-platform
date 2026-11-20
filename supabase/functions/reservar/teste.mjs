@@ -59,6 +59,10 @@ r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027
 ok('adulto sem sobrenome: recusa', r.s === 422 && r.b.campos.includes('nome e sobrenome dos adultos'));
 r = await j(await post({ ...base(), reserva: { ...base().reserva, adultos: 3 } }));
 ok('3 adultos: recusa', r.s === 422);
+r = await j(await post({ ...base(), reserva: { ...base().reserva, checkin: '2027-08-03', checkout: '2027-08-05', criancas: 1, criancasMaiores: 1 }, acompanhantes: [{ tipo: 'adulto', nome: 'Joao', sobrenome: 'Souza' }] }));
+ok('criança de 9 a 13 anos: paga 100% do valor por pessoa', r.s === 200 && r.b.vl_total === 2640, JSON.stringify(r.b));
+r = await j(await post({ ...base(), reserva: { ...base().reserva, criancas: 1, criancasMaiores: 1, bebes: 1 } }));
+ok('3 crianças somando as faixas: recusa', r.s === 422);
 const antes = (await c.query('select count(*) n from "SIT_RESERVA"')).rows[0].n;
 r = await j(await post({ ...base(), site: 'http://spam', reserva: { ...base().reserva, checkin: '2027-07-06', checkout: '2027-07-08' } }, '2.2.2.2'));
 ok('robô (campo escondido): responde 200 sem gravar nada', r.s === 200 && (await c.query('select count(*) n from "SIT_RESERVA"')).rows[0].n === antes);
