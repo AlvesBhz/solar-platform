@@ -15,7 +15,7 @@ export interface Ambiente {
   turnstileSecret?: string;           // se definido, exige o captcha Cloudflare Turnstile
   limitePorHora?: number;             // pedidos por IP e por hora (contados no banco, valem para todas as cópias da função)
   arquivos?: Arquivos;                // onde gravar as fotos dos documentos
-  documentoObrigatorio?: boolean;     // exige a foto do documento do titular (padrão: sim)
+  documentoObrigatorio?: boolean;     // exige a foto do documento do titular (padrão: não; os documentos vêm depois do pagamento)
 }
 
 // fotos aceitas: até 8 arquivos, 5 MB cada, conferidas pelo conteúdo (não só pela extensão)
@@ -67,7 +67,7 @@ export function cpfValido(cpf: string): boolean {
 
 interface Pedido {
   reserva: { checkin: string; checkout: string; adultos: number; criancas: number; criancasMaiores: number; bebes: number };
-  titular: { nome: string; email: string; telefone: string; nacionalidade: string; cpf: string | null; passaporte: string | null; paisPassaporte: string | null; validadePassaporte: string | null };
+  titular: { nome: string; email: string; telefone: string; nascimento: string; nacionalidade: string; cpf: string | null; passaporte: string | null; paisPassaporte: string | null; validadePassaporte: string | null };
   acompanhantes: Array<Record<string, unknown>>;
 }
 
@@ -85,7 +85,16 @@ export function validar(corpo: any): { pedido?: Pedido; erros: string[] } {
   const nome = texto(t.nome, 120), email = texto(t.email, 160).toLowerCase(), telefone = texto(t.telefone, 30);
   if (nome.length < 3) erros.push("nome do titular");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) erros.push("e-mail");
-  if (telefone.replace(/\D/g, "").length < 10) erros.push("telefone");
+  const digitosTel = telefone.replace(/\D/g, "").length;
+  if (digitosTel < 10 || digitosTel > 15) erros.push("telefone");
+  // titular: maior de 18 anos no check-in
+  const nascimento = dataIso(t.nascimento);
+  if (!nascimento || nascimento < "1900-01-02") erros.push("data de nascimento");
+  else if (checkin) {
+    const [a, m, d] = checkin.split("-").map(Number);
+    const limite = `${a - 18}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    if (nascimento > limite) erros.push("titular precisa ter 18 anos");
+  }
 
   const nacionalidade = texto(t.nacionalidade, 2).toUpperCase();
   let cpf: string | null = null, passaporte: string | null = null, paisPassaporte: string | null = null, validade: string | null = null;
@@ -108,11 +117,10 @@ export function validar(corpo: any): { pedido?: Pedido; erros: string[] } {
     nome: texto(a?.nome, 80), sobrenome: texto(a?.sobrenome, 80),
     ...(Number.isInteger(a?.idade) ? { idade: a.idade } : {}),
   }));
-  const adultosExtras = acompanhantes.filter((a: any) => a.tipo === "adulto" && a.nome.length >= 2 && a.sobrenome.length >= 2).length;
-  if (adultosExtras < adultos - 1) erros.push("nome e sobrenome dos adultos");
+  // acompanhantes são pedidos depois do pagamento do sinal: aqui são opcionais
 
   if (erros.length) return { erros };
-  return { erros, pedido: { reserva: { checkin, checkout, adultos, criancas, criancasMaiores, bebes }, titular: { nome, email, telefone, nacionalidade, cpf, passaporte, paisPassaporte, validadePassaporte: validade }, acompanhantes } };
+  return { erros, pedido: { reserva: { checkin, checkout, adultos, criancas, criancasMaiores, bebes }, titular: { nome, email, telefone, nascimento, nacionalidade, cpf, passaporte, paisPassaporte, validadePassaporte: validade }, acompanhantes } };
 }
 
 export function criarHandler(banco: Banco, amb: Ambiente) {
@@ -178,7 +186,7 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
         if (fotos.length > MAX_FOTOS) { erros.push("fotos demais"); break; }
       }
     }
-    if ((amb.documentoObrigatorio ?? true) && !fotos.some((f) => f.campo === "doc_titular_frente")) erros.push("foto do documento do titular");
+    if ((amb.documentoObrigatorio ?? false) && !fotos.some((f) => f.campo === "doc_titular_frente")) erros.push("foto do documento do titular");
     if (!pedido || erros.length) return resp(422, { erro: "validacao", mensagem: "Confira os dados: " + erros.join(", ") + ".", campos: erros });
     const { reserva: r, titular: t } = pedido;
 
@@ -216,10 +224,11 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     const conf = await banco.rpc("confirmar_reserva", {
       p_cd_reserva: cd, p_nome: t.nome, p_email: t.email, p_telefone: t.telefone, p_nacionalidade: t.nacionalidade,
       p_cpf: t.cpf, p_passaporte: t.passaporte, p_pais_passaporte: t.paisPassaporte, p_validade_passaporte: t.validadePassaporte,
-      p_emissao_passaporte: null, p_acompanhantes: pedido.acompanhantes,
+      p_emissao_passaporte: null, p_acompanhantes: pedido.acompanhantes.length ? pedido.acompanhantes : null, p_nascimento: t.nascimento,
     });
     if (conf.error) {
       // a pré-reserva sem confirmação vence sozinha em 30 minutos e libera as datas
+      if (conf.error.message === "titular_menor_de_idade") return resp(422, { erro: "validacao", mensagem: "O titular da reserva precisa ter 18 anos no check-in." });
       if (conf.error.message === "passaporte_vencido") return resp(422, { erro: "validacao", mensagem: "O passaporte precisa valer até o dia da saída." });
       if (conf.error.message === "pre_reserva_expirada") return resp(409, { erro: "expirada", mensagem: "O tempo para concluir passou. Consulte as datas de novo." });
       return interno();

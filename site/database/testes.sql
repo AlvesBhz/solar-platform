@@ -461,3 +461,15 @@ do $$ declare n int; begin
   if n < 1 then raise exception 'FALHOU: reservas não aparecem na auditoria'; end if;
   raise notice 'ok  Auditoria: alteração de tarifa e de reservas registrada com o valor anterior e quem mudou';
 end $$;
+
+\echo '── Data de nascimento do titular'
+select cd_reserva like 'SE-%' from criar_pre_reserva('casa-do-mirante', '2027-11-30', '2027-12-02', 2, 0);
+do $$ declare cd text := (select "CD_RESERVA" from "SIT_RESERVA" where "DT_CHECKIN" = '2027-11-30'); begin
+  begin
+    perform confirmar_reserva(cd, 'Menor', 'menor@exemplo.invalid', null, 'BR', '39053344705', null, null, null, null, null, date '2010-05-01');
+    raise exception 'FALHOU: titular menor de idade aceito';
+  exception when sqlstate 'P0001' then if sqlerrm <> 'titular_menor_de_idade' then raise; end if; end;
+  perform confirmar_reserva(cd, 'Adulta', 'adulta@exemplo.invalid', null, 'BR', '39053344705', null, null, null, null, null, date '1990-05-01');
+  if (select "DT_NASCIMENTO" from "SIT_HOSPEDE" where "DS_EMAIL" = 'adulta@exemplo.invalid') <> date '1990-05-01' then raise exception 'FALHOU: nascimento não gravado'; end if;
+  raise notice 'ok  Nascimento do titular gravado; menor de 18 anos no check-in é recusado';
+end $$;

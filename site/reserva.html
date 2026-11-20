@@ -101,7 +101,8 @@ input.err,select.err{border-color:var(--bad)}
             <div class="f"><label class="l" for="nome">Nome</label><input id="nome" autocomplete="given-name" required><div class="msg" data-m="nome"></div></div>
             <div class="f"><label class="l" for="sobrenome">Sobrenome</label><input id="sobrenome" autocomplete="family-name" required><div class="msg" data-m="sobrenome"></div></div>
             <div class="f"><label class="l" for="email">E-mail</label><input id="email" type="email" inputmode="email" autocomplete="email" required><div class="msg" data-m="email"></div></div>
-            <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="+55 31 90000-0000" required><div class="msg" data-m="tel"></div></div>
+            <div class="f"><label class="l" for="tel">Telefone / WhatsApp</label><input id="tel" type="tel" inputmode="tel" autocomplete="tel" value="+55 " placeholder="+55 (31) 99999-9999" maxlength="20" required><div class="msg" data-m="tel"></div></div>
+            <div class="f"><label class="l" for="nasc">Data de nascimento</label><input id="nasc" type="date" autocomplete="bday" min="1900-01-02" required><div class="msg" data-m="nasc"></div></div>
             <div class="f full"><span class="l">Nacionalidade</span>
               <div class="seg"><label><input type="radio" name="nac" value="BR" checked> Brasileiro(a)</label><label><input type="radio" name="nac" value="EX"> Estrangeiro(a)</label></div></div>
             <div class="f full" id="blBR"><label class="l" for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00"><div class="msg" data-m="cpf"></div></div>
@@ -112,17 +113,7 @@ input.err,select.err{border-color:var(--bad)}
               <div class="f"><label class="l" for="ppVal">Validade do passaporte</label><input id="ppVal" type="date"><div class="msg" data-m="ppVal"></div></div>
             </div>
           </div>
-          <div class="fields docs">
-            <div class="f"><label class="l" for="docFrente">Foto do documento · frente</label><input id="docFrente" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_titular_frente"><div class="msg" data-m="docFrente"></div></div>
-            <div class="f"><label class="l" for="docVerso">Verso (opcional)</label><input id="docVerso" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_titular_verso"><div class="msg" data-m="docVerso"></div></div>
-          </div>
-          <p class="nota">Envie a foto do RG, da CNH ou do passaporte, com o rosto e os dados legíveis. Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). As fotos ficam guardadas com acesso restrito à equipe e são usadas só para a reserva e o registro obrigatório.</p>
-        </section>
-
-        <section class="card" id="cardAcomp">
-          <h2><small>Acompanhantes</small>Quem vai com você</h2>
-          <p class="nota" style="margin-top:-6px">Toda reserva deve conter nome e sobrenome dos adultos que ocuparão o chalé.</p>
-          <div class="fields" id="acomp"></div>
+          <p class="nota">Pedimos o documento porque a hospedagem exige o registro de hóspedes (FNRH). Usamos seus dados só para a reserva e o registro obrigatório. Os dados dos acompanhantes e as fotos dos documentos serão pedidos depois da confirmação do pagamento do sinal.</p>
         </section>
 
         <section class="card">
@@ -270,22 +261,7 @@ input.err,select.err{border-color:var(--bad)}
   function estado(txt, ruim) { var e = $('resEstado'); e.className = 'state' + (ruim ? ' bad' : ''); e.textContent = txt; e.classList.remove('hide'); $('resCorpo').classList.add('hide'); }
   var MOTIVOS = { datas_invalidas: 'O check-out precisa ser depois do check-in.', data_passada: 'A data de check-in já passou.', estadia_longa: 'A estadia passa do máximo de 7 noites.', capacidade: 'O chalé recebe até 2 adultos e 2 crianças.', sem_tarifa: 'A agenda ainda não está aberta para essas datas.', fechado: 'Uma das noites escolhidas não está disponível.', sem_chegada: 'Não há check-in nesse dia.', sem_saida: 'Não há check-out nesse dia.', ocupado: 'Essas datas já estão reservadas.', unidade_inativa: 'O chalé não está disponível no momento.' };
 
-  /* acompanhantes: um campo de nome e sobrenome por adulto além do titular; crianças com nome e idade */
-  (function () {
-    var h = '', i;
-    for (i = 2; i <= P.a; i++) h += '<div class="f"><label class="l" for="ad' + i + 'n">Adulto ' + i + ' · nome</label><input id="ad' + i + 'n" data-ad required><div class="msg" data-m="ad' + i + 'n"></div></div><div class="f"><label class="l" for="ad' + i + 's">Adulto ' + i + ' · sobrenome</label><input id="ad' + i + 's" data-ad required><div class="msg" data-m="ad' + i + 's"></div></div>' +
-      '<div class="f full docs"><label class="l" for="ad' + i + 'd">Adulto ' + i + ' · foto do documento (opcional)</label><input id="ad' + i + 'd" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/*" data-doc="doc_acompanhante_' + (i - 1) + '_frente"><div class="msg" data-m="ad' + i + 'd"></div></div>';
-    var faixas = [];
-    for (i = 0; i < P.m; i++) faixas.push([9, 13]);
-    for (i = 0; i < P.c; i++) faixas.push([5, 8]);
-    for (i = 0; i < P.b; i++) faixas.push([0, 4]);
-    faixas.forEach(function (f, k) {
-      i = k + 1;
-      h += '<div class="f"><label class="l" for="cr' + i + '">Criança ' + i + ' · nome</label><input id="cr' + i + '" data-cr></div><div class="f"><label class="l" for="cri' + i + '">Idade</label><input id="cri' + i + '" type="number" inputmode="numeric" min="' + f[0] + '" max="' + f[1] + '" placeholder="' + f[0] + ' a ' + f[1] + '"></div>';
-    });
-    $('acomp').innerHTML = h || '';
-    if (!h) $('cardAcomp').classList.add('hide');
-  })();
+  /* acompanhantes e fotos dos documentos: pedidos depois da confirmação do pagamento do sinal */
 
   /* consulta de preço e disponibilidade */
   function consultar() {
@@ -312,7 +288,22 @@ input.err,select.err{border-color:var(--bad)}
   function nac() { return document.querySelector('input[name=nac]:checked').value; }
   document.querySelectorAll('input[name=nac]').forEach(function (r) { r.addEventListener('change', function () {
     $('blBR').classList.toggle('hide', nac() !== 'BR'); $('blEX').classList.toggle('hide', nac() === 'BR');
+    var t = $('tel'), d = t.value.replace(/\D/g, '');
+    if (nac() === 'BR') { if (!d || d === '55' || t.value.indexOf('+55') !== 0) t.value = '+55 ' + (d === '55' || !d ? '' : (t.value.indexOf('+') === 0 ? '' : d)); formatarTel(); t.placeholder = '+55 (31) 99999-9999'; }
+    else { if (/^\+55\s*$/.test(t.value)) t.value = '+'; t.placeholder = '+1 415 555 0102'; }
   }); });
+  function formatarTel() {
+    var t = $('tel'), v = t.value;
+    if (nac() !== 'BR') { t.value = '+' + v.replace(/[^\d ]/g, '').replace(/^\s+/, '').slice(0, 18); return; }
+    var d = v.replace(/\D/g, ''); if (d.indexOf('55') === 0) d = d.slice(2); d = d.slice(0, 11);
+    var o = '+55 ';
+    if (d.length) o += '(' + d.slice(0, 2);
+    if (d.length >= 2) o += ') ' + d.slice(2, d.length > 10 ? 7 : 6);
+    if (d.length > 6) o += '-' + d.slice(d.length > 10 ? 7 : 6);
+    t.value = o;
+  }
+  $('tel').addEventListener('input', formatarTel);
+  $('tel').addEventListener('focus', function () { if (!this.value) this.value = nac() === 'BR' ? '+55 ' : '+'; });
   $('cpf').addEventListener('input', function () {
     var d = this.value.replace(/\D/g, '').slice(0, 11), o = d;
     if (d.length > 9) o = d.slice(0, 3) + '.' + d.slice(3, 6) + '.' + d.slice(6, 9) + '-' + d.slice(9);
@@ -334,15 +325,17 @@ input.err,select.err{border-color:var(--bad)}
     v('nome', $('nome').value.trim().length >= 2, 'Informe o nome.');
     v('sobrenome', $('sobrenome').value.trim().length >= 2, 'Informe o sobrenome.');
     v('email', /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test($('email').value.trim()), 'Informe um e-mail válido.');
-    v('tel', $('tel').value.replace(/\D/g, '').length >= 10, 'Informe um telefone com DDD.');
+    var tel = $('tel').value.replace(/\D/g, '');
+    if (nac() === 'BR') v('tel', /^55\d{10,11}$/.test(tel), 'Informe o celular com DDD: +55 (31) 99999-9999.');
+    else v('tel', tel.length >= 8 && tel.length <= 15, 'Informe o telefone com o código do país, ex.: +1 415 555 0102.');
+    var nasc = $('nasc').value, lim = P.ci ? (Number(P.ci.slice(0, 4)) - 18) + P.ci.slice(4) : '';
+    v('nasc', !!nasc && nasc >= '1900-01-02' && (!lim || nasc <= lim), nasc && lim && nasc > lim ? 'O titular precisa ter 18 anos no check-in.' : 'Informe a data de nascimento.');
     if (nac() === 'BR') v('cpf', cpfOk($('cpf').value), 'Informe um CPF válido.');
     else {
       v('pp', /^[A-Z0-9]{5,20}$/.test($('pp').value.trim().toUpperCase()), 'Informe o número do passaporte (letras e números).');
       var val = $('ppVal').value;
       v('ppVal', !!val && val >= P.co, 'O passaporte precisa valer até ' + (P.co ? dataExt(P.co) : 'o dia da saída') + '.');
     }
-    document.querySelectorAll('[data-ad]').forEach(function (e) { v(e.id, e.value.trim().length >= 2, 'Obrigatório.'); });
-    v('docFrente', $('docFrente').files.length > 0, 'Envie a foto da frente do documento.');
     document.querySelectorAll('[data-doc]').forEach(function (e) {
       var f = e.files[0]; if (f) v(e.id, /^image\//.test(f.type) && f.size <= 20 * 1024 * 1024, 'Envie uma foto (imagem de até 20 MB).');
     });
@@ -355,10 +348,8 @@ input.err,select.err{border-color:var(--bad)}
   /* envio */
   function dados() {
     var br = nac() === 'BR', ac = [];
-    document.querySelectorAll('[data-ad]').forEach(function (e) { if (/n$/.test(e.id)) ac.push({ tipo: 'adulto', nome: e.value.trim(), sobrenome: $(e.id.replace(/n$/, 's')).value.trim() }); });
-    for (var i = 1; i <= P.m + P.c + P.b; i++) if ($('cr' + i).value.trim()) ac.push({ tipo: i > P.m + P.c ? 'bebe' : 'crianca', nome: $('cr' + i).value.trim(), idade: $('cri' + i).value ? +$('cri' + i).value : undefined });
     return {
-      titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(),
+      titular: { nome: $('nome').value.trim() + ' ' + $('sobrenome').value.trim(), email: $('email').value.trim(), telefone: $('tel').value.trim(), nascimento: $('nasc').value,
         nacionalidade: br ? 'BR' : $('pais').value, cpf: br ? $('cpf').value.replace(/\D/g, '') : null,
         passaporte: br ? null : $('pp').value.trim().toUpperCase(), paisPassaporte: br ? null : $('ppPais').value, validadePassaporte: br ? null : $('ppVal').value },
       acompanhantes: ac, reserva: { checkin: P.ci, checkout: P.co, adultos: P.a, criancas: P.c, criancasMaiores: P.m, bebes: P.b },
@@ -370,7 +361,7 @@ input.err,select.err{border-color:var(--bad)}
     var t = d.titular, l = ['SOLICITAÇÃO DE RESERVA · Casa do Mirante', '',
       'Check-in: ' + dataExt(P.ci) + ' (a partir das 15h)', 'Check-out: ' + dataExt(P.co) + ' (até as 12h)', 'Hóspedes: ' + hospedes()];
     if (R && R.disponivel) l.push('Total: ' + brl(R.vl_total) + ' · Sinal (50%): ' + brl(R.vl_sinal) + ' · Saldo no check-in: ' + brl(Number(R.vl_total) - Number(R.vl_sinal)));
-    l.push('', 'TITULAR', 'Nome: ' + t.nome, 'E-mail: ' + t.email, 'Telefone: ' + t.telefone);
+    l.push('', 'TITULAR', 'Nome: ' + t.nome, 'E-mail: ' + t.email, 'Telefone: ' + t.telefone, 'Nascimento: ' + (t.nascimento ? t.nascimento.split('-').reverse().join('/') : ''));
     l.push(t.cpf ? 'CPF: ' + t.cpf : 'Passaporte: ' + t.passaporte + ' (' + t.paisPassaporte + ') · validade ' + t.validadePassaporte + ' · nacionalidade ' + t.nacionalidade);
     if (d.acompanhantes.length) l.push('', 'ACOMPANHANTES'), d.acompanhantes.forEach(function (a) { l.push((a.tipo === 'adulto' ? 'Adulto: ' + a.nome + ' ' + a.sobrenome : a.tipo === 'crianca' ? 'Criança: ' + a.nome + (a.idade ? ' (' + a.idade + ' anos)' : '') : 'Criança: ' + a.nome + (a.idade != null ? ' (' + a.idade + ' anos)' : ''))); });
     l.push('', 'Li e aceito a Política de cancelamento e os Termos e condições de uso (' + d.aceite.termos + ').');
@@ -460,7 +451,7 @@ input.err,select.err{border-color:var(--bad)}
   }
   function porEmail(d) {
     var mailto = 'mailto:' + CONTATO + '?subject=' + encodeURIComponent('Reserva Casa do Mirante · ' + dataExt(P.ci)) + '&body=' + encodeURIComponent(textoEmail(d));
-    concluir('Não conseguimos registrar a reserva automaticamente agora. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe (anexe a foto do documento no e-mail), que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
+    concluir('Não conseguimos registrar a reserva automaticamente agora. Toque no botão abaixo para enviar a solicitação por e-mail para a nossa equipe , que responde combinando o pagamento do sinal de <b>' + brl(R.vl_sinal) + '</b>. As datas só ficam garantidas depois do sinal.', mailto);
   }
   document.querySelectorAll('input,select').forEach(function (e) { e.addEventListener('input', function () { if (e.classList.contains('err')) { e.classList.remove('err'); var m = document.querySelector('[data-m="' + e.id + '"]'); if (m) m.textContent = ''; } }); });
 

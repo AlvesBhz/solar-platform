@@ -182,6 +182,7 @@ create table "SIT_HOSPEDE" (
   "SG_PAIS_PASSAPORTE"  char(2),                       -- país que emitiu o passaporte
   "DT_EMISSAO_PASSAPORTE"  date,                       -- opcional
   "DT_VALIDADE_PASSAPORTE" date,                       -- obrigatória com passaporte
+  "DT_NASCIMENTO"          date,                       -- titular: maior de 18 anos (conferido na reserva)
   "DT_CRIACAO"          timestamptz not null default now(),
   constraint "PK_SIT_HOSPEDE" primary key ("ID_HOSPEDE"),
   constraint "CK_SIT_HOSPEDE_NACIONALIDADE" check ("SG_NACIONALIDADE" ~ '^[A-Z]{2}$'),
@@ -192,6 +193,7 @@ create table "SIT_HOSPEDE" (
                                                and ("SG_PAIS_PASSAPORTE" is null or "SG_PAIS_PASSAPORTE" ~ '^[A-Z]{2}$')),
   constraint "CK_SIT_HOSPEDE_VALIDADE_PASSAPORTE" check (("CD_PASSAPORTE" is null) = ("DT_VALIDADE_PASSAPORTE" is null)
                                                    and ("DT_EMISSAO_PASSAPORTE" is null or "CD_PASSAPORTE" is not null)),
+  constraint "CK_SIT_HOSPEDE_NASCIMENTO" check ("DT_NASCIMENTO" is null or "DT_NASCIMENTO" > date '1900-01-01'),
   constraint "CK_SIT_HOSPEDE_DATAS_PASSAPORTE" check ("DT_EMISSAO_PASSAPORTE" is null or "DT_VALIDADE_PASSAPORTE" > "DT_EMISSAO_PASSAPORTE"),
   -- brasileiro: CPF obrigatório; estrangeiro: passaporte obrigatório
   constraint "CK_SIT_HOSPEDE_DOCUMENTO" check (case when "SG_NACIONALIDADE" = 'BR' then "CD_CPF" is not null
@@ -662,7 +664,8 @@ create or replace function confirmar_reserva(
   p_pais_passaporte       char(2) default null,
   p_validade_passaporte   date default null,
   p_emissao_passaporte    date default null,
-  p_acompanhantes         jsonb default null
+  p_acompanhantes         jsonb default null,
+  p_nascimento            date default null
 )
 returns table (cd_reserva text, vl_total numeric(10,2), vl_sinal numeric(10,2), dt_expira timestamptz)
 language plpgsql
@@ -688,6 +691,9 @@ begin
   if v_reserva."ID_HOSPEDE" is not null then
     raise exception 'reserva_ja_cadastrada' using errcode = 'P0001';  -- o cadastro já foi enviado; agora falta o sinal
   end if;
+  if p_nascimento is not null and (p_nascimento > v_reserva."DT_CHECKIN" - interval '18 years' or p_nascimento < date '1900-01-02') then
+    raise exception 'titular_menor_de_idade' using errcode = 'P0001'; -- quem contrata precisa ter 18 anos no check-in
+  end if;
 
   -- reconhece quem já se hospedou pelo e-mail, pelo CPF ou pelo passaporte (o que casar primeiro)
   select h."ID_HOSPEDE" into v_hospede from "SIT_HOSPEDE" h
@@ -698,9 +704,9 @@ begin
   limit 1;
   if v_hospede is null then
     insert into "SIT_HOSPEDE" ("NM_HOSPEDE", "DS_EMAIL", "DS_TELEFONE", "SG_NACIONALIDADE", "CD_CPF", "CD_PASSAPORTE",
-                             "SG_PAIS_PASSAPORTE", "DT_VALIDADE_PASSAPORTE", "DT_EMISSAO_PASSAPORTE")
+                             "SG_PAIS_PASSAPORTE", "DT_VALIDADE_PASSAPORTE", "DT_EMISSAO_PASSAPORTE", "DT_NASCIMENTO")
     values (p_nome, p_email, p_telefone, p_nacionalidade, p_cpf, p_passaporte,
-            p_pais_passaporte, p_validade_passaporte, p_emissao_passaporte)
+            p_pais_passaporte, p_validade_passaporte, p_emissao_passaporte, p_nascimento)
     returning "ID_HOSPEDE" into v_hospede;
   else  -- hóspede que volta: atualiza contato e documento com o que digitou agora
     update "SIT_HOSPEDE" set "NM_HOSPEDE" = p_nome, "DS_EMAIL" = p_email, "DS_TELEFONE" = coalesce(p_telefone, "DS_TELEFONE"),
@@ -708,7 +714,8 @@ begin
            "CD_PASSAPORTE" = coalesce(p_passaporte, "CD_PASSAPORTE"),
            "SG_PAIS_PASSAPORTE" = coalesce(p_pais_passaporte, "SG_PAIS_PASSAPORTE"),
            "DT_VALIDADE_PASSAPORTE" = coalesce(p_validade_passaporte, "DT_VALIDADE_PASSAPORTE"),
-           "DT_EMISSAO_PASSAPORTE" = coalesce(p_emissao_passaporte, "DT_EMISSAO_PASSAPORTE")
+           "DT_EMISSAO_PASSAPORTE" = coalesce(p_emissao_passaporte, "DT_EMISSAO_PASSAPORTE"),
+           "DT_NASCIMENTO" = coalesce(p_nascimento, "DT_NASCIMENTO")
     where "ID_HOSPEDE" = v_hospede;
   end if;
 
@@ -883,12 +890,12 @@ revoke all on function calcular_estadia(bigint, date, date, int, int, int, int) 
 revoke all on function consultar_disponibilidade(date, date, int, int, int, int)    from public, anon, authenticated;
 revoke all on function criar_pre_reserva(text, date, date, int, int, int, int)      from public, anon, authenticated;
 revoke all on function expirar_pre_reservas()                                   from public, anon, authenticated;
-revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) from public, anon, authenticated;
+revoke all on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb, date) from public, anon, authenticated;
 
 grant execute on function consultar_disponibilidade(date, date, int, int, int, int) to anon, authenticated;
 grant execute on function criar_pre_reserva(text, date, date, int, int, int, int)   to service_role;
 grant execute on function expirar_pre_reservas()                                to service_role;
-grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb) to service_role;
+grant execute on function confirmar_reserva(text, text, text, text, char, text, text, char, date, date, jsonb, date) to service_role;
 
 
 -- ════════════════════════════════════════════════════════════════════

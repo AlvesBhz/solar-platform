@@ -240,6 +240,7 @@ CAMPO = {
   'SG_PAIS_PASSAPORTE': 'País que emitiu o passaporte; obrigatório junto com ele.',
   'DT_EMISSAO_PASSAPORTE': 'Data de emissão do passaporte (opcional).',
   'DT_VALIDADE_PASSAPORTE': 'Data de validade; precisa cobrir a estadia até o dia da saída.',
+  'DT_NASCIMENTO': 'Data de nascimento do titular (precisa ter 18 anos no check-in).',
   'DT_CRIACAO': 'Primeiro contato com a pousada.',
  },
  'SIT_RESERVA': {
