@@ -126,7 +126,7 @@ const criar = (h, corpo, token = 'tok-admin') => h(new Request('https://x/functi
   ok(PERFIS.includes('LIMPEZA') && PERFIS.includes('MANUTENCAO') && PERFIS.includes('ASSESSOR'), 'perfis de limpeza, manutenção e vistoria existem');
   const invalidos = [
     [{ ...base, nm_usuario: 'Al' }, 'nome_invalido'], [{ ...base, cd_login: '1maria' }, 'login_invalido'], [{ ...base, cd_login: 'Maria Limpeza' }, 'login_invalido'],
-    [{ ...base, cd_cpf: '11144477736' }, 'cpf_invalido'], [{ ...base, tp_perfil: 'ZELADOR' }, 'perfil_invalido'], [{ ...base, senha: 'curta' }, 'senha_invalida'],
+    [{ ...base, cd_cpf: '11144477736' }, 'cpf_invalido'], [{ ...base, tp_perfil: 'ZELADOR' }, 'perfil_invalido'], [{ ...base, senha: 'curta' }, 'senha_invalida'], [{ ...base, senha: 'somenteletras' }, 'senha_invalida'], [{ ...base, senha: '1234567890' }, 'senha_invalida'],
     [{ ...base, ids_propriedade: ['x'] }, 'propriedades_invalidas'],
   ];
   for (const [corpo, erro] of invalidos) { const e = await lerj(await criar(h, corpo)); ok(e.status === 422 && e.corpo.erro === erro, 'recusa ' + erro); }
@@ -160,6 +160,7 @@ const criar = (h, corpo, token = 'tok-admin') => h(new Request('https://x/functi
     body: JSON.stringify({ cd_login: 'ana.souza', senha: 'nova-senha-2' }) }))).status === 503, 'redefinir: se não conseguir exigir a troca, avisa (503)');
   ok((await redefinir({ cd_login: 'nao.existe', senha: 'nova-senha-1' })).status === 404, 'redefinir: usuário inexistente é 404');
   ok((await redefinir({ cd_login: 'ana.souza', senha: 'curta' })).status === 422, 'redefinir: senha curta é 422');
+  ok((await redefinir({ cd_login: 'ana.souza', senha: 'somenteletras' })).status === 422, 'redefinir: senha sem número é 422');
   ok((await redefinir({ cd_login: '1ana', senha: 'nova-senha-1' })).status === 422, 'redefinir: usuário em formato inválido é 422');
   usuarios.push({ id_usuario: 'u-falha', ds_email: '', sg_ativo: true, tp_perfil: 'LIMPEZA', nm_usuario: 'F', cd_login: 'falha.func', cd_cpf: null });
   ok((await redefinir({ cd_login: 'falha.func', senha: 'nova-senha-1' })).status === 503, 'redefinir: falha do Auth é 503');

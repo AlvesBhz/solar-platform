@@ -113,29 +113,40 @@ if (require.main === module) (async () => {
     ok(html.includes('Solar do Espinhaço') && html.includes('Todas'), 'mostra as pousadas de cada um (ADMIN: todas)');
 
     await page.click('button:has-text("Novo usuário")');
-    await page.fill('#u-nome', 'Maria Limpeza'); await page.fill('#u-login', 'maria.limpeza');
+    await page.fill('#u-nome', 'Laís Nardy de Magalhães');
+    ok(await page.inputValue('#u-login') === 'lais.magalhaes', 'usuário sai sozinho do nome: primeiro e último, sem acento nem "de"');
+    await page.fill('#u-nome', 'Ana Souza');
+    ok(await page.inputValue('#u-login') === 'ana.souza2', 'nome de quem já existe ganha número (ana.souza2), sem conflito');
+    await page.fill('#u-nome', 'Maria Limpeza');
+    ok(await page.inputValue('#u-login') === 'maria.limpeza', 'a sugestão acompanha o nome enquanto o usuário não é editado');
+    if (process.env.FOTO) { await page.fill('#u-nome', 'Laís Nardy de Magalhães'); await page.locator('form[aria-label]').first().screenshot({ path: process.env.FOTO }); await page.fill('#u-nome', 'Maria Limpeza'); }
     await page.click('button[type=submit]:has-text("Salvar")');
     ok((await texto(page, '[role=alert]')).includes('ao menos uma pousada') && !ultima(db, 'POST', 'fn:criar-usuario'), 'campo sem pousada: avisa e não chama o servidor');
-    await page.fill('#u-login', '1maria'); await page.check('text=Solar do Espinhaço');
+    await page.fill('#u-login', '1Maria Júlia');
+    ok(await page.inputValue('#u-login') === 'maria.julia', 'usuário digitado é ajustado na hora (minúsculo, sem acento, espaço vira ponto, começa por letra)');
+    await page.check('text=Solar do Espinhaço');
+    await page.fill('#u-senha', 'somenteletras');
+    ok((await texto(page, 'label:has(#u-senha)')).includes('Misture letras e números'), 'regra da senha aparece enquanto digita');
     await page.click('button[type=submit]:has-text("Salvar")');
-    ok((await texto(page, '[role=alert]')).includes('começando por letra') && !ultima(db, 'POST', 'fn:criar-usuario'), 'usuário que começa por número: avisa e não chama o servidor');
+    ok((await texto(page, '[role=alert]')).includes('Misture letras e números') && !ultima(db, 'POST', 'fn:criar-usuario'), 'senha provisória fraca: avisa e não chama o servidor');
+    await page.click('button[aria-label="Gerar outra senha"]');
     await page.fill('#u-login', 'maria.limpeza'); await page.fill('#u-cpf', '11144477736');
     await page.click('button[type=submit]:has-text("Salvar")');
     ok((await texto(page, '[role=alert]')).includes('CPF inválido'), 'CPF inválido: avisa');
     await page.fill('#u-cpf', ''); await page.type('#u-cpf', '11144477735'); await escolher(page, 'Perfil', 'Limpeza');
     const senha = await page.inputValue('#u-senha');
     await page.click('button[type=submit]:has-text("Salvar")');
-    await page.waitForSelector('text=criado. Senha inicial', { timeout: 6000 });
+    await page.waitForSelector('text=criado. Senha provisória', { timeout: 6000 });
     const c = ultima(db, 'POST', 'fn:criar-usuario');
     ok(c && c.corpo.cd_login === 'maria.limpeza' && c.corpo.cd_cpf === '11144477735' && c.corpo.tp_perfil === 'LIMPEZA' && c.corpo.ids_propriedade[0] === 1 && c.corpo.senha === senha, 'cria pela Edge Function criar-usuario: login, CPF só números, perfil Limpeza e pousada');
     ok((c.auth || '').startsWith('Bearer ey'), 'a criação vai com o login do ADMIN (a função confere o perfil)');
-    ok(senha.length >= 12 && (await texto(page, 'p:has-text("Senha inicial")')).includes(senha), 'senha inicial gerada (12 caracteres) e mostrada uma vez para passar ao funcionário');
+    ok(senha.length >= 12 && (await texto(page, 'p:has-text("Senha provisória")')).includes(senha), 'senha inicial gerada (12 caracteres) e mostrada uma vez para passar ao funcionário');
 
     db.respostas['POST fn:criar-usuario'] = { status: 409, corpo: { erro: 'login_em_uso', mensagem: 'Esse usuário já existe.' } };
     await page.click('button:has-text("Novo usuário")');
     await page.fill('#u-nome', 'Outra Pessoa'); await page.fill('#u-login', 'ana.souza'); await page.check('text=Solar do Espinhaço');
     await page.click('button[type=submit]:has-text("Salvar")');
-    ok((await texto(page, '[role=alert]')).includes('já existe'), 'usuário repetido: mensagem do servidor');
+    ok((await texto(page, '[role=alert]')).includes('já existe') && (await texto(page, '[role=alert]')).includes('outra.pessoa'), 'usuário repetido: avisa antes do servidor e sugere outro');
     delete db.respostas['POST fn:criar-usuario'];
     await page.click('button:has-text("Cancelar")');
 
