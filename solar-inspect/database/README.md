@@ -140,6 +140,6 @@ Escrever vistoria, resposta, ocorrência, foto, situação e QR só pelas funç�
 
 ## Pendências
 
-- **Aplicação:** a migração e as Edge Functions foram testadas (banco local e simulação do Auth), mas **ainda não foram aplicadas nem publicadas** no projeto Supabase. O login real contra o Supabase Auth só é provado depois da publicação.
+- **Aplicação:** feita em 21/11/2026 no projeto `tnjpyjbqcjrowzjfnuln`: migração aplicada e verificada (15 de 15 itens, nada do site alterado) e Edge Functions `login-vistoria` e `criar-usuario` publicadas e respondendo. Falta criar o primeiro ADMIN e testar o login real.
 - **Permissões por perfil de campo:** hoje assessor, limpeza e manutenção são iguais (ver a tabela de perfis).
 - **Redefinir senha pelo app** (hoje, pelo painel do Supabase) e **trocar a própria senha** no primeiro acesso.
