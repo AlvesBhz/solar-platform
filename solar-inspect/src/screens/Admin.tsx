@@ -31,38 +31,4 @@ export function T34Auditoria() {
 const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-fg-1 focus:border-pine focus:outline-none';
 const rot = 'flex flex-col gap-1 text-[0.75rem] uppercase tracking-[0.08em] text-fg-2';
 
-const PERIODOS = ['Por estadia', 'Semanal', 'Mensal', 'Trimestral', 'Sob demanda'];
-/** T31 — Tipos de vistoria: nome, periodicidade, itens e ordem. Valida antes de ativar. */
-export function T31Tipos() {
-  const [ts, setTs] = useState<(TipoVistoria & { periodo: string })[]>([]);
-  const [msg, setMsg] = useState('');
-  useEffect(() => { listarTipos().then((l) => setTs(l.map((t) => ({ ...t, periodo: t.id === 'preventiva' ? 'Mensal' : t.id === 'enxoval' ? 'Semanal' : t.id === 'dedetizacao' ? 'Trimestral' : 'Por estadia' })))); }, []);
-  function alternar(i: number) {
-    const t = ts[i];
-    if (!t.ativo && t.itens === 0) return setMsg(`"${t.nome}" não pode ser ativado: o checklist não tem itens.`);
-    setTs(ts.map((x, j) => j === i ? { ...x, ativo: !x.ativo } : x)); setMsg('');
-    registrarAuditoria(t.ativo ? 'Tipo desativado' : 'Tipo ativado', `${t.nome} (vistorias anteriores preservadas)`);
-  }
-  return (
-    <GestaoShell eyebrow="Administração" titulo="Tipos de vistoria">
-      {msg && <p className="flex items-center gap-2 rounded-md bg-warning-bg p-3 text-[0.8125rem] text-warning" role="alert"><Icon icon="solar:danger-circle-linear" width={18} aria-hidden="true" />{msg}</p>}
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-3">
-        {ts.map((t, i) => (
-          <li key={t.id} className={`${card} flex flex-col gap-3 p-4 ${t.ativo ? '' : 'opacity-70'}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><p className="text-[0.9375rem] font-medium text-fg-1">{t.nome}</p><p className="text-[0.75rem] text-fg-3">{t.itens} itens · {t.respostas.join(' / ') || 'sem respostas'}</p></div>
-              <button type="button" aria-pressed={t.ativo} onClick={() => alternar(i)} className={`inline-flex min-h-11 shrink-0 items-center gap-1 text-[0.75rem] font-medium ${t.ativo ? 'text-available' : 'text-fg-3'}`}>
-                <Icon icon={t.ativo ? 'solar:check-circle-linear' : 'solar:close-circle-linear'} width={16} aria-hidden="true" />{t.ativo ? 'Ativo' : 'Inativo'}
-              </button>
-            </div>
-            <p className="text-[0.8125rem] text-fg-2">{t.descricao}</p>
-            <label className={rot}>Periodicidade
-              <Seletor rotulo="Periodicidade" valor={t.periodo} onChange={(v) => setTs(ts.map((x, j) => (j === i ? { ...x, periodo: v } : x)))} opcoes={PERIODOS.map((p) => ({ valor: p, label: p }))} />
-            </label>
-          </li>
-        ))}
-      </ul>
-    </GestaoShell>
-  );
-}
 

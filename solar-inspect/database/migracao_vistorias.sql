@@ -1022,6 +1022,20 @@ $$;
 drop trigger if exists "TG_VST_USUARIO_ULTIMO_ADMIN" on "VST_USUARIO";
 create trigger "TG_VST_USUARIO_ULTIMO_ADMIN" before update or delete on "VST_USUARIO" for each row execute function vst_protege_ultimo_admin();
 
+-- Integridade com o site: ENTRADA e SAIDA (usados pela geração automática) não mudam de código nem de comportamento e não são desativados.
+create or replace function vst_protege_tipos_do_site()
+returns trigger language plpgsql security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  if old."CD_TIPO_VISTORIA" in ('ENTRADA', 'SAIDA') and (tg_op = 'DELETE' or new."CD_TIPO_VISTORIA" <> old."CD_TIPO_VISTORIA"
+       or new."TP_COMPORTAMENTO" <> old."TP_COMPORTAMENTO" or not new."SG_ATIVO") then
+    raise exception 'tipo_do_site' using errcode = 'P0001';
+  end if;
+  return coalesce(new, old);
+end;
+$$;
+drop trigger if exists "TG_VST_TIPO_VISTORIA_SITE" on "VST_TIPO_VISTORIA";
+create trigger "TG_VST_TIPO_VISTORIA_SITE" before update or delete on "VST_TIPO_VISTORIA" for each row execute function vst_protege_tipos_do_site();
+
 -- T03: o funcionário aceita o uso da localização e das fotos nas vistorias (LGPD). Guarda a primeira data; repetir não muda.
 create or replace function vst_registrar_aceite_lgpd()
 returns timestamptz language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$

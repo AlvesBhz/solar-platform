@@ -519,6 +519,24 @@ select teste.ok((select "TP_VALIDACAO" = 'QR' from "SE"."VST_PROPRIEDADE" where 
 select teste.erro(format($q$insert into "SE"."VST_PROPRIEDADE" ("ID_PROPRIEDADE") values (%s)$q$, :pb), '42501', 'gestor não cria configuração de pousada');
 :dono
 
+\echo '── 6e. T31 tipos de vistoria'
+:como_admin
+select teste.erro($q$update "SE"."VST_TIPO_VISTORIA" set "SG_ATIVO" = false where "CD_TIPO_VISTORIA" = 'ENTRADA'$q$, 'tipo_do_site', 'ENTRADA não pode ser desativado (o site gera vistorias com ele)');
+select teste.erro($q$update "SE"."VST_TIPO_VISTORIA" set "CD_TIPO_VISTORIA" = 'CHEGADA' where "CD_TIPO_VISTORIA" = 'SAIDA'$q$, 'tipo_do_site', 'SAIDA não muda de código');
+select teste.erro($q$update "SE"."VST_TIPO_VISTORIA" set "TP_COMPORTAMENTO" = 'ROTINA' where "CD_TIPO_VISTORIA" = 'SAIDA'$q$, 'tipo_do_site', 'SAIDA não muda de comportamento');
+update "SE"."VST_TIPO_VISTORIA" set "NM_TIPO_VISTORIA" = 'Saída do hóspede', "DS_PERFIS" = array['ASSESSOR'] where "CD_TIPO_VISTORIA" = 'SAIDA';
+select teste.ok((select "NM_TIPO_VISTORIA" = 'Saída do hóspede' from "SE"."VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = 'SAIDA'), 'nome e perfis de SAIDA podem mudar');
+insert into "SE"."VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO", "TP_PERIODICIDADE", "DS_PERFIS") values ('ROTINA_MENSAL', 'Rotina mensal', 'ROTINA', 'MENSAL', array['LIMPEZA']);
+update "SE"."VST_TIPO_VISTORIA" set "SG_ATIVO" = false where "CD_TIPO_VISTORIA" = 'ROTINA_MENSAL';
+select teste.ok(true, 'ADMIN cria e desativa um tipo próprio');
+select teste.erro($q$insert into "SE"."VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO", "TP_PERIODICIDADE") values ('X1', 'Entrada extra', 'ENTRADA', 'MENSAL')$q$, '23514', 'periodicidade só em rotina');
+select teste.erro($q$insert into "SE"."VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO") values ('x minúsculo', 'Tipo x', 'ROTINA')$q$, '23514', 'código só em MAIÚSCULAS, números e _');
+:como_gesto
+do $$ declare n int; begin update "SE"."VST_TIPO_VISTORIA" set "NM_TIPO_VISTORIA" = 'x' where "CD_TIPO_VISTORIA" = 'ROTINA'; get diagnostics n = row_count;
+  perform teste.ok(n = 0, 'gestor não altera tipos (só ADMIN)'); end $$;
+:dono
+update "VST_TIPO_VISTORIA" set "NM_TIPO_VISTORIA" = 'Saída', "DS_PERFIS" = array['ASSESSOR', 'LIMPEZA'] where "CD_TIPO_VISTORIA" = 'SAIDA';
+
 \echo '── 7. Auditoria (SIT_AUDITORIA)'
 :dono
 select teste.ok((select count(distinct "NM_TABELA") >= 6 from "SIT_AUDITORIA" where "NM_TABELA" like 'VST\_%'), 'as tabelas VST_ gravam em SIT_AUDITORIA');

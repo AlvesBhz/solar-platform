@@ -8,7 +8,7 @@ select item, obtido, esperado, obtido = esperado as ok from (
   union all select 3, 'tabelas VST_ fora do schema "SE" ou em minúsculas',
          (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where c.relkind = 'r' and upper(c.relname) like 'VST\_%' and (x.nspname <> 'SE' or c.relname <> upper(c.relname)))::int, 0
   union all select 4, 'funções vst_*',
-         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 38
+         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 39
   union all select 5, 'funções vst_* executáveis por anon ou public',
          (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%'
             and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('public', p.oid, 'execute')))::int, 0
@@ -21,7 +21,7 @@ select item, obtido, esperado, obtido = esperado as ok from (
   union all select 8, 'gatilhos de auditoria TG_<TABELA>_AUDITORIA',
          (select count(*) from pg_trigger t join pg_class c on c.oid = t.tgrelid where c.relname like 'VST\_%' and t.tgname = 'TG_' || c.relname || '_AUDITORIA' and not t.tgisinternal)::int, 12
   union all select 9, 'políticas RLS nas tabelas VST_',
-         (select count(*) from pg_policies where schemaname = 'SE' and tablename like 'VST\_%')::int, 29
+         (select count(*) from pg_policies where schemaname = 'SE' and tablename like 'VST\_%')::int, 30
   union all select 10, 'tipos ENTRADA e SAIDA cadastrados',
          (select count(*) from "SE"."VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" in ('ENTRADA', 'SAIDA'))::int, 2
   union all select 11, 'índice único UQ_VST_VISTORIA_RESERVA_TIPO',

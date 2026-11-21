@@ -24,7 +24,7 @@ const ERROS: Record<string, string> = {
   login_invalido: 'Usuário: 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado, começando por letra.',
   senha_invalida: 'A senha precisa ter de 8 a 72 caracteres.', nome_invalido: 'Informe o nome completo.',
   propriedade_obrigatoria: 'Escolha ao menos uma pousada para este perfil.', sem_permissao: 'Só o administrador pode fazer isso.',
-  usuario_inexistente: 'Usuário não encontrado.', perfil_sem_permissao: 'Seu perfil não pode fazer isso.',
+  usuario_inexistente: 'Usuário não encontrado.', tipo_do_site: 'Entrada e Saída são usadas pelo site: não mudam de código nem de comportamento e não podem ser desativadas.', perfil_sem_permissao: 'Seu perfil não pode fazer isso.',
 };
 export const mensagem = (codigo?: string, padrao = 'Não foi possível salvar agora. Tente de novo.') =>
   (codigo && (ERROS[codigo] ?? (/duplicate key|unique/i.test(codigo) ? 'Já existe um registro com esse nome.' : undefined))) || padrao;
@@ -241,4 +241,48 @@ export async function trocarOrdem(tabela: 'VST_AMBIENTE' | 'VST_ITEM', a: { id: 
   const r1 = await gravar(tabela, chave, a.id, { NO_ORDEM: oa });
   if (!r1.ok) return r1;
   return gravar(tabela, chave, b.id, { NO_ORDEM: a.ordem });
+}
+
+// ── T31 tipos de vistoria (só ADMIN altera o tipo; a lista de itens de cada tipo é da gestão)
+export type Comportamento = 'ENTRADA' | 'SAIDA' | 'ROTINA' | 'MANUTENCAO';
+export type Tipo = { id: number; codigo: string; nome: string; comportamento: Comportamento; periodicidade: 'DIARIA' | 'SEMANAL' | 'MENSAL' | null;
+  exigeEntrada: boolean; exigeAssinatura: boolean; ativo: boolean; perfis: Perfil[] };
+export const DO_SITE = ['ENTRADA', 'SAIDA'];
+const demoTipos: Tipo[] = [{ id: 1, codigo: 'ENTRADA', nome: 'Entrada', comportamento: 'ENTRADA', periodicidade: null, exigeEntrada: false, exigeAssinatura: false, ativo: true, perfis: ['ASSESSOR'] }];
+export async function listarTipos(): Promise<Tipo[]> {
+  if (MODO_DEMO || !supabase) return demoTipos;
+  const { data, error } = await supabase.from('VST_TIPO_VISTORIA')
+    .select('ID_TIPO_VISTORIA, CD_TIPO_VISTORIA, NM_TIPO_VISTORIA, TP_COMPORTAMENTO, TP_PERIODICIDADE, SG_EXIGE_ENTRADA, SG_EXIGE_ASSINATURA, SG_ATIVO, DS_PERFIS').order('ID_TIPO_VISTORIA');
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((t) => ({ id: Number(t.ID_TIPO_VISTORIA), codigo: t.CD_TIPO_VISTORIA, nome: t.NM_TIPO_VISTORIA, comportamento: t.TP_COMPORTAMENTO, periodicidade: t.TP_PERIODICIDADE,
+    exigeEntrada: t.SG_EXIGE_ENTRADA, exigeAssinatura: t.SG_EXIGE_ASSINATURA, ativo: t.SG_ATIVO, perfis: t.DS_PERFIS }));
+}
+export function validarTipo(t: Omit<Tipo, 'id'>, novo: boolean): string[] {
+  const e: string[] = [];
+  if (novo && !/^[A-Z0-9_]{2,40}$/.test(t.codigo)) e.push('Código: 2 a 40 letras MAIÚSCULAS, números ou _ (ex.: ROTINA_MENSAL).');
+  if (t.nome.trim().length < 2 || t.nome.trim().length > 60) e.push('Nome: 2 a 60 caracteres.');
+  if (t.comportamento === 'ROTINA' && !t.periodicidade) e.push('Rotina precisa de periodicidade.');
+  if (t.perfis.length === 0) e.push('Escolha ao menos um perfil de campo que faz este tipo.');
+  return e;
+}
+export async function salvarTipo(id: number | null, t: Omit<Tipo, 'id'>): Promise<Resultado> {
+  const erros = validarTipo(t, id === null);
+  if (erros.length) return { ok: false, erro: erros[0] };
+  const dados = { NM_TIPO_VISTORIA: t.nome.trim(), TP_COMPORTAMENTO: t.comportamento, TP_PERIODICIDADE: t.comportamento === 'ROTINA' ? t.periodicidade : null,
+    SG_EXIGE_ENTRADA: t.exigeEntrada, SG_EXIGE_ASSINATURA: t.exigeAssinatura, SG_ATIVO: t.ativo, DS_PERFIS: t.perfis };
+  return gravar('VST_TIPO_VISTORIA', 'ID_TIPO_VISTORIA', id, id === null ? { ...dados, CD_TIPO_VISTORIA: t.codigo } : dados);
+}
+export async function itensDoTipo(idTipo: number): Promise<number[]> {
+  if (MODO_DEMO || !supabase) return [];
+  const { data, error } = await supabase.from('VST_TIPO_VISTORIA_ITEM').select('ID_ITEM').eq('ID_TIPO_VISTORIA', idTipo);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((x) => Number(x.ID_ITEM));
+}
+export async function alternarItemNoTipo(idTipo: number, idItem: number, incluir: boolean): Promise<Resultado> {
+  if (MODO_DEMO || !supabase) return { ok: true };
+  const r = incluir
+    ? await supabase.from('VST_TIPO_VISTORIA_ITEM').insert({ ID_TIPO_VISTORIA: idTipo, ID_ITEM: idItem }).select('ID_ITEM')
+    : await supabase.from('VST_TIPO_VISTORIA_ITEM').delete().eq('ID_TIPO_VISTORIA', idTipo).eq('ID_ITEM', idItem).select('ID_ITEM');
+  if (r.error) return { ok: false, erro: mensagem(r.error.message) };
+  return (r.data ?? []).length ? { ok: true } : { ok: false, erro: 'Seu perfil não pode alterar este checklist.' };
 }

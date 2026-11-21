@@ -24,7 +24,9 @@ function novoBanco(eu = 'ADMIN') {
     unidades: [{ id_unidade: 1, cd_unidade: 'casa-do-mirante', nm_unidade: 'Casa do Mirante', id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100 },
                { id_unidade: 2, cd_unidade: 'chale-novo', nm_unidade: 'Chalé Novo', id_propriedade: 2, nm_propriedade: 'Hotel Lapinha', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR', vl_latitude: null, vl_longitude: null, qtde_raio_metros: 100 }],
     vstUnidade: [{ ID_UNIDADE: 1, DS_ANDAR: null, TP_VALIDACAO: null, VL_LATITUDE: null, VL_LONGITUDE: null, QTDE_RAIO_METROS: null, NO_VERSAO_QR: 1 }],
-    ambientes: [], itens: [], seq: 100,
+    ambientes: [], itens: [], seq: 100, tipoItens: [],
+    tipos: [{ ID_TIPO_VISTORIA: 1, CD_TIPO_VISTORIA: 'ENTRADA', NM_TIPO_VISTORIA: 'Entrada', TP_COMPORTAMENTO: 'ENTRADA', TP_PERIODICIDADE: null, SG_EXIGE_ENTRADA: false, SG_EXIGE_ASSINATURA: false, SG_ATIVO: true, DS_PERFIS: ['ASSESSOR'] },
+            { ID_TIPO_VISTORIA: 2, CD_TIPO_VISTORIA: 'SAIDA', NM_TIPO_VISTORIA: 'Saída', TP_COMPORTAMENTO: 'SAIDA', TP_PERIODICIDADE: null, SG_EXIGE_ENTRADA: true, SG_EXIGE_ASSINATURA: true, SG_ATIVO: true, DS_PERFIS: ['ASSESSOR', 'LIMPEZA'] }],
     respostas: {},  // sobrescreve: { 'PATCH VST_USUARIO': {status, corpo} }
   };
 }
@@ -50,11 +52,16 @@ function rotas(page, db) {
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'DELETE') { return json(204); }
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
     if (caminho === 'rpc/vst_unidades') return json(200, db.unidades);
-    for (const [tab, chave, lista] of [['VST_AMBIENTE', 'ID_AMBIENTE', 'ambientes'], ['VST_ITEM', 'ID_ITEM', 'itens']]) {
+    if (caminho === 'VST_TIPO_VISTORIA_ITEM') {
+      if (m === 'GET') { const id = Number(url.searchParams.get('ID_TIPO_VISTORIA').slice(3)); return json(200, db.tipoItens.filter((x) => x.ID_TIPO_VISTORIA === id)); }
+      if (m === 'POST') { db.tipoItens.push(corpo); return json(201, [{ ID_ITEM: corpo.ID_ITEM }]); }
+      if (m === 'DELETE') { const t = Number(url.searchParams.get('ID_TIPO_VISTORIA').slice(3)), i = Number(url.searchParams.get('ID_ITEM').slice(3)); db.tipoItens = db.tipoItens.filter((x) => !(x.ID_TIPO_VISTORIA === t && x.ID_ITEM === i)); return json(200, [{ ID_ITEM: i }]); }
+    }
+    for (const [tab, chave, lista] of [['VST_AMBIENTE', 'ID_AMBIENTE', 'ambientes'], ['VST_ITEM', 'ID_ITEM', 'itens'], ['VST_TIPO_VISTORIA', 'ID_TIPO_VISTORIA', 'tipos']]) {
       if (caminho !== tab) continue;
       if (m === 'GET') return json(200, db[lista]);
       if (m === 'POST') {
-        const nomeCampo = tab === 'VST_AMBIENTE' ? 'NM_AMBIENTE' : 'NM_ITEM';
+        const nomeCampo = { VST_AMBIENTE: 'NM_AMBIENTE', VST_ITEM: 'NM_ITEM', VST_TIPO_VISTORIA: 'CD_TIPO_VISTORIA' }[tab];
         if (db[lista].some((x) => x[nomeCampo] === corpo[nomeCampo])) return json(409, { code: '23505', message: `duplicate key value violates unique constraint "UQ_${tab}_${nomeCampo}"` });
         const novo = { SG_ATIVO: true, ...corpo, [chave]: ++db.seq }; db[lista].push(novo); return json(201, [{ [chave]: novo[chave] }]);
       }
@@ -85,6 +92,7 @@ const esperarRota = async (page, prefixo) => { try { await page.waitForURL((u) =
 const texto = async (page, sel) => { try { return (await page.textContent(sel, { timeout: 4000 })) || ''; } catch { return ''; } };
 const escolher = async (page, rotulo, opcao) => { await page.click(`button[aria-label^="${rotulo}:"]`); await page.click(`[role=option]:has-text("${opcao}")`); };
 const ultima = (db, m, caminho) => [...db.chamadas].reverse().find((c) => c.m === m && c.caminho === caminho);
+const esperar = async (cond, ms = 4000) => { const fim = Date.now() + ms; while (Date.now() < fim) { if (cond()) return true; await new Promise((r) => setTimeout(r, 50)); } return false; };
 const T = async (nome, fn) => { try { await fn(); } catch (e) { falhas++; total++; console.log('FALHOU: ' + nome + ' — ' + e.message.split('\n')[0]); } };
 
 module.exports = { ok, abrir, novoBanco, esperarRota, texto, escolher, ultima, T, errosJS, BASE };
@@ -253,6 +261,53 @@ if (require.main === module) (async () => {
     await page.locator('[data-item="Toalhas de banho"] button:has-text("Desativar")').click();
     await page.waitForSelector('text=Item desativado');
     ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
+    await ctx.close();
+  });
+
+  console.log('── T31 Tipos de vistoria');
+  await T('t31', async () => {
+    let db = novoBanco('GESTOR'); let { ctx, page } = await abrir(browser, db, '/admin/tipos');
+    ok(await esperarRota(page, '/acesso-indisponivel?motivo=sem-permissao'), 'gestor não entra na T31 (só ADMIN)');
+    await ctx.close();
+    db = novoBanco();
+    db.ambientes = [{ ID_AMBIENTE: 10, ID_UNIDADE: 1, NM_AMBIENTE: 'Banheiro', NO_ORDEM: 1, SG_ATIVO: true }];
+    db.itens = [{ ID_ITEM: 20, ID_AMBIENTE: 10, NM_ITEM: 'Torneira', DS_ORIENTACAO: null, SG_CRITICO: true, SG_FOTO_OBRIGATORIA: true, QTDE_ESPERADA: null, NO_ORDEM: 1, SG_ATIVO: true },
+                { ID_ITEM: 21, ID_AMBIENTE: 10, NM_ITEM: 'Toalhas', DS_ORIENTACAO: null, SG_CRITICO: false, SG_FOTO_OBRIGATORIA: false, QTDE_ESPERADA: 4, NO_ORDEM: 2, SG_ATIVO: false }];
+    ({ ctx, page } = await abrir(browser, db, '/admin/tipos'));
+    await page.waitForSelector('[data-tipo="ENTRADA"]');
+    ok(await page.isVisible('[data-tipo="ENTRADA"] >> text=usado pelo site') && !(await page.isVisible('[data-tipo="ENTRADA"] button:has-text("Desativar")')), 'Entrada e Saída aparecem como do site, sem opção de desativar');
+    await page.locator('[data-tipo="SAIDA"] button:has-text("Editar")').click();
+    ok(await page.isDisabled('#t-codigo') && await page.isDisabled('button[aria-label^="Comportamento:"]'), 'Saída: código e comportamento travados na tela');
+    db.respostas['PATCH VST_TIPO_VISTORIA'] = { status: 400, corpo: { code: 'P0001', message: 'tipo_do_site' } };
+    await page.click('button:has-text("Salvar tipo")');
+    ok((await texto(page, '[role=alert]')).includes('usadas pelo site'), 'se o banco recusar mudança em tipo do site, a tela explica');
+    delete db.respostas['PATCH VST_TIPO_VISTORIA'];
+    await page.click('button:has-text("Cancelar")');
+    await page.click('button:has-text("Novo tipo")');
+    await page.fill('#t-codigo', 'rotina mensal'); await page.fill('#t-nome', 'Rotina mensal');
+    ok(await page.inputValue('#t-codigo') === 'ROTINA_MENSAL', 'código vira MAIÚSCULAS com _ enquanto digita');
+    await page.uncheck('form >> text=Vistoria');
+    ok((await texto(page, 'form [role=alert]')).includes('ao menos um perfil') && await page.isDisabled('button:has-text("Salvar tipo")'), 'sem perfil: avisa e não salva');
+    await page.check('form >> text=Limpeza'); await escolher(page, 'Periodicidade', 'Mensal');
+    await page.click('button:has-text("Salvar tipo")');
+    await page.waitForSelector('[data-tipo="ROTINA_MENSAL"]');
+    const pt = ultima(db, 'POST', 'VST_TIPO_VISTORIA');
+    ok(pt && pt.corpo.CD_TIPO_VISTORIA === 'ROTINA_MENSAL' && pt.corpo.TP_PERIODICIDADE === 'MENSAL' && JSON.stringify(pt.corpo.DS_PERFIS) === '["LIMPEZA"]', 'cria o tipo com código, periodicidade e perfis');
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Desativar")').click(); await page.waitForSelector('text=Tipo desativado');
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Ativar")').click();
+    ok((await texto(page, '[role=alert]')).includes('ao menos um item'), 'não ativa tipo sem itens no checklist');
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Itens do checklist")').click();
+    await page.waitForSelector('section[aria-label="Itens do tipo"] >> text=Torneira');
+    ok(!(await page.isVisible('section[aria-label="Itens do tipo"] >> text=Toalhas')), 'só itens ativos podem entrar no checklist');
+    await page.check('section[aria-label="Itens do tipo"] >> text=Torneira');
+    await page.waitForSelector('text=1 de 1 itens');
+    const idNovo = db.tipos.find((t) => t.CD_TIPO_VISTORIA === 'ROTINA_MENSAL').ID_TIPO_VISTORIA;
+    ok(await esperar(() => db.tipoItens.some((x) => x.ID_TIPO_VISTORIA === idNovo && x.ID_ITEM === 20)), 'marcar inclui o item no tipo');
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Ativar")').click(); await page.waitForSelector('text=Tipo ativado');
+    ok(ultima(db, 'PATCH', 'VST_TIPO_VISTORIA').corpo.SG_ATIVO === true, 'com itens, o tipo é ativado');
+    await page.uncheck('section[aria-label="Itens do tipo"] >> text=Torneira');
+    await page.waitForSelector('text=0 de 1 itens');
+    ok(await esperar(() => !db.tipoItens.some((x) => x.ID_TIPO_VISTORIA === idNovo)), 'desmarcar retira o item do tipo');
     await ctx.close();
   });
 
