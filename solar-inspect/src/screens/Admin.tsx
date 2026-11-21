@@ -9,35 +9,6 @@ import { VALIDACAO, formatarData } from '../components/Status';
 import { listarAuditoria, registrarAuditoria, unidadesGestao } from '../mocks/gestao';
 import { listarTipos, type TipoVistoria, type Unidade } from '../mocks/unidades';
 
-/** T28 — Propriedades: busca, status e unidades. Desativar sem apagar. */
-export function T28Propriedades() {
-  const [us, setUs] = useState<Unidade[]>([]);
-  const [inativas, setInativas] = useState<string[]>([]);
-  useEffect(() => { unidadesGestao().then(setUs); }, []);
-  const props = [...[...new Set(us.map((u) => u.propriedade))].map((nome) => ({ nome, unidades: us.filter((u) => u.propriedade === nome) })), ...propsExtras().map((p) => ({ nome: p.nome, unidades: [] as Unidade[] }))];
-  return (
-    <GestaoShell eyebrow="Administração" titulo="Propriedades" acoes={<Link to="/admin/propriedades/nova" className={`${btnPrimary} w-auto`}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Nova</Link>}>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(20rem,100%),1fr))] gap-3">
-        {props.map((p) => {
-          const ativa = !inativas.includes(p.nome);
-          return (
-            <li key={p.nome} className={`${card} flex flex-col gap-3 p-4 ${ativa ? '' : 'opacity-60'}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div><p className="text-[0.9375rem] font-medium text-fg-1">{p.nome}</p><p className="text-[0.75rem] text-fg-3">{p.unidades.length} unidades</p></div>
-                <span className={`inline-flex items-center gap-1 text-[0.75rem] font-medium ${ativa ? 'text-available' : 'text-fg-3'}`}><Icon icon={ativa ? 'solar:check-circle-linear' : 'solar:close-circle-linear'} width={16} aria-hidden="true" />{ativa ? 'Ativa' : 'Inativa'}</span>
-              </div>
-              <ul className="flex flex-wrap gap-1.5">{p.unidades.map((u) => <li key={u.id} className="inline-flex items-center gap-1 rounded-full border border-line-1 px-2.5 py-1 text-[0.6875rem] text-fg-2"><Icon icon={VALIDACAO[u.validacao].icon} width={12} aria-hidden="true" />{u.nome}</li>)}</ul>
-              <button type="button" className="min-h-11 self-start text-[0.75rem] text-pine underline underline-offset-4" onClick={() => { setInativas((l) => ativa ? [...l, p.nome] : l.filter((x) => x !== p.nome)); registrarAuditoria(ativa ? 'Propriedade desativada' : 'Propriedade reativada', p.nome); }}>
-                {ativa ? 'Desativar (mantém o histórico)' : 'Reativar'}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </GestaoShell>
-  );
-}
-
 /** T34 — Auditoria: eventos por usuário, ação e período. Somente leitura. */
 export function T34Auditoria() {
   const ev = listarAuditoria();
@@ -59,44 +30,6 @@ export function T34Auditoria() {
 /* ───────── T29 · T30 · T31 · T33 ───────── */
 const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-fg-1 focus:border-pine focus:outline-none';
 const rot = 'flex flex-col gap-1 text-[0.75rem] uppercase tracking-[0.08em] text-fg-2';
-const K_PROPS = 'solar-inspect:propriedades-extra';
-export const propsExtras = (): { nome: string; tipo: string; validacao: string; raio: number }[] => { try { return JSON.parse(localStorage.getItem(K_PROPS) ?? '[]'); } catch { return []; } };
-
-/** T29 — Formulário de propriedade: nome, tipo, GPS, raio e validação, com checagem da configuração. */
-export function T29FormPropriedade() {
-  const navigate = useNavigate();
-  const [f, setF] = useState({ nome: '', tipo: 'Pousada', lat: '-19.1000', lng: '-43.6000', raio: '40', validacao: 'gps_qr' });
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
-  const erros = [
-    f.nome.trim().length < 3 && 'Informe o nome (mínimo 3 letras).',
-    (Math.abs(+f.lat) > 90 || f.lat === '' || isNaN(+f.lat)) && 'Latitude inválida (-90 a 90).',
-    (Math.abs(+f.lng) > 180 || f.lng === '' || isNaN(+f.lng)) && 'Longitude inválida (-180 a 180).',
-    (+f.raio < 10 || +f.raio > 500) && 'Raio deve ficar entre 10 e 500 m.',
-  ].filter(Boolean) as string[];
-  function salvar() {
-    try { localStorage.setItem(K_PROPS, JSON.stringify([...propsExtras(), { nome: f.nome.trim(), tipo: f.tipo, validacao: f.validacao, raio: +f.raio }])); } catch { /* ok */ }
-    registrarAuditoria('Propriedade criada', `${f.nome.trim()} · ${VALIDACAO[f.validacao as keyof typeof VALIDACAO].label} · raio ${f.raio} m`);
-    navigate('/admin/propriedades');
-  }
-  return (
-    <GestaoShell eyebrow="Administração" titulo="Nova propriedade">
-      <form className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} onSubmit={(e) => { e.preventDefault(); if (!erros.length) salvar(); }} noValidate>
-        <label className={`${rot} sm:col-span-2`}>Nome<input id="p-nome" className={campo} value={f.nome} onChange={set('nome')} placeholder="Ex.: Chalés da Serra" /></label>
-        <label className={rot}>Tipo<Seletor rotulo="Tipo" valor={f.tipo} onChange={(v) => setF({ ...f, tipo: v })} opcoes={['Pousada', 'Hotel', 'Chalés'].map((t) => ({ valor: t, label: t }))} /></label>
-        <label className={rot}>Validação padrão<Seletor rotulo="Validação padrão" valor={f.validacao} onChange={(v) => setF({ ...f, validacao: v })} opcoes={Object.entries(VALIDACAO).map(([k, v]) => ({ valor: k, label: v.label, icone: v.icon }))} /></label>
-        <label className={rot}>Latitude<input id="p-lat" inputMode="decimal" className={campo} value={f.lat} onChange={set('lat')} /></label>
-        <label className={rot}>Longitude<input id="p-lng" inputMode="decimal" className={campo} value={f.lng} onChange={set('lng')} /></label>
-        <label className={rot}>Raio (m)<input id="p-raio" inputMode="numeric" className={campo} value={f.raio} onChange={set('raio')} /></label>
-        {erros.length > 0 && <ul className="flex flex-col gap-1 text-[0.8125rem] text-warning sm:col-span-2" role="alert">{erros.map((e) => <li key={e} className="flex items-center gap-1.5"><Icon icon="solar:danger-circle-linear" width={16} aria-hidden="true" />{e}</li>)}</ul>}
-        <div className="flex flex-wrap gap-3 sm:col-span-2">
-          <button type="button" className={`${btnSecondary} w-auto`} onClick={() => navigate('/admin/propriedades')}>Cancelar</button>
-          <button type="submit" className={`${btnPrimary} w-auto`} disabled={erros.length > 0}>Salvar propriedade</button>
-        </div>
-      </form>
-    </GestaoShell>
-  );
-}
-
 /** T30 — Ambientes e itens: árvore, ordem, criticidade e referência. Alterações valem para novas vistorias (histórico preservado). */
 export function T30Ambientes() {
   const [us, setUs] = useState<Unidade[]>([]);

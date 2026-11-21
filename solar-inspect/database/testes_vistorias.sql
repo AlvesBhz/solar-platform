@@ -499,6 +499,26 @@ update "VST_USUARIO" set "SG_ATIVO" = false where "CD_LOGIN" = 'admin.teste';
 select teste.ok(true, 'com outro ADMIN ativo, desativar um ADMIN é permitido');
 update "VST_USUARIO" set "SG_ATIVO" = true where "CD_LOGIN" = 'admin.teste';
 
+\echo '── 6d. T28/T29 configuração da pousada'
+:como_gesto
+do $$ declare n int; begin update "SE"."VST_PROPRIEDADE" set "QTDE_RAIO_METROS" = 200; get diagnostics n = row_count;
+  perform teste.ok(n = 0, 'gestor não altera a configuração da pousada (só ADMIN)'); end $$;
+:como_admin
+update "SE"."VST_PROPRIEDADE" set "QTDE_RAIO_METROS" = 150, "VL_LATITUDE" = -19.08, "VL_LONGITUDE" = -43.59 where "ID_PROPRIEDADE" = :pa;
+select teste.ok((select "QTDE_RAIO_METROS" = 150 from "SE"."VST_PROPRIEDADE" where "ID_PROPRIEDADE" = :pa), 'ADMIN ajusta raio e ponto da pousada');
+select teste.erro(format($q$update "SE"."VST_PROPRIEDADE" set "QTDE_RAIO_METROS" = 5 where "ID_PROPRIEDADE" = %s$q$, :pa), '23514', 'raio fora de 10 a 1.000 m é recusado');
+select teste.erro(format($q$update "SE"."VST_PROPRIEDADE" set "VL_LATITUDE" = null where "ID_PROPRIEDADE" = %s$q$, :pa), '23514', 'latitude sem longitude é recusada');
+select teste.erro(format($q$update "SE"."VST_PROPRIEDADE" set "TP_VALIDACAO" = 'NFC' where "ID_PROPRIEDADE" = %s$q$, :pa), '23514', 'validação fora da lista é recusada');
+:dono
+delete from "VST_PROPRIEDADE" where "ID_PROPRIEDADE" = :pb;
+:como_admin
+insert into "SE"."VST_PROPRIEDADE" ("ID_PROPRIEDADE", "TP_VALIDACAO") values (:pb, 'QR')
+  on conflict ("ID_PROPRIEDADE") do update set "TP_VALIDACAO" = excluded."TP_VALIDACAO";
+select teste.ok((select "TP_VALIDACAO" = 'QR' from "SE"."VST_PROPRIEDADE" where "ID_PROPRIEDADE" = :pb), 'ADMIN cria a configuração que faltava (upsert)');
+:como_gesto
+select teste.erro(format($q$insert into "SE"."VST_PROPRIEDADE" ("ID_PROPRIEDADE") values (%s)$q$, :pb), '42501', 'gestor não cria configuração de pousada');
+:dono
+
 \echo '── 7. Auditoria (SIT_AUDITORIA)'
 :dono
 select teste.ok((select count(distinct "NM_TABELA") >= 6 from "SIT_AUDITORIA" where "NM_TABELA" like 'VST\_%'), 'as tabelas VST_ gravam em SIT_AUDITORIA');

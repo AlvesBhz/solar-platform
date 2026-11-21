@@ -45,6 +45,7 @@ function rotas(page, db) {
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'POST') { db.up.push(...corpo); return json(201); }
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'DELETE') { return json(204); }
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
+    if (caminho === 'VST_PROPRIEDADE' && m === 'POST') { db.props = db.props.map((p) => (p.id_propriedade === corpo.ID_PROPRIEDADE ? { ...p, tp_validacao: corpo.TP_VALIDACAO, qtde_raio_metros: corpo.QTDE_RAIO_METROS, vl_latitude: corpo.VL_LATITUDE, vl_longitude: corpo.VL_LONGITUDE } : p)); return json(201); }
     if (caminho === 'fn:criar-usuario') return json(201, { id_usuario: 'novo', login: corpo.cd_login });
     if (caminho === 'fn:redefinir-senha') return json(200, { id_usuario: 'u-ana' });
     return json(404, { message: 'não esperado ' + m + ' ' + caminho });
@@ -132,6 +133,35 @@ if (require.main === module) (async () => {
     await page.waitForSelector('text=Nova senha de ana.souza:', { timeout: 6000 });
     const r = ultima(db, 'POST', 'fn:redefinir-senha');
     ok(r && r.corpo.cd_login === 'ana.souza' && r.corpo.senha === nova && nova.length >= 12, 'redefinir senha pela Edge Function, com senha gerada');
+    await ctx.close();
+  });
+
+  console.log('── T28/T29 Pousadas');
+  await T('t28', async () => {
+    let db = novoBanco('ASSESSOR'); let { ctx, page } = await abrir(browser, db, '/admin/propriedades');
+    ok(await esperarRota(page, '/acesso-indisponivel?motivo=sem-permissao'), 'assessor não entra na T28');
+    await ctx.close();
+    db = novoBanco(); ({ ctx, page } = await abrir(browser, db, '/admin/propriedades'));
+    await page.waitForSelector('text=Hotel Lapinha');
+    ok(await page.isVisible('text=não definido') && await page.isVisible('text=-19.08, -43.59'), 'lista as pousadas com validação, ponto de GPS (ou "não definido") e raio');
+    ok(!(await page.isVisible('text=Nova')), 'sem botão de criar pousada (pousadas são do site)');
+    await page.locator('li:has-text("Hotel Lapinha") a:has-text("Configurar presença")').click();
+    ok(await esperarRota(page, '/admin/propriedades/2'), 'abre a configuração da pousada (T29)');
+    await page.waitForSelector('#p-raio');
+    await escolher(page, 'Validação padrão', 'QR e GPS');
+    ok((await texto(page, '[role=alert]')).includes('informe o ponto') && await page.isDisabled('button:has-text("Salvar configuração")'), 'GPS sem ponto: avisa e não deixa salvar');
+    await page.fill('#p-lat', '-19.0847');
+    ok((await texto(page, '[role=alert]')).includes('juntas'), 'latitude sem longitude: avisa');
+    await page.fill('#p-lng', '-43.5967'); await page.fill('#p-raio', '5');
+    ok((await texto(page, '[role=alert]')).includes('10 e 1.000'), 'raio fora da faixa: avisa');
+    await page.fill('#p-raio', '80');
+    await page.click('button:has-text("Salvar configuração")');
+    ok(await page.waitForURL((u) => u.pathname === '/admin/propriedades', { timeout: 6000 }).then(() => true, () => false), 'salva e volta para a lista');
+    const c = ultima(db, 'POST', 'VST_PROPRIEDADE');
+    ok(c && c.corpo.ID_PROPRIEDADE === 2 && c.corpo.TP_VALIDACAO === 'QR_E_GPS' && c.corpo.QTDE_RAIO_METROS === 80 && c.corpo.VL_LATITUDE === -19.0847 && c.corpo.VL_LONGITUDE === -43.5967 && c.busca.includes('on_conflict=ID_PROPRIEDADE'), 'grava em VST_PROPRIEDADE por upsert (cria a linha se faltar), com os valores numéricos');
+    await ctx.close();
+    db = novoBanco(); ({ ctx, page } = await abrir(browser, db, '/admin/propriedades/999'));
+    ok((await texto(page, '[role=alert]')).includes('não encontrada'), 'pousada inexistente ou sem acesso: avisa');
     await ctx.close();
   });
 

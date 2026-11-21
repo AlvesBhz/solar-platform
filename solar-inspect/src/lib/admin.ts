@@ -113,3 +113,30 @@ export async function salvarUsuario(antes: Usuario, depois: Pick<Usuario, 'nome'
   }
   return { ok: true };
 }
+
+// ── T28/T29 configuração de presença da pousada (VST_PROPRIEDADE). Mesmas regras dos CHECKs do banco.
+export type ConfigPresenca = { tp_validacao: Propriedade['tp_validacao']; vl_latitude: number | null; vl_longitude: number | null; qtde_raio_metros: number; qtde_precisao_max_metros?: number; qtde_minutos_min_vistoria?: number };
+export function validarPresenca(c: ConfigPresenca): string[] {
+  const e: string[] = [];
+  if ((c.vl_latitude === null) !== (c.vl_longitude === null)) e.push('Informe latitude e longitude juntas (ou deixe as duas vazias).');
+  if (c.vl_latitude !== null && (isNaN(c.vl_latitude) || Math.abs(c.vl_latitude) > 90)) e.push('Latitude inválida (-90 a 90).');
+  if (c.vl_longitude !== null && (isNaN(c.vl_longitude) || Math.abs(c.vl_longitude) > 180)) e.push('Longitude inválida (-180 a 180).');
+  if (!Number.isInteger(c.qtde_raio_metros) || c.qtde_raio_metros < 10 || c.qtde_raio_metros > 1000) e.push('Raio entre 10 e 1.000 m.');
+  if (c.qtde_precisao_max_metros !== undefined && (!Number.isInteger(c.qtde_precisao_max_metros) || c.qtde_precisao_max_metros < 5 || c.qtde_precisao_max_metros > 500)) e.push('Precisão máxima entre 5 e 500 m.');
+  if (c.qtde_minutos_min_vistoria !== undefined && (!Number.isInteger(c.qtde_minutos_min_vistoria) || c.qtde_minutos_min_vistoria < 0 || c.qtde_minutos_min_vistoria > 240)) e.push('Tempo mínimo entre 0 e 240 minutos.');
+  if (c.tp_validacao !== 'QR' && c.vl_latitude === null) e.push('Para validar por GPS, informe o ponto (latitude e longitude).');
+  return e;
+}
+export async function salvarConfigPropriedade(id: number, c: Required<ConfigPresenca>): Promise<Resultado> {
+  const erros = validarPresenca(c);
+  if (erros.length) return { ok: false, erro: erros[0] };
+  if (MODO_DEMO || !supabase) { demo.props = demo.props.map((p) => (p.id_propriedade === id ? { ...p, ...c } : p)); return { ok: true }; }
+  const { error } = await supabase.from('VST_PROPRIEDADE').upsert({
+    ID_PROPRIEDADE: id, TP_VALIDACAO: c.tp_validacao, VL_LATITUDE: c.vl_latitude, VL_LONGITUDE: c.vl_longitude, QTDE_RAIO_METROS: c.qtde_raio_metros,
+    QTDE_PRECISAO_MAX_METROS: c.qtde_precisao_max_metros, QTDE_MINUTOS_MIN_VISTORIA: c.qtde_minutos_min_vistoria,
+  }, { onConflict: 'ID_PROPRIEDADE' });
+  return error ? { ok: false, erro: mensagem(error.message) } : { ok: true };
+}
+export const VALIDACOES: { valor: Propriedade['tp_validacao']; label: string }[] = [
+  { valor: 'QR_E_GPS', label: 'QR e GPS' }, { valor: 'QR', label: 'Só QR' }, { valor: 'GPS', label: 'Só GPS' },
+];

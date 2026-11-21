@@ -42,7 +42,7 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
   ] },
   { titulo: 'Administração', telas: [
     { id: 'T28', nome: 'Propriedades', rota: '/admin/propriedades' },
-    { id: 'T29', nome: 'Formulário de propriedade', rota: '/admin/propriedades/nova' },
+    { id: 'T29', nome: 'Configuração da pousada', rota: '/admin/propriedades/1' },
     { id: 'T30', nome: 'Ambientes e itens', rota: '/admin/checklists' },
     { id: 'T31', nome: 'Tipos de vistoria', rota: '/admin/tipos' },
     { id: 'T32', nome: 'Usuários e permissões', rota: '/admin/usuarios' },

@@ -1089,7 +1089,8 @@ grant select ("ID_UNIDADE", "DS_ANDAR", "TP_VALIDACAO", "VL_LATITUDE", "VL_LONGI
 grant insert, update, delete on "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA_ITEM" to authenticated;
 grant insert, update on "VST_TIPO_VISTORIA", "VST_USUARIO" to authenticated;
 grant insert, delete on "VST_USUARIO_PROPRIEDADE" to authenticated;
-grant update ("TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "QTDE_PRECISAO_MAX_METROS", "QTDE_MINUTOS_MIN_VISTORIA", "DT_ATUALIZACAO")
+grant insert ("ID_PROPRIEDADE", "TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "QTDE_PRECISAO_MAX_METROS", "QTDE_MINUTOS_MIN_VISTORIA"),
+      update ("TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "QTDE_PRECISAO_MAX_METROS", "QTDE_MINUTOS_MIN_VISTORIA", "DT_ATUALIZACAO")
   on "VST_PROPRIEDADE" to authenticated;
 grant update ("DS_ANDAR", "TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "DT_ATUALIZACAO") on "VST_UNIDADE" to authenticated;
 
@@ -1118,6 +1119,7 @@ create policy "VST_USUARIO_PROPRIEDADE_DELETE" on "VST_USUARIO_PROPRIEDADE" for 
 
 -- configuração por propriedade e por chalé
 create policy "VST_PROPRIEDADE_SELECT" on "VST_PROPRIEDADE" for select to authenticated using ("SE".vst_tem_acesso("ID_PROPRIEDADE"));
+create policy "VST_PROPRIEDADE_INSERT" on "VST_PROPRIEDADE" for insert to authenticated with check ((select "SE".vst_perfil()) = 'ADMIN');
 create policy "VST_PROPRIEDADE_UPDATE" on "VST_PROPRIEDADE" for update to authenticated
   using ((select "SE".vst_perfil()) = 'ADMIN') with check ((select "SE".vst_perfil()) = 'ADMIN');
 create policy "VST_UNIDADE_SELECT" on "VST_UNIDADE" for select to authenticated using ("SE".vst_tem_acesso_unidade("ID_UNIDADE"));
