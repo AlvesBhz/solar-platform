@@ -10,6 +10,7 @@ cd "$(dirname "$0")/.."                                    # solar-inspect (tem 
 CLI="npx --yes supabase"
 $CLI functions deploy login-vistoria --project-ref "$REF" --use-api --no-verify-jwt
 $CLI functions deploy criar-usuario  --project-ref "$REF" --use-api
+$CLI functions deploy redefinir-senha --project-ref "$REF" --use-api
 if [ -n "${ALLOWED_ORIGINS:-}" ]; then $CLI secrets set "ALLOWED_ORIGINS=$ALLOWED_ORIGINS" --project-ref "$REF"; fi
 $CLI functions list --project-ref "$REF"
 echo "Edge Functions publicadas. Teste: criar o primeiro ADMIN (database/README.md) e entrar pelo app."

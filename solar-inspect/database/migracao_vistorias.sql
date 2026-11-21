@@ -44,6 +44,7 @@ create table if not exists "VST_TIPO_VISTORIA" (
   "SG_EXIGE_ENTRADA"    boolean not null default false,    -- saída compara com a entrada da mesma estadia
   "SG_EXIGE_ASSINATURA" boolean not null default false,
   "SG_ATIVO"            boolean not null default true,
+  "DS_PERFIS"           text[] not null default array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO'],   -- quem da equipe de campo faz este tipo (gestão faz todos)
   "DT_CRIACAO"          timestamptz not null default now(),
   constraint "PK_VST_TIPO_VISTORIA" primary key ("ID_TIPO_VISTORIA"),
   constraint "UQ_VST_TIPO_VISTORIA_CD_TIPO_VISTORIA" unique ("CD_TIPO_VISTORIA"),
@@ -54,12 +55,24 @@ create table if not exists "VST_TIPO_VISTORIA" (
   constraint "CK_VST_TIPO_VISTORIA_ROTINA" check ("TP_COMPORTAMENTO" = 'ROTINA' or "TP_PERIODICIDADE" is null)
 );
 
-insert into "VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO", "SG_EXIGE_ENTRADA", "SG_EXIGE_ASSINATURA") values
-  ('ENTRADA',    'Entrada',    'ENTRADA',    false, false),
-  ('SAIDA',      'Saída',      'SAIDA',      true,  true),
-  ('ROTINA',     'Rotina',     'ROTINA',     false, false),
-  ('MANUTENCAO', 'Manutenção', 'MANUTENCAO', false, false)
+-- banco que já tinha a tabela sem DS_PERFIS: a coluna entra antes do seed, depois é preenchida e só então passa a ser obrigatória
+alter table "VST_TIPO_VISTORIA" add column if not exists "DS_PERFIS" text[];
+insert into "VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO", "SG_EXIGE_ENTRADA", "SG_EXIGE_ASSINATURA", "DS_PERFIS") values
+  ('ENTRADA',    'Entrada',    'ENTRADA',    false, false, array['ASSESSOR']),
+  ('SAIDA',      'Saída',      'SAIDA',      true,  true,  array['ASSESSOR', 'LIMPEZA']),
+  ('ROTINA',     'Rotina',     'ROTINA',     false, false, array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO']),
+  ('MANUTENCAO', 'Manutenção', 'MANUTENCAO', false, false, array['ASSESSOR', 'MANUTENCAO'])
 on conflict ("CD_TIPO_VISTORIA") do nothing;
+
+-- preenche DS_PERFIS dos tipos que já existiam (padrão de cada tipo) e só então exige valor
+update "VST_TIPO_VISTORIA" set "DS_PERFIS" = case "CD_TIPO_VISTORIA"
+    when 'ENTRADA' then array['ASSESSOR'] when 'SAIDA' then array['ASSESSOR', 'LIMPEZA'] when 'MANUTENCAO' then array['ASSESSOR', 'MANUTENCAO']
+    else array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO'] end
+  where "DS_PERFIS" is null;
+alter table "VST_TIPO_VISTORIA" alter column "DS_PERFIS" set default array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO'], alter column "DS_PERFIS" set not null;
+alter table "VST_TIPO_VISTORIA" drop constraint if exists "CK_VST_TIPO_VISTORIA_DS_PERFIS";
+alter table "VST_TIPO_VISTORIA" add constraint "CK_VST_TIPO_VISTORIA_DS_PERFIS"
+  check (cardinality("DS_PERFIS") >= 1 and "DS_PERFIS" <@ array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO']);
 
 
 -- ── VST_USUARIO: equipe (assessores, gestores, administradores) ─────────
@@ -448,6 +461,13 @@ returns date language sql stable security definer set search_path = "SE", extens
   from "SIT_UNIDADE" u join "SIT_PROPRIEDADE" p on p."ID_PROPRIEDADE" = u."ID_PROPRIEDADE" where u."ID_UNIDADE" = p_id_unidade
 $$;
 
+-- a equipe de campo só faz os tipos de vistoria listados em DS_PERFIS; gestor e admin fazem todos
+create or replace function vst_perfil_pode_tipo(p_perfil text, p_id_tipo bigint)
+returns boolean language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
+  select p_perfil in ('GESTOR', 'ADMIN')
+         or exists (select 1 from "VST_TIPO_VISTORIA" t where t."ID_TIPO_VISTORIA" = p_id_tipo and p_perfil = any(t."DS_PERFIS"))
+$$;
+
 -- usuário da sessão; erro se não existir ou estiver inativo
 create or replace function vst_usuario_atual()
 returns "VST_USUARIO" language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
@@ -664,6 +684,7 @@ begin
   end if;
   select "ID_TIPO_VISTORIA" into v_tipo from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = p_cd_tipo_vistoria and "SG_ATIVO";
   if v_tipo is null then raise exception 'tipo_inexistente' using errcode = 'P0001'; end if;
+  if not "SE".vst_perfil_pode_tipo(u."TP_PERFIL", v_tipo) then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
   if p_dt_agendada is null then raise exception 'data_obrigatoria' using errcode = 'P0001'; end if;
   if u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then
     if p_id_reserva is not null or (p_id_usuario is not null and p_id_usuario <> u."ID_USUARIO") then
@@ -726,6 +747,7 @@ begin
     return;
   end if;
   if v."TP_STATUS" <> 'AGENDADA' then raise exception 'vistoria_nao_agendada' using errcode = 'P0001'; end if;
+  if not "SE".vst_perfil_pode_tipo(u."TP_PERFIL", v."ID_TIPO_VISTORIA") then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
   if v."ID_USUARIO" is not null and v."ID_USUARIO" <> u."ID_USUARIO" and u."TP_PERFIL" not in ('GESTOR', 'ADMIN') then
     raise exception 'vistoria_de_outro_usuario' using errcode = 'P0001';
   end if;
@@ -925,7 +947,12 @@ begin
   u := "SE".vst_usuario_atual();
   select * into o from "VST_OCORRENCIA" where "ID_OCORRENCIA" = p_id_ocorrencia for update;
   if not found then raise exception 'ocorrencia_inexistente' using errcode = 'P0001'; end if;
-  if not "SE".vst_pode_gerir_unidade(o."ID_UNIDADE") then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
+  if not "SE".vst_pode_gerir_unidade(o."ID_UNIDADE") then
+    -- a equipe de manutenção trata a ocorrência (EM_TRATAMENTO ou RESOLVIDA); quem libera o chalé e cancela é a gestão
+    if not (u."TP_PERFIL" = 'MANUTENCAO' and "SE".vst_tem_acesso_unidade(o."ID_UNIDADE") and not p_liberar and p_tp_status in ('EM_TRATAMENTO', 'RESOLVIDA')) then
+      raise exception 'perfil_sem_permissao' using errcode = 'P0001';
+    end if;
+  end if;
   if p_tp_status not in ('EM_TRATAMENTO', 'RESOLVIDA', 'CANCELADA') then raise exception 'status_invalido' using errcode = 'P0001'; end if;
   update "VST_OCORRENCIA"
   set "TP_STATUS" = p_tp_status, "DS_TRATAMENTO" = coalesce(nullif(btrim(p_ds_tratamento), ''), "DS_TRATAMENTO"),

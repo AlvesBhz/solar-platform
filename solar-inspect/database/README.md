@@ -35,13 +35,13 @@ Mais: funções `vst_*`, o bucket `vistorias` e suas políticas.
 
 | Perfil | Quem é | Pode |
 |---|---|---|
-| `ASSESSOR` | vistoria | ver a agenda da pousada, iniciar e concluir vistorias, criar vistoria avulsa para si, mudar a situação (`EM_LIMPEZA`, `LIBERADO`, `OCUPADO`) |
-| `LIMPEZA` | limpeza | o mesmo que o assessor |
-| `MANUTENCAO` | manutenção | o mesmo que o assessor |
+| `ASSESSOR` | vistoria | ver a agenda da pousada, fazer vistorias (todos os tipos), criar vistoria avulsa para si, mudar a situação (`EM_LIMPEZA`, `LIBERADO`, `OCUPADO`) |
+| `LIMPEZA` | limpeza | o mesmo, mas só nos tipos de vistoria liberados para ela (padrão: Saída e Rotina) |
+| `MANUTENCAO` | manutenção | o mesmo, só nos tipos liberados (padrão: Manutenção e Rotina); além disso **trata ocorrências** (`EM_TRATAMENTO` ou `RESOLVIDA`), sem liberar o chalé nem cancelar |
 | `GESTOR` | gestão da pousada | tudo do campo, mais agenda (atribuir, remarcar, cancelar), ocorrências, bloqueio, QR, `BLOQUEADO`/`MANUTENCAO`, checklist e GPS das pousadas dele |
 | `ADMIN` | administração | tudo, em todas as pousadas; cadastra funcionários |
 
-Os três perfis de campo hoje têm as mesmas permissões. Separar o que cada um faz (por exemplo, limpeza só em Saída e Rotina, manutenção tratando ocorrências) é uma regra a mais, fácil de acrescentar quando você definir.
+Quem da equipe de campo faz cada tipo de vistoria fica em `"VST_TIPO_VISTORIA"."DS_PERFIS"` (o ADMIN muda por tipo; gestor e admin fazem todos). Padrão: Entrada só `ASSESSOR`; Saída `ASSESSOR` e `LIMPEZA`; Rotina os três; Manutenção `ASSESSOR` e `MANUTENCAO`. Todos os perfis veem a agenda da pousada, mas só iniciam e criam vistoria dos tipos liberados (erro `perfil_sem_permissao`).
 
 ### Colunas propostas em tabelas SIT_
 
@@ -106,6 +106,7 @@ O Supabase Auth entra por e-mail; os funcionários não precisam ter e-mail. Cad
 | Edge Function | Quem chama | O que faz |
 |---|---|---|
 | `login-vistoria` (sem JWT) | o app, antes do login | recebe `{login, senha}`; `login` é o usuário ou o CPF (com ou sem pontuação). Acha o funcionário ativo (`vst_localizar_login`), entra no Auth e devolve `{sessao, usuario}`. O app aplica a sessão com `supabase.auth.setSession`. A resposta de erro é a mesma para senha errada, usuário inexistente e inativo; no máximo 10 tentativas por usuário e 40 por IP, por hora (`registrar_tentativa`, do site). |
+| `redefinir-senha` (JWT) | o ADMIN logado, no app | recebe `{cd_login, senha}` (8 a 72 caracteres) e define a nova senha do funcionário. Só ADMIN. A própria senha cada funcionário troca logado, com `supabase.auth.updateUser({ password })`. |
 | `criar-usuario` (JWT) | o ADMIN logado, no app | recebe `{nm_usuario, cd_login, cd_cpf?, tp_perfil, senha, ids_propriedade}`. Só ADMIN passa. Cria o login no Auth e o cadastro (`vst_cadastrar_usuario`); se o banco recusar, apaga o login criado. Senha de 8 a 72 caracteres. Devolve `201 {id_usuario}` ou `409 login_em_uso`/`cpf_em_uso`, `422` com o motivo. |
 
 Funções SQL só do `service_role` (nenhum usuário logado as executa): `vst_localizar_login(p_login)` e `vst_cadastrar_usuario(p_id_usuario, p_nm_usuario, p_cd_login, p_cd_cpf, p_tp_perfil, p_ids_propriedade)`.
@@ -118,7 +119,7 @@ supabase functions deploy criar-usuario  --project-ref tnjpyjbqcjrowzjfnuln --wo
 supabase secrets set ALLOWED_ORIGINS=https://alvesbhz.github.io --project-ref tnjpyjbqcjrowzjfnuln   # origem(ns) do app, separadas por vírgula
 ```
 
-Esqueceu a senha: o ADMIN redefine em Authentication › Users (redefinir pelo app é um próximo passo). Para desligar um funcionário, `SG_ATIVO = false` em `VST_USUARIO`: ele deixa de entrar e de usar as funções na hora.
+Esqueceu a senha: o ADMIN redefine pelo app (`redefinir-senha`). Para desligar um funcionário, `SG_ATIVO = false` em `VST_USUARIO`: ele deixa de entrar e de usar as funções na hora.
 
 ## Acesso direto às tabelas (RLS)
 
@@ -141,5 +142,4 @@ Escrever vistoria, resposta, ocorrência, foto, situação e QR só pelas funç�
 ## Pendências
 
 - **Aplicação:** feita em 21/11/2026 no projeto `tnjpyjbqcjrowzjfnuln`: migração aplicada e verificada (15 de 15 itens, nada do site alterado) e Edge Functions `login-vistoria` e `criar-usuario` publicadas e respondendo. Falta criar o primeiro ADMIN e testar o login real.
-- **Permissões por perfil de campo:** hoje assessor, limpeza e manutenção são iguais (ver a tabela de perfis).
-- **Redefinir senha pelo app** (hoje, pelo painel do Supabase) e **trocar a própria senha** no primeiro acesso.
+- **Origem do app (`ALLOWED_ORIGINS`):** o padrão é `https://alvesbhz.github.io`; se o app Inspect for publicado em outro endereço, gravar o segredo.

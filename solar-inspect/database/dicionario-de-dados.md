@@ -273,11 +273,11 @@ O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esper
 
 ## `VST_TIPO_VISTORIA` (APOIO)
 
-Entrada, Saída, Rotina e Manutenção, com as regras de cada uma. O site identifica o tipo pelo código (ENTRADA, SAIDA).
+Entrada, Saída, Rotina e Manutenção, com as regras de cada uma e quem da equipe pode fazê-las. O site identifica o tipo pelo código (ENTRADA, SAIDA).
 
 - **Ligada a:** VST_TIPO_VISTORIA_ITEM, VST_VISTORIA
 - **Acesso (RLS):** Todo usuário ativo lê; ADMIN mantém.
-- **Regras:** CD_TIPO_VISTORIA único (ENTRADA e SAIDA vêm da migração; outros tipos podem existir). TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO. TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL.
+- **Regras:** CD_TIPO_VISTORIA único (ENTRADA e SAIDA vêm da migração; outros tipos podem existir). TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO. TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL. DS_PERFIS: quem da equipe de campo faz o tipo. Padrão: Entrada só ASSESSOR; Saída ASSESSOR e LIMPEZA; Rotina os três; Manutenção ASSESSOR e MANUTENCAO. O ADMIN muda por tipo; gestor e admin fazem todos.
 
 | Campo | Tipo | Obrigatório | Chave | Descrição | Exemplo (Entrada) |
 |---|---|---|---|---|---|
@@ -289,6 +289,7 @@ Entrada, Saída, Rotina e Manutenção, com as regras de cada uma. O site identi
 | `SG_EXIGE_ENTRADA` | `boolean` | sim | — | Saída compara com a Entrada da mesma estadia. | não |
 | `SG_EXIGE_ASSINATURA` | `boolean` | sim | — | Pede assinatura no fim. | não |
 | `SG_ATIVO` | `boolean` | sim | — | Inativo some da lista. | sim |
+| `DS_PERFIS` | `text[]` | sim | — | Quem da equipe de campo faz este tipo (ASSESSOR, LIMPEZA, MANUTENCAO); gestor e admin fazem todos. | ASSESSOR |
 | `DT_CRIACAO` | `timestamptz` | sim | — | Cadastro. | 20/11/2026 09:00 |
 
 ## `VST_TIPO_VISTORIA_ITEM` (APOIO)
@@ -430,5 +431,6 @@ Todas em minúsculas, `security definer`, executáveis só pelo usuário logado 
 | `vst_alterar_situacao_unidade(…)` | Troca a situação do chalé (BLOQUEADO e MANUTENCAO só para a gestão). |
 | `vst_obter_qr / vst_rotacionar_qr(id_unidade)` | Gestão: QR para imprimir e rotação que invalida as etiquetas antigas. |
 | `login-vistoria (Edge Function)` | Login por usuário ou CPF e senha: acha o funcionário ativo (vst_localizar_login), entra no Auth e devolve a sessão; resposta igual para qualquer erro e limite de tentativas. |
+| `redefinir-senha (Edge Function)` | Só ADMIN: define nova senha para um funcionário que esqueceu a dele. Cada funcionário troca a própria senha no app, logado. |
 | `criar-usuario (Edge Function)` | Só ADMIN: cria o login no Auth e o cadastro em VST_USUARIO e VST_USUARIO_PROPRIEDADE (vst_cadastrar_usuario) para qualquer perfil. |
 | `consultar_disponibilidade (site)` | Função do site que já exclui as datas com SIT_BLOQUEIO: por isso a manutenção some da venda sem mudar o site. |

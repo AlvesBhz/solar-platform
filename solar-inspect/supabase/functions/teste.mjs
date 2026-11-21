@@ -3,6 +3,7 @@
 // Uso (Node 22+): node --experimental-strip-types supabase/functions/teste.mjs
 import { criarHandler as criarLogin } from './login-vistoria/handler.ts';
 import { criarHandler as criarCriar, PERFIS } from './criar-usuario/handler.ts';
+import { criarHandler as criarSenha } from './redefinir-senha/handler.ts';
 import { cpfValido } from './_shared/comum.ts';
 
 let falhas = 0, total = 0;
@@ -138,6 +139,25 @@ const criar = (h, corpo, token = 'tok-admin') => h(new Request('https://x/functi
   r = await lerj(await criar(h, { ...base, cd_login: 'outra.pessoa2' }));
   ok(r.status === 500 && excluidos.length === antes + 2, 'erro desconhecido do banco: 500 e o login é apagado (nunca fica login sem cadastro)');
   ok((await criarCriar(novoBanco(), ambiente)(new Request('https://x/', { method: 'POST', headers: { origin: 'https://malvado.exemplo', authorization: 'Bearer tok-admin' }, body: '{}' }))).status === 403, 'origem não permitida é recusada');
+}
+// ── redefinir-senha
+{
+  const trocas = []; const adm = { async redefinirSenha(id, senha) { if (id === 'u-falha') return { ok: false }; trocas.push([id, senha]); return { ok: true }; } };
+  const amb = { origensPermitidas: [ORIGEM], admin: adm, perfilDoChamador: async (t) => perfis[t] ?? null };
+  const h = criarSenha(novoBanco(), amb);
+  const redefinir = (corpo, token = 'tok-admin') => h(new Request('https://x/functions/v1/redefinir-senha', { method: 'POST',
+    headers: { 'content-type': 'application/json', origin: ORIGEM, ...(token ? { authorization: 'Bearer ' + token } : {}) }, body: JSON.stringify(corpo) }));
+  ok((await redefinir({ cd_login: 'ana.souza', senha: 'nova-senha-1' }, null)).status === 401, 'redefinir: sem token é 401');
+  ok((await redefinir({ cd_login: 'ana.souza', senha: 'nova-senha-1' }, 'tok-gestor')).status === 403 && (await redefinir({ cd_login: 'ana.souza', senha: 'nova-senha-1' }, 'tok-assessor')).status === 403, 'redefinir: só o ADMIN (gestor e assessor recebem 403)');
+  ok(trocas.length === 0, 'redefinir: nenhuma senha muda sem permissão');
+  let r = await lerj(await redefinir({ cd_login: ' Ana.Souza ', senha: 'nova-senha-1' }));
+  ok(r.status === 200 && r.corpo.id_usuario === 'u1' && trocas[0][0] === 'u1' && trocas[0][1] === 'nova-senha-1', 'redefinir: ADMIN troca a senha do funcionário');
+  ok(!JSON.stringify(r.corpo).includes('nova-senha-1'), 'redefinir: a resposta nunca devolve a senha');
+  ok((await redefinir({ cd_login: 'nao.existe', senha: 'nova-senha-1' })).status === 404, 'redefinir: usuário inexistente é 404');
+  ok((await redefinir({ cd_login: 'ana.souza', senha: 'curta' })).status === 422, 'redefinir: senha curta é 422');
+  ok((await redefinir({ cd_login: '1ana', senha: 'nova-senha-1' })).status === 422, 'redefinir: usuário em formato inválido é 422');
+  usuarios.push({ id_usuario: 'u-falha', ds_email: '', sg_ativo: true, tp_perfil: 'LIMPEZA', nm_usuario: 'F', cd_login: 'falha.func', cd_cpf: null });
+  ok((await redefinir({ cd_login: 'falha.func', senha: 'nova-senha-1' })).status === 503, 'redefinir: falha do Auth é 503');
 }
 ok(cpfValido('11144477735') && !cpfValido('11111111111') && !cpfValido('123'), 'validação de CPF');
 console.log(falhas ? `\n${falhas} FALHA(S) em ${total} verificações` : `\nTODAS AS ${total} VERIFICAÇÕES PASSARAM`);

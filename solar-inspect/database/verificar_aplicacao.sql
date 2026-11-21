@@ -8,7 +8,7 @@ select item, obtido, esperado, obtido = esperado as ok from (
   union all select 3, 'tabelas VST_ fora do schema "SE" ou em minúsculas',
          (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where c.relkind = 'r' and upper(c.relname) like 'VST\_%' and (x.nspname <> 'SE' or c.relname <> upper(c.relname)))::int, 0
   union all select 4, 'funções vst_*',
-         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 34
+         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 35
   union all select 5, 'funções vst_* executáveis por anon ou public',
          (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%'
             and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('public', p.oid, 'execute')))::int, 0
@@ -28,6 +28,8 @@ select item, obtido, esperado, obtido = esperado as ok from (
          (select count(*) from pg_indexes where schemaname = 'SE' and indexname = 'UQ_VST_VISTORIA_RESERVA_TIPO')::int, 1
   union all select 12, 'perfis LIMPEZA e MANUTENCAO aceitos',
          (select count(*) from pg_constraint where conname = 'CK_VST_USUARIO_TP_PERFIL' and pg_get_constraintdef(oid) like '%LIMPEZA%' and pg_get_constraintdef(oid) like '%MANUTENCAO%')::int, 1
+  union all select 16, 'coluna DS_PERFIS (quem faz cada tipo de vistoria)',
+         (select count(*) from information_schema.columns where table_schema = 'SE' and table_name = 'VST_TIPO_VISTORIA' and column_name = 'DS_PERFIS')::int, 1
   union all select 13, 'chalés do site sem linha de configuração VST_UNIDADE',
          (select count(*) from "SE"."SIT_UNIDADE" u where not exists (select 1 from "SE"."VST_UNIDADE" v where v."ID_UNIDADE" = u."ID_UNIDADE"))::int, 0
   union all select 14, 'bucket vistorias privado (5 MB, JPEG/PNG/WEBP)',

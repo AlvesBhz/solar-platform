@@ -266,7 +266,7 @@ select teste.ok((select count(*) = 1 from "SE"."VST_OCORRENCIA" where "ID_VISTOR
 select teste.ok((select "TP_GRAVIDADE" = 'CRITICA' and "ID_BLOQUEIO" = :r_bloq from "SE"."VST_OCORRENCIA" where "ID_VISTORIA" = :'v_sai'), 'item crítico gera ocorrência CRITICA ligada ao bloqueio');
 select teste.ok((select "TP_SITUACAO_RESULTANTE" = 'MANUTENCAO' from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_sai'), 'ocorrência crítica manda na situação do chalé');
 :dono
-select teste.ok((select b."TP_MOTIVO" = 'MANUTENCAO' and b."ID_CALENDARIO" is null and b."DT_INI" = current_date and b."DT_FIM" = current_date + 7
+select teste.ok((select b."TP_MOTIVO" = 'MANUTENCAO' and b."ID_CALENDARIO" is null and b."DT_INI" = (now() at time zone 'America/Sao_Paulo')::date and b."DT_FIM" = (now() at time zone 'America/Sao_Paulo')::date + 7
                  from "SIT_BLOQUEIO" b where b."ID_BLOQUEIO" = :r_bloq), 'bloqueio MANUTENCAO de hoje por 7 dias, sem ID_CALENDARIO');
 select teste.ok((select "TP_SITUACAO" = 'MANUTENCAO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'chalé em MANUTENCAO');
 -- o site já respeita BLOQUEIO: a consulta de disponibilidade recusa essas noites
@@ -295,7 +295,7 @@ select "SE".vst_resolver_ocorrencia(:oc, 'RESOLVIDA', 'Encanador trocou o reparo
 :dono
 select teste.ok((select "TP_STATUS" = 'RESOLVIDA' and "DT_RESOLUCAO" is not null from "VST_OCORRENCIA" where "ID_OCORRENCIA" = :oc), 'ocorrência resolvida com data');
 select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'chalé liberado');
-select teste.ok((select "DT_FIM" = current_date + 1 from "SIT_BLOQUEIO" where "ID_BLOQUEIO" = :r_bloq), 'liberar encerra o bloqueio: DT_FIM = amanhã');
+select teste.ok((select "DT_FIM" = (now() at time zone 'America/Sao_Paulo')::date + 1 from "SIT_BLOQUEIO" where "ID_BLOQUEIO" = :r_bloq), 'liberar encerra o bloqueio: DT_FIM = amanhã (data da pousada)');
 select teste.ok((select coalesce(motivo, '') <> 'ocupado' from consultar_disponibilidade(current_date + 2, current_date + 4, 2, 0) where cd_unidade = 'casa-do-mirante'),
                 'o site volta a vender as noites depois da liberação');
 -- QR
@@ -360,7 +360,34 @@ select teste.ok(true, 'limpeza marca EM_LIMPEZA e LIBERADO');
 select "SE".vst_criar_vistoria(:ua, 'ROTINA', current_date) as v_lia \gset
 select teste.ok((select "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a4' from "SE"."VST_VISTORIA" where "ID_VISTORIA" = :'v_lia'), 'limpeza cria vistoria avulsa para si');
 :como_beto
-select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s)$q$, :oc), 'perfil_sem_permissao', 'manutenção não resolve ocorrência (só a gestão)');
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s, 'CANCELADA')$q$, :oc), 'perfil_sem_permissao', 'manutenção não cancela ocorrência (só a gestão)');
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s, 'RESOLVIDA', null, true)$q$, :oc), 'perfil_sem_permissao', 'manutenção não libera o chalé (só a gestão)');
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s, 'RESOLVIDA')$q$, :oc + 999), 'ocorrencia_inexistente', 'ocorrência inexistente');
+:dono
+update "VST_OCORRENCIA" set "TP_STATUS" = 'ABERTA', "DT_RESOLUCAO" = null where "ID_OCORRENCIA" = :oc;
+:como_beto
+select "SE".vst_resolver_ocorrencia(:oc, 'EM_TRATAMENTO', 'Encanador chamado pela manutenção') as _ \gset
+select "SE".vst_resolver_ocorrencia(:oc, 'RESOLVIDA', 'Reparo feito pela manutenção') as _ \gset
+:dono
+select teste.ok((select "TP_STATUS" = 'RESOLVIDA' and "DS_TRATAMENTO" like '%manutenção%' from "VST_OCORRENCIA" where "ID_OCORRENCIA" = :oc), 'manutenção trata e resolve a ocorrência (sem liberar o chalé)');
+:como_beto
+-- tipos que cada perfil de campo pode fazer (VST_TIPO_VISTORIA.DS_PERFIS)
+select teste.ok("SE".vst_criar_vistoria(:ua, 'MANUTENCAO', current_date) is not null, 'manutenção cria vistoria do tipo MANUTENCAO');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'SAIDA', current_date)$q$, :ua), 'perfil_sem_permissao', 'manutenção não faz Saída');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'ENTRADA', current_date)$q$, :ua), 'perfil_sem_permissao', 'manutenção não faz Entrada');
+:como_lia
+select teste.ok("SE".vst_criar_vistoria(:ua, 'SAIDA', current_date) is not null, 'limpeza cria vistoria de Saída');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'ENTRADA', current_date)$q$, :ua), 'perfil_sem_permissao', 'limpeza não faz Entrada');
+select teste.erro(format($q$select "SE".vst_criar_vistoria(%s, 'MANUTENCAO', current_date)$q$, :ua), 'perfil_sem_permissao', 'limpeza não faz vistoria de manutenção');
+select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s', '%s')$q$, :'v_ent', :'qr_novo'), 'perfil_sem_permissao', 'limpeza não inicia a Entrada gerada pelo site');
+:como_gesto
+select teste.ok("SE".vst_criar_vistoria(:ua, 'ENTRADA', current_date) is not null, 'gestor faz qualquer tipo, mesmo fora de DS_PERFIS');
+:dono
+select teste.erro($q$update "VST_TIPO_VISTORIA" set "DS_PERFIS" = array['ZELADOR'] where "CD_TIPO_VISTORIA" = 'ROTINA'$q$, '23514', 'DS_PERFIS só aceita perfis de campo');
+select teste.erro($q$update "VST_TIPO_VISTORIA" set "DS_PERFIS" = '{}' where "CD_TIPO_VISTORIA" = 'ROTINA'$q$, '23514', 'DS_PERFIS não pode ficar vazio');
+select teste.ok((select "DS_PERFIS" = array['ASSESSOR'] from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" = 'ENTRADA'), 'padrão: Entrada só para o assessor de vistoria');
+
+:como_beto
 select teste.erro(format($q$select * from "SE".vst_iniciar_vistoria('%s', '%s')$q$, :'v_lia', :'qr_novo'), 'vistoria_de_outro_usuario', 'manutenção não assume a vistoria de outra pessoa');
 select teste.ok((select count(*) = 1 from "SE".vst_unidades()), 'manutenção vê só os chalés da pousada dela');
 

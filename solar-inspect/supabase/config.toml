@@ -6,3 +6,7 @@ verify_jwt = false
 # criar-usuario só aceita quem já está logado; dentro dela, só o perfil ADMIN passa.
 [functions.criar-usuario]
 verify_jwt = true
+
+# redefinir-senha: idem, só o ADMIN.
+[functions.redefinir-senha]
+verify_jwt = true

@@ -13,7 +13,7 @@ Tudo já está pronto no repositório, branch `claude/epic-edison-rcjlqp`; nada 
 >    `git fetch origin claude/epic-edison-rcjlqp` e `git worktree add /tmp/inspect origin/claude/epic-edison-rcjlqp`
 > 2. Confira primeiro, só lendo: `python3 -I /tmp/inspect/solar-inspect/tools/aplicar-supabase.py --so-conferir` (deve dizer "AINDA NÃO APLICADA").
 > 3. Aplique e verifique: `python3 -I /tmp/inspect/solar-inspect/tools/aplicar-supabase.py`
->    O script confere o ponto de partida, aplica `migracao_vistorias.sql` (uma transação), prova que nada das tabelas, funções e dados `SIT_` mudou e roda `verificar_aplicacao.sql` (15 itens, todos têm de dar ok). Ele usa a API de gerenciamento com o seu token. **Não rode `testes_vistorias.sql` no Supabase**: ele cria dados de teste.
+>    O script confere o ponto de partida, aplica `migracao_vistorias.sql` (uma transação), prova que nada das tabelas, funções e dados `SIT_` mudou e roda `verificar_aplicacao.sql` (16 itens, todos têm de dar ok). Ele usa a API de gerenciamento com o seu token. **Não rode `testes_vistorias.sql` no Supabase**: ele cria dados de teste.
 > 4. Publique as Edge Functions: `bash /tmp/inspect/solar-inspect/tools/publicar-funcoes.sh` (best-effort; se a CLI não rodar aí, avise e diga o erro).
 > 5. Me devolva: a saída completa do passo 3 e do passo 4. Se algum item falhar, **não tente consertar sozinha**: pare e me mostre a mensagem.
 >

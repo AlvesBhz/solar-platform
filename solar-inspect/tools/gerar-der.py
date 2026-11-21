@@ -184,6 +184,7 @@ T["VST_TIPO_VISTORIA"] = dict(grupo="apo", cols=[
     col("SG_EXIGE_ENTRADA", "boolean", desc="Saída compara com a Entrada da mesma estadia."),
     col("SG_EXIGE_ASSINATURA", "boolean", desc="Pede assinatura no fim."),
     col("SG_ATIVO", "boolean", desc="Inativo some da lista."),
+    col("DS_PERFIS", "text[]", desc="Quem da equipe de campo faz este tipo (ASSESSOR, LIMPEZA, MANUTENCAO); gestor e admin fazem todos."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro.")])
 T["VST_TIPO_VISTORIA_ITEM"] = dict(grupo="apo", cols=[
     col("ID_TIPO_VISTORIA", "bigint", pk=True, fk=True, desc="Tipo de vistoria."),
@@ -433,7 +434,7 @@ PROPOSITO = {
     "VST_UNIDADE": "Dados do chalé que só a vistoria usa: situação operacional, QR da porta, ponto de GPS e andar. Uma linha por SIT_UNIDADE (1 para 1).",
     "VST_AMBIENTE": "Cômodos de cada unidade, na ordem em que o assessor percorre.",
     "VST_ITEM": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada.",
-    "VST_TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma. O site identifica o tipo pelo código (ENTRADA, SAIDA).",
+    "VST_TIPO_VISTORIA": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma e quem da equipe pode fazê-las. O site identifica o tipo pelo código (ENTRADA, SAIDA).",
     "VST_TIPO_VISTORIA_ITEM": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo).",
     "VST_VISTORIA": "Uma vistoria, da agenda à conclusão: nasce AGENDADA (o site cria a Entrada e a Saída da reserva), o assessor assume, inicia e conclui pelo celular.",
     "VST_RESPOSTA": "A resposta de cada item: OK, PROBLEMA ou não se aplica.",
@@ -462,7 +463,8 @@ REGRAS = {
     "VST_AMBIENTE": ["Nome único por unidade.", "NO_ORDEM define a ordem do checklist."],
     "VST_ITEM": ["Nome único por cômodo.", "QTDE_ESPERADA ≥ 0 quando informada."],
     "VST_TIPO_VISTORIA": ["CD_TIPO_VISTORIA único (ENTRADA e SAIDA vêm da migração; outros tipos podem existir).", "TP_COMPORTAMENTO: ENTRADA, SAIDA, ROTINA ou MANUTENCAO.",
-                          "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL."],
+                          "TP_PERIODICIDADE só para ROTINA: DIARIA, SEMANAL ou MENSAL.",
+                          "DS_PERFIS: quem da equipe de campo faz o tipo. Padrão: Entrada só ASSESSOR; Saída ASSESSOR e LIMPEZA; Rotina os três; Manutenção ASSESSOR e MANUTENCAO. O ADMIN muda por tipo; gestor e admin fazem todos."],
     "VST_TIPO_VISTORIA_ITEM": ["Chave composta: o item entra uma vez em cada tipo."],
     "VST_VISTORIA": ["TP_STATUS: AGENDADA, EM_ANDAMENTO, CONCLUIDA ou CANCELADA.", "No máximo uma vistoria de cada tipo por reserva (UQ_VST_VISTORIA_RESERVA_TIPO); vistoria avulsa não tem reserva.",
                      "A reserva e a Entrada têm de ser do mesmo chalé da vistoria.", "EM_ANDAMENTO e CONCLUIDA exigem responsável e início; CONCLUIDA exige fim.",
@@ -512,6 +514,7 @@ FUNCOES = [
     ("vst_alterar_situacao_unidade(…)", "Troca a situação do chalé (BLOQUEADO e MANUTENCAO só para a gestão)."),
     ("vst_obter_qr / vst_rotacionar_qr(id_unidade)", "Gestão: QR para imprimir e rotação que invalida as etiquetas antigas."),
     ("login-vistoria (Edge Function)", "Login por usuário ou CPF e senha: acha o funcionário ativo (vst_localizar_login), entra no Auth e devolve a sessão; resposta igual para qualquer erro e limite de tentativas."),
+    ("redefinir-senha (Edge Function)", "Só ADMIN: define nova senha para um funcionário que esqueceu a dele. Cada funcionário troca a própria senha no app, logado."),
     ("criar-usuario (Edge Function)", "Só ADMIN: cria o login no Auth e o cadastro em VST_USUARIO e VST_USUARIO_PROPRIEDADE (vst_cadastrar_usuario) para qualquer perfil."),
     ("consultar_disponibilidade (site)", "Função do site que já exclui as datas com SIT_BLOQUEIO: por isso a manutenção some da venda sem mudar o site."),
 ]
@@ -574,9 +577,9 @@ EX["VST_ITEM"] = [
     dict(id_item=3, id_ambiente=3, nm_item="Torneira e pia", ds_orientacao="Abrir e fechar; ver se pinga ou vaza.", sg_critico=True, sg_foto_obrigatoria=True, qtde_esperada=None, no_ordem=1, sg_ativo=True, dt_criacao="2026-11-20T13:12:00+00:00"),
     dict(id_item=4, id_ambiente=3, nm_item="Toalhas de banho", ds_orientacao="Contar e ver se estão limpas.", sg_critico=False, sg_foto_obrigatoria=False, qtde_esperada=4, no_ordem=2, sg_ativo=True, dt_criacao="2026-11-20T13:13:00+00:00")]
 EX["VST_TIPO_VISTORIA"] = [
-    dict(id_tipo_vistoria=1, cd_tipo_vistoria="ENTRADA", nm_tipo_vistoria="Entrada", tp_comportamento="ENTRADA", tp_periodicidade=None, sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00"),
-    dict(id_tipo_vistoria=2, cd_tipo_vistoria="SAIDA", nm_tipo_vistoria="Saída", tp_comportamento="SAIDA", tp_periodicidade=None, sg_exige_entrada=True, sg_exige_assinatura=True, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00"),
-    dict(id_tipo_vistoria=3, cd_tipo_vistoria="ROTINA", nm_tipo_vistoria="Rotina", tp_comportamento="ROTINA", tp_periodicidade="SEMANAL", sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, dt_criacao="2026-11-20T12:00:00+00:00")]
+    dict(id_tipo_vistoria=1, cd_tipo_vistoria="ENTRADA", nm_tipo_vistoria="Entrada", tp_comportamento="ENTRADA", tp_periodicidade=None, sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, ds_perfis=["ASSESSOR"], dt_criacao="2026-11-20T12:00:00+00:00"),
+    dict(id_tipo_vistoria=2, cd_tipo_vistoria="SAIDA", nm_tipo_vistoria="Saída", tp_comportamento="SAIDA", tp_periodicidade=None, sg_exige_entrada=True, sg_exige_assinatura=True, sg_ativo=True, ds_perfis=["ASSESSOR", "LIMPEZA"], dt_criacao="2026-11-20T12:00:00+00:00"),
+    dict(id_tipo_vistoria=3, cd_tipo_vistoria="ROTINA", nm_tipo_vistoria="Rotina", tp_comportamento="ROTINA", tp_periodicidade="SEMANAL", sg_exige_entrada=False, sg_exige_assinatura=False, sg_ativo=True, ds_perfis=["ASSESSOR", "LIMPEZA", "MANUTENCAO"], dt_criacao="2026-11-20T12:00:00+00:00")]
 EX["VST_TIPO_VISTORIA_ITEM"] = [dict(id_tipo_vistoria=1, id_item=3, no_ordem=1), dict(id_tipo_vistoria=2, id_item=3, no_ordem=1),
                                 dict(id_tipo_vistoria=2, id_item=4, no_ordem=2)]
 EX["VST_VISTORIA"] = [
@@ -636,6 +639,8 @@ def fmt(col, v):
             return f"{len(v)} noites: " + " + ".join(brl(x["vl_noite"]).replace("R$ ", "") for x in v)
         if col == "DS_ACOMPANHANTES":
             return f"{len(v)} acompanhantes: " + ", ".join(esc(x.get("nome", "")) for x in v)
+        if col == "DS_PERFIS":
+            return ", ".join(v)
         return esc(json.dumps(v, ensure_ascii=False))
     if isinstance(v, dict):
         return esc(json.dumps(v, ensure_ascii=False))
