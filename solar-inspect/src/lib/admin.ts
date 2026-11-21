@@ -197,3 +197,48 @@ export async function qrDaUnidade(id: number, rotacionar = false): Promise<{ ok:
   const linha = Array.isArray(data) ? data[0] : data;
   return linha ? { ok: true, codigo: linha.cd_hash_qr, versao: linha.no_versao_qr } : { ok: false, erro: 'Chalé não encontrado.' };
 }
+
+// ── T30 ambientes e itens (gestão). Nada é apagado: desativar tira do checklist e preserva o histórico das vistorias.
+export type Item = { id: number; idAmbiente: number; nome: string; orientacao: string | null; critico: boolean; fotoObrigatoria: boolean; qtdeEsperada: number | null; ordem: number; ativo: boolean };
+export type Ambiente = { id: number; idUnidade: number; nome: string; ordem: number; ativo: boolean; itens: Item[] };
+const demoAmb: Ambiente[] = [{ id: 1, idUnidade: 1, nome: 'Banheiro', ordem: 1, ativo: true, itens: [{ id: 1, idAmbiente: 1, nome: 'Torneira e pia', orientacao: 'Abrir e fechar; ver se pinga.', critico: true, fotoObrigatoria: true, qtdeEsperada: null, ordem: 1, ativo: true }] }];
+
+export async function listarAmbientes(idUnidade: number): Promise<Ambiente[]> {
+  if (MODO_DEMO || !supabase) return demoAmb.filter((a) => a.idUnidade === idUnidade);
+  const a = await supabase.from('VST_AMBIENTE').select('ID_AMBIENTE, ID_UNIDADE, NM_AMBIENTE, NO_ORDEM, SG_ATIVO').eq('ID_UNIDADE', idUnidade).order('NO_ORDEM').order('ID_AMBIENTE');
+  if (a.error) throw new Error(a.error.message);
+  const ids = (a.data ?? []).map((x) => x.ID_AMBIENTE);
+  const i = ids.length ? await supabase.from('VST_ITEM').select('ID_ITEM, ID_AMBIENTE, NM_ITEM, DS_ORIENTACAO, SG_CRITICO, SG_FOTO_OBRIGATORIA, QTDE_ESPERADA, NO_ORDEM, SG_ATIVO').in('ID_AMBIENTE', ids).order('NO_ORDEM').order('ID_ITEM') : { data: [], error: null };
+  if (i.error) throw new Error(i.error.message);
+  return (a.data ?? []).map((x) => ({
+    id: Number(x.ID_AMBIENTE), idUnidade: Number(x.ID_UNIDADE), nome: x.NM_AMBIENTE, ordem: x.NO_ORDEM, ativo: x.SG_ATIVO,
+    itens: (i.data ?? []).filter((y) => y.ID_AMBIENTE === x.ID_AMBIENTE).map((y) => ({ id: Number(y.ID_ITEM), idAmbiente: Number(y.ID_AMBIENTE), nome: y.NM_ITEM, orientacao: y.DS_ORIENTACAO, critico: y.SG_CRITICO, fotoObrigatoria: y.SG_FOTO_OBRIGATORIA, qtdeEsperada: y.QTDE_ESPERADA, ordem: y.NO_ORDEM, ativo: y.SG_ATIVO })),
+  }));
+}
+const nomeOk = (n: string) => n.trim().length >= 2 && n.trim().length <= 80;
+async function gravar(tabela: string, chave: string, id: number | null, dados: Record<string, unknown>): Promise<Resultado> {
+  if (MODO_DEMO || !supabase) return { ok: true };
+  const r = id === null ? await supabase.from(tabela).insert(dados).select(chave) : await supabase.from(tabela).update(dados).eq(chave, id).select(chave);
+  if (r.error) return { ok: false, erro: mensagem(r.error.message) };
+  return (r.data ?? []).length ? { ok: true } : { ok: false, erro: 'Seu perfil não pode alterar este chalé.' };
+}
+export async function salvarAmbiente(a: { id: number | null; idUnidade: number; nome: string; ordem: number; ativo: boolean }): Promise<Resultado> {
+  if (!nomeOk(a.nome)) return { ok: false, erro: 'Nome do ambiente: 2 a 80 caracteres.' };
+  return gravar('VST_AMBIENTE', 'ID_AMBIENTE', a.id, { ...(a.id === null ? { ID_UNIDADE: a.idUnidade } : {}), NM_AMBIENTE: a.nome.trim(), NO_ORDEM: a.ordem, SG_ATIVO: a.ativo });
+}
+export async function salvarItem(i: Omit<Item, 'id'> & { id: number | null }): Promise<Resultado> {
+  if (!nomeOk(i.nome)) return { ok: false, erro: 'Nome do item: 2 a 80 caracteres.' };
+  if (i.qtdeEsperada !== null && (!Number.isInteger(i.qtdeEsperada) || i.qtdeEsperada < 0 || i.qtdeEsperada > 999)) return { ok: false, erro: 'Quantidade esperada: número inteiro de 0 a 999 (ou vazio).' };
+  return gravar('VST_ITEM', 'ID_ITEM', i.id, {
+    ...(i.id === null ? { ID_AMBIENTE: i.idAmbiente } : {}), NM_ITEM: i.nome.trim(), DS_ORIENTACAO: i.orientacao?.trim() || null, SG_CRITICO: i.critico,
+    SG_FOTO_OBRIGATORIA: i.fotoObrigatoria, QTDE_ESPERADA: i.qtdeEsperada, NO_ORDEM: i.ordem, SG_ATIVO: i.ativo,
+  });
+}
+/** Troca a ordem de dois registros vizinhos (ambientes ou itens). */
+export async function trocarOrdem(tabela: 'VST_AMBIENTE' | 'VST_ITEM', a: { id: number; ordem: number }, b: { id: number; ordem: number }): Promise<Resultado> {
+  const chave = tabela === 'VST_AMBIENTE' ? 'ID_AMBIENTE' : 'ID_ITEM';
+  const oa = a.ordem === b.ordem ? b.ordem + 1 : b.ordem;
+  const r1 = await gravar(tabela, chave, a.id, { NO_ORDEM: oa });
+  if (!r1.ok) return r1;
+  return gravar(tabela, chave, b.id, { NO_ORDEM: a.ordem });
+}

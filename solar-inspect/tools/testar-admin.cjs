@@ -24,6 +24,7 @@ function novoBanco(eu = 'ADMIN') {
     unidades: [{ id_unidade: 1, cd_unidade: 'casa-do-mirante', nm_unidade: 'Casa do Mirante', id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100 },
                { id_unidade: 2, cd_unidade: 'chale-novo', nm_unidade: 'Chalé Novo', id_propriedade: 2, nm_propriedade: 'Hotel Lapinha', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR', vl_latitude: null, vl_longitude: null, qtde_raio_metros: 100 }],
     vstUnidade: [{ ID_UNIDADE: 1, DS_ANDAR: null, TP_VALIDACAO: null, VL_LATITUDE: null, VL_LONGITUDE: null, QTDE_RAIO_METROS: null, NO_VERSAO_QR: 1 }],
+    ambientes: [], itens: [], seq: 100,
     respostas: {},  // sobrescreve: { 'PATCH VST_USUARIO': {status, corpo} }
   };
 }
@@ -49,6 +50,17 @@ function rotas(page, db) {
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'DELETE') { return json(204); }
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
     if (caminho === 'rpc/vst_unidades') return json(200, db.unidades);
+    for (const [tab, chave, lista] of [['VST_AMBIENTE', 'ID_AMBIENTE', 'ambientes'], ['VST_ITEM', 'ID_ITEM', 'itens']]) {
+      if (caminho !== tab) continue;
+      if (m === 'GET') return json(200, db[lista]);
+      if (m === 'POST') {
+        const nomeCampo = tab === 'VST_AMBIENTE' ? 'NM_AMBIENTE' : 'NM_ITEM';
+        if (db[lista].some((x) => x[nomeCampo] === corpo[nomeCampo])) return json(409, { code: '23505', message: `duplicate key value violates unique constraint "UQ_${tab}_${nomeCampo}"` });
+        const novo = { SG_ATIVO: true, ...corpo, [chave]: ++db.seq }; db[lista].push(novo); return json(201, [{ [chave]: novo[chave] }]);
+      }
+      if (m === 'PATCH') { const id = Number(url.searchParams.get(chave).slice(3)); const r = db[lista].find((x) => x[chave] === id); Object.assign(r, corpo); return json(200, [{ [chave]: id }]); }
+      if (m === 'DELETE') return json(405, { message: 'não deveria apagar' });
+    }
     if (caminho === 'VST_UNIDADE' && m === 'GET') return json(200, db.vstUnidade);
     if (caminho === 'VST_UNIDADE' && m === 'PATCH') { const id = Number(url.searchParams.get('ID_UNIDADE').slice(3)); const r = db.vstUnidade.find((x) => x.ID_UNIDADE === id); if (!r) return json(200, []); Object.assign(r, corpo); return json(200, [{ ID_UNIDADE: id }]); }
     if (caminho === 'rpc/vst_obter_qr') { const id = corpo.p_id_unidade; if (!db.vstUnidade.find((x) => x.ID_UNIDADE === id)) db.vstUnidade.push({ ID_UNIDADE: id, NO_VERSAO_QR: 1 }); return json(200, [{ cd_hash_qr: 'hash-' + id, no_versao_qr: 1 }]); }
@@ -204,6 +216,43 @@ if (require.main === module) (async () => {
     await page.click('button:has-text("Confirmar: invalidar")');
     await page.waitForSelector('text=etiquetas antigas deixaram de valer');
     ok(!!ultima(db, 'POST', 'rpc/vst_rotacionar_qr'), 'confirmado: rotaciona pela função (invalida a etiqueta antiga)');
+    await ctx.close();
+  });
+
+  console.log('── T30 Ambientes e itens');
+  await T('t30', async () => {
+    let db = novoBanco('ASSESSOR'); let { ctx, page } = await abrir(browser, db, '/admin/checklists');
+    ok(await esperarRota(page, '/acesso-indisponivel?motivo=sem-permissao'), 'assessor não entra na T30');
+    await ctx.close();
+    db = novoBanco('GESTOR'); ({ ctx, page } = await abrir(browser, db, '/admin/checklists'));
+    await page.waitForSelector('text=ainda não tem ambientes');
+    ok(true, 'gestor entra; chalé sem ambientes mostra como começar');
+    await page.click('button:has-text("Novo ambiente")'); await page.fill('#a-nome', 'B'); await page.click('form[aria-label=Ambiente] button[type=submit]');
+    ok((await texto(page, '[role=alert]')).includes('2 a 80') && !ultima(db, 'POST', 'VST_AMBIENTE'), 'nome curto: avisa e não grava');
+    await page.fill('#a-nome', 'Banheiro'); await page.click('form[aria-label=Ambiente] button[type=submit]');
+    await page.waitForSelector('[data-ambiente="Banheiro"]');
+    const pa = ultima(db, 'POST', 'VST_AMBIENTE');
+    ok(pa && pa.corpo.ID_UNIDADE === 1 && pa.corpo.NM_AMBIENTE === 'Banheiro' && pa.corpo.NO_ORDEM === 1, 'inclui o ambiente no chalé escolhido, com a ordem');
+    await page.click('button:has-text("Novo ambiente")'); await page.fill('#a-nome', 'Banheiro'); await page.click('form[aria-label=Ambiente] button[type=submit]');
+    ok((await texto(page, '[role=alert]')).includes('Já existe'), 'nome repetido no chalé: o banco recusa e a tela explica');
+    await page.fill('#a-nome', 'Sala'); await page.click('form[aria-label=Ambiente] button[type=submit]');
+    await page.waitForSelector('[data-ambiente="Sala"]');
+    await page.click('button[aria-label="Descer Banheiro"]');
+    await page.waitForSelector('text=Ordem salva');
+    const patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
+    ok(patches.length === 2 && patches[0].corpo.NO_ORDEM === 2 && patches[1].corpo.NO_ORDEM === 1, 'mudar a ordem troca a posição dos dois ambientes');
+    await page.locator('[data-ambiente="Banheiro"] button:has-text("+ Item")').click();
+    await page.fill('#i-nome', 'Toalhas de banho'); await page.fill('#i-qtde', '-1'); await page.click('form[aria-label=Item] button[type=submit]');
+    ok((await texto(page, '[role=alert]')).includes('0 a 999') && !ultima(db, 'POST', 'VST_ITEM'), 'quantidade negativa: avisa e não grava');
+    await page.fill('#i-qtde', '4'); await page.check('text=Item crítico'); await page.check('text=Foto obrigatória');
+    await page.click('form[aria-label=Item] button[type=submit]');
+    await page.waitForSelector('[data-item="Toalhas de banho"]');
+    const pi = ultima(db, 'POST', 'VST_ITEM');
+    ok(pi && pi.corpo.QTDE_ESPERADA === 4 && pi.corpo.SG_CRITICO === true && pi.corpo.SG_FOTO_OBRIGATORIA === true && pi.corpo.ID_AMBIENTE === db.ambientes.find((a) => a.NM_AMBIENTE === 'Banheiro').ID_AMBIENTE, 'inclui o item no ambiente certo, com crítico, foto e quantidade');
+    ok((await page.content()).includes('inclua-o nos tipos de vistoria'), 'lembra de incluir o item novo nos tipos de vistoria');
+    await page.locator('[data-item="Toalhas de banho"] button:has-text("Desativar")').click();
+    await page.waitForSelector('text=Item desativado');
+    ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
     await ctx.close();
   });
 
