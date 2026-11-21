@@ -72,7 +72,7 @@ export default function SimNav() {
         type="button"
         onClick={() => setAberto(true)}
         className="fixed z-40 flex h-11 w-11 items-center justify-center rounded-full bg-pine-deep text-white opacity-90 shadow-lg" style={{ left: 'calc(env(safe-area-inset-left, 0px) + 0.5rem)', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 6.5rem)' }}
-        aria-label="Abrir navegação da simulação"
+        aria-label="Abrir navegação da simulação" title="Abrir navegação da simulação"
       >
         <Icon icon="solar:layers-minimalistic-linear" width={20} aria-hidden="true" />
       </button>
@@ -86,7 +86,7 @@ export default function SimNav() {
                 <span className="text-[0.625rem] uppercase tracking-[0.24em] text-fg-3">Mockup</span>
                 <span className="text-[0.9375rem] font-medium text-fg-1">Navegar entre telas</span>
               </div>
-              <button type="button" onClick={() => setAberto(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Fechar">
+              <button type="button" onClick={() => setAberto(false)} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Fechar" title="Fechar">
                 <Icon icon="solar:close-circle-linear" width={22} aria-hidden="true" />
               </button>
             </div>

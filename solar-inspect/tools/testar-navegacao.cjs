@@ -90,6 +90,10 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria'], GESTOR: ['/admin/pr
       if (fim !== esp) problemas.push(`terminou em ${fim} (esperado ${esp})`);
       if (texto.length < 40) problemas.push('tela em branco');
       if (/sem permissão|Acesso indisponível/i.test(texto) && !fim.startsWith('/acesso')) problemas.push('mensagem de sem permissão');
+      const semDica = await page.evaluate(() => [...document.querySelectorAll('a, button')]
+        .filter((e) => !e.innerText.trim() && e.getAttribute('aria-label') && !e.title && !e.className.toString().includes('inset-0') && e.offsetParent !== null)
+        .map((e) => e.getAttribute('aria-label')));
+      if (semDica.length) problemas.push('botão só de ícone sem dica ao passar o mouse: ' + semDica.join(', '));
       if (erros.length) problemas.push('erro: ' + erros[0].slice(0, 140));
       if (perdidos.length) problemas.push('consulta não atendida: ' + perdidos[0]);
       if (await page.evaluate(() => document.querySelector('[aria-busy="true"]') !== null && document.body.innerText.trim().length < 80)) problemas.push('carregando para sempre');

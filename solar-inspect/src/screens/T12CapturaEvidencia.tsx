@@ -113,7 +113,7 @@ export default function T12CapturaEvidencia() {
       <div className="pointer-events-none absolute inset-0" style={{ background: 'linear-gradient(var(--scrim-top), transparent 22%, transparent 70%, var(--scrim-bottom))' }} />
 
       <header className="relative z-10 flex items-center gap-3 px-4 pb-3 pt-[max(env(safe-area-inset-top),0.75rem)]">
-        <button type="button" onClick={() => { pararCamera(); navigate(volta); }} className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10" aria-label="Fechar câmera">
+        <button type="button" onClick={() => { pararCamera(); navigate(volta); }} className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10" aria-label="Fechar câmera" title="Fechar câmera">
           <Icon icon="solar:close-circle-linear" width={24} aria-hidden="true" />
         </button>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -128,6 +128,7 @@ export default function T12CapturaEvidencia() {
             onClick={() => setSobrepor((s) => !s)}
             className={`relative h-12 w-20 shrink-0 overflow-hidden rounded-md border-2 ${sobrepor ? 'border-white' : 'border-white/40'}`}
             aria-label={sobrepor ? 'Ocultar referência sobreposta' : 'Sobrepor foto de referência'}
+            title={sobrepor ? 'Ocultar referência sobreposta' : 'Sobrepor foto de referência'}
           >
             <img src={ctx.ambiente.ref} alt="" width={80} height={48} className="h-full w-full object-cover" />
             <span className="absolute inset-x-0 bottom-0 text-[0.5625rem] font-medium uppercase tracking-[0.08em]" style={{ background: 'var(--scrim-top)' }}>Ref.</span>
@@ -173,7 +174,7 @@ export default function T12CapturaEvidencia() {
 
         {estado === 'camera' && (
           <div className="flex flex-col items-center gap-2">
-            <button type="button" onClick={capturar} className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border-4 border-white/70 transition-transform duration-fast active:scale-95" aria-label="Tirar foto">
+            <button type="button" onClick={capturar} className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border-4 border-white/70 transition-transform duration-fast active:scale-95" aria-label="Tirar foto" title="Tirar foto">
               <span className="h-14 w-14 rounded-full bg-white" />
             </button>
             <span className="text-[0.6875rem] text-white/70">{sobrepor ? 'Alinhe com a referência sobreposta' : 'Toque na miniatura para sobrepor a referência'}</span>

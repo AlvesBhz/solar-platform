@@ -113,7 +113,7 @@ export function T32Usuarios() {
               <label className={rotulo}>CPF (opcional, também serve para entrar)<input id="u-cpf" className={campo} inputMode="numeric" value={form.cpf} onChange={(e) => setForm({ ...form, cpf: formatarCpf(e.target.value) })} /></label>
               <label className={rotulo}>Senha provisória
                 <div className="flex gap-2"><input id="u-senha" className={`${campo} font-mono`} maxLength={72} autoComplete="off" spellCheck={false} value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
-                  <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setForm({ ...form, senha: gerarSenha() })} aria-label="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
+                  <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setForm({ ...form, senha: gerarSenha() })} aria-label="Gerar outra senha" title="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
                 {(() => { const ps = problemaSenha(form.senha, form.login); return (
                   <span className={`normal-case tracking-normal ${ps ? 'text-error' : 'text-fg-3'}`}>{ps ?? 'Gerada automaticamente. O funcionário é obrigado a criar a própria senha no primeiro acesso.'}</span>
                 ); })()}
@@ -143,7 +143,7 @@ export function T32Usuarios() {
         <form onSubmit={salvarSenha} className={`${card} flex flex-col gap-3 p-4`} aria-label="Redefinir senha">
           <p className="text-[0.9375rem] font-medium text-fg-1">Nova senha de {senhaDe.u.login}</p>
           <div className="flex gap-2"><input id="u-nova-senha" className={`${campo} font-mono`} maxLength={72} value={senhaDe.senha} onChange={(e) => setSenhaDe({ ...senhaDe, senha: e.target.value })} />
-            <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setSenhaDe({ ...senhaDe, senha: gerarSenha() })} aria-label="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
+            <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setSenhaDe({ ...senhaDe, senha: gerarSenha() })} aria-label="Gerar outra senha" title="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
           <div className="flex flex-wrap gap-2">
             <button type="submit" className={`${btnPrimary} w-auto`} disabled={salvando}>{salvando ? 'Salvando…' : 'Redefinir senha'}</button>
             <button type="button" className={`${btnSecondary} w-auto`} onClick={() => setSenhaDe(null)}>Cancelar</button>

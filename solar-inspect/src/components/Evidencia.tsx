@@ -95,6 +95,7 @@ export function GradeEvidencias({ fotos, novaFoto, onRemover }: { fotos: Foto[];
             onClick={() => onRemover(f.id)}
             className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-full text-white"
             aria-label="Remover foto"
+            title="Remover foto"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: 'var(--scrim-top)' }}>
               <Icon icon="solar:trash-bin-minimalistic-linear" width={16} aria-hidden="true" />
@@ -165,18 +166,18 @@ export function BotoesResposta({ resposta, positivo, temNA, nome, onOk, onNao, o
   const na = resposta === 'N/A';
   return (
     <div className="flex shrink-0 items-center" role="radiogroup" aria-label={`Resposta para ${nome}`}>
-      <button type="button" role="radio" aria-checked={ok} onClick={onOk} className="flex h-11 w-11 items-center justify-center" aria-label={positivo}>
+      <button type="button" role="radio" aria-checked={ok} onClick={onOk} className="flex h-11 w-11 items-center justify-center" aria-label={positivo} title={positivo}>
         <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${ok ? 'border-available bg-available text-white' : 'border-line-2 text-available hover:border-available'}`}>
           <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </span>
       </button>
-      <button type="button" role="radio" aria-checked={nao} onClick={onNao} className="flex h-11 w-11 items-center justify-center" aria-label="Problema">
+      <button type="button" role="radio" aria-checked={nao} onClick={onNao} className="flex h-11 w-11 items-center justify-center" aria-label="Problema" title="Problema">
         <span className={`flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] transition-all duration-fast active:scale-90 ${nao ? 'border-error bg-error text-white' : 'border-line-2 text-error hover:border-error'}`}>
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
         </span>
       </button>
       {temNA && (
-        <button type="button" role="radio" aria-checked={na} onClick={onNA} className="flex h-11 items-center px-1.5" aria-label="Não se aplica">
+        <button type="button" role="radio" aria-checked={na} onClick={onNA} className="flex h-11 items-center px-1.5" aria-label="Não se aplica" title="Não se aplica">
           <span className={`rounded-full px-2 py-1 text-[0.6875rem] font-medium transition-colors duration-fast ${na ? 'bg-fg-3 text-white' : 'text-fg-3 hover:text-fg-2'}`}>N/A</span>
         </button>
       )}

@@ -14,7 +14,7 @@ export default function AppHeader({ title, eyebrow, back, action }: { title: str
             type="button"
             onClick={() => navigate(back)}
             className="-ml-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-1 transition-colors duration-fast hover:bg-white"
-            aria-label="Voltar"
+            aria-label="Voltar" title="Voltar"
           >
             <Icon icon="solar:alt-arrow-left-linear" width={22} aria-hidden="true" />
           </button>

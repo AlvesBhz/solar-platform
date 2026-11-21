@@ -73,8 +73,8 @@ export function T30Ambientes() {
           <li key={a.id} className={`${card} flex flex-col gap-2 p-4 ${a.ativo ? '' : 'opacity-60'}`} data-ambiente={a.nome}>
             <div className="flex flex-wrap items-center gap-1">
               <p className="mr-auto text-[0.9375rem] font-medium text-fg-1">{a.nome}{a.ativo ? '' : ' (desativado)'}</p>
-              <button type="button" className={seta} aria-label={`Subir ${a.nome}`} disabled={ai === 0} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai - 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-up-linear" width={18} aria-hidden="true" /></button>
-              <button type="button" className={seta} aria-label={`Descer ${a.nome}`} disabled={ai === ambs.length - 1} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai + 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-down-linear" width={18} aria-hidden="true" /></button>
+              <button type="button" className={seta} aria-label={`Subir ${a.nome}`} title={`Subir ${a.nome}`} disabled={ai === 0} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai - 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-up-linear" width={18} aria-hidden="true" /></button>
+              <button type="button" className={seta} aria-label={`Descer ${a.nome}`} title={`Descer ${a.nome}`} disabled={ai === ambs.length - 1} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai + 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-down-linear" width={18} aria-hidden="true" /></button>
               <button type="button" className={link} onClick={() => { setFi(null); setFa({ id: a.id, nome: a.nome, ordem: a.ordem, ativo: a.ativo }); }}>Renomear</button>
               <button type="button" className={link} onClick={() => tratar(salvarAmbiente({ ...a, ativo: !a.ativo }), a.ativo ? 'Ambiente desativado (histórico preservado).' : 'Ambiente reativado.')}>{a.ativo ? 'Desativar' : 'Reativar'}</button>
               <button type="button" className={link} onClick={() => { setFa(null); setFi({ id: null, idAmbiente: a.id, nome: '', orientacao: '', critico: false, foto: false, qtde: '', ordem: proxOrdem(a.itens), ativo: true }); }}>+ Item</button>
@@ -84,8 +84,8 @@ export function T30Ambientes() {
                 <li key={i.id} className={`flex flex-wrap items-center gap-1 py-1.5 ${i.ativo ? '' : 'opacity-60'}`} data-item={i.nome}>
                   <span className="mr-auto text-[0.875rem] text-fg-1">{i.nome}
                     <span className="ml-2 text-[0.6875rem] text-fg-3">{[i.critico && 'crítico', i.fotoObrigatoria && 'foto obrigatória', i.qtdeEsperada !== null && `qtde ${i.qtdeEsperada}`, !i.ativo && 'desativado'].filter(Boolean).join(' · ')}</span></span>
-                  <button type="button" className={seta} aria-label={`Subir ${i.nome}`} disabled={ii === 0} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii - 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-up-linear" width={16} aria-hidden="true" /></button>
-                  <button type="button" className={seta} aria-label={`Descer ${i.nome}`} disabled={ii === a.itens.length - 1} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii + 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-down-linear" width={16} aria-hidden="true" /></button>
+                  <button type="button" className={seta} aria-label={`Subir ${i.nome}`} title={`Subir ${i.nome}`} disabled={ii === 0} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii - 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-up-linear" width={16} aria-hidden="true" /></button>
+                  <button type="button" className={seta} aria-label={`Descer ${i.nome}`} title={`Descer ${i.nome}`} disabled={ii === a.itens.length - 1} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii + 1]), 'Ordem salva.')}><Icon icon="solar:alt-arrow-down-linear" width={16} aria-hidden="true" /></button>
                   <button type="button" className={link} onClick={() => editarItem(i)}>Editar</button>
                   <button type="button" className={link} onClick={() => tratar(salvarItem({ ...i, ativo: !i.ativo }), i.ativo ? 'Item desativado (histórico preservado).' : 'Item reativado.')}>{i.ativo ? 'Desativar' : 'Reativar'}</button>
                 </li>
