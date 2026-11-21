@@ -990,6 +990,19 @@ begin
 end;
 $$;
 
+-- T03: o funcionário aceita o uso da localização e das fotos nas vistorias (LGPD). Guarda a primeira data; repetir não muda.
+create or replace function vst_registrar_aceite_lgpd()
+returns timestamptz language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+declare v timestamptz;
+begin
+  update "VST_USUARIO" set "DT_ACEITE_LGPD" = now(), "DT_ATUALIZACAO" = now()
+  where "ID_USUARIO" = (select auth.uid()) and "SG_ATIVO" and "DT_ACEITE_LGPD" is null;
+  select "DT_ACEITE_LGPD" into v from "VST_USUARIO" where "ID_USUARIO" = (select auth.uid()) and "SG_ATIVO";
+  if v is null then raise exception 'usuario_inativo_ou_inexistente' using errcode = 'P0001'; end if;
+  return v;
+end;
+$$;
+
 -- QR do chalé para imprimir (gestão) e rotação (invalida as etiquetas antigas)
 create or replace function vst_obter_qr(p_id_unidade bigint)
 returns table (cd_hash_qr text, no_versao_qr smallint)
@@ -1113,7 +1126,8 @@ do $$ declare f record; begin
                      'vst_unidade_do_item', 'vst_pode_ver_usuario', 'vst_acesso_arquivo',
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
-                     'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr') then
+                     'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
+                     'vst_registrar_aceite_lgpd') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;

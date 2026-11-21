@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LockupHorizontal } from './Logo';
+import { sair } from '../lib/acesso';
 import NetworkBadge from './NetworkBadge';
 
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
@@ -60,7 +61,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             </div>
           ))}
         </nav>
-        <button type="button" onClick={() => navigate('/login')} className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
+        <button type="button" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
           <Icon icon="solar:logout-2-linear" width={18} aria-hidden="true" /> Sair
         </button>
       </aside>

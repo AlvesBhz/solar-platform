@@ -430,6 +430,21 @@ select teste.erro(format($q$insert into storage.objects (bucket_id, name) values
 select teste.ok(teste.conta($q$select 1 from storage.objects where bucket_id = 'vistorias'$q$) = 0, 'anon não lê o bucket vistorias');
 select teste.erro(format($q$insert into storage.objects (bucket_id, name) values ('vistorias', '%s/anon.jpg')$q$, :'v_sai'), '42501', 'anon não grava no bucket vistorias');
 
+\echo '── 6a. Aceite de localização (T03)'
+:como_anon
+select teste.erro($q$select "SE".vst_registrar_aceite_lgpd()$q$, '42501', 'anon não registra aceite');
+:como_inat
+select teste.erro($q$select "SE".vst_registrar_aceite_lgpd()$q$, 'usuario_inativo_ou_inexistente', 'usuário inativo não registra aceite');
+:como_ninguem
+select teste.erro($q$select "SE".vst_registrar_aceite_lgpd()$q$, 'usuario_inativo_ou_inexistente', 'login sem cadastro não registra aceite');
+:como_bia
+select "SE".vst_registrar_aceite_lgpd() as aceite1 \gset
+select "SE".vst_registrar_aceite_lgpd() as aceite2 \gset
+select teste.ok(:'aceite1' <> '' and :'aceite1' = :'aceite2', 'aceite gravado; repetir mantém a primeira data');
+select teste.ok((select "DT_ACEITE_LGPD" is not null from "SE"."VST_USUARIO" where "CD_LOGIN" = 'bia.teste'), 'o funcionário lê o próprio aceite (RLS)');
+:dono
+select teste.ok((select count(*) = 1 from "VST_USUARIO" where "DT_ACEITE_LGPD" is not null and "CD_LOGIN" in ('bia.teste', 'ana.teste', 'gestor.teste') ), 'aceite de um não marca os outros');
+
 \echo '── 6b. Login por usuário ou CPF e cadastro de funcionários (Edge Functions, service_role)'
 :como_anon
 select teste.erro($q$select * from "SE".vst_localizar_login('ana.teste')$q$, '42501', 'anon não localiza login');

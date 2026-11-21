@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScreenShell, { StateIcon, btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { SIMULADO } from '../lib/sim';
+import { destino, registrarAceiteLocalizacao, verificarAcesso } from '../lib/acesso';
 
 type State = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable';
 
@@ -12,10 +13,23 @@ const USES = [
   { icon: 'solar:shield-check-linear', text: 'Nunca em segundo plano: só durante a vistoria.' },
 ];
 
-/** T03 — Permissão de localização: explica o uso e solicita o GPS. Sem coleta em segundo plano. */
+/** T03 — Permissão de localização: explica o uso, solicita o GPS e registra o aceite (LGPD) no banco. Sem coleta em segundo plano. */
 export default function T03PermissaoLocalizacao() {
   const navigate = useNavigate();
   const [state, setState] = useState<State>('idle');
+  const [salvando, setSalvando] = useState(false);
+  const [erroAceite, setErroAceite] = useState(false);
+
+  // grava o aceite e segue para o destino do perfil (sem sessão → login; bloqueio → T04)
+  async function continuar() {
+    setSalvando(true);
+    setErroAceite(false);
+    const a = await verificarAcesso();
+    if (a.estado === 'sem-sessao') return navigate('/login', { replace: true });
+    if (a.estado === 'bloqueado') return navigate(`/acesso-indisponivel?motivo=${a.motivo}`, { replace: true });
+    if (!a.aceiteLocalizacao && !(await registrarAceiteLocalizacao())) { setSalvando(false); return setErroAceite(true); }
+    navigate(destino({ ...a, aceiteLocalizacao: true }), { replace: true });
+  }
 
   // Só consulta o status da permissão; não lê a posição.
   useEffect(() => {
@@ -47,9 +61,17 @@ export default function T03PermissaoLocalizacao() {
           <h1 className="screen-title">Tudo pronto</h1>
           <p className="text-[0.8125rem] leading-relaxed text-fg-2">A localização está permitida e será usada apenas durante as vistorias.</p>
         </div>
-        {/* Próxima tela: T05 Minhas unidades (ainda não implementada). */}
-        <button type="button" className={btnPrimary} onClick={() => navigate('/app/unidades')}>
-          Continuar <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
+        <p className="text-xs leading-relaxed text-fg-3">
+          Ao continuar, você concorda com o uso da sua localização e das fotos durante as vistorias, conforme a LGPD. O aceite fica registrado no seu cadastro.
+        </p>
+        {erroAceite && (
+          <p role="alert" className="flex items-start gap-2 text-sm text-error">
+            <Icon icon="solar:danger-circle-linear" width={18} className="mt-px shrink-0" aria-hidden="true" />
+            Não foi possível registrar o aceite. Verifique a conexão e tente de novo.
+          </p>
+        )}
+        <button type="button" className={btnPrimary} onClick={continuar} disabled={salvando}>
+          {salvando ? 'Registrando…' : 'Continuar'} <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
         </button>
       </ScreenShell>
     );

@@ -6,6 +6,7 @@ import { Seletor } from '../components/Filtros';
 import { useOnline } from '../components/NetworkBadge';
 import { btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, formatarData } from '../components/Status';
+import { sair } from '../lib/acesso';
 import { listarUnidades, type EstadoUnidade, type Unidade } from '../mocks/unidades';
 
 type Filtro = 'todos' | EstadoUnidade;
@@ -53,7 +54,7 @@ export default function T05MinhasUnidades() {
           </Link>
           <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={async () => { await sair(); navigate('/login', { replace: true }); }}
             className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 transition-colors duration-fast hover:bg-white"
             aria-label="Sair"
           >
