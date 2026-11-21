@@ -1,0 +1,61 @@
+# Publica no GitHub Pages (Settings › Pages › Source: GitHub Actions):
+#   /solar-platform/                      Solar Inspect (entra sozinho quando existir na main)
+#   /solar-platform/site/                 site de reservas
+#   /solar-platform/guia-do-hospede/      Guia do Hóspede (só por link: sem aparecer em buscas, em revisão)
+# Arquivos internos que ficam só no repositório (não são publicados): site/database, site/claude, prompts e documentos soltos.
+name: Publicar site, Guia do Hóspede e Solar Inspect
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', 'solar-inspect/**', 'design-system/**', 'guia-do-hospede/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # o Inspect só é compilado se a main já tiver o comando de publicação dele (build:pages)
+      - name: Conferir se o Solar Inspect está pronto
+        id: inspect
+        run: |
+          if grep -q '"build:pages"' solar-inspect/package.json 2>/dev/null; then echo "pronto=true" >> "$GITHUB_OUTPUT"; else echo "pronto=false" >> "$GITHUB_OUTPUT"; echo "::notice::Solar Inspect ainda sem build:pages na main: publicando só o site e o Guia."; fi
+      - uses: actions/setup-node@v4
+        if: steps.inspect.outputs.pronto == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: solar-inspect/package-lock.json
+      - name: Compilar o Solar Inspect
+        if: steps.inspect.outputs.pronto == 'true'
+        working-directory: solar-inspect
+        run: npm ci && npm run build:pages   # gera ../docs
+
+      - name: Montar o endereço único
+        run: |
+          mkdir -p _publicar/site _publicar/guia-do-hospede
+          if [ -d docs ]; then cp -r docs/. _publicar/; fi
+          cp -r site/. _publicar/site/
+          rm -rf _publicar/site/database _publicar/site/claude "_publicar/site/index - Copia.html"   # só ficam no repositório
+          rm -f _publicar/site/*.docx _publicar/site/*.txt
+          cp -r guia-do-hospede/. _publicar/guia-do-hospede/                                         # o Guia precisa da pasta database dele (guide.json)
+          # Guia em revisão: acessível só por link, fora das buscas (só na cópia publicada; o arquivo do repositório não muda)
+          sed -i '0,/<head>/s//<head>\n<meta name="robots" content="noindex, nofollow">/' _publicar/guia-do-hospede/index.html
+          touch _publicar/.nojekyll
+          find _publicar -maxdepth 2 | sort | head -40
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _publicar
+      - id: deploy
+        uses: actions/deploy-pages@v4
