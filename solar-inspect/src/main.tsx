@@ -30,7 +30,8 @@ import T17Confirmacao from './screens/T17Confirmacao';
 import T18Sincronizacao from './screens/T18Sincronizacao';
 import T19MeuHistorico from './screens/T19MeuHistorico';
 import { T20Dashboard, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
-import { T28Propriedades, T29FormPropriedade, T30Ambientes, T31Tipos, T32Usuarios, T33Presenca, T34Auditoria } from './screens/Admin';
+import { T28Propriedades, T29FormPropriedade, T30Ambientes, T31Tipos, T33Presenca, T34Auditoria } from './screens/Admin';
+import { T32Usuarios } from './screens/T32Usuarios';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

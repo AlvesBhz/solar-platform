@@ -479,6 +479,26 @@ select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Admin
 select teste.ok((select count(*) = 1 from "SE"."VST_USUARIO" where "CD_LOGIN" = 'admin.novo'), 'ADMIN pode ser cadastrado sem pousada (vê todas)');
 :dono
 
+\echo '── 6c. T32 usuários e pousadas'
+:como_ana
+select teste.ok((select count(*) = 1 and bool_and(qtde_unidades = 1) from "SE".vst_propriedades()), 'vst_propriedades: assessor vê só a pousada dele, com a contagem de chalés');
+select teste.erro($q$update "SE"."VST_USUARIO" set "TP_PERFIL" = 'ADMIN' where "CD_LOGIN" = 'ana.teste'$q$, '0', 'assessor não se promove a ADMIN') where false;
+do $$ declare n int; begin update "SE"."VST_USUARIO" set "TP_PERFIL" = 'ADMIN' where "CD_LOGIN" = 'ana.teste'; get diagnostics n = row_count;
+  perform teste.ok(n = 0, 'assessor não se promove a ADMIN (nenhuma linha alterada)'); end $$;
+:como_admin
+select teste.ok((select count(*) >= 2 from "SE".vst_propriedades()), 'vst_propriedades: ADMIN vê todas as pousadas');
+:como_anon
+select teste.erro($q$select * from "SE".vst_propriedades()$q$, '42501', 'anon não lista pousadas');
+:dono
+update "VST_USUARIO" set "SG_ATIVO" = false where "TP_PERFIL" = 'ADMIN' and "CD_LOGIN" <> 'admin.teste';
+select teste.erro($q$update "VST_USUARIO" set "SG_ATIVO" = false where "CD_LOGIN" = 'admin.teste'$q$, 'ultimo_admin', 'não desativa o último ADMIN ativo');
+select teste.erro($q$update "VST_USUARIO" set "TP_PERFIL" = 'GESTOR' where "CD_LOGIN" = 'admin.teste'$q$, 'ultimo_admin', 'não rebaixa o último ADMIN ativo');
+select teste.erro($q$delete from "VST_USUARIO" where "CD_LOGIN" = 'admin.teste'$q$, 'ultimo_admin', 'não apaga o último ADMIN ativo');
+update "VST_USUARIO" set "SG_ATIVO" = true where "CD_LOGIN" = 'admin.novo';
+update "VST_USUARIO" set "SG_ATIVO" = false where "CD_LOGIN" = 'admin.teste';
+select teste.ok(true, 'com outro ADMIN ativo, desativar um ADMIN é permitido');
+update "VST_USUARIO" set "SG_ATIVO" = true where "CD_LOGIN" = 'admin.teste';
+
 \echo '── 7. Auditoria (SIT_AUDITORIA)'
 :dono
 select teste.ok((select count(distinct "NM_TABELA") >= 6 from "SIT_AUDITORIA" where "NM_TABELA" like 'VST\_%'), 'as tabelas VST_ gravam em SIT_AUDITORIA');

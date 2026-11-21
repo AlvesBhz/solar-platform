@@ -990,6 +990,38 @@ begin
 end;
 $$;
 
+-- Pousadas que o usuário vê, com a configuração de presença (T28, T29, T32, T33). As pousadas são do site: o app não cria nem apaga.
+create or replace function vst_propriedades()
+returns table (id_propriedade bigint, nm_propriedade text, qtde_unidades int, tp_validacao text, vl_latitude numeric, vl_longitude numeric,
+               qtde_raio_metros int, qtde_precisao_max_metros int, qtde_minutos_min_vistoria int)
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  perform "SE".vst_usuario_atual();
+  return query
+  select p."ID_PROPRIEDADE", p."NM_PROPRIEDADE", (select count(*)::int from "SIT_UNIDADE" u where u."ID_PROPRIEDADE" = p."ID_PROPRIEDADE"),
+         coalesce(vp."TP_VALIDACAO", 'QR_E_GPS'), vp."VL_LATITUDE", vp."VL_LONGITUDE", coalesce(vp."QTDE_RAIO_METROS", 100)::int,
+         coalesce(vp."QTDE_PRECISAO_MAX_METROS", 50)::int, coalesce(vp."QTDE_MINUTOS_MIN_VISTORIA", 10)::int
+  from "SIT_PROPRIEDADE" p left join "VST_PROPRIEDADE" vp on vp."ID_PROPRIEDADE" = p."ID_PROPRIEDADE"
+  where "SE".vst_tem_acesso(p."ID_PROPRIEDADE")
+  order by p."NM_PROPRIEDADE";
+end;
+$$;
+
+-- Integridade da equipe: sempre resta ao menos um ADMIN ativo (ninguém tranca o sistema por engano).
+create or replace function vst_protege_ultimo_admin()
+returns trigger language plpgsql security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  if old."TP_PERFIL" = 'ADMIN' and old."SG_ATIVO" and (tg_op = 'DELETE' or new."TP_PERFIL" <> 'ADMIN' or not new."SG_ATIVO")
+     and not exists (select 1 from "VST_USUARIO" where "TP_PERFIL" = 'ADMIN' and "SG_ATIVO" and "ID_USUARIO" <> old."ID_USUARIO") then
+    raise exception 'ultimo_admin' using errcode = 'P0001';
+  end if;
+  if tg_op = 'UPDATE' then new."DT_ATUALIZACAO" := now(); return new; end if;
+  return old;
+end;
+$$;
+drop trigger if exists "TG_VST_USUARIO_ULTIMO_ADMIN" on "VST_USUARIO";
+create trigger "TG_VST_USUARIO_ULTIMO_ADMIN" before update or delete on "VST_USUARIO" for each row execute function vst_protege_ultimo_admin();
+
 -- T03: o funcionário aceita o uso da localização e das fotos nas vistorias (LGPD). Guarda a primeira data; repetir não muda.
 create or replace function vst_registrar_aceite_lgpd()
 returns timestamptz language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
@@ -1127,7 +1159,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;
