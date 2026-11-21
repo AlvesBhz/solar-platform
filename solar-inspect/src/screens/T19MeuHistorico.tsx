@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppHeader from '../components/AppHeader';
 import { Seletor } from '../components/Filtros';
-import { listarEnvios } from '../mocks/envios';
+import { historico, type Envio } from '../lib/fila';
 import { Aviso } from './T05MinhasUnidades';
 import { LinhaEnvio } from './T18Sincronizacao';
 
 /** T19 — Meu histórico: vistorias do próprio assessor, com filtros por unidade, tipo e status. */
 export default function T19MeuHistorico() {
-  const todos = listarEnvios();
+  const [todos, setTodos] = useState<Envio[] | null>(null);
+  useEffect(() => { historico().then(setTodos); }, []);
   const [unidade, setUnidade] = useState('');
   const [tipo, setTipo] = useState('');
   const [status, setStatus] = useState('');
-  const opc = (k: 'unidade' | 'tipo') => [...new Set(todos.map((e) => e[k]))];
-  const lista = todos.filter((e) => (!unidade || e.unidade === unidade) && (!tipo || e.tipo === tipo) && (!status || e.status === status));
+  const opc = (k: 'unidade' | 'tipo') => [...new Set((todos ?? []).map((e) => e[k]))];
+  const lista = (todos ?? []).filter((e) => (!unidade || e.unidade === unidade) && (!tipo || e.tipo === tipo) && (!status || e.status === status));
   const sel = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-fg-1 shadow-sm focus:border-pine focus:outline-none';
 
   return (
@@ -24,7 +25,9 @@ export default function T19MeuHistorico() {
           <Seletor rotulo="Tipo" icone="solar:clipboard-list-linear" valor={tipo} onChange={setTipo} opcoes={[{ valor: '', label: 'Todos os tipos' }, ...opc('tipo').map((o) => ({ valor: o, label: o }))]} />
           <Seletor rotulo="Status" icone="solar:check-circle-linear" valor={status} onChange={setStatus} opcoes={[{ valor: '', label: 'Todos os status' }, { valor: 'enviada', label: 'Enviada' }, { valor: 'sinalizada', label: 'Sinalizada' }, { valor: 'pendente', label: 'Pendente' }]} />
         </div>
-        {lista.length === 0 ? (
+        {!todos ? (
+          <div className="h-40 animate-pulse rounded-xl border border-line-1 bg-white" aria-busy="true" />
+        ) : lista.length === 0 ? (
           <Aviso icon="solar:history-linear" tom="text-fg-3" titulo="Nenhuma vistoria encontrada" texto="Ajuste os filtros." />
         ) : (
           <ul className="divide-y divide-line-1 overflow-hidden rounded-xl border border-line-1 bg-white">{lista.map((e) => <LinhaEnvio key={e.id} e={e} />)}</ul>

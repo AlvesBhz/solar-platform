@@ -2,10 +2,8 @@ import { Icon } from '@iconify/react';
 import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { comprimirComCarimbo, obterPosicao, uuid } from '../lib/imagem';
-import { itemDa } from '../mocks/checklist';
 import { salvarFoto } from '../mocks/fotos';
-import { validarGps } from '../mocks/servidor';
-import { obterUnidade, type Unidade } from '../mocks/unidades';
+import { carregarChecklist, itemDe, obterUnidade, validarGps, type Ambiente, type Unidade } from '../lib/campo';
 import { lerRascunho } from '../mocks/vistoria';
 
 type Estado = 'iniciando' | 'camera' | 'processando' | 'previa' | 'sem_camera';
@@ -19,7 +17,7 @@ export default function T12CapturaEvidencia() {
   const [q] = useSearchParams();
   const volta = q.get('de') === 'checklist'
     ? `/app/vistorias/nova/${unidadeId}/checklist`
-    : `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc?.tipoId === 'saida' ? '/comparar' : ''}`;
+    : `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc?.tipoId === 'saida' || rasc?.comportamento === 'SAIDA' ? '/comparar' : ''}`;
 
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
@@ -30,7 +28,9 @@ export default function T12CapturaEvidencia() {
   const [previa, setPrevia] = useState<Previa | null>(null);
   const [tentativa, setTentativa] = useState(0);
 
+  const [ambs, setAmbs] = useState<Ambiente[]>([]);
   useEffect(() => { obterUnidade(unidadeId).then(setU); }, [unidadeId]);
+  useEffect(() => { if (u) carregarChecklist(u, rasc).then(setAmbs).catch(() => setAmbs([])); }, [u]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pararCamera = () => { stream.current?.getTracks().forEach((t) => t.stop()); stream.current = null; };
 
@@ -52,17 +52,19 @@ export default function T12CapturaEvidencia() {
   useEffect(() => () => { if (previa) URL.revokeObjectURL(previa.url); }, [previa]);
 
   if (u === undefined || !rasc?.inicio) return <Navigate to={`/app/vistorias/nova/${unidadeId}/presenca`} replace />;
-  const ctx = u ? itemDa(u, itemId) : undefined;
+  const ctx = itemDe(ambs, itemId);
 
   async function processar(fonte: CanvasImageSource, w: number, h: number) {
     setEstado('processando');
     const em = new Date();
+    const un = u ?? (await obterUnidade(unidadeId));   // foto escolhida antes de a unidade carregar
+    if (!un) return setEstado('sem_camera');
     const coords = await obterPosicao();
-    const usaGps = u!.validacao !== 'qr';
+    const usaGps = un.validacao !== 'qr';
     // Revalida a posição em cada foto quando a unidade usa GPS (seção 5.2).
     const r = usaGps && coords ? await validarGps(unidadeId, coords) : null;
     const linhas = [
-      `${u!.nome} · ${ctx?.ambiente.nome ?? ''} · ${ctx?.item.nome ?? ''}`,
+      `${un.nome} · ${ctx?.ambiente.nome ?? ''} · ${ctx?.item.nome ?? ''}`,
       em.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }),
       coords ? `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)} · ±${Math.round(coords.accuracy)} m` : 'Localização indisponível',
     ];

@@ -663,6 +663,36 @@ begin
 end;
 $$;
 
+-- T07: tipos que o usuário pode fazer neste chalé, com a quantidade de itens do checklist e a vistoria a retomar:
+-- a minha EM_ANDAMENTO ou a AGENDADA mais recente até hoje (livre ou minha; a gestão vê também as de outros).
+create or replace function vst_tipos_unidade(p_id_unidade bigint)
+returns table (id_tipo_vistoria bigint, cd_tipo_vistoria text, nm_tipo_vistoria text, tp_comportamento text,
+               sg_exige_entrada boolean, sg_exige_assinatura boolean, qtde_itens int,
+               id_vistoria uuid, dt_agendada date, tp_status text, cd_reserva text)
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+declare u "VST_USUARIO"%rowtype; v_hoje date;
+begin
+  u := "SE".vst_usuario_atual();
+  if not "SE".vst_tem_acesso_unidade(p_id_unidade) then raise exception 'sem_acesso' using errcode = 'P0001'; end if;
+  v_hoje := "SE".vst_hoje(p_id_unidade);
+  return query
+  select t."ID_TIPO_VISTORIA", t."CD_TIPO_VISTORIA", t."NM_TIPO_VISTORIA", t."TP_COMPORTAMENTO", t."SG_EXIGE_ENTRADA", t."SG_EXIGE_ASSINATURA",
+         (select count(*)::int from "SE".vst_checklist(p_id_unidade, t."ID_TIPO_VISTORIA")),
+         a."ID_VISTORIA", a."DT_AGENDADA", a."TP_STATUS", r."CD_RESERVA"
+  from "VST_TIPO_VISTORIA" t
+  left join lateral (
+    select v."ID_VISTORIA", v."DT_AGENDADA", v."TP_STATUS", v."ID_RESERVA" from "VST_VISTORIA" v
+    where v."ID_UNIDADE" = p_id_unidade and v."ID_TIPO_VISTORIA" = t."ID_TIPO_VISTORIA"
+      and ((v."TP_STATUS" = 'EM_ANDAMENTO' and v."ID_USUARIO" = u."ID_USUARIO")
+           or (v."TP_STATUS" = 'AGENDADA' and v."DT_AGENDADA" <= v_hoje
+               and (v."ID_USUARIO" is null or v."ID_USUARIO" = u."ID_USUARIO" or u."TP_PERFIL" in ('GESTOR', 'ADMIN'))))
+    order by (v."TP_STATUS" = 'EM_ANDAMENTO') desc, v."DT_AGENDADA" desc limit 1) a on true
+  left join "SIT_RESERVA" r on r."ID_RESERVA" = a."ID_RESERVA"
+  where t."SG_ATIVO" and "SE".vst_perfil_pode_tipo(u."TP_PERFIL", t."ID_TIPO_VISTORIA")
+  order by case t."TP_COMPORTAMENTO" when 'ENTRADA' then 1 when 'SAIDA' then 2 when 'ROTINA' then 3 else 4 end, t."NM_TIPO_VISTORIA";
+end;
+$$;
+
 -- Qual chalé é o do QR lido (só se o usuário tiver acesso)
 create or replace function vst_resolver_qr(p_cd_hash_qr text)
 returns table (id_unidade bigint, cd_unidade text, nm_unidade text)
@@ -800,7 +830,7 @@ $$;
 
 -- Conclui e envia a vistoria numa só transação: grava respostas e fotos, abre ocorrências, cria o bloqueio de
 -- manutenção se algum item crítico estiver com problema e atualiza a situação do chalé.
---  p_respostas: [{"id_item":1,"tp_resposta":"OK|PROBLEMA|NAO_SE_APLICA","qtde_encontrada":4,"ds_observacao":"…","dt_resposta":"…"}]
+--  p_respostas: [{"id_item":1,"tp_resposta":"OK|PROBLEMA|NAO_SE_APLICA","qtde_encontrada":4,"ds_observacao":"…","tp_gravidade":"BAIXA|MEDIA|CRITICA","dt_resposta":"…"}]
 --  p_fotos:     [{"id_foto":"uuid?","id_item":1,"cd_arquivo":"<ID_VISTORIA>/foto.jpg","vl_latitude":…,"vl_longitude":…,"qtde_precisao_metros":…,"dt_captura":"…"}]
 -- Reenviar uma vistoria já concluída devolve o resultado sem gravar de novo.
 create or replace function vst_concluir_vistoria(p_id_vistoria uuid, p_respostas jsonb, p_fotos jsonb default '[]'::jsonb,
@@ -854,7 +884,9 @@ begin
     raise exception 'foto_de_item_nao_respondido' using errcode = 'P0001';
   end if;
   if exists (select 1 from "SE".vst_checklist(v."ID_UNIDADE", v."ID_TIPO_VISTORIA") k
-             where k.sg_foto_obrigatoria and not exists (select 1 from jsonb_to_recordset(p_fotos) as f(id_item bigint) where f.id_item = k.id_item)) then
+             where k.sg_foto_obrigatoria and not exists (select 1 from jsonb_to_recordset(p_fotos) as f(id_item bigint) where f.id_item = k.id_item)
+               and not exists (select 1 from jsonb_to_recordset(p_respostas) as x(id_item bigint, tp_resposta text)
+                               where x.id_item = k.id_item and x.tp_resposta = 'NAO_SE_APLICA')) then   -- "não se aplica" dispensa a foto
     raise exception 'foto_obrigatoria' using errcode = 'P0001';
   end if;
   if t."SG_EXIGE_ASSINATURA" and nullif(btrim(p_ds_assinatura), '') is null then
@@ -876,17 +908,23 @@ begin
   on conflict ("CD_ARQUIVO") do nothing;
 
   -- problema vira ocorrência; item crítico (gravidade CRITICA) tira o chalé da venda
+  -- gravidade: a escolhida no app (BAIXA, MEDIA ou CRITICA; vazio = BAIXA); item crítico é sempre CRITICA
+  if exists (select 1 from jsonb_to_recordset(p_respostas) as x(tp_resposta text, tp_gravidade text)
+             where x.tp_resposta = 'PROBLEMA' and x.tp_gravidade is not null and x.tp_gravidade not in ('BAIXA', 'MEDIA', 'CRITICA')) then
+    raise exception 'gravidade_invalida' using errcode = 'P0001';
+  end if;
   for rec in
-    select x.id_item, nullif(btrim(x.ds_observacao), '') as ds, i."SG_CRITICO"
-    from jsonb_to_recordset(p_respostas) as x(id_item bigint, tp_resposta text, ds_observacao text)
+    select x.id_item, nullif(btrim(x.ds_observacao), '') as ds,
+           case when i."SG_CRITICO" then 'CRITICA' else coalesce(x.tp_gravidade, 'BAIXA') end as gravidade
+    from jsonb_to_recordset(p_respostas) as x(id_item bigint, tp_resposta text, ds_observacao text, tp_gravidade text)
     join "VST_ITEM" i on i."ID_ITEM" = x.id_item
     where x.tp_resposta = 'PROBLEMA'
   loop
     insert into "VST_OCORRENCIA" ("ID_VISTORIA", "ID_ITEM", "ID_UNIDADE", "TP_GRAVIDADE", "DS_OCORRENCIA", "DT_ABERTURA")
-    values (p_id_vistoria, rec.id_item, v."ID_UNIDADE", case when rec."SG_CRITICO" then 'CRITICA' else 'BAIXA' end, rec.ds, v_fim)
+    values (p_id_vistoria, rec.id_item, v."ID_UNIDADE", rec.gravidade, rec.ds, v_fim)
     returning "ID_OCORRENCIA" into v_oc;
     v_n := v_n + 1;
-    if rec."SG_CRITICO" then v_bloq := "SE".vst_criar_bloqueio_manutencao(v_oc); end if;
+    if rec.gravidade = 'CRITICA' then v_bloq := "SE".vst_criar_bloqueio_manutencao(v_oc); end if;
   end loop;
 
   -- situação do chalé: ocorrência crítica manda (MANUTENCAO); senão vale a escolha de quem concluiu; senão o padrão do tipo:
@@ -1196,7 +1234,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;

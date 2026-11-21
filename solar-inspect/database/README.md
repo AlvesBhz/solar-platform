@@ -69,11 +69,12 @@ Cada uma lê `auth.uid()`, exige usuário ativo em `"VST_USUARIO"` e acesso à p
 | `vst_unidades()` | — | qualquer usuário ativo | chalés das pousadas dele, com validação, ponto, raio e situação (sem o QR) |
 | `vst_agenda(p_dt_ini, p_dt_fim, p_id_unidade?)` | `date`, `date` (fim = dia seguinte), `bigint` | qualquer usuário ativo | vistorias do período com `cd_reserva`, `dt_checkin`, `dt_checkout` (nunca CPF, passaporte, telefone ou e-mail) |
 | `vst_checklist(p_id_unidade, p_id_tipo_vistoria)` | `bigint`, `bigint` | quem tem acesso ao chalé | ambientes e itens ativos, na ordem de passagem |
+| `vst_tipos_unidade(p_id_unidade)` | `bigint` | quem tem acesso ao chalé | tipos que o perfil faz, com a quantidade de itens do checklist e a vistoria a retomar (a minha em andamento ou a agendada até hoje) |
 | `vst_resolver_qr(p_cd_hash_qr)` | `text` | qualquer usuário ativo | chalé do QR lido, se tiver acesso |
 | `vst_criar_vistoria(p_id_unidade, p_cd_tipo_vistoria, p_dt_agendada, p_id_vistoria?, p_id_reserva?, p_id_usuario?)` | `bigint`, `text`, `date`, `uuid`, `bigint`, `uuid` | assessor (para si, sem reserva); gestor/admin (qualquer responsável e reserva) | `uuid`; reenviar o mesmo id devolve a vistoria existente |
 | `vst_atualizar_agenda(p_id_vistoria, p_id_usuario?, p_dt_agendada?, p_cancelar?)` | `uuid`, `uuid`, `date`, `boolean` | gestor, admin | atribui, remarca ou cancela vistoria `AGENDADA` |
 | `vst_iniciar_vistoria(p_id_vistoria, p_cd_hash_qr?, p_vl_latitude?, p_vl_longitude?, p_qtde_precisao_metros?, p_dt_inicio?)` | `uuid`, `text`, `numeric`×3, `timestamptz` | assessor da vistoria (ou sem responsável), gestão | `tp_status`, `sg_fora_raio`, `qtde_distancia_metros`, `ds_sinalizacoes` |
-| `vst_concluir_vistoria(p_id_vistoria, p_respostas, p_fotos?, p_ds_assinatura?, p_ds_observacao?, p_tp_situacao_resultante?, p_dt_fim?)` | `uuid`, `jsonb`, `jsonb`, `text`, `text`, `text`, `timestamptz` | responsável, gestão | `tp_status`, `ds_sinalizacoes`, `qtde_ocorrencias`, `id_bloqueio`; reenviar não duplica |
+| `vst_concluir_vistoria(p_id_vistoria, p_respostas, p_fotos?, p_ds_assinatura?, p_ds_observacao?, p_tp_situacao_resultante?, p_dt_fim?)` | `uuid`, `jsonb`, `jsonb`, `text`, `text`, `text`, `timestamptz` | responsável, gestão | `tp_status`, `ds_sinalizacoes`, `qtde_ocorrencias`, `id_bloqueio`; reenviar não duplica. Cada resposta PROBLEMA pode trazer `tp_gravidade` (BAIXA, MEDIA, CRITICA; item crítico é sempre CRITICA e CRITICA bloqueia o chalé); item com foto obrigatória respondido NAO_SE_APLICA dispensa a foto |
 | `vst_registrar_foto(p_id_vistoria, p_id_item, p_cd_arquivo, …)` | `uuid`, `bigint`, `text`, lat/lon/precisão, `timestamptz`, `uuid` | responsável, gestão | `uuid` da foto (fotos que chegam depois da conclusão) |
 | `vst_resolver_ocorrencia(p_id_ocorrencia, p_tp_status?, p_ds_tratamento?, p_liberar?)` | `bigint`, `text`, `text`, `boolean` | gestor, admin | trata a ocorrência; com `p_liberar` encerra o bloqueio e libera o chalé |
 | `vst_bloquear_por_ocorrencia(p_id_ocorrencia, p_dt_fim?)` | `bigint`, `date` | gestor, admin | `id_bloqueio` (ocorrência de gravidade menor que decidiu bloquear) |
@@ -122,6 +123,10 @@ supabase secrets set ALLOWED_ORIGINS=https://alvesbhz.github.io --project-ref tn
 **Senha provisória e troca de senha (T35, `/conta/senha`):** quem é cadastrado (`vst_cadastrar_usuario`) ou tem a senha redefinida (`redefinir-senha` chama `vst_exigir_troca_senha`, só service_role) fica com `SG_TROCAR_SENHA = true`, e o app abre T35 antes de qualquer tela, inclusive a administração. A troca confere a senha atual (reautenticação), grava a nova com `supabase.auth.updateUser`, encerra as sessões dos outros aparelhos (`signOut({ scope: 'others' })`) e desmarca com `vst_senha_trocada()`. Regras da tela: 8 a 72 caracteres, letras e números, diferente da atual e sem o usuário. Qualquer perfil troca a própria senha quando quiser, pelo ícone de cadeado.
 
 Esqueceu a senha: o ADMIN redefine pelo app (`redefinir-senha`). Para desligar um funcionário, `SG_ATIVO = false` em `VST_USUARIO`: ele deixa de entrar e de usar as funções na hora.
+
+## App de campo (T05–T19)
+
+`src/lib/campo.ts` lê unidades, tipos e checklist (com cópia no aparelho para abrir sem internet) e inicia a vistoria; `src/lib/fila.ts` guarda a vistoria confirmada e envia: cria a avulsa (UUID do aparelho), inicia com a hora real, sobe fotos e assinatura para `vistorias/<ID_VISTORIA>/` e conclui com `vst_concluir_vistoria`. Cada passo é idempotente: reenviar nunca duplica. Sem internet, a vistoria inteira é feita no aparelho e sobe quando a conexão volta. GPS fora do raio não bloqueia: o vistoriador assume e o banco sinaliza. As rotas `/app/*` exigem sessão, senha definitiva e aceite de localização. Teste: `node tools/testar-campo.cjs`.
 
 ## Acesso direto às tabelas (RLS)
 

@@ -339,6 +339,40 @@ select teste.ok((select "TP_SITUACAO" = 'MANUTENCAO' from "VST_UNIDADE" where "I
 select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO');
 :dono
 select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'gestor libera o chalé depois da limpeza');
+-- ── T07: tipos do chalé e vistoria a retomar; gravidade escolhida no app
+:como_ana
+select "SE".vst_criar_vistoria(:ua, 'ENTRADA', current_date) as v_na \gset
+select tp_status from "SE".vst_iniciar_vistoria(:'v_na', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select teste.ok((select tp_status = 'CONCLUIDA' from "SE".vst_concluir_vistoria(:'v_na', format('[{"id_item":%s,"tp_resposta":"NAO_SE_APLICA"}]', :i_torneira)::jsonb)),
+                'item com foto obrigatória marcado "não se aplica" conclui sem foto');
+:como_gesto
+select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO');
+:como_ana
+select "SE".vst_criar_vistoria(:ua, 'SAIDA', current_date) as v_s3 \gset
+select teste.ok((select count(*) filter (where cd_tipo_vistoria = 'ENTRADA' and qtde_itens = 1) = 1
+                    and count(*) filter (where cd_tipo_vistoria = 'SAIDA' and qtde_itens = 3) = 1 from "SE".vst_tipos_unidade(:ua)), 'vst_tipos_unidade traz os tipos com a quantidade de itens do chalé');
+select teste.ok((select id_vistoria = :'v_s3' and tp_status = 'AGENDADA' from "SE".vst_tipos_unidade(:ua) where cd_tipo_vistoria = 'SAIDA'), 'oferece a Saída agendada para hoje');
+select tp_status from "SE".vst_iniciar_vistoria(:'v_s3', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select teste.ok((select id_vistoria = :'v_s3' and tp_status = 'EM_ANDAMENTO' from "SE".vst_tipos_unidade(:ua) where cd_tipo_vistoria = 'SAIDA'), 'retoma a minha vistoria em andamento');
+:como_bia
+select teste.erro(format($q$select * from "SE".vst_tipos_unidade(%s)$q$, :ua), 'sem_acesso', 'tipos de chalé sem acesso são recusados');
+:como_ana
+select format('[{"id_item":%s,"tp_resposta":"PROBLEMA","ds_observacao":"Sofá rasgado","tp_gravidade":"%%s"},{"id_item":%s,"tp_resposta":"OK"},{"id_item":%s,"tp_resposta":"OK"}]', :i_sofa, :i_torneira, :i_toalhas) as resp_g \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_s3') as fotos_s3 \gset
+select teste.erro(format($q$select * from "SE".vst_concluir_vistoria('%s', '%s'::jsonb, '%s'::jsonb, 'x.png')$q$, :'v_s3', format(:'resp_g', 'URGENTE'), :'fotos_s3'), 'gravidade_invalida', 'gravidade fora da lista é recusada');
+select qtde_ocorrencias as g_oc, id_bloqueio is null as g_sem_bloq from "SE".vst_concluir_vistoria(:'v_s3', format(:'resp_g', 'MEDIA')::jsonb, :'fotos_s3'::jsonb, 'x.png') \gset
+:dono
+select teste.ok(:g_oc = 1 and :'g_sem_bloq' = 't' and (select "TP_GRAVIDADE" = 'MEDIA' from "VST_OCORRENCIA" where "ID_VISTORIA" = :'v_s3'), 'a gravidade escolhida no app (MEDIA) é gravada e não bloqueia');
+:como_ana
+select "SE".vst_criar_vistoria(:ua, 'SAIDA', current_date) as v_s4 \gset
+select tp_status from "SE".vst_iniciar_vistoria(:'v_s4', :'qr_novo', -19.0849, -43.5969, 8) \gset
+select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_s4') as fotos_s4 \gset
+select id_bloqueio is not null as g_bloq from "SE".vst_concluir_vistoria(:'v_s4', format(:'resp_g', 'CRITICA')::jsonb, :'fotos_s4'::jsonb, 'x.png') \gset
+:dono
+select teste.ok(:'g_bloq' = 't' and (select "TP_SITUACAO" = 'MANUTENCAO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'gravidade CRITICA escolhida no app bloqueia o chalé (MANUTENCAO)');
+:como_gesto
+select o."ID_OCORRENCIA" as oc_s4 from "SE"."VST_OCORRENCIA" o where o."ID_VISTORIA" = :'v_s4' \gset
+select "SE".vst_resolver_ocorrencia(:oc_s4, 'RESOLVIDA', 'Sofá trocado', true);
 
 -- ── perfis de campo: limpeza e manutenção
 :dono

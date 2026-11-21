@@ -35,6 +35,7 @@ import { T31Tipos } from './screens/T31Tipos';
 import { T30Ambientes } from './screens/T30Ambientes';
 import { T33Presenca } from './screens/T33Presenca';
 import T35TrocarSenha from './screens/T35TrocarSenha';
+import ProtegeCampo from './lib/ProtegeCampo';
 import { T32Usuarios } from './screens/T32Usuarios';
 import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
 
@@ -47,21 +48,21 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/login" element={<T02Login />} />
         <Route path="/permissao-localizacao" element={<T03PermissaoLocalizacao />} />
         <Route path="/acesso-indisponivel" element={<T04AcessoIndisponivel />} />
-        <Route path="/app/unidades" element={<T05MinhasUnidades />} />
-        <Route path="/app/unidades/:id" element={<T06DetalheUnidade />} />
-        <Route path="/app/vistorias/nova/:unidadeId" element={<T07TipoVistoria />} />
-        <Route path="/app/vistorias/nova/:unidadeId/presenca" element={<T08ValidacaoPresenca />} />
-        <Route path="/app/vistorias/nova/:unidadeId/qr" element={<T09LeitorQr />} />
-        <Route path="/app/vistorias/nova/:unidadeId/checklist" element={<T10Checklist />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<T11DetalheItem />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<T12CapturaEvidencia />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<T13Comparacao />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/ocorrencia" element={<T14Ocorrencia />} />
-        <Route path="/app/vistorias/nova/:unidadeId/resumo" element={<T15Resumo />} />
-        <Route path="/app/vistorias/nova/:unidadeId/assinatura" element={<T16Assinatura />} />
-        <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<T17Confirmacao />} />
-        <Route path="/app/sincronizacao" element={<T18Sincronizacao />} />
-        <Route path="/app/historico" element={<T19MeuHistorico />} />
+        <Route path="/app/unidades" element={<ProtegeCampo><T05MinhasUnidades /></ProtegeCampo>} />
+        <Route path="/app/unidades/:id" element={<ProtegeCampo><T06DetalheUnidade /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId" element={<ProtegeCampo><T07TipoVistoria /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/presenca" element={<ProtegeCampo><T08ValidacaoPresenca /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/qr" element={<ProtegeCampo><T09LeitorQr /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/checklist" element={<ProtegeCampo><T10Checklist /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<ProtegeCampo><T11DetalheItem /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<ProtegeCampo><T12CapturaEvidencia /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<ProtegeCampo><T13Comparacao /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/ocorrencia" element={<ProtegeCampo><T14Ocorrencia /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/resumo" element={<ProtegeCampo><T15Resumo /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/assinatura" element={<ProtegeCampo><T16Assinatura /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<ProtegeCampo><T17Confirmacao /></ProtegeCampo>} />
+        <Route path="/app/sincronizacao" element={<ProtegeCampo><T18Sincronizacao /></ProtegeCampo>} />
+        <Route path="/app/historico" element={<ProtegeCampo><T19MeuHistorico /></ProtegeCampo>} />
         <Route path="/gestao" element={<T20Dashboard />} />
         <Route path="/gestao/unidades" element={<T21Unidades />} />
         <Route path="/gestao/unidades/:id" element={<T22DetalheUnidade />} />

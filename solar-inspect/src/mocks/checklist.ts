@@ -5,7 +5,7 @@ import refVaranda from '../assets/referencias/varanda.webp';
 // MOCKUP do checklist (ambientes → itens). Na versão real vem de ambientes/itens/tipo_vistoria_itens.
 import type { Unidade } from './unidades';
 
-export type Item = { id: string; nome: string; critico?: boolean; foto?: boolean };
+export type Item = { id: string; nome: string; critico?: boolean; foto?: boolean; orientacao?: string; qtde?: number };
 /** `ref`: foto de referência do ambiente (RF-07). */
 export type Ambiente = { id: string; nome: string; icon: string; ref?: string; itens: Item[] };
 

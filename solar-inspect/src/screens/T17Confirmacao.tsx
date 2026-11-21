@@ -6,10 +6,11 @@ import BottomBar from '../components/BottomBar';
 import { useOnline } from '../components/NetworkBadge';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { EstadoBadge } from '../components/Status';
-import { obterPosicao } from '../lib/imagem';
 import { useResumo } from '../lib/useResumo';
-import { proximoEstado, registrarEnvio, type Envio } from '../mocks/envios';
-import { validarGps } from '../mocks/servidor';
+import { proximoEstado } from '../mocks/envios';
+import { registrarEnvio, type Envio } from '../lib/fila';
+import { REAL } from '../lib/campo';
+import { uidAtual } from '../lib/acesso';
 import { descartarRascunho } from '../mocks/vistoria';
 
 /** T17 — Confirmação: resumo, aviso de imutabilidade e envio definitivo com revalidação de presença. */
@@ -28,22 +29,13 @@ export default function T17Confirmacao() {
 
   async function enviar() {
     setEtapa('enviando');
-    const { u, tipo, rasc, ocorrencias, sinalizacoes } = r;
-    const sinal = [...sinalizacoes];
-    // Revalida a presença no envio (GPS); fora do raio é aceito, mas sempre sinalizado.
-    if (u!.validacao !== 'qr') {
-      const pos = await obterPosicao();
-      const g = pos ? await validarGps(unidadeId, pos) : null;
-      if (!g?.ok) sinal.push(g ? 'Envio fora do raio' : 'Localização indisponível no envio');
-    }
-    const e: Envio = {
-      id: rasc!.id, unidadeId, unidade: u!.nome, tipo: tipo!.nome, inicio: rasc!.inicio!, fim: new Date().toISOString(),
-      status: !online ? 'pendente' : sinal.length ? 'sinalizada' : 'enviada', sinalizacoes: sinal, ocorrencias: ocorrencias.length,
-      novoEstado: proximoEstado(rasc!.tipoId, u!.estado, ocorrencias.map((o) => o.gravidade), ocorrencias.length),
-      tentativas: online ? 1 : 0, ultimoErro: online ? undefined : 'Sem conexão',
-    };
-    registrarEnvio(e); // idempotente pelo UUID
-    descartarRascunho(); // registro final: não pode mais ser alterado
+    const { u, tipo, rasc, ocorrencias, sinalizacoes, ambientes } = r;
+    // Vira um envio na fila (idempotente pelo UUID) e já sobe se houver internet; o banco recalcula sinalizações e situação.
+    const e = await registrarEnvio(rasc!, ambientes, {
+      unidade: u!.nome, tipo: tipo!.nome, ocorrencias: ocorrencias.length, sinalizacoes,
+      novoEstado: REAL ? undefined : proximoEstado(rasc!.tipoId, u!.estado, ocorrencias.map((o) => o.gravidade), ocorrencias.length),
+    }, uidAtual());
+    descartarRascunho(); // registro final: não pode mais ser alterado no aparelho
     setEnvio(e);
   }
 
@@ -109,7 +101,7 @@ function Enviado({ e }: { e: Envio }) {
           <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{e.unidade} · {e.tipo}</span>
           <h1 className="screen-title">{pend ? 'Salva na fila de envio' : e.status === 'sinalizada' ? 'Enviada para revisão' : 'Vistoria enviada'}</h1>
           <p className="text-[0.8125rem] leading-relaxed text-fg-2">
-            {pend ? 'Será enviada automaticamente quando houver conexão.' : 'Registro final gravado.'}
+            {pend ? (e.ultimoErro && e.ultimoErro !== 'Sem conexão' ? `Ainda não enviada: ${e.ultimoErro}` : 'Será enviada automaticamente quando houver conexão.') : 'Registro final gravado.'}
             {e.ocorrencias > 0 && ` ${e.ocorrencias} ocorrência${e.ocorrencias > 1 ? 's' : ''} criada${e.ocorrencias > 1 ? 's' : ''}.`}
           </p>
           {e.sinalizacoes.length > 0 && <p className="flex items-start gap-1.5 text-[0.75rem] text-warning"><Icon icon="solar:shield-warning-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />{e.sinalizacoes.join(' · ')}</p>}

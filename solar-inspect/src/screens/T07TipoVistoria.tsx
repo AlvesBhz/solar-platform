@@ -4,8 +4,9 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary } from '../components/ScreenShell';
-import { listarTiposAtivos, obterUnidade, type TipoVistoria, type Unidade } from '../mocks/unidades';
-import { lerRascunho, novoRascunho } from '../mocks/vistoria';
+import { REAL, hoje, listarTipos, motivoIndisponivel, obterUnidade, type TipoVistoria, type Unidade } from '../lib/campo';
+import { uidAtual } from '../lib/acesso';
+import { descartarRascunho, lerRascunho, novoRascunho, rascunhoAtual } from '../mocks/vistoria';
 
 const ICONES: Record<string, string> = {
   entrada: 'solar:login-3-linear',
@@ -20,15 +21,33 @@ export default function T07TipoVistoria() {
   const [tipos, setTipos] = useState<TipoVistoria[] | null>(null);
   const navigate = useNavigate();
   const [sel, setSel] = useState<string | null>(() => lerRascunho(unidadeId)?.tipoId ?? null);
+  const [erro, setErro] = useState(false);
 
   useEffect(() => {
     obterUnidade(unidadeId).then(setU);
-    listarTiposAtivos().then(setTipos);
+    listarTipos(unidadeId).then(setTipos).catch(() => { setErro(true); setTipos([]); });
   }, [unidadeId]);
+
+  // Escolhe o tipo: retoma o rascunho do mesmo tipo; senão usa a vistoria agendada pelo site ou cria uma avulsa (UUID do aparelho).
+  function seguir() {
+    const t = tipos!.find((x) => x.id === sel)!;
+    const atual = rascunhoAtual();
+    const mesmo = atual && atual.unidadeId === unidadeId && atual.tipoId === t.id && (!atual.uid || atual.uid === uidAtual());
+    if (!mesmo) {
+      if (atual && (atual.inicio || Object.keys(atual.respostas).length) &&
+          !window.confirm('Há uma vistoria em andamento não enviada. Começar outra descarta a anterior. Continuar?')) return;
+      descartarRascunho();
+      const comum = { uid: uidAtual(), idTipo: t.idTipo, cdTipo: t.cd, nomeTipo: t.nome, comportamento: t.comportamento, exigeAssinatura: t.exigeAssinatura };
+      novoRascunho(unidadeId, t.id, t.idVistoria
+        ? { ...comum, id: t.idVistoria, avulsa: false, dtAgendada: t.dtAgendada, iniciada: t.statusVistoria === 'EM_ANDAMENTO' }
+        : { ...comum, avulsa: REAL, dtAgendada: hoje() });
+    }
+    navigate(`/app/vistorias/nova/${unidadeId}/presenca`);
+  }
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
 
-  const indisponivel = (t: TipoVistoria) => (t.exigeEntrada && !u?.entradaVinculadaId ? 'Requer uma vistoria de entrada vinculada (estadia em curso).' : null);
+  const indisponivel = (t: TipoVistoria) => motivoIndisponivel(t, u);
 
   return (
     <div className="screen flex flex-col bg-cream">
@@ -44,6 +63,10 @@ export default function T07TipoVistoria() {
           <div className="flex flex-col gap-3" aria-busy="true">
             {[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-xl border border-line-1 bg-white" />)}
           </div>
+        ) : tipos.length === 0 ? (
+          <p role={erro ? 'alert' : 'status'} className="rounded-xl border border-dashed border-line-2 p-4 text-sm text-fg-2">
+            {erro ? 'Não foi possível carregar os tipos de vistoria. Verifique a conexão e tente de novo.' : 'Nenhum tipo de vistoria disponível para o seu perfil nesta unidade.'}
+          </p>
         ) : (
           <fieldset className="flex flex-col gap-3">
             <legend className="sr-only">Tipos de vistoria disponíveis</legend>
@@ -99,7 +122,7 @@ export default function T07TipoVistoria() {
       </main>
 
       <BottomBar>
-        <button type="button" className={btnPrimary} disabled={!sel} onClick={() => { novoRascunho(unidadeId, sel!); navigate(`/app/vistorias/nova/${unidadeId}/presenca`); }}>
+        <button type="button" className={btnPrimary} disabled={!sel || !tipos?.some((t) => t.id === sel && !indisponivel(t))} onClick={seguir}>
           Validar presença <Icon icon="solar:arrow-right-linear" width={18} aria-hidden="true" />
         </button>
       </BottomBar>

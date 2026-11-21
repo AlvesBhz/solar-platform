@@ -3,7 +3,8 @@
 import { MODO_DEMO, SUPABASE_URL, supabase } from './supabase';
 export { MODO_DEMO };
 import * as demo from '../mocks/auth';
-import { listarEnvios } from '../mocks/envios';
+import { temPendentes } from './fila';
+import { limparCacheCampo } from './campo';
 
 export const APP_VERSION = MODO_DEMO ? '0.2.0-demo' : '0.2.0';
 export type Perfil = 'ASSESSOR' | 'LIMPEZA' | 'MANUTENCAO' | 'GESTOR' | 'ADMIN';
@@ -21,6 +22,8 @@ const OFFLINE_MAX_MS = 72 * 3600 * 1000;
 type Cache = { uid: string; nome: string; perfil: Perfil; aceite: boolean; trocar?: boolean; conferidoEm: number };
 const lerCache = (): Cache | null => { try { return JSON.parse(localStorage.getItem(CACHE) ?? 'null'); } catch { return null; } };
 const gravarCache = (c: Cache) => { try { localStorage.setItem(CACHE, JSON.stringify(c)); } catch { /* sem armazenamento */ } };
+/** Usuário logado neste aparelho (último acesso conferido). */
+export const uidAtual = (): string | undefined => lerCache()?.uid;
 const limparCache = () => { try { localStorage.removeItem(CACHE); } catch { /* sem armazenamento */ } };
 
 let demoLogado: AcessoOk | null = null;
@@ -28,6 +31,7 @@ let demoLogado: AcessoOk | null = null;
 /** Encerra a sessão no aparelho (token e cache). */
 export async function sair(): Promise<void> {
   limparCache();
+  limparCacheCampo();
   demoLogado = null;
   if (supabase) await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
 }
@@ -87,7 +91,7 @@ export function destino(a: AcessoOk): string {
   if (a.trocarSenha) return '/conta/senha';
   if (ehGestao(a.perfil)) return '/gestao';
   if (!a.aceiteLocalizacao) return '/permissao-localizacao';
-  if (listarEnvios().some((e) => e.status === 'pendente')) return '/app/sincronizacao';
+  if (temPendentes()) return '/app/sincronizacao';
   return '/app/unidades';
 }
 

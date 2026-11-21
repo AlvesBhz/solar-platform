@@ -2,7 +2,8 @@ import { Icon } from '@iconify/react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { QR_EXPIRADO, qrDaUnidade, validarQr } from '../mocks/servidor';
+import { QR_EXPIRADO, qrDaUnidade } from '../mocks/servidor';
+import { validarQr } from '../lib/campo';
 import { lerRascunho, salvarRascunho } from '../mocks/vistoria';
 
 type Estado = 'iniciando' | 'lendo' | 'validando' | 'erro_camera' | 'rejeitado';

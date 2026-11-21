@@ -6,9 +6,9 @@ import BottomBar from '../components/BottomBar';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { divergente, itemCompleto } from '../lib/evidencia';
 import { BotoesResposta } from '../components/Evidencia';
-import { RESPOSTAS_OK, checklistDa, type Item } from '../mocks/checklist';
+import { RESPOSTAS_OK, type Ambiente, type Item } from '../mocks/checklist';
 import { contarFotosPorItem } from '../mocks/fotos';
-import { listarTiposAtivos, obterUnidade, type TipoVistoria, type Unidade } from '../mocks/unidades';
+import { carregarChecklist, obterUnidade, tipoDoRascunho, type TipoVistoria, type Unidade } from '../lib/campo';
 import { lerRascunho, salvarRascunho, type Rascunho } from '../mocks/vistoria';
 
 /** T10 — Checklist: executa por ambiente, na ordem física, salvando cada resposta no aparelho. */
@@ -22,13 +22,16 @@ export default function T10Checklist() {
   const [nFotos, setNFotos] = useState<Record<string, number>>({});
   const navigate = useNavigate();
 
+  const [ambCarregados, setAmbientes] = useState<Ambiente[] | null>(null);
+  const ambientes = useMemo(() => ambCarregados ?? [], [ambCarregados]);
   useEffect(() => {
     obterUnidade(unidadeId).then(setU);
-    listarTiposAtivos().then((ts) => setTipo(ts.find((t) => t.id === rasc?.tipoId) ?? null));
-  }, [unidadeId, rasc?.tipoId]);
+    tipoDoRascunho(rasc).then(setTipo);
+  }, [unidadeId, rasc?.tipoId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // checklist do banco (ou a cópia do aparelho, sem internet)
+  useEffect(() => { if (u) carregarChecklist(u, lerRascunho(unidadeId)).then(setAmbientes).catch(() => setAmbientes([])); }, [u, unidadeId]);
   useEffect(() => { if (rasc?.id) contarFotosPorItem(rasc.id).then(setNFotos); }, [rasc?.id]);
 
-  const ambientes = useMemo(() => (u ? checklistDa(u) : []), [u]);
   const todos = ambientes.flatMap((a) => a.itens);
   const completo = (i: Item) => itemCompleto(i, rasc?.respostas[i.id], rasc?.obs?.[i.id], nFotos[i.id] ?? 0);
   const respondidos = todos.filter(completo).length;
@@ -88,7 +91,7 @@ export default function T10Checklist() {
 
   const amb = ambientes[idx];
   const feitos = (itens: Item[]) => itens.filter(completo).length;
-  const detalhe = (itemId: string) => `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc.tipoId === 'saida' ? '/comparar' : ''}`;
+  const detalhe = (itemId: string) => `/app/vistorias/nova/${unidadeId}/item/${itemId}${rasc.tipoId === 'saida' || rasc.comportamento === 'SAIDA' ? '/comparar' : ''}`;
 
   // Grava no armazenamento ANTES de qualquer navegação: uma atualização de estado pendente se perde se a tela trocar logo depois.
   const gravar = (f: (r: Rascunho) => Partial<Rascunho>) => { const r = lerRascunho(unidadeId)!; setRasc(salvarRascunho({ ...r, ...f(r) })); };
@@ -123,6 +126,19 @@ export default function T10Checklist() {
   };
   const ambCompleto = !!amb && feitos(amb.itens) === amb.itens.length;
   const semResposta = amb ? amb.itens.filter((i) => !rasc.respostas[i.id]).length : 0;
+
+  if (ambCarregados && ambCarregados.length === 0) {
+    return (
+      <div className="screen flex flex-col bg-cream">
+        <AppHeader back={`/app/unidades/${unidadeId}`} eyebrow={`${u?.nome ?? ''} · ${tipo?.nome ?? ''}`} title="Checklist" />
+        <main className="mx-auto w-full max-w-3xl px-4 py-6">
+          <p role="alert" className="rounded-xl border border-dashed border-line-2 bg-white p-4 text-sm text-fg-2">
+            Não foi possível abrir o checklist desta unidade. Conecte-se à internet para baixá-lo, ou peça ao gestor para cadastrar os itens deste tipo de vistoria.
+          </p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="screen flex flex-col bg-cream">

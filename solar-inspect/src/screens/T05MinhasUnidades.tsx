@@ -7,7 +7,8 @@ import { useOnline } from '../components/NetworkBadge';
 import { btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, formatarData } from '../components/Status';
 import { sair } from '../lib/acesso';
-import { listarUnidades, type EstadoUnidade, type Unidade } from '../mocks/unidades';
+import type { EstadoUnidade } from '../mocks/unidades';
+import { listarUnidades, type Unidade } from '../lib/campo';
 
 type Filtro = 'todos' | EstadoUnidade;
 const ORDEM_FILTROS: Filtro[] = ['todos', 'liberado', 'em_limpeza', 'ocupado', 'bloqueado', 'manutencao'];

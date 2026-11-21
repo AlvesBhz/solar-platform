@@ -6,15 +6,16 @@ import BottomBar from '../components/BottomBar';
 import { btnSecondary } from '../components/ScreenShell';
 import { VALIDACAO } from '../components/Status';
 import { POSICAO_SIMULADA, SIMULADO } from '../lib/sim';
-import { validarGps, type ResultadoValidacao } from '../mocks/servidor';
-import { obterUnidade, type Unidade } from '../mocks/unidades';
-import { lerRascunho, salvarRascunho, type Rascunho } from '../mocks/vistoria';
+import { iniciarNoServidor, obterUnidade, precisaoMaxima, validarGps, type ResultadoValidacao, type UnidadeCampo } from '../lib/campo';
+import { descartarRascunho, lerRascunho, salvarRascunho, type Rascunho } from '../mocks/vistoria';
 
 /** T08 — Validação de presença: GPS, QR ou ambos. O checklist só é liberado após sucesso (CA-02). */
 export default function T08ValidacaoPresenca() {
   const { unidadeId = '' } = useParams();
   const navigate = useNavigate();
-  const [u, setU] = useState<Unidade | null | undefined>(null);
+  const [u, setU] = useState<UnidadeCampo | null | undefined>(null);
+  const [erroInicio, setErroInicio] = useState<{ msg: string; fatal: boolean } | null>(null);
+  const [iniciando, setIniciando] = useState(false);
   const [rasc, setRasc] = useState<Rascunho | null>(() => lerRascunho(unidadeId));
   const [lendoGps, setLendoGps] = useState(false);
 
@@ -26,7 +27,8 @@ export default function T08ValidacaoPresenca() {
   const precisaQr = u?.validacao !== 'gps';
   const gps = rasc?.presenca.gps;
   const qr = rasc?.presenca.qr;
-  const aprovado = !!u && !!rasc && (!precisaGps || !!gps?.ok) && (!precisaQr || !!qr?.ok);
+  // GPS reprovado não impede (o banco só sinaliza), mas exige que o vistoriador assuma; QR errado impede.
+  const aprovado = !!u && !!rasc && (!precisaGps || !!gps?.ok || !!gps?.aceito) && (!precisaQr || !!qr?.ok);
 
   // Ao abrir a tela, a localização já é verificada (o navegador pede a permissão aqui, durante a vistoria).
   useEffect(() => {
@@ -62,8 +64,21 @@ export default function T08ValidacaoPresenca() {
     );
   }
 
-  function iniciarChecklist() {
-    salvarRascunho({ ...rasc!, inicio: rasc!.inicio ?? new Date().toISOString() });
+  // Assume a vistoria no servidor (cria a avulsa e inicia). Sem internet, segue e o envio faz isso depois.
+  async function iniciarChecklist() {
+    setErroInicio(null);
+    setIniciando(true);
+    const r = salvarRascunho({ ...rasc!, inicio: rasc!.inicio ?? new Date().toISOString() });
+    const res = await iniciarNoServidor(r);
+    setIniciando(false);
+    if (!res.ok) {
+      const fatal = ['vistoria_nao_agendada', 'vistoria_de_outro_usuario', 'perfil_sem_permissao', 'tipo_inexistente', 'sem_acesso', 'vistoria_inexistente'].includes(res.codigo ?? '');
+      // não começou: volta a não ter início; QR recusado precisa ser lido de novo
+      setRasc(salvarRascunho({ ...r, inicio: undefined, presenca: res.codigo === 'qr_invalido' ? { ...r.presenca, qr: { ok: false, motivo: res.erro, em: new Date().toISOString() } } : r.presenca }));
+      setErroInicio({ msg: res.erro, fatal });
+      return;
+    }
+    salvarRascunho({ ...r, iniciada: r.iniciada || !res.adiado });
     navigate(`/app/vistorias/nova/${unidadeId}/checklist`, { replace: true });
   }
 
@@ -92,7 +107,7 @@ export default function T08ValidacaoPresenca() {
                 {gps?.distanciaM !== undefined && (
                   <dl className="grid grid-cols-2 gap-2 text-[0.75rem]">
                     <Medida label="Distância" valor={`${gps.distanciaM} m`} limite={`raio ${gps.raioM} m`} ok={gps.distanciaM <= (gps.raioM ?? 0)} />
-                    <Medida label="Precisão" valor={`${gps.precisaoM} m`} limite="limite 50 m" ok={(gps.precisaoM ?? 99) <= 50} />
+                    <Medida label="Precisão" valor={`${gps.precisaoM} m`} limite={`limite ${precisaoMaxima(u)} m`} ok={(gps.precisaoM ?? 999) <= precisaoMaxima(u)} />
                   </dl>
                 )}
                 {!gps?.ok && (
@@ -101,6 +116,12 @@ export default function T08ValidacaoPresenca() {
                     {lendoGps ? 'Obtendo posição' : gps ? 'Tentar novamente' : 'Verificar localização'}
                   </button>
                 )}
+                {gps && !gps.ok && !gps.aceito && !lendoGps && (
+                  <button type="button" className="min-h-11 text-center text-[0.8125rem] text-fg-2 underline underline-offset-4" onClick={() => atualizar({ gps: { ...gps, aceito: true } })}>
+                    Continuar mesmo assim (a vistoria vai sinalizada para a gestão)
+                  </button>
+                )}
+                {gps?.aceito && <p className="text-[0.75rem] text-warning">Você seguiu sem a localização aprovada: a vistoria será sinalizada.</p>}
                 {gps?.motivo?.startsWith('Permissão') && (
                   <Link to="/permissao-localizacao" className="text-center text-[0.75rem] text-pine underline underline-offset-4">Revisar permissão de localização</Link>
                 )}
@@ -118,6 +139,20 @@ export default function T08ValidacaoPresenca() {
           </ol>
         )}
 
+        {erroInicio && (
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-error bg-white p-4 text-[0.8125rem] text-error">
+            <p className="flex items-start gap-2"><Icon icon="solar:danger-circle-linear" width={18} className="mt-px shrink-0" aria-hidden="true" />{erroInicio.msg}</p>
+            {!erroInicio.fatal && aprovado && (
+              <button type="button" className={btnSecondary} disabled={iniciando} onClick={iniciarChecklist}>Tentar de novo</button>
+            )}
+            {erroInicio.fatal && (
+              <button type="button" className={btnSecondary} onClick={() => { descartarRascunho(); navigate(`/app/vistorias/nova/${unidadeId}`, { replace: true }); }}>
+                Escolher outra vistoria
+              </button>
+            )}
+          </div>
+        )}
+
         <p className="flex items-start gap-2 text-[0.75rem] text-fg-3">
           <Icon icon="solar:shield-check-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />
           Cada tentativa é registrada para auditoria, com horário, posição e precisão.
@@ -125,9 +160,9 @@ export default function T08ValidacaoPresenca() {
       </main>
 
       <BottomBar>
-        {aprovado ? (
+        {aprovado && !erroInicio ? (
           <p className="flex items-center justify-center gap-2 py-1 text-[0.8125rem] font-medium text-available" role="status">
-            <Icon icon="solar:check-circle-linear" width={18} aria-hidden="true" /> Presença validada · abrindo o checklist
+            <Icon icon="solar:check-circle-linear" width={18} aria-hidden="true" /> {iniciando ? 'Registrando o início no servidor…' : 'Presença validada · abrindo o checklist'}
           </p>
         ) : (
           <p className="py-1 text-center text-[0.75rem] text-fg-3">O checklist abre automaticamente quando a presença for validada.</p>

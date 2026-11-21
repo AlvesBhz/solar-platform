@@ -13,7 +13,7 @@ import { useItem } from '../lib/useItem';
 export default function T13Comparacao() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, entrada, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado } = useItem(unidadeId, itemId);
   const base = `/app/vistorias/nova/${unidadeId}`;
   const atual = fotos[fotos.length - 1];
   const [urlAtual, setUrlAtual] = useState<string>();
@@ -28,7 +28,7 @@ export default function T13Comparacao() {
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
   if (!rasc?.inicio) return <Navigate to={`${base}/presenca`} replace />;
   if (rasc.tipoId !== 'saida') return <Navigate to={`${base}/item/${itemId}`} replace />;
-  if (u && !ctx) return <Navigate to={`${base}/checklist`} replace />;
+  if (carregado && !ctx) return <Navigate to={`${base}/checklist`} replace />;   // item fora do checklist
 
   const semEntrada = !!u && !u.entradaVinculadaId;
   const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length) : [];
@@ -57,9 +57,9 @@ export default function T13Comparacao() {
 
             {/* Antes × agora */}
             <section className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2" aria-label="Comparação de fotos">
-              <Painel rotulo="Na entrada" detalhe={u.ultima ? formatarData(u.ultima.data) : 'Entrada vinculada'}>
-                {ctx.ambiente.ref ? (
-                  <img src={ctx.ambiente.ref} alt={`Foto da entrada: ${ctx.item.nome}`} width={1200} height={675} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+              <Painel rotulo="Na entrada" detalhe={entrada.length ? `Entrada vinculada · ${entrada.length} foto${entrada.length > 1 ? 's' : ''}` : 'Entrada vinculada'}>
+                {entrada[0] || ctx.ambiente.ref ? (
+                  <img src={entrada[0] ?? ctx.ambiente.ref} alt={`Foto da entrada: ${ctx.item.nome}`} width={1200} height={675} className="aspect-[4/3] w-full object-cover" loading="lazy" />
                 ) : (
                   <Vazio icon={ctx.ambiente.icon} texto="Entrada sem foto deste item" />
                 )}
@@ -85,7 +85,7 @@ export default function T13Comparacao() {
               <SeletorResposta opcoes={tipo.respostas} valor={resposta} onChange={responder} rotulo={`Estado de ${ctx.item.nome} na saída`} />
             </section>
 
-            {divergente(resposta) && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
+            {divergente(resposta) && <SeletorGravidade valor={gravidade} onChange={definirGravidade} travado={ctx.item.critico} />}
 
             <CampoObservacao valor={obs} onChange={observar} obrigatoria={false} />
 

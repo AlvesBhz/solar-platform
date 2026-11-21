@@ -10,7 +10,7 @@ export type UltimaVistoria = { tipo: string; data: string; assessor: string; sin
 export type Unidade = {
   id: string;
   nome: string;
-  tipo: 'Chalé' | 'Quarto' | 'Suíte';
+  tipo: 'Chalé' | 'Quarto' | 'Suíte' | string;
   propriedade: string;
   andar?: string;
   estado: EstadoUnidade;
@@ -29,6 +29,14 @@ export type TipoVistoria = {
   itens: number;
   ativo: boolean;
   exigeEntrada?: boolean;
+  // banco (vst_tipos_unidade)
+  idTipo?: number;
+  cd?: string;
+  comportamento?: string;
+  exigeAssinatura?: boolean;
+  idVistoria?: string;      // vistoria a retomar (agendada pelo site ou minha em andamento)
+  statusVistoria?: string;
+  dtAgendada?: string;
 };
 
 const UNIDADES: Unidade[] = [

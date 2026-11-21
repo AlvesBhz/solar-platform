@@ -135,11 +135,13 @@ const GRAVIDADES: { id: Gravidade; label: string; icon: string; desc: string; cl
 ];
 
 /** As 3 caixas de gravidade: aparecem assim que a resposta é uma divergência. */
-export function SeletorGravidade({ valor, onChange }: { valor: Gravidade; onChange: (g: Gravidade) => void }) {
+/** travado: item crítico, a gravidade é sempre crítica (regra do banco). */
+export function SeletorGravidade({ valor, onChange, travado }: { valor: Gravidade; onChange: (g: Gravidade) => void; travado?: boolean }) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-2 text-xs uppercase tracking-[0.08em] text-fg-2">Gravidade da ocorrência</legend>
-      {GRAVIDADES.map((o) => {
+      {travado && <p className="-mt-1 text-[0.75rem] text-fg-3">Item crítico: a ocorrência é sempre crítica e tira a unidade da venda até ser resolvida.</p>}
+      {GRAVIDADES.filter((o) => !travado || o.id === 'critica').map((o) => {
         const sel = valor === o.id;
         return (
           <label key={o.id} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors duration-fast ${sel ? o.cls : 'border-line-1 bg-white text-fg-2 hover:border-fg-3'}`}>

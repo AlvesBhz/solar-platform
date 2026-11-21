@@ -8,7 +8,7 @@ select item, obtido, esperado, obtido = esperado as ok from (
   union all select 3, 'tabelas VST_ fora do schema "SE" ou em minúsculas',
          (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where c.relkind = 'r' and upper(c.relname) like 'VST\_%' and (x.nspname <> 'SE' or c.relname <> upper(c.relname)))::int, 0
   union all select 4, 'funções vst_*',
-         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 41
+         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 42
   union all select 5, 'funções vst_* executáveis por anon ou public',
          (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%'
             and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('public', p.oid, 'execute')))::int, 0
