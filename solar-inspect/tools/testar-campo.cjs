@@ -222,6 +222,29 @@ async function assinarEnviar(page) {
     await ctx.close();
   });
 
+  console.log('── Celular compartilhado: cada funcionário vê só a própria fila');
+  await T('compartilhado', async () => {
+    const cen = {};
+    const envio = (id, uid, unidade, status) => ({ id, uid, unidadeId: '7', unidade, tipo: 'Rotina', inicio: '2026-11-21T10:00:00Z', fim: '2026-11-21T10:20:00Z', status, sinalizacoes: [], ocorrencias: 0, tentativas: 0,
+      ...(status === 'pendente' ? { dados: { unidadeId: 7, cdTipo: 'ROTINA', avulsa: true, dtAgendada: '2026-11-21', iniciada: false, respostas: [{ id_item: 101, tp_resposta: 'OK' }] } } : {}) });
+    const { ctx, page } = await abrir(browser, cen, { rota: '/app/unidades' });
+    await page.getByText('Casa do Mirante').first().waitFor({ timeout: 8000 });
+    const OUTRO = '00000000-0000-4000-8000-0000000000ff';
+    await page.evaluate(([a, b]) => localStorage.setItem('inspect.envios', JSON.stringify([a, b])), [envio('aaaaaaaa-0000-4000-8000-000000000001', OUTRO, 'Chalé do Outro', 'pendente'), envio('bbbbbbbb-0000-4000-8000-000000000002', '00000000-0000-4000-8000-0000000000a1', 'Casa do Mirante', 'enviada')]);
+    await page.goto(BASE + '/app/sincronizacao');
+    await page.getByText('Tudo sincronizado').waitFor({ timeout: 8000 });
+    const texto = await page.innerText('body');
+    ok(!texto.includes('Chalé do Outro') && texto.includes('Casa do Mirante'), 'T18 não mostra o envio de outro funcionário e mostra o meu');
+    ok(!cen.rpc.vst_criar_vistoria && !cen.rpc.vst_concluir_vistoria, 'o envio do outro não é enviado pela minha conta');
+    ok((await local(page, 'inspect.envios')).some((e) => e.uid === OUTRO && e.status === 'pendente' && e.dados), 'o envio pendente do outro continua guardado no aparelho (não se perde)');
+    await page.goto(BASE + '/app/historico');
+    await page.getByText('Casa do Mirante · Rotina').waitFor({ timeout: 8000 }).catch(() => {});
+    ok(!(await page.innerText('body')).includes('Chalé do Outro'), 'T19 também não mostra o envio de outro funcionário');
+    await page.goto(BASE + '/');
+    ok(await esperarRota(page, '/app/unidades'), 'o pendente do outro não me desvia para a fila ao entrar');
+    await ctx.close();
+  });
+
   console.log('── Recusas do servidor e GPS fora do raio');
   await T('recusa', async () => {
     const cen = { iniciarErro: 'vistoria_de_outro_usuario' };
