@@ -21,6 +21,9 @@ function novoBanco(eu = 'ADMIN') {
     up: [{ ID_USUARIO: 'u-ana', ID_PROPRIEDADE: 1 }],
     props: [{ id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', qtde_unidades: 1, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100, qtde_precisao_max_metros: 50, qtde_minutos_min_vistoria: 10 },
             { id_propriedade: 2, nm_propriedade: 'Hotel Lapinha', qtde_unidades: 0, tp_validacao: 'QR', vl_latitude: null, vl_longitude: null, qtde_raio_metros: 100, qtde_precisao_max_metros: 50, qtde_minutos_min_vistoria: 10 }],
+    unidades: [{ id_unidade: 1, cd_unidade: 'casa-do-mirante', nm_unidade: 'Casa do Mirante', id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100 },
+               { id_unidade: 2, cd_unidade: 'chale-novo', nm_unidade: 'Chalé Novo', id_propriedade: 2, nm_propriedade: 'Hotel Lapinha', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR', vl_latitude: null, vl_longitude: null, qtde_raio_metros: 100 }],
+    vstUnidade: [{ ID_UNIDADE: 1, DS_ANDAR: null, TP_VALIDACAO: null, VL_LATITUDE: null, VL_LONGITUDE: null, QTDE_RAIO_METROS: null, NO_VERSAO_QR: 1 }],
     respostas: {},  // sobrescreve: { 'PATCH VST_USUARIO': {status, corpo} }
   };
 }
@@ -45,6 +48,11 @@ function rotas(page, db) {
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'POST') { db.up.push(...corpo); return json(201); }
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'DELETE') { return json(204); }
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
+    if (caminho === 'rpc/vst_unidades') return json(200, db.unidades);
+    if (caminho === 'VST_UNIDADE' && m === 'GET') return json(200, db.vstUnidade);
+    if (caminho === 'VST_UNIDADE' && m === 'PATCH') { const id = Number(url.searchParams.get('ID_UNIDADE').slice(3)); const r = db.vstUnidade.find((x) => x.ID_UNIDADE === id); if (!r) return json(200, []); Object.assign(r, corpo); return json(200, [{ ID_UNIDADE: id }]); }
+    if (caminho === 'rpc/vst_obter_qr') { const id = corpo.p_id_unidade; if (!db.vstUnidade.find((x) => x.ID_UNIDADE === id)) db.vstUnidade.push({ ID_UNIDADE: id, NO_VERSAO_QR: 1 }); return json(200, [{ cd_hash_qr: 'hash-' + id, no_versao_qr: 1 }]); }
+    if (caminho === 'rpc/vst_rotacionar_qr') return json(200, [{ cd_hash_qr: 'hash-novo', no_versao_qr: 2 }]);
     if (caminho === 'VST_PROPRIEDADE' && m === 'POST') { db.props = db.props.map((p) => (p.id_propriedade === corpo.ID_PROPRIEDADE ? { ...p, tp_validacao: corpo.TP_VALIDACAO, qtde_raio_metros: corpo.QTDE_RAIO_METROS, vl_latitude: corpo.VL_LATITUDE, vl_longitude: corpo.VL_LONGITUDE } : p)); return json(201); }
     if (caminho === 'fn:criar-usuario') return json(201, { id_usuario: 'novo', login: corpo.cd_login });
     if (caminho === 'fn:redefinir-senha') return json(200, { id_usuario: 'u-ana' });
@@ -162,6 +170,40 @@ if (require.main === module) (async () => {
     await ctx.close();
     db = novoBanco(); ({ ctx, page } = await abrir(browser, db, '/admin/propriedades/999'));
     ok((await texto(page, '[role=alert]')).includes('não encontrada'), 'pousada inexistente ou sem acesso: avisa');
+    await ctx.close();
+  });
+
+  console.log('── T33 Presença por chalé');
+  await T('t33', async () => {
+    let db = novoBanco('ASSESSOR'); let { ctx, page } = await abrir(browser, db, '/admin/presenca');
+    ok(await esperarRota(page, '/acesso-indisponivel?motivo=sem-permissao'), 'assessor não entra na T33');
+    await ctx.close();
+    db = novoBanco('GESTOR'); ({ ctx, page } = await abrir(browser, db, '/admin/presenca'));
+    await page.waitForSelector('text=Casa do Mirante');
+    ok(await page.isVisible('text=Validação') && (await page.content()).includes('(pousada)'), 'gestor entra; mostra o que vem da pousada');
+    await page.locator('li:has-text("Casa do Mirante") button:has-text("Editar presença")').click();
+    await page.fill('#c-lat', '-19.0849');
+    ok((await texto(page, 'form [role=alert]')).includes('juntas') && await page.isDisabled('form button[type=submit]'), 'latitude sem longitude: avisa e bloqueia');
+    await page.fill('#c-lng', '-43.5969'); await page.fill('#c-raio', '60'); await page.fill('#c-andar', 'Térreo');
+    await page.click('form button[type=submit]');
+    await page.waitForSelector('text=Presença de Casa do Mirante salva');
+    const pt = ultima(db, 'PATCH', 'VST_UNIDADE');
+    ok(pt && pt.corpo.VL_LATITUDE === -19.0849 && pt.corpo.QTDE_RAIO_METROS === 60 && pt.corpo.DS_ANDAR === 'Térreo' && pt.corpo.TP_VALIDACAO === null && !('CD_HASH_QR' in pt.corpo) && !('TP_SITUACAO' in pt.corpo), 'salva ponto, raio e andar; "igual à pousada" grava vazio; nunca mexe em QR nem situação');
+    await page.locator('li:has-text("Chalé Novo") button:has-text("Editar presença")').click();
+    await escolher(page, 'Validação', 'Só GPS');
+    ok((await texto(page, 'form [role=alert]')).includes('defina o ponto'), 'GPS sem ponto no chalé nem na pousada: avisa');
+    await escolher(page, 'Validação', 'Só QR'); await page.fill('#c-andar', 'Bloco B');
+    await page.click('form button[type=submit]');
+    await page.waitForSelector('text=Presença de Chalé Novo salva');
+    ok(db.chamadas.filter((c) => c.caminho === 'VST_UNIDADE' && c.m === 'PATCH' && c.busca.includes('eq.2')).length === 2 && ultima(db, 'POST', 'rpc/vst_obter_qr'), 'chalé novo do site sem configuração: cria a linha (vst_obter_qr) e salva');
+    await page.locator('li:has-text("Casa do Mirante") button:has-text("QR da porta")').click();
+    await page.waitForSelector('img[alt^="QR da porta"]');
+    ok((await page.getAttribute('img[alt^="QR da porta"]', 'src')).startsWith('data:image/png') && !(await page.content()).includes('hash-1'), 'mostra o QR para imprimir sem exibir o código em texto');
+    await page.click('button:has-text("Rotacionar QR")');
+    ok(!ultima(db, 'POST', 'rpc/vst_rotacionar_qr'), 'rotacionar pede confirmação antes');
+    await page.click('button:has-text("Confirmar: invalidar")');
+    await page.waitForSelector('text=etiquetas antigas deixaram de valer');
+    ok(!!ultima(db, 'POST', 'rpc/vst_rotacionar_qr'), 'confirmado: rotaciona pela função (invalida a etiqueta antiga)');
     await ctx.close();
   });
 

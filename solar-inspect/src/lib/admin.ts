@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Dados da administração (T28–T33). Real: Supabase com RLS (só ADMIN/gestão alteram) e Edge Functions para login e senha.
 // Demonstração: dados em memória, sem rede.
 import { MODO_DEMO, SUPABASE_URL, supabase } from './supabase';
@@ -140,3 +141,59 @@ export async function salvarConfigPropriedade(id: number, c: Required<ConfigPres
 export const VALIDACOES: { valor: Propriedade['tp_validacao']; label: string }[] = [
   { valor: 'QR_E_GPS', label: 'QR e GPS' }, { valor: 'QR', label: 'Só QR' }, { valor: 'GPS', label: 'Só GPS' },
 ];
+
+// ── T33 presença por chalé (VST_UNIDADE): vazio herda da pousada. QR só pelas funções (gestão).
+export type Herdavel = Propriedade['tp_validacao'] | null;
+export type UnidadePresenca = {
+  id: number; nome: string; codigo: string; idPropriedade: number; pousada: string; situacao: string; andar: string | null; versaoQr: number;
+  efetivo: { tp_validacao: Propriedade['tp_validacao']; vl_latitude: number | null; vl_longitude: number | null; qtde_raio_metros: number };
+  proprio: { tp_validacao: Herdavel; vl_latitude: number | null; vl_longitude: number | null; qtde_raio_metros: number | null };
+};
+export async function listarUnidadesPresenca(): Promise<UnidadePresenca[]> {
+  if (MODO_DEMO || !supabase) return [{ id: 1, nome: 'Casa do Mirante', codigo: 'casa-do-mirante', idPropriedade: 1, pousada: 'Solar do Espinhaço', situacao: 'LIBERADO', andar: 'Térreo', versaoQr: 1,
+    efetivo: { tp_validacao: 'QR_E_GPS', vl_latitude: -19.0849, vl_longitude: -43.5969, qtde_raio_metros: 60 }, proprio: { tp_validacao: null, vl_latitude: -19.0849, vl_longitude: -43.5969, qtde_raio_metros: 60 } }];
+  const [u, v] = await Promise.all([
+    supabase.rpc('vst_unidades'),
+    supabase.from('VST_UNIDADE').select('ID_UNIDADE, DS_ANDAR, TP_VALIDACAO, VL_LATITUDE, VL_LONGITUDE, QTDE_RAIO_METROS, NO_VERSAO_QR'),
+  ]);
+  if (u.error || v.error) throw new Error((u.error ?? v.error)!.message);
+  return (u.data as Record<string, any>[]).map((x) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    const p = (v.data ?? []).find((r) => Number(r.ID_UNIDADE) === Number(x.id_unidade));
+    return {
+      id: Number(x.id_unidade), nome: x.nm_unidade, codigo: x.cd_unidade, idPropriedade: Number(x.id_propriedade), pousada: x.nm_propriedade, situacao: x.tp_situacao,
+      andar: x.ds_andar, versaoQr: p?.NO_VERSAO_QR ?? 1,
+      efetivo: { tp_validacao: x.tp_validacao, vl_latitude: x.vl_latitude, vl_longitude: x.vl_longitude, qtde_raio_metros: x.qtde_raio_metros },
+      proprio: { tp_validacao: p?.TP_VALIDACAO ?? null, vl_latitude: p?.VL_LATITUDE ?? null, vl_longitude: p?.VL_LONGITUDE ?? null, qtde_raio_metros: p?.QTDE_RAIO_METROS ?? null },
+    };
+  });
+}
+export function validarPresencaUnidade(c: UnidadePresenca['proprio'], pousada?: Propriedade): string[] {
+  const e: string[] = [];
+  if ((c.vl_latitude === null) !== (c.vl_longitude === null)) e.push('Informe latitude e longitude juntas (ou deixe as duas vazias para usar o ponto da pousada).');
+  if (c.vl_latitude !== null && (isNaN(c.vl_latitude) || Math.abs(c.vl_latitude) > 90)) e.push('Latitude inválida (-90 a 90).');
+  if (c.vl_longitude !== null && (isNaN(c.vl_longitude) || Math.abs(c.vl_longitude) > 180)) e.push('Longitude inválida (-180 a 180).');
+  if (c.qtde_raio_metros !== null && (!Number.isInteger(c.qtde_raio_metros) || c.qtde_raio_metros < 10 || c.qtde_raio_metros > 1000)) e.push('Raio entre 10 e 1.000 m (ou vazio para usar o da pousada).');
+  const tp = c.tp_validacao ?? pousada?.tp_validacao ?? 'QR_E_GPS';
+  if (tp !== 'QR' && c.vl_latitude === null && (pousada?.vl_latitude ?? null) === null) e.push('Para validar por GPS, defina o ponto do chalé ou o da pousada.');
+  return e;
+}
+export async function salvarPresencaUnidade(id: number, c: UnidadePresenca['proprio'], andar: string): Promise<Resultado> {
+  if (MODO_DEMO || !supabase) return { ok: true };
+  const dados = { TP_VALIDACAO: c.tp_validacao, VL_LATITUDE: c.vl_latitude, VL_LONGITUDE: c.vl_longitude, QTDE_RAIO_METROS: c.qtde_raio_metros, DS_ANDAR: andar.trim() || null, DT_ATUALIZACAO: new Date().toISOString() };
+  let r = await supabase.from('VST_UNIDADE').update(dados).eq('ID_UNIDADE', id).select('ID_UNIDADE');
+  if (!r.error && (r.data ?? []).length === 0) {
+    // chalé novo do site sem linha de configuração: a função de QR cria a linha (só gestão) e o UPDATE é refeito
+    const q = await supabase.rpc('vst_obter_qr', { p_id_unidade: id });
+    if (q.error) return { ok: false, erro: mensagem(q.error.message) };
+    r = await supabase.from('VST_UNIDADE').update(dados).eq('ID_UNIDADE', id).select('ID_UNIDADE');
+  }
+  if (r.error) return { ok: false, erro: mensagem(r.error.message) };
+  return (r.data ?? []).length ? { ok: true } : { ok: false, erro: 'Seu perfil não pode alterar este chalé.' };
+}
+export async function qrDaUnidade(id: number, rotacionar = false): Promise<{ ok: true; codigo: string; versao: number } | { ok: false; erro: string }> {
+  if (MODO_DEMO || !supabase) return { ok: true, codigo: 'demo' + (rotacionar ? Date.now() : ''), versao: 1 };
+  const { data, error } = await supabase.rpc(rotacionar ? 'vst_rotacionar_qr' : 'vst_obter_qr', { p_id_unidade: id });
+  if (error) return { ok: false, erro: mensagem(error.message) };
+  const linha = Array.isArray(data) ? data[0] : data;
+  return linha ? { ok: true, codigo: linha.cd_hash_qr, versao: linha.no_versao_qr } : { ok: false, erro: 'Chalé não encontrado.' };
+}
