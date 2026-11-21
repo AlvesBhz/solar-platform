@@ -141,5 +141,5 @@ Escrever vistoria, resposta, ocorrência, foto, situação e QR só pelas funç�
 
 ## Pendências
 
-- **Aplicação:** feita em 21/11/2026 no projeto `tnjpyjbqcjrowzjfnuln`: migração aplicada e verificada (15 de 15 itens, nada do site alterado) e Edge Functions `login-vistoria` e `criar-usuario` publicadas e respondendo. Falta criar o primeiro ADMIN e testar o login real.
+- **Aplicação:** feita em 21/11/2026 no projeto `tnjpyjbqcjrowzjfnuln`: migração (já com `DS_PERFIS`) aplicada e verificada (16 de 16, nada do site alterado), Edge Functions `login-vistoria`, `criar-usuario` e `redefinir-senha` publicadas. Primeiro ADMIN criado (usuário `admin`, entra também pelo CPF) e login real testado: login por CPF e por usuário, senha errada recusada, `vst_perfil` e `vst_unidades` pelo caminho do app, leitura direta de `SIT_RESERVA` negada. **Senha provisória: trocar no primeiro acesso.**
 - **Origem do app (`ALLOWED_ORIGINS`):** o padrão é `https://alvesbhz.github.io`; se o app Inspect for publicado em outro endereço, gravar o segredo.
