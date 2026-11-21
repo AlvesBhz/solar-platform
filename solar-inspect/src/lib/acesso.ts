@@ -103,7 +103,7 @@ export async function entrar(login: string, senha: string): Promise<ResultadoLog
   }
   let resp: Response;
   try {
-    resp = await fetch(`${SUPABASE_URL}/functions/v1/login-vistoria`, {
+    resp = await fetch(`${import.meta.env.VITE_FUNCOES_BASE ?? SUPABASE_URL + '/functions/v1'}/login-vistoria`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ login, senha }),
     });
   } catch {
