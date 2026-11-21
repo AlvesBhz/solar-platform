@@ -10,7 +10,7 @@ const ok = (c, m) => { total++; if (c) console.log('ok  ' + m); else { falhas++;
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
 const jwt = (exp) => `${b64({ alg: 'HS256', typ: 'JWT' })}.${b64({ sub: UID, role: 'authenticated', exp })}.assinatura`;
 const agora = () => Math.floor(Date.now() / 1000);
-const sessao = () => ({ access_token: jwt(agora() + 3600), refresh_token: 'refresh-1', expires_in: 3600, expires_at: agora() + 3600, token_type: 'bearer', user: { id: UID, aud: 'authenticated' } });
+const sessao = () => ({ access_token: jwt(agora() + 3600), refresh_token: 'refresh-1', expires_in: 3600, expires_at: agora() + 3600, token_type: 'bearer', user: { id: UID, aud: 'authenticated', email: 'ana@usuarios.inspect.invalid' } });
 
 // cenário do "banco": o que cada endpoint devolve
 function servidor(page, cen) {
@@ -21,6 +21,13 @@ function servidor(page, cen) {
     page.__log = log;
     const json = (status, corpo, extra = {}) => route.fulfill({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range', ...extra }, body: corpo === undefined ? '' : JSON.stringify(corpo) });
     if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
+    if (url.includes('/auth/v1/token') && url.includes('grant_type=password')) {
+      cen.reauth = JSON.parse(req.postData() || '{}');
+      return cen.senhaAtual && cen.reauth.password !== cen.senhaAtual ? json(400, { code: 'invalid_credentials', message: 'Invalid login credentials' }) : json(200, sessao());
+    }
+    if (url.includes('/auth/v1/user') && req.method() === 'PUT') { cen.novaSenha = JSON.parse(req.postData() || '{}').password; return json(200, { id: UID, aud: 'authenticated', email: 'ana@usuarios.inspect.invalid' }); }
+    if (url.includes('/auth/v1/logout')) { cen.logoutUrl = url; if (url.includes('scope=others')) { cen.outros = true; return json(204); } }
+    if (url.includes('/rest/v1/rpc/vst_senha_trocada')) { cen.trocou = true; cen.usuario = { ...(cen.usuario || {}), SG_TROCAR_SENHA: false }; return json(204); }
     if (url.includes('/auth/v1/user')) return cen.usuarioValido === false ? json(401, { message: 'invalid JWT' }) : json(200, { id: UID, aud: 'authenticated', role: 'authenticated' });
     if (url.includes('/auth/v1/logout')) { cen.saiu = true; return json(204); }
     if (url.includes('/rest/v1/VST_USUARIO_PROPRIEDADE')) return json(200, [], { 'content-range': `*/${cen.propriedades ?? 1}` });
@@ -255,6 +262,57 @@ const temSessao = (page) => page.evaluate(() => !!localStorage.getItem('inspect.
     ok(await esperarRota(page, '/login') && !(await temSessao(page)), 'Sair em Minhas unidades apaga a sessão do aparelho');
     await page.goto(BASE + '/');
     ok(await esperarRota(page, '/login'), 'depois de sair, abrir o app volta ao login');
+    await ctx.close();
+  });
+
+  console.log('── T35 Trocar senha');
+  await T('t35', async () => {
+    const cen = { usuario: { SG_TROCAR_SENHA: true }, senhaAtual: 'Provisoria-1' };
+    let { ctx, page } = await abrir(browser, cen, { comSessao: true });
+    ok(await esperarRota(page, '/conta/senha'), 'senha provisória → T35 antes de qualquer tela');
+    await page.getByRole('heading', { name: 'Crie sua senha' }).waitFor({ timeout: 5000 });
+    ok(await page.getByRole('button', { name: 'Sair' }).isVisible() && !(await page.getByRole('button', { name: 'Cancelar' }).count()), 'troca obrigatória: só salvar ou sair (sem cancelar)');
+    await page.setViewportSize({ width: 320, height: 720 });
+    ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), 'T35 cabe em 320 px sem rolagem lateral');
+    if (process.env.FOTO) await page.screenshot({ path: process.env.FOTO });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    const preencher = async (a, n, c) => { await page.fill('#senha-atual', a); await page.fill('#senha-nova', n); await page.fill('#senha-conf', c); await page.click('button[type=submit]'); };
+    await preencher('Provisoria-1', 'somenteletras', 'somenteletras');
+    await page.getByText('Misture letras e números.').waitFor({ timeout: 3000 });
+    ok(!cen.reauth && !cen.novaSenha, 'senha fraca é recusada na tela, sem ir ao servidor');
+    await preencher('Provisoria-1', 'curta1', 'curta1');
+    ok(await page.getByText('Use pelo menos 8 caracteres.').isVisible(), 'senha curta é recusada');
+    await preencher('Provisoria-1', 'NovaSenha22', 'NovaSenha23');
+    ok(await page.getByText('As senhas não são iguais.').isVisible() && !cen.novaSenha, 'confirmação diferente é recusada');
+    await preencher('Provisoria-1', 'Provisoria-1', 'Provisoria-1');
+    await page.getByText('A nova senha precisa ser diferente da atual.').waitFor({ timeout: 3000 });
+    ok(!cen.novaSenha, 'nova igual à atual é recusada');
+    await preencher('errada-123', 'NovaSenha22', 'NovaSenha22');
+    await page.getByText('A senha atual não confere.').waitFor({ timeout: 5000 });
+    ok(cen.reauth?.email === 'ana@usuarios.inspect.invalid' && !cen.novaSenha && !cen.trocou, 'senha atual errada: nada muda');
+    await preencher('Provisoria-1', 'NovaSenha22', 'NovaSenha22');
+    await page.getByRole('heading', { name: 'Senha alterada' }).waitFor({ timeout: 5000 });
+    ok(cen.novaSenha === 'NovaSenha22', 'grava a nova senha no Auth do usuário logado');
+    ok(cen.outros === true, 'encerra as sessões dos outros aparelhos');
+    ok(cen.trocou === true, 'desmarca a senha provisória no banco');
+    ok(await page.evaluate(() => !JSON.stringify(localStorage).includes('NovaSenha22') && !JSON.stringify(localStorage).includes('Provisoria-1')), 'nenhuma senha fica guardada no aparelho');
+    await page.click('text=Continuar');
+    ok(await esperarRota(page, '/app/unidades'), 'depois da troca segue para Minhas unidades');
+    await page.goto(BASE + '/');
+    ok(await esperarRota(page, '/app/unidades'), 'reabrir o app não pede a troca de novo');
+    await ctx.close();
+
+    ({ ctx, page } = await abrir(browser, { usuario: { TP_PERFIL: 'ADMIN', SG_TROCAR_SENHA: true } }, { comSessao: true, rota: '/admin/usuarios' }));
+    ok(await esperarRota(page, '/conta/senha'), 'ADMIN com senha provisória não abre a administração');
+    await ctx.close();
+
+    ({ ctx, page } = await abrir(browser, {}, { comSessao: true, rota: '/conta/senha' }));
+    await page.getByRole('heading', { name: 'Trocar senha' }).waitFor({ timeout: 5000 });
+    ok(await page.getByRole('button', { name: 'Cancelar' }).isVisible() && await page.getByText('Senha atual', { exact: true }).isVisible(), 'troca voluntária: pede a senha atual e permite cancelar');
+    await ctx.close();
+
+    ({ ctx, page } = await abrir(browser, {}, { rota: '/conta/senha' }));
+    ok(await esperarRota(page, '/login'), 'sem sessão, T35 manda para o login');
     await ctx.close();
   });
 

@@ -1,5 +1,6 @@
 // Redefinição de senha de funcionário pelo ADMIN, dentro do app (o funcionário que esqueceu a senha não precisa de e-mail).
-// A própria senha qualquer funcionário troca no app com supabase.auth.updateUser({ password }), logado.
+// A própria senha qualquer funcionário troca no app (T35) com supabase.auth.updateUser({ password }), logado.
+// A senha redefinida é provisória: marca SG_TROCAR_SENHA e o app exige a troca no próximo acesso.
 import { type Banco, LOGIN_VALIDO, lerJson, responder } from "../_shared/comum.ts";
 
 export interface Administrador {
@@ -36,6 +37,9 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     if (!linha) return R(req, 404, { erro: "usuario_inexistente", mensagem: "Usuário não encontrado." });
     const { ok } = await amb.admin.redefinirSenha(linha.id_usuario, senha);
     if (!ok) return R(req, 503, { erro: "indisponivel", mensagem: "Não foi possível redefinir a senha agora." });
+    // senha provisória: o funcionário terá de trocá-la no próximo acesso
+    const m = await banco.rpc("vst_exigir_troca_senha", { p_id_usuario: linha.id_usuario });
+    if (m.error) return R(req, 503, { erro: "indisponivel", mensagem: "Senha redefinida, mas não foi possível exigir a troca. Tente de novo." });
     return R(req, 200, { id_usuario: linha.id_usuario, login });
   };
 }

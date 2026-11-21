@@ -128,6 +128,7 @@ T["VST_USUARIO"] = dict(grupo="ace", cols=[
     col("TP_PERFIL", "text", desc="ASSESSOR (vistoria), LIMPEZA ou MANUTENCAO (campo), GESTOR ou ADMIN (gestão)."),
     col("SG_ATIVO", "boolean", desc="Inativo não entra no app (nem pelo login por CPF)."),
     col("DT_ACEITE_LGPD", "timestamptz", False, desc="Aceite do termo de uso de localização e fotos."),
+    col("SG_TROCAR_SENHA", "boolean", desc="Senha provisória (criada ou redefinida pelo ADMIN): o app exige a troca antes de seguir."),
     col("DT_CRIACAO", "timestamptz", desc="Cadastro."),
     col("DT_ATUALIZACAO", "timestamptz", desc="Última alteração.")])
 T["VST_USUARIO_PROPRIEDADE"] = dict(grupo="ace", cols=[
@@ -562,9 +563,9 @@ EX["VST_UNIDADE"] = [dict(id_unidade=1, ds_andar="Térreo", tp_validacao=None, v
                           dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-12-26T18:21:40+00:00")]
 EX["VST_USUARIO"] = [
     dict(id_usuario=U1, nm_usuario="Marina Lopes", cd_login="marina.lopes", cd_cpf="39053344705", tp_perfil="ASSESSOR", sg_ativo=True,
-         dt_aceite_lgpd="2026-11-20T12:30:00+00:00", dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-11-20T12:30:00+00:00"),
+         dt_aceite_lgpd="2026-11-20T12:30:00+00:00", sg_trocar_senha=False, dt_criacao="2026-11-20T12:00:00+00:00", dt_atualizacao="2026-11-20T12:30:00+00:00"),
     dict(id_usuario=U2, nm_usuario="Carlos Mendes", cd_login="carlos.mendes", cd_cpf="11144477735", tp_perfil="GESTOR", sg_ativo=True,
-         dt_aceite_lgpd=None, dt_criacao="2026-11-20T12:05:00+00:00", dt_atualizacao="2026-11-20T12:05:00+00:00")]
+         dt_aceite_lgpd=None, sg_trocar_senha=True, dt_criacao="2026-11-20T12:05:00+00:00", dt_atualizacao="2026-11-20T12:05:00+00:00")]
 EX["VST_USUARIO_PROPRIEDADE"] = [dict(id_usuario=U1, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00"),
                                  dict(id_usuario=U2, id_propriedade=1, dt_criacao="2026-11-20T12:10:00+00:00")]
 EX["VST_AMBIENTE"] = [

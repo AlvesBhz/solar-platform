@@ -479,6 +479,24 @@ select "SE".vst_cadastrar_usuario('00000000-0000-4000-8000-0000000000e2', 'Admin
 select teste.ok((select count(*) = 1 from "SE"."VST_USUARIO" where "CD_LOGIN" = 'admin.novo'), 'ADMIN pode ser cadastrado sem pousada (vê todas)');
 :dono
 
+\echo '── 6b2. Senha provisória (troca obrigatória)'
+:dono
+select teste.ok((select "SG_TROCAR_SENHA" from "VST_USUARIO" where "CD_LOGIN" = 'maria.limpeza'), 'funcionário cadastrado começa com senha provisória');
+update "VST_USUARIO" set "SG_TROCAR_SENHA" = false where "CD_LOGIN" = 'bia.teste';
+:como_bia
+select teste.erro($q$select "SE".vst_exigir_troca_senha('00000000-0000-4000-8000-0000000000b1')$q$, '42501', 'o app não marca senha provisória (só a Edge Function)');
+:como_anon
+select teste.erro($q$select "SE".vst_senha_trocada()$q$, '42501', 'anon não desmarca a troca de senha');
+:servico
+select "SE".vst_exigir_troca_senha('00000000-0000-4000-8000-0000000000b1') as _ \gset
+:dono
+select teste.ok((select "SG_TROCAR_SENHA" from "VST_USUARIO" where "CD_LOGIN" = 'bia.teste'), 'redefinir a senha marca a troca obrigatória');
+:como_bia
+select "SE".vst_senha_trocada() as _ \gset
+:dono
+select teste.ok((select not "SG_TROCAR_SENHA" from "VST_USUARIO" where "CD_LOGIN" = 'bia.teste'), 'o funcionário desmarca a própria troca depois de trocar a senha');
+select teste.ok((select "SG_TROCAR_SENHA" from "VST_USUARIO" where "CD_LOGIN" = 'maria.limpeza'), 'desmarcar a própria troca não afeta os outros');
+
 \echo '── 6c. T32 usuários e pousadas'
 :como_ana
 select teste.ok((select count(*) = 1 and bool_and(qtde_unidades = 1) from "SE".vst_propriedades()), 'vst_propriedades: assessor vê só a pousada dele, com a contagem de chalés');

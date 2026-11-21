@@ -17,7 +17,7 @@ const usuarios = [
 ];
 const senhas = { 'ana@usuarios.inspect.invalid': 'senha-da-ana', 'velho@usuarios.inspect.invalid': 'senha-do-velho' };
 let tentativas = new Map(); let chamadasBanco = [];
-function novoBanco({ falhaLocalizar = false, falhaCadastro = null } = {}) {
+function novoBanco({ falhaLocalizar = false, falhaCadastro = null, falhaExigir = false } = {}) {
   return {
     async rpc(nome, args) {
       chamadasBanco.push([nome, args]);
@@ -35,6 +35,7 @@ function novoBanco({ falhaLocalizar = false, falhaCadastro = null } = {}) {
         usuarios.push({ id_usuario: args.p_id_usuario, ds_email: '', sg_ativo: true, tp_perfil: args.p_tp_perfil, nm_usuario: args.p_nm_usuario, cd_login: args.p_cd_login, cd_cpf: args.p_cd_cpf });
         return { data: args.p_id_usuario, error: null };
       }
+      if (nome === 'vst_exigir_troca_senha') return falhaExigir ? { data: null, error: { message: 'boom' } } : { data: null, error: null };
       return { data: null, error: { message: 'rpc_desconhecida' } };
     },
   };
@@ -153,6 +154,10 @@ const criar = (h, corpo, token = 'tok-admin') => h(new Request('https://x/functi
   let r = await lerj(await redefinir({ cd_login: ' Ana.Souza ', senha: 'nova-senha-1' }));
   ok(r.status === 200 && r.corpo.id_usuario === 'u1' && trocas[0][0] === 'u1' && trocas[0][1] === 'nova-senha-1', 'redefinir: ADMIN troca a senha do funcionário');
   ok(!JSON.stringify(r.corpo).includes('nova-senha-1'), 'redefinir: a resposta nunca devolve a senha');
+  ok(chamadasBanco.some(([n, a]) => n === 'vst_exigir_troca_senha' && a.p_id_usuario === 'u1'), 'redefinir: a senha redefinida fica provisória (troca obrigatória)');
+  const hf = criarSenha(novoBanco({ falhaExigir: true }), amb);
+  ok((await hf(new Request('https://x/functions/v1/redefinir-senha', { method: 'POST', headers: { 'content-type': 'application/json', origin: ORIGEM, authorization: 'Bearer tok-admin' },
+    body: JSON.stringify({ cd_login: 'ana.souza', senha: 'nova-senha-2' }) }))).status === 503, 'redefinir: se não conseguir exigir a troca, avisa (503)');
   ok((await redefinir({ cd_login: 'nao.existe', senha: 'nova-senha-1' })).status === 404, 'redefinir: usuário inexistente é 404');
   ok((await redefinir({ cd_login: 'ana.souza', senha: 'curta' })).status === 422, 'redefinir: senha curta é 422');
   ok((await redefinir({ cd_login: '1ana', senha: 'nova-senha-1' })).status === 422, 'redefinir: usuário em formato inválido é 422');

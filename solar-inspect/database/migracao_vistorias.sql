@@ -86,6 +86,7 @@ create table if not exists "VST_USUARIO" (
   "TP_PERFIL"       text not null,                         -- ASSESSOR, LIMPEZA, MANUTENCAO, GESTOR ou ADMIN
   "SG_ATIVO"        boolean not null default true,
   "DT_ACEITE_LGPD"  timestamptz,                           -- aceite do termo de localização e fotos
+  "SG_TROCAR_SENHA" boolean not null default false,         -- senha provisória: o app exige a troca (T35)
   "DT_CRIACAO"      timestamptz not null default now(),
   "DT_ATUALIZACAO"  timestamptz not null default now(),
   constraint "PK_VST_USUARIO" primary key ("ID_USUARIO"),
@@ -101,6 +102,14 @@ alter table "VST_USUARIO" drop constraint if exists "CK_VST_USUARIO_TP_PERFIL";
 alter table "VST_USUARIO" add constraint "CK_VST_USUARIO_TP_PERFIL" check ("TP_PERFIL" in ('ASSESSOR', 'LIMPEZA', 'MANUTENCAO', 'GESTOR', 'ADMIN'));
 alter table "VST_USUARIO" drop constraint if exists "CK_VST_USUARIO_CD_LOGIN";
 alter table "VST_USUARIO" add constraint "CK_VST_USUARIO_CD_LOGIN" check ("CD_LOGIN" ~ '^[a-z][a-z0-9._-]{2,39}$');
+-- SG_TROCAR_SENHA: senha provisória (criada ou redefinida pelo ADMIN); o app exige a troca antes de seguir.
+-- Ao criar a coluna, quem já existe fica marcado: todos receberam senha provisória.
+do $$ begin
+  if not exists (select 1 from information_schema.columns where table_schema = 'SE' and table_name = 'VST_USUARIO' and column_name = 'SG_TROCAR_SENHA') then
+    alter table "SE"."VST_USUARIO" add column "SG_TROCAR_SENHA" boolean not null default false;
+    update "SE"."VST_USUARIO" set "SG_TROCAR_SENHA" = true;
+  end if;
+end $$;
 
 -- ── VST_USUARIO_PROPRIEDADE: quais pousadas cada usuário vê ─────────────
 create table if not exists "VST_USUARIO_PROPRIEDADE" (
@@ -544,8 +553,8 @@ begin
     raise exception 'propriedade_obrigatoria' using errcode = 'P0001';
   end if;
   begin
-    insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "CD_CPF", "TP_PERFIL")
-    values (p_id_usuario, btrim(p_nm_usuario), lower(btrim(p_cd_login)), v_cpf, p_tp_perfil);
+    insert into "VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "CD_CPF", "TP_PERFIL", "SG_TROCAR_SENHA")
+    values (p_id_usuario, btrim(p_nm_usuario), lower(btrim(p_cd_login)), v_cpf, p_tp_perfil, true);
   exception
     when unique_violation then
       if exists (select 1 from "VST_USUARIO" where "CD_LOGIN" = lower(btrim(p_cd_login))) then raise exception 'login_em_uso' using errcode = 'P0001'; end if;
@@ -1049,6 +1058,18 @@ begin
 end;
 $$;
 
+-- Senha provisória: a Edge Function redefinir-senha (service_role) marca a troca obrigatória;
+-- o próprio funcionário desmarca depois de trocar a senha no app (supabase.auth.updateUser).
+create or replace function vst_exigir_troca_senha(p_id_usuario uuid)
+returns void language sql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+  update "VST_USUARIO" set "SG_TROCAR_SENHA" = true, "DT_ATUALIZACAO" = now() where "ID_USUARIO" = p_id_usuario
+$$;
+create or replace function vst_senha_trocada()
+returns void language sql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+  update "VST_USUARIO" set "SG_TROCAR_SENHA" = false, "DT_ATUALIZACAO" = now()
+  where "ID_USUARIO" = (select auth.uid()) and "SG_TROCAR_SENHA"
+$$;
+
 -- QR do chalé para imprimir (gestão) e rotação (invalida as etiquetas antigas)
 create or replace function vst_obter_qr(p_id_unidade bigint)
 returns table (cd_hash_qr text, no_versao_qr smallint)
@@ -1175,7 +1196,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd', 'vst_propriedades') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;
@@ -1183,6 +1204,7 @@ end $$;
 revoke all on function vst_coerencia_vistoria() from public, anon, authenticated;
 grant execute on function vst_localizar_login(text) to service_role;
 grant execute on function vst_cadastrar_usuario(uuid, text, text, text, text, bigint[]) to service_role;
+grant execute on function vst_exigir_troca_senha(uuid) to service_role;
 
 
 -- ════════════════════════════════════════════════════════════════════

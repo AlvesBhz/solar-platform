@@ -119,6 +119,8 @@ supabase functions deploy criar-usuario  --project-ref tnjpyjbqcjrowzjfnuln --wo
 supabase secrets set ALLOWED_ORIGINS=https://alvesbhz.github.io --project-ref tnjpyjbqcjrowzjfnuln   # origem(ns) do app, separadas por vírgula
 ```
 
+**Senha provisória e troca de senha (T35, `/conta/senha`):** quem é cadastrado (`vst_cadastrar_usuario`) ou tem a senha redefinida (`redefinir-senha` chama `vst_exigir_troca_senha`, só service_role) fica com `SG_TROCAR_SENHA = true`, e o app abre T35 antes de qualquer tela, inclusive a administração. A troca confere a senha atual (reautenticação), grava a nova com `supabase.auth.updateUser`, encerra as sessões dos outros aparelhos (`signOut({ scope: 'others' })`) e desmarca com `vst_senha_trocada()`. Regras da tela: 8 a 72 caracteres, letras e números, diferente da atual e sem o usuário. Qualquer perfil troca a própria senha quando quiser, pelo ícone de cadeado.
+
 Esqueceu a senha: o ADMIN redefine pelo app (`redefinir-senha`). Para desligar um funcionário, `SG_ATIVO = false` em `VST_USUARIO`: ele deixa de entrar e de usar as funções na hora.
 
 ## Acesso direto às tabelas (RLS)

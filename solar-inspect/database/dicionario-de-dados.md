@@ -365,6 +365,7 @@ Os funcionários que usam o app: vistoria (assessor), limpeza, manutenção, ges
 | `TP_PERFIL` | `text` | sim | — | ASSESSOR (vistoria), LIMPEZA ou MANUTENCAO (campo), GESTOR ou ADMIN (gestão). | ASSESSOR |
 | `SG_ATIVO` | `boolean` | sim | — | Inativo não entra no app (nem pelo login por CPF). | sim |
 | `DT_ACEITE_LGPD` | `timestamptz` | não | — | Aceite do termo de uso de localização e fotos. | 20/11/2026 09:30 |
+| `SG_TROCAR_SENHA` | `boolean` | sim | — | Senha provisória (criada ou redefinida pelo ADMIN): o app exige a troca antes de seguir. | não |
 | `DT_CRIACAO` | `timestamptz` | sim | — | Cadastro. | 20/11/2026 09:00 |
 | `DT_ATUALIZACAO` | `timestamptz` | sim | — | Última alteração. | 20/11/2026 09:30 |
 

@@ -8,7 +8,8 @@ import { listarEnvios } from '../mocks/envios';
 export const APP_VERSION = MODO_DEMO ? '0.2.0-demo' : '0.2.0';
 export type Perfil = 'ASSESSOR' | 'LIMPEZA' | 'MANUTENCAO' | 'GESTOR' | 'ADMIN';
 export type Motivo = 'sem-permissao' | 'inativo' | 'sessao-expirada' | 'offline' | 'sem-localizacao';
-export type AcessoOk = { estado: 'ok'; nome: string; perfil: Perfil; aceiteLocalizacao: boolean; offline: boolean };
+// trocarSenha: a senha é provisória (criada ou redefinida pelo ADMIN) e precisa ser trocada antes de seguir
+export type AcessoOk = { estado: 'ok'; nome: string; perfil: Perfil; aceiteLocalizacao: boolean; offline: boolean; trocarSenha?: boolean };
 export type Acesso = { estado: 'sem-sessao' } | { estado: 'bloqueado'; motivo: Motivo } | AcessoOk;
 
 export const ehGestao = (p: Perfil) => p === 'GESTOR' || p === 'ADMIN';
@@ -17,7 +18,7 @@ export const ehGestao = (p: Perfil) => p === 'GESTOR' || p === 'ADMIN';
 // sem internet por até 72 h; depois disso, ou se o usuário for desativado, é preciso conferir de novo online.
 const CACHE = 'inspect.acesso';
 const OFFLINE_MAX_MS = 72 * 3600 * 1000;
-type Cache = { uid: string; nome: string; perfil: Perfil; aceite: boolean; conferidoEm: number };
+type Cache = { uid: string; nome: string; perfil: Perfil; aceite: boolean; trocar?: boolean; conferidoEm: number };
 const lerCache = (): Cache | null => { try { return JSON.parse(localStorage.getItem(CACHE) ?? 'null'); } catch { return null; } };
 const gravarCache = (c: Cache) => { try { localStorage.setItem(CACHE, JSON.stringify(c)); } catch { /* sem armazenamento */ } };
 const limparCache = () => { try { localStorage.removeItem(CACHE); } catch { /* sem armazenamento */ } };
@@ -39,7 +40,7 @@ const ehFalhaDeRede = (e: unknown) => {
 function offline(uid: string): Acesso {
   const c = lerCache();
   if (c && c.uid === uid && Date.now() - c.conferidoEm < OFFLINE_MAX_MS) {
-    return { estado: 'ok', nome: c.nome, perfil: c.perfil, aceiteLocalizacao: c.aceite, offline: true };
+    return { estado: 'ok', nome: c.nome, perfil: c.perfil, aceiteLocalizacao: c.aceite, offline: true, trocarSenha: !!c.trocar };
   }
   return { estado: 'bloqueado', motivo: 'offline' };
 }
@@ -61,7 +62,7 @@ export async function verificarAcesso(): Promise<Acesso> {
   }
   // o RLS só devolve a própria linha
   const { data: eu2, error } = await supabase
-    .from('VST_USUARIO').select('NM_USUARIO, TP_PERFIL, SG_ATIVO, DT_ACEITE_LGPD').eq('ID_USUARIO', uid).maybeSingle();
+    .from('VST_USUARIO').select('NM_USUARIO, TP_PERFIL, SG_ATIVO, DT_ACEITE_LGPD, SG_TROCAR_SENHA').eq('ID_USUARIO', uid).maybeSingle();
   if (error) {
     if (ehFalhaDeRede(error)) return offline(uid);
     await sair();
@@ -76,13 +77,14 @@ export async function verificarAcesso(): Promise<Acesso> {
     if (ep && ehFalhaDeRede(ep)) return offline(uid);
     if (ep || !count) { await sair(); return { estado: 'bloqueado', motivo: 'sem-permissao' }; }
   }
-  const a: AcessoOk = { estado: 'ok', nome: eu2.NM_USUARIO, perfil, aceiteLocalizacao: !!eu2.DT_ACEITE_LGPD, offline: false };
-  gravarCache({ uid, nome: a.nome, perfil, aceite: a.aceiteLocalizacao, conferidoEm: Date.now() });
+  const a: AcessoOk = { estado: 'ok', nome: eu2.NM_USUARIO, perfil, aceiteLocalizacao: !!eu2.DT_ACEITE_LGPD, offline: false, trocarSenha: !!eu2.SG_TROCAR_SENHA };
+  gravarCache({ uid, nome: a.nome, perfil, aceite: a.aceiteLocalizacao, trocar: a.trocarSenha, conferidoEm: Date.now() });
   return a;
 }
 
 /** Para onde ir depois de conferir o acesso. A equipe de campo aceita o uso da localização antes de tudo. */
 export function destino(a: AcessoOk): string {
+  if (a.trocarSenha) return '/conta/senha';
   if (ehGestao(a.perfil)) return '/gestao';
   if (!a.aceiteLocalizacao) return '/permissao-localizacao';
   if (listarEnvios().some((e) => e.status === 'pendente')) return '/app/sincronizacao';
@@ -131,4 +133,49 @@ export async function registrarAceiteLocalizacao(): Promise<boolean> {
   const c = lerCache();
   if (c) gravarCache({ ...c, aceite: true });
   return true;
+}
+
+export const SENHA_MIN = 8;
+export type ErroSenha = 'atual_incorreta' | 'fraca' | 'igual' | 'offline' | 'muitas_tentativas' | 'sessao' | 'indisponivel';
+
+/** Regras da nova senha (as mesmas das Edge Functions: 8 a 72 bytes) mais letra e número e diferente do usuário. */
+export function problemaSenha(nova: string, login = ''): string | null {
+  if (nova.length < SENHA_MIN) return `Use pelo menos ${SENHA_MIN} caracteres.`;
+  if (new TextEncoder().encode(nova).length > 72) return 'Use no máximo 72 caracteres.';
+  if (!/[A-Za-zÀ-ÿ]/.test(nova) || !/\d/.test(nova)) return 'Misture letras e números.';
+  if (login && nova.toLowerCase().includes(login.toLowerCase())) return 'Não use o seu usuário na senha.';
+  return null;
+}
+
+/** T35: confere a senha atual, grava a nova, encerra as sessões dos outros aparelhos e desmarca a senha provisória. */
+export async function trocarSenha(atual: string, nova: string): Promise<{ ok: true } | { ok: false; erro: ErroSenha }> {
+  if (!navigator.onLine) return { ok: false, erro: 'offline' };
+  if (atual === nova) return { ok: false, erro: 'igual' };
+  if (problemaSenha(nova)) return { ok: false, erro: 'fraca' };
+  if (MODO_DEMO || !supabase) {
+    if (demoLogado) demoLogado = { ...demoLogado, trocarSenha: false };
+    return { ok: true };
+  }
+  const { data: { session } } = await supabase.auth.getSession();
+  const email = session?.user.email;
+  if (!email) return { ok: false, erro: 'sessao' };
+  // reautenticação: a troca exige a senha atual mesmo com a sessão aberta (aparelho esquecido desbloqueado)
+  const conf = await supabase.auth.signInWithPassword({ email, password: atual });
+  if (conf.error) {
+    if (ehFalhaDeRede(conf.error)) return { ok: false, erro: 'indisponivel' };
+    return { ok: false, erro: conf.error.status === 429 ? 'muitas_tentativas' : 'atual_incorreta' };
+  }
+  const up = await supabase.auth.updateUser({ password: nova });
+  if (up.error) {
+    const c = (up.error as { code?: string }).code;
+    if (c === 'same_password') return { ok: false, erro: 'igual' };
+    if (c === 'weak_password') return { ok: false, erro: 'fraca' };
+    return { ok: false, erro: 'indisponivel' };
+  }
+  await supabase.auth.signOut({ scope: 'others' }).catch(() => undefined);
+  const { error } = await supabase.rpc('vst_senha_trocada');
+  if (error) return { ok: false, erro: 'indisponivel' };
+  const c = lerCache();
+  if (c) gravarCache({ ...c, trocar: false });
+  return { ok: true };
 }

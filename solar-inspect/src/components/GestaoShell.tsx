@@ -61,7 +61,10 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             </div>
           ))}
         </nav>
-        <button type="button" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
+        <NavLink to="/conta/senha" className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
+          <Icon icon="solar:lock-keyhole-linear" width={18} aria-hidden="true" /> Trocar senha
+        </NavLink>
+        <button type="button" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
           <Icon icon="solar:logout-2-linear" width={18} aria-hidden="true" /> Sair
         </button>
       </aside>
@@ -71,7 +74,14 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             {eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>
           </div>
-          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge /></div>
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge />
+            <NavLink to="/conta/senha" aria-label="Trocar senha" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+              <Icon icon="solar:lock-keyhole-linear" width={20} aria-hidden="true" />
+            </NavLink>
+            <button type="button" aria-label="Sair" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+              <Icon icon="solar:logout-2-linear" width={20} aria-hidden="true" />
+            </button>
+          </div>
         </header>
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-24 lg:px-8">{children}</main>
       </div>

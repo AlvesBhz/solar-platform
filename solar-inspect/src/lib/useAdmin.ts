@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { verificarAcesso, type Perfil } from './acesso';
 import { MODO_DEMO } from './supabase';
 
-/** Telas de administração: só para os perfis indicados (padrão: ADMIN). Sem sessão → login; outro perfil → T04. O RLS é a segunda barreira. */
+/** Telas de administração: só para os perfis indicados (padrão: ADMIN). Sem sessão → login; senha provisória → T35; outro perfil → T04. O RLS é a segunda barreira. */
 export function usePerfilPermitido(permitidos: Perfil[] = ['ADMIN']): Perfil | null {
   const navigate = useNavigate();
   const [perfil, setPerfil] = useState<Perfil | null>(MODO_DEMO ? 'ADMIN' : null);
@@ -14,6 +14,7 @@ export function usePerfilPermitido(permitidos: Perfil[] = ['ADMIN']): Perfil | n
       if (!vivo) return;
       if (a.estado === 'sem-sessao') navigate('/login', { replace: true });
       else if (a.estado === 'bloqueado') navigate(`/acesso-indisponivel?motivo=${a.motivo}`, { replace: true });
+      else if (a.trocarSenha) navigate('/conta/senha', { replace: true });
       else if (!permitidos.includes(a.perfil)) navigate('/acesso-indisponivel?motivo=sem-permissao', { replace: true });
       else setPerfil(a.perfil);
     });

@@ -52,6 +52,9 @@ export default function T05MinhasUnidades() {
           <Link to="/app/historico" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Meu histórico">
             <Icon icon="solar:history-linear" width={22} aria-hidden="true" />
           </Link>
+          <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha">
+            <Icon icon="solar:lock-keyhole-linear" width={22} aria-hidden="true" />
+          </Link>
           <button
             type="button"
             onClick={async () => { await sair(); navigate('/login', { replace: true }); }}
