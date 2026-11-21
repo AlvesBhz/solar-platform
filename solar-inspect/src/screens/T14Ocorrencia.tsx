@@ -25,8 +25,8 @@ export default function T14Ocorrencia() {
   if (!rasc?.inicio) return <Navigate to={`${base}/presenca`} replace />;
   if (rasc && !divergente(resposta)) return <Navigate to={`${base}/item/${itemId}`} replace />;
 
-  const g = grav ?? (ctx?.item.critico ? 'critica' : 'media');
-  const voltar = new URLSearchParams(search).get('volta') === 'resumo' ? `${base}/resumo` : `${base}/item/${itemId}${rasc.tipoId === 'saida' ? '/comparar' : ''}`;
+  const g: Gravidade = ctx?.item.critico ? 'critica' : grav ?? 'media';
+  const voltar = new URLSearchParams(search).get('volta') === 'resumo' ? `${base}/resumo` : `${base}/item/${itemId}${rasc.tipoId === 'saida' || rasc.comportamento === 'SAIDA' ? '/comparar' : ''}`;
 
   function salvar() {
     salvarRascunho({ ...rasc!, ocorrencias: { ...(rasc!.ocorrencias ?? {}), [itemId]: { gravidade: g, descricao: desc.trim() } } });
@@ -42,7 +42,7 @@ export default function T14Ocorrencia() {
           <h1 className="screen-title">{ctx?.item.nome ?? '…'}</h1>
         </div>
 
-        <SeletorGravidade valor={g} onChange={setGrav} />
+        <SeletorGravidade valor={g} onChange={setGrav} travado={ctx?.item.critico} />
 
         <label className="flex flex-col gap-2">
           <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Descrição (opcional)</span>

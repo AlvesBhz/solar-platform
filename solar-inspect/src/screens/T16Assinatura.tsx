@@ -6,7 +6,7 @@ import BottomBar from '../components/BottomBar';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { lerRascunho, salvarRascunho } from '../mocks/vistoria';
 
-/** T16 — Assinatura: área de desenho, limpar e confirmar (obrigatória em todos os tipos no mockup). */
+/** T16 — Assinatura: área de desenho, limpar e confirmar (obrigatória em todos os tipos). */
 export default function T16Assinatura() {
   const { unidadeId = '' } = useParams();
   const navigate = useNavigate();

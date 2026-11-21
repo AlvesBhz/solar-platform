@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { APP_VERSION } from '../mocks/auth';
+import { APP_VERSION } from '../lib/acesso';
 import { LockupHorizontal } from './Logo';
 import NetworkBadge from './NetworkBadge';
 

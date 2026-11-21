@@ -13,14 +13,14 @@ import { RESPOSTAS_OK } from '../mocks/checklist';
 export default function T11DetalheItem() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado } = useItem(unidadeId, itemId);
   const [obsAberta, setObsAberta] = useState(false);
   const base = `/app/vistorias/nova/${unidadeId}`;
 
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
   if (!rasc?.inicio) return <Navigate to={`${base}/presenca`} replace />;
   if (rasc.tipoId === 'saida') return <Navigate to={`${base}/item/${itemId}/comparar`} replace />; // saída usa a T13
-  if (u && !ctx) return <Navigate to={`${base}/checklist`} replace />;
+  if (carregado && !ctx) return <Navigate to={`${base}/checklist`} replace />;   // item fora do checklist
 
   const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length) : [];
   const completo = !!resposta && reqs.every((r) => r.ok);
@@ -64,7 +64,7 @@ export default function T11DetalheItem() {
               </div>
             )}
 
-            {div && <SeletorGravidade valor={gravidade} onChange={definirGravidade} />}
+            {div && <SeletorGravidade valor={gravidade} onChange={definirGravidade} travado={ctx.item.critico} />}
             {div && ctx.item.critico && (
               <p className="-mt-3 flex items-start gap-2 rounded-md bg-warning-bg p-3 text-[0.8125rem] text-warning">
                 <Icon icon="solar:danger-triangle-linear" width={16} className="mt-px shrink-0" aria-hidden="true" />

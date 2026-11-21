@@ -1,11 +1,11 @@
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { useOnline } from '../components/NetworkBadge';
 import { btnPrimary } from '../components/ScreenShell';
 import { formatarData } from '../components/Status';
-import { listarEnvios, sincronizar, type Envio } from '../mocks/envios';
+import { listarEnvios, sincronizar, type Envio } from '../lib/fila';
 
 /** T18 — Sincronização: fila offline com tentativas e erro. Reenvio idempotente (mesmo UUID). */
 export default function T18Sincronizacao() {
@@ -16,6 +16,8 @@ export default function T18Sincronizacao() {
   const recentes = lista.filter((e) => e.status !== 'pendente').slice(0, 5);
 
   async function tentar() { setRodando(true); setLista(await sincronizar()); setRodando(false); }
+  // ao abrir com internet e algo na fila, tenta enviar sozinho
+  useEffect(() => { if (online && listarEnvios().some((e) => e.status === 'pendente')) tentar(); }, [online]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="screen flex flex-col bg-cream">

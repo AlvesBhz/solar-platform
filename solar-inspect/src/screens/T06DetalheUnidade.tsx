@@ -5,7 +5,8 @@ import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary } from '../components/ScreenShell';
 import { EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
-import { obterUnidade, type Unidade } from '../mocks/unidades';
+import { obterUnidade, type Unidade } from '../lib/campo';
+import { lerRascunho } from '../mocks/vistoria';
 
 const ORDEM_GRAVIDADE = { critica: 0, media: 1, baixa: 2 };
 
@@ -112,9 +113,16 @@ export default function T06DetalheUnidade() {
 
       {u && (
         <BottomBar>
-          <button type="button" className={btnPrimary} onClick={() => navigate(`/app/vistorias/nova/${u.id}`)}>
-            <Icon icon="solar:clipboard-list-linear" width={18} aria-hidden="true" /> Iniciar vistoria
-          </button>
+          {(() => {
+            // vistoria em andamento neste aparelho: retoma de onde parou (checklist ou presença)
+            const r = lerRascunho(u.id);
+            const destinoVistoria = r ? `/app/vistorias/nova/${u.id}/${r.inicio ? 'checklist' : 'presenca'}` : `/app/vistorias/nova/${u.id}`;
+            return (
+              <button type="button" className={btnPrimary} onClick={() => navigate(destinoVistoria)}>
+                <Icon icon="solar:clipboard-list-linear" width={18} aria-hidden="true" /> {r ? 'Continuar vistoria' : 'Iniciar vistoria'}
+              </button>
+            );
+          })()}
         </BottomBar>
       )}
     </div>

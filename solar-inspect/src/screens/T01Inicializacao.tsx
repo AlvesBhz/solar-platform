@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Seal } from '../components/Logo';
 import NetworkBadge from '../components/NetworkBadge';
-import { APP_VERSION, checkSession } from '../mocks/auth';
+import { APP_VERSION, destino, verificarAcesso } from '../lib/acesso';
 
-/** T01 — Inicialização: valida sessão e sincronizações e decide o destino (login, unidades ou fila). */
+/** T01 — Inicialização: confere a sessão e o cadastro no banco (ativo, com pousada) e decide o destino. */
 export default function T01Inicializacao() {
   const navigate = useNavigate();
   const [step, setStep] = useState('Verificando sessão');
@@ -12,16 +12,13 @@ export default function T01Inicializacao() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { hasSession, pendingSync } = await checkSession();
+      const a = await verificarAcesso();
       if (!alive) return;
       setStep('Verificando sincronizações');
-      await new Promise((r) => setTimeout(r, 500));
-      if (!alive) return;
-      // Destinos futuros: /app/sincronizacao (T18) e /app/unidades (T05).
-      if (hasSession && pendingSync > 0) navigate('/app/sincronizacao', { replace: true });
-      else if (hasSession) navigate('/app/unidades', { replace: true });
-      else navigate('/login', { replace: true });
-    })();
+      if (a.estado === 'sem-sessao') navigate('/login', { replace: true });
+      else if (a.estado === 'bloqueado') navigate(`/acesso-indisponivel?motivo=${a.motivo}`, { replace: true });
+      else navigate(destino(a), { replace: true });
+    })().catch(() => { if (alive) navigate('/acesso-indisponivel?motivo=offline', { replace: true }); });
     return () => { alive = false; };
   }, [navigate]);
 

@@ -2,7 +2,9 @@ import { Icon } from '@iconify/react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { QR_EXPIRADO, qrDaUnidade, validarQr } from '../mocks/servidor';
+import { QR_EXPIRADO, qrDaUnidade } from '../mocks/servidor';
+import { validarQr } from '../lib/campo';
+import { MODO_DEMO } from '../lib/supabase';
 import { lerRascunho, salvarRascunho } from '../mocks/vistoria';
 
 type Estado = 'iniciando' | 'lendo' | 'validando' | 'erro_camera' | 'rejeitado';
@@ -116,7 +118,7 @@ export default function T09LeitorQr() {
           </div>
         )}
 
-        {estado !== 'validando' && (
+        {MODO_DEMO && estado !== 'validando' && (
           <details className="rounded-xl border border-white/15 bg-pine-deep text-[0.75rem] text-white/80">
             <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-4">
               <Icon icon="solar:info-circle-linear" width={16} aria-hidden="true" /> Mockup · simular leitura

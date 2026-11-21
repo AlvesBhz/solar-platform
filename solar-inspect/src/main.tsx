@@ -30,47 +30,57 @@ import T17Confirmacao from './screens/T17Confirmacao';
 import T18Sincronizacao from './screens/T18Sincronizacao';
 import T19MeuHistorico from './screens/T19MeuHistorico';
 import { T20Dashboard, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
-import { T28Propriedades, T29FormPropriedade, T30Ambientes, T31Tipos, T32Usuarios, T33Presenca, T34Auditoria } from './screens/Admin';
+import { T34Auditoria } from './screens/Admin';
+import { T31Tipos } from './screens/T31Tipos';
+import { T30Ambientes } from './screens/T30Ambientes';
+import { T33Presenca } from './screens/T33Presenca';
+import T35TrocarSenha from './screens/T35TrocarSenha';
+import ProtegeCampo from './lib/ProtegeCampo';
+import type { Perfil } from './lib/acesso';
+const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
+import { T32Usuarios } from './screens/T32Usuarios';
+import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Router>
-      <SimNav />
+    <Router basename={import.meta.env.MODE === 'artifact' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
+      {import.meta.env.MODE === 'artifact' && <SimNav />}
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
         <Route path="/login" element={<T02Login />} />
         <Route path="/permissao-localizacao" element={<T03PermissaoLocalizacao />} />
         <Route path="/acesso-indisponivel" element={<T04AcessoIndisponivel />} />
-        <Route path="/app/unidades" element={<T05MinhasUnidades />} />
-        <Route path="/app/unidades/:id" element={<T06DetalheUnidade />} />
-        <Route path="/app/vistorias/nova/:unidadeId" element={<T07TipoVistoria />} />
-        <Route path="/app/vistorias/nova/:unidadeId/presenca" element={<T08ValidacaoPresenca />} />
-        <Route path="/app/vistorias/nova/:unidadeId/qr" element={<T09LeitorQr />} />
-        <Route path="/app/vistorias/nova/:unidadeId/checklist" element={<T10Checklist />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<T11DetalheItem />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<T12CapturaEvidencia />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<T13Comparacao />} />
-        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/ocorrencia" element={<T14Ocorrencia />} />
-        <Route path="/app/vistorias/nova/:unidadeId/resumo" element={<T15Resumo />} />
-        <Route path="/app/vistorias/nova/:unidadeId/assinatura" element={<T16Assinatura />} />
-        <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<T17Confirmacao />} />
-        <Route path="/app/sincronizacao" element={<T18Sincronizacao />} />
-        <Route path="/app/historico" element={<T19MeuHistorico />} />
-        <Route path="/gestao" element={<T20Dashboard />} />
-        <Route path="/gestao/unidades" element={<T21Unidades />} />
-        <Route path="/gestao/unidades/:id" element={<T22DetalheUnidade />} />
-        <Route path="/gestao/vistorias" element={<T23Vistorias />} />
-        <Route path="/gestao/vistorias/:id" element={<T24DetalheVistoria />} />
-        <Route path="/gestao/vistorias/:id/relatorio" element={<T27Relatorio />} />
-        <Route path="/gestao/ocorrencias" element={<T25Ocorrencias />} />
-        <Route path="/gestao/ocorrencias/:id" element={<T26Tratamento />} />
+        <Route path="/app/unidades" element={<ProtegeCampo><T05MinhasUnidades /></ProtegeCampo>} />
+        <Route path="/app/unidades/:id" element={<ProtegeCampo><T06DetalheUnidade /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId" element={<ProtegeCampo><T07TipoVistoria /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/presenca" element={<ProtegeCampo><T08ValidacaoPresenca /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/qr" element={<ProtegeCampo><T09LeitorQr /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/checklist" element={<ProtegeCampo><T10Checklist /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId" element={<ProtegeCampo><T11DetalheItem /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/foto" element={<ProtegeCampo><T12CapturaEvidencia /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/comparar" element={<ProtegeCampo><T13Comparacao /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/item/:itemId/ocorrencia" element={<ProtegeCampo><T14Ocorrencia /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/resumo" element={<ProtegeCampo><T15Resumo /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/assinatura" element={<ProtegeCampo><T16Assinatura /></ProtegeCampo>} />
+        <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<ProtegeCampo><T17Confirmacao /></ProtegeCampo>} />
+        <Route path="/app/sincronizacao" element={<ProtegeCampo><T18Sincronizacao /></ProtegeCampo>} />
+        <Route path="/app/historico" element={<ProtegeCampo><T19MeuHistorico /></ProtegeCampo>} />
+        <Route path="/gestao" element={<ProtegeCampo perfis={GESTAO}><T20Dashboard /></ProtegeCampo>} />
+        <Route path="/gestao/unidades" element={<ProtegeCampo perfis={GESTAO}><T21Unidades /></ProtegeCampo>} />
+        <Route path="/gestao/unidades/:id" element={<ProtegeCampo perfis={GESTAO}><T22DetalheUnidade /></ProtegeCampo>} />
+        <Route path="/gestao/vistorias" element={<ProtegeCampo perfis={GESTAO}><T23Vistorias /></ProtegeCampo>} />
+        <Route path="/gestao/vistorias/:id" element={<ProtegeCampo perfis={GESTAO}><T24DetalheVistoria /></ProtegeCampo>} />
+        <Route path="/gestao/vistorias/:id/relatorio" element={<ProtegeCampo perfis={GESTAO}><T27Relatorio /></ProtegeCampo>} />
+        <Route path="/gestao/ocorrencias" element={<ProtegeCampo perfis={GESTAO}><T25Ocorrencias /></ProtegeCampo>} />
+        <Route path="/gestao/ocorrencias/:id" element={<ProtegeCampo perfis={GESTAO}><T26Tratamento /></ProtegeCampo>} />
         <Route path="/admin/propriedades" element={<T28Propriedades />} />
-        <Route path="/admin/propriedades/nova" element={<T29FormPropriedade />} />
+        <Route path="/admin/propriedades/:id" element={<T29FormPropriedade />} />
         <Route path="/admin/checklists" element={<T30Ambientes />} />
         <Route path="/admin/tipos" element={<T31Tipos />} />
         <Route path="/admin/presenca" element={<T33Presenca />} />
         <Route path="/admin/usuarios" element={<T32Usuarios />} />
         <Route path="/admin/auditoria" element={<T34Auditoria />} />
+        <Route path="/conta/senha" element={<T35TrocarSenha />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

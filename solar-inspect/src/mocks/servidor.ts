@@ -8,6 +8,11 @@ export type ResultadoValidacao = {
   precisaoM?: number;
   raioM?: number;
   em: string;
+  lat?: number;
+  lng?: number;
+  codigo?: string;     // QR lido (o servidor confere de novo ao iniciar)
+  pendente?: boolean;  // sem internet: conferido no envio
+  aceito?: boolean;    // GPS reprovado, mas o vistoriador seguiu: a vistoria vai sinalizada
 };
 
 const PRECISAO_MAX_M = 50;

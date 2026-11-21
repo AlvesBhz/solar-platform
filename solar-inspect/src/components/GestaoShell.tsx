@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LockupHorizontal } from './Logo';
+import { MODO_DEMO, perfilAtual, sair } from '../lib/acesso';
 import NetworkBadge from './NetworkBadge';
 
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
@@ -11,13 +12,16 @@ const MENU = [
   { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades' },
   { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
   { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
-  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true },
+  { to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Fazer vistoria' },
+  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true, so: 'ADMIN' },
   { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', admin: true },
-  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true },
+  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true, so: 'ADMIN' },
   { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', admin: true },
-  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true },
-  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true },
+  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true, so: 'ADMIN' },
+  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true, so: 'ADMIN' },
 ];
+// o menu mostra só o que o perfil pode abrir (as telas e o banco conferem de novo)
+const menuDo = (p?: string) => MENU.filter((m) => !m.so || m.so === p || (MODO_DEMO && !p));
 
 /** Moldura de gestão/admin: responsiva para desktop e tablet (menu lateral) e utilizável no celular. */
 export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titulo: string; eyebrow?: string; acoes?: ReactNode; children: ReactNode }) {
@@ -48,29 +52,39 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
     `flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] transition-colors duration-fast ${isActive ? 'bg-white/10 font-medium text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`;
   return (
     <div className="screen bg-cream lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="on-dark bg-pine-deep text-white lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:gap-6 lg:p-4">
+      <aside className="on-dark bg-pine-deep text-white print:hidden lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:gap-6 lg:p-4">
         <div className="hidden px-2 pt-2 lg:block">
           <LockupHorizontal size="1.25rem" claro />
         </div>
         <nav ref={nav} className="relative flex gap-1 overflow-x-auto px-[45vw] py-2 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden" aria-label="Gestão">
-          {MENU.map((m, i) => (
+          {menuDo(perfilAtual()).map((m, i, menu) => (
             <div key={m.to} className="contents">
-              {m.admin && !MENU[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
+              {m.admin && !menu[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
               <NavLink to={m.to} end={m.end} className={link}><Icon icon={m.icon} width={18} aria-hidden="true" />{m.label}</NavLink>
             </div>
           ))}
         </nav>
-        <button type="button" onClick={() => navigate('/login')} className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
+        <NavLink to="/conta/senha" className="mt-auto hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
+          <Icon icon="solar:lock-keyhole-linear" width={18} aria-hidden="true" /> Trocar senha
+        </NavLink>
+        <button type="button" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="hidden min-h-11 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] text-white/70 hover:text-white lg:flex">
           <Icon icon="solar:logout-2-linear" width={18} aria-hidden="true" /> Sair
         </button>
       </aside>
       <div className="flex min-w-0 flex-col">
-        <header className="flex flex-wrap items-end justify-between gap-3 px-[max(1rem,env(safe-area-inset-left))] pb-4 pt-6 lg:px-8">
+        <header className="flex flex-wrap items-end justify-between gap-3 print:hidden px-[max(1rem,env(safe-area-inset-left))] pb-4 pt-6 lg:px-8">
           <div className="flex min-w-0 flex-col gap-1">
             {eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>
           </div>
-          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge /></div>
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge />
+            <NavLink to="/conta/senha" aria-label="Trocar senha" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+              <Icon icon="solar:lock-keyhole-linear" width={20} aria-hidden="true" />
+            </NavLink>
+            <button type="button" aria-label="Sair" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+              <Icon icon="solar:logout-2-linear" width={20} aria-hidden="true" />
+            </button>
+          </div>
         </header>
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-24 lg:px-8">{children}</main>
       </div>

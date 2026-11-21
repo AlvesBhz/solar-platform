@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ScreenShell, { StateIcon, btnPrimary, btnSecondary } from '../components/ScreenShell';
+import { sair } from '../lib/acesso';
 
 type Reason = 'sem-permissao' | 'inativo' | 'sessao-expirada' | 'offline' | 'sem-localizacao';
 
@@ -27,7 +28,7 @@ const REASONS: Record<Reason, { icon: string; tone: 'warning' | 'error'; title: 
   },
 };
 
-/** T04 — Acesso indisponível: explica o motivo e oferece recuperação. Não exibe dados. */
+/** T04 — Acesso indisponível: explica o motivo e oferece recuperação. Não exibe dados; voltar ao login encerra a sessão. */
 export default function T04AcessoIndisponivel() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -35,8 +36,8 @@ export default function T04AcessoIndisponivel() {
   const r = REASONS[key] ?? REASONS['sem-permissao'];
 
   const primary = {
-    login: { label: 'Voltar ao login', icon: 'solar:login-2-linear', go: () => navigate('/login', { replace: true }) },
-    retry: { label: 'Tentar novamente', icon: 'solar:refresh-linear', go: () => navigate(0) },
+    login: { label: 'Voltar ao login', icon: 'solar:login-2-linear', go: async () => { await sair(); navigate('/login', { replace: true }); } },
+    retry: { label: 'Tentar novamente', icon: 'solar:refresh-linear', go: () => navigate('/', { replace: true }) },
     location: { label: 'Revisar permissão', icon: 'solar:map-point-linear', go: () => navigate('/permissao-localizacao') },
   }[r.action];
 
