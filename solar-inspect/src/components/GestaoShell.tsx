@@ -78,10 +78,10 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             <h1 className="screen-title">{titulo}</h1>
           </div>
           <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge />
-            <NavLink to="/conta/senha" aria-label="Trocar senha" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+            <NavLink to="/conta/senha" aria-label="Trocar senha" title="Trocar senha" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
               <Icon icon="solar:lock-keyhole-linear" width={20} aria-hidden="true" />
             </NavLink>
-            <button type="button" aria-label="Sair" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
+            <button type="button" aria-label="Sair" title="Sair" onClick={async () => { await sair(); navigate('/login', { replace: true }); }} className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
               <Icon icon="solar:logout-2-linear" width={20} aria-hidden="true" />
             </button>
           </div>

@@ -1,7 +1,7 @@
 // Redefinição de senha de funcionário pelo ADMIN, dentro do app (o funcionário que esqueceu a senha não precisa de e-mail).
 // A própria senha qualquer funcionário troca no app (T35) com supabase.auth.updateUser({ password }), logado.
 // A senha redefinida é provisória: marca SG_TROCAR_SENHA e o app exige a troca no próximo acesso.
-import { type Banco, LOGIN_VALIDO, lerJson, responder } from "../_shared/comum.ts";
+import { type Banco, senhaValida, LOGIN_VALIDO, lerJson, responder } from "../_shared/comum.ts";
 
 export interface Administrador {
   redefinirSenha(idUsuario: string, senha: string): Promise<{ ok: boolean }>;
@@ -29,7 +29,7 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     const login = typeof c?.cd_login === "string" ? c.cd_login.trim().toLowerCase() : "";
     const senha = typeof c?.senha === "string" ? c.senha : "";
     if (!LOGIN_VALIDO.test(login)) return R(req, 422, { erro: "login_invalido", mensagem: "Informe o usuário do funcionário." });
-    if (senha.length < 8 || new TextEncoder().encode(senha).length > 72) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 8 a 72 caracteres." });
+    if (!senhaValida(senha)) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 8 a 72 caracteres, com letras e números." });
 
     const r = await banco.rpc("vst_localizar_login", { p_login: login });
     if (r.error) return R(req, 503, { erro: "indisponivel", mensagem: "Tente de novo em instantes." });

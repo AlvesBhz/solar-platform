@@ -4,7 +4,7 @@ import { Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { cpfValido, formatarCpf } from '../lib/cpf';
-import type { Perfil } from '../lib/acesso';
+import { problemaSenha, type Perfil } from '../lib/acesso';
 import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenha, rotuloPerfil, salvarUsuario, type Propriedade, type Usuario } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
@@ -12,12 +12,27 @@ const LOGIN_VALIDO = /^[a-z][a-z0-9._-]{2,39}$/;
 const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
 const rotulo = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
 const mascaraCpf = (c: string | null) => (c ? `•••.${c.slice(3, 6)}.${c.slice(6, 9)}-••` : '—');
-function gerarSenha() {
+/** Senha provisória forte: 12 caracteres sem os que se confundem (0/O, 1/l/I), sempre com maiúscula, minúscula e número. */
+function gerarSenha(): string {
   const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-  return Array.from(crypto.getRandomValues(new Uint32Array(12)), (n) => a[n % a.length]).join('');
+  const s = Array.from(crypto.getRandomValues(new Uint32Array(12)), (n) => a[n % a.length]).join('');
+  return /[A-Z]/.test(s) && /[a-z]/.test(s) && /\d/.test(s) ? s : gerarSenha();
+}
+const semAcento = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+/** Usuário digitado: minúsculo, sem acento, espaço vira ponto e só os caracteres aceitos (nunca mostra erro de formato). */
+const limparLogin = (t: string) => semAcento(t).toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9._-]/g, '').replace(/^[^a-z]+/, '').slice(0, 40);
+/** Sugestão a partir do nome: primeiro e último nome (lais.magalhaes), sem repetir um usuário que já existe. */
+function sugerirLogin(nome: string, existentes: string[]): string {
+  const partes = semAcento(nome).toLowerCase().split(/\s+/).map((p) => p.replace(/[^a-z]/g, '')).filter((p) => p && !['de', 'da', 'do', 'das', 'dos', 'e'].includes(p));
+  if (!partes.length) return '';
+  let base = (partes.length > 1 ? `${partes[0]}.${partes[partes.length - 1]}` : partes[0]).slice(0, 36);
+  if (base.length < 3) base = (base + 'usr').slice(0, 3);
+  let login = base, n = 2;
+  while (existentes.includes(login)) login = `${base}${n++}`;
+  return login;
 }
 
-type Form = { modo: 'novo' | 'editar'; base?: Usuario; nome: string; login: string; cpf: string; perfil: Perfil; senha: string; props: number[]; ativo: boolean };
+type Form = { modo: 'novo' | 'editar'; base?: Usuario; nome: string; login: string; loginManual?: boolean; cpf: string; perfil: Perfil; senha: string; props: number[]; ativo: boolean };
 const vazio = (): Form => ({ modo: 'novo', nome: '', login: '', cpf: '', perfil: 'ASSESSOR', senha: gerarSenha(), props: [], ativo: true });
 
 /** T32 — Usuários e permissões: cadastro (Edge Function criar-usuario), perfil, pousadas, status e redefinição de senha. Só ADMIN. */
@@ -47,9 +62,11 @@ export function T32Usuarios() {
     if (form.nome.trim().length < 3) return setErro('Informe o nome completo.');
     if (form.perfil !== 'ADMIN' && form.props.length === 0) return setErro('Escolha ao menos uma pousada para este perfil.');
     if (form.modo === 'novo') {
-      if (!LOGIN_VALIDO.test(form.login)) return setErro('Usuário: 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado, começando por letra.');
+      if (!LOGIN_VALIDO.test(form.login)) return setErro('Usuário: use ao menos 3 letras (ex.: maria.silva).');
+      if (us.some((u) => u.login === form.login)) return setErro(`O usuário ${form.login} já existe. Escolha outro (ex.: ${sugerirLogin(form.nome, us.map((u) => u.login))}).`);
       if (form.cpf && !cpfValido(form.cpf)) return setErro('CPF inválido.');
-      if (form.senha.length < 8) return setErro('A senha inicial precisa ter ao menos 8 caracteres.');
+      const ps = problemaSenha(form.senha, form.login);
+      if (ps) return setErro(`Senha provisória: ${ps}`);
     }
     setSalvando(true);
     const r = form.modo === 'novo'
@@ -57,7 +74,7 @@ export function T32Usuarios() {
       : await salvarUsuario(form.base!, { nome: form.nome, perfil: form.perfil, ativo: form.ativo, props: form.props });
     setSalvando(false);
     if (!r.ok) return setErro(r.erro);
-    setAviso(form.modo === 'novo' ? `Usuário ${form.login} criado. Senha inicial: ${form.senha} (passe ao funcionário; ele deve trocar no primeiro acesso).` : 'Alterações salvas.');
+    setAviso(form.modo === 'novo' ? `Usuário ${form.login} criado. Senha provisória: ${form.senha} — passe ao funcionário; no primeiro acesso ele cria a própria senha.${form.cpf ? ' Ele também entra pelo CPF.' : ''}` : 'Alterações salvas.');
     setForm(null);
     carregar();
   }
@@ -65,7 +82,8 @@ export function T32Usuarios() {
   async function salvarSenha(e: FormEvent) {
     e.preventDefault();
     if (!senhaDe) return;
-    if (senhaDe.senha.length < 8) return setErro('A senha precisa ter ao menos 8 caracteres.');
+    const ps = problemaSenha(senhaDe.senha, senhaDe.u.login);
+    if (ps) return setErro(`Nova senha: ${ps}`);
     setSalvando(true);
     const r = await redefinirSenha(senhaDe.u.login, senhaDe.senha);
     setSalvando(false);
@@ -84,13 +102,21 @@ export function T32Usuarios() {
         <form onSubmit={salvar} className={`${card} flex flex-col gap-4 p-4`} aria-label={form.modo === 'novo' ? 'Novo usuário' : 'Editar usuário'}>
           <p className="text-[0.9375rem] font-medium text-fg-1">{form.modo === 'novo' ? 'Novo usuário' : `Editar ${form.base!.login}`}</p>
           <div className="grid gap-4 md:grid-cols-2">
-            <label className={rotulo}>Nome completo<input id="u-nome" className={campo} maxLength={80} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></label>
+            <label className={rotulo}>Nome completo<input id="u-nome" className={campo} maxLength={80} value={form.nome}
+              onChange={(e) => setForm({ ...form, nome: e.target.value, login: form.modo === 'novo' && !form.loginManual ? sugerirLogin(e.target.value, us.map((u) => u.login)) : form.login })} /></label>
             {form.modo === 'novo' && <>
-              <label className={rotulo}>Usuário<input id="u-login" className={campo} maxLength={40} autoCapitalize="none" spellCheck={false} value={form.login} onChange={(e) => setForm({ ...form, login: e.target.value.toLowerCase().trim() })} /></label>
+              <label className={rotulo}>Usuário para entrar
+                <input id="u-login" className={campo} maxLength={40} autoCapitalize="none" spellCheck={false} placeholder="preenchido pelo nome" value={form.login}
+                  onChange={(e) => setForm({ ...form, login: limparLogin(e.target.value), loginManual: e.target.value !== '' })} />
+                <span className="normal-case tracking-normal text-fg-3">Criado a partir do nome; pode mudar. Também dá para entrar pelo CPF.</span>
+              </label>
               <label className={rotulo}>CPF (opcional, também serve para entrar)<input id="u-cpf" className={campo} inputMode="numeric" value={form.cpf} onChange={(e) => setForm({ ...form, cpf: formatarCpf(e.target.value) })} /></label>
-              <label className={rotulo}>Senha inicial
-                <div className="flex gap-2"><input id="u-senha" className={`${campo} font-mono`} maxLength={72} value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
-                  <button type="button" className={`${btnSecondary} w-auto px-3`} onClick={() => setForm({ ...form, senha: gerarSenha() })} aria-label="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
+              <label className={rotulo}>Senha provisória
+                <div className="flex gap-2"><input id="u-senha" className={`${campo} font-mono`} maxLength={72} autoComplete="off" spellCheck={false} value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+                  <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setForm({ ...form, senha: gerarSenha() })} aria-label="Gerar outra senha" title="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
+                {(() => { const ps = problemaSenha(form.senha, form.login); return (
+                  <span className={`normal-case tracking-normal ${ps ? 'text-error' : 'text-fg-3'}`}>{ps ?? 'Gerada automaticamente. O funcionário é obrigado a criar a própria senha no primeiro acesso.'}</span>
+                ); })()}
               </label>
             </>}
             <Seletor rotulo="Perfil" valor={form.perfil} onChange={(v) => setForm({ ...form, perfil: v })} opcoes={PERFIS} />
@@ -117,7 +143,7 @@ export function T32Usuarios() {
         <form onSubmit={salvarSenha} className={`${card} flex flex-col gap-3 p-4`} aria-label="Redefinir senha">
           <p className="text-[0.9375rem] font-medium text-fg-1">Nova senha de {senhaDe.u.login}</p>
           <div className="flex gap-2"><input id="u-nova-senha" className={`${campo} font-mono`} maxLength={72} value={senhaDe.senha} onChange={(e) => setSenhaDe({ ...senhaDe, senha: e.target.value })} />
-            <button type="button" className={`${btnSecondary} w-auto px-3`} onClick={() => setSenhaDe({ ...senhaDe, senha: gerarSenha() })} aria-label="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
+            <button type="button" className={`${btnSecondary} !w-12 shrink-0 !px-0`} onClick={() => setSenhaDe({ ...senhaDe, senha: gerarSenha() })} aria-label="Gerar outra senha" title="Gerar outra senha"><Icon icon="solar:refresh-linear" width={18} aria-hidden="true" /></button></div>
           <div className="flex flex-wrap gap-2">
             <button type="submit" className={`${btnPrimary} w-auto`} disabled={salvando}>{salvando ? 'Salvando…' : 'Redefinir senha'}</button>
             <button type="button" className={`${btnSecondary} w-auto`} onClick={() => setSenhaDe(null)}>Cancelar</button>

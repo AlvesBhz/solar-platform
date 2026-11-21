@@ -26,7 +26,7 @@ function CampoSenha({ id, rotulo, valor, onChange, auto, erro, desc }: {
         <input id={id} type={ver ? 'text' : 'password'} autoComplete={auto} autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={72}
           value={valor} onChange={(e) => onChange(e.target.value)} aria-invalid={!!erro} aria-describedby={desc}
           className={`min-h-12 w-full rounded-md border bg-white py-3 pl-11 pr-12 text-fg-1 shadow-sm focus:border-pine focus:outline-none ${erro ? 'border-error' : 'border-line-2'}`} />
-        <button type="button" onClick={() => setVer((v) => !v)} aria-label={ver ? `Ocultar ${rotulo.toLowerCase()}` : `Mostrar ${rotulo.toLowerCase()}`} aria-pressed={ver}
+        <button type="button" onClick={() => setVer((v) => !v)} aria-label={ver ? `Ocultar ${rotulo.toLowerCase()}` : `Mostrar ${rotulo.toLowerCase()}`} title={ver ? `Ocultar ${rotulo.toLowerCase()}` : `Mostrar ${rotulo.toLowerCase()}`} aria-pressed={ver}
           className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-fg-3 hover:text-fg-1">
           <Icon icon={ver ? 'solar:eye-closed-linear' : 'solar:eye-linear'} width={20} aria-hidden="true" />
         </button>

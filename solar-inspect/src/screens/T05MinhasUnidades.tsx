@@ -47,25 +47,25 @@ export default function T05MinhasUnidades() {
         title="Minhas unidades"
         action={
           <>
-          <Link to="/app/sincronizacao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Sincronização">
+          <Link to="/app/sincronizacao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Sincronização" title="Sincronização">
             <Icon icon="solar:refresh-circle-linear" width={22} aria-hidden="true" />
           </Link>
-          <Link to="/app/historico" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Meu histórico">
+          <Link to="/app/historico" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Meu histórico" title="Meu histórico">
             <Icon icon="solar:history-linear" width={22} aria-hidden="true" />
           </Link>
           {(() => { const p = perfilAtual(); return p && ehGestao(p); })() && (
-            <Link to="/gestao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Voltar à gestão">
+            <Link to="/gestao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Voltar à gestão" title="Voltar à gestão">
               <Icon icon="solar:widget-linear" width={22} aria-hidden="true" />
             </Link>
           )}
-          <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha">
+          <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha" title="Trocar senha">
             <Icon icon="solar:lock-keyhole-linear" width={22} aria-hidden="true" />
           </Link>
           <button
             type="button"
             onClick={async () => { await sair(); navigate('/login', { replace: true }); }}
             className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 transition-colors duration-fast hover:bg-white"
-            aria-label="Sair"
+            aria-label="Sair" title="Sair"
           >
             <Icon icon="solar:logout-2-linear" width={22} aria-hidden="true" />
           </button>

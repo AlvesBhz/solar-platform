@@ -71,7 +71,7 @@ export default function T09LeitorQr() {
           type="button"
           onClick={() => navigate(voltar)}
           className="-ml-2 flex h-11 w-11 items-center justify-center rounded-full text-white hover:bg-white/10"
-          aria-label="Fechar leitor"
+          aria-label="Fechar leitor" title="Fechar leitor"
         >
           <Icon icon="solar:close-circle-linear" width={24} aria-hidden="true" />
         </button>

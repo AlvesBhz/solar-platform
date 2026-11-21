@@ -1,11 +1,11 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
 import { btnPrimary } from '../components/ScreenShell';
 import { REAL, hoje, listarTipos, motivoIndisponivel, obterUnidade, type TipoVistoria, type Unidade } from '../lib/campo';
-import { uidAtual } from '../lib/acesso';
+import { ehGestao, perfilAtual, uidAtual } from '../lib/acesso';
 import { descartarRascunho, lerRascunho, novoRascunho, rascunhoAtual } from '../mocks/vistoria';
 
 const ICONES: Record<string, string> = {
@@ -48,6 +48,7 @@ export default function T07TipoVistoria() {
   if (u === undefined) return <Navigate to="/acesso-indisponivel?motivo=sem-permissao" replace />;
 
   const indisponivel = (t: TipoVistoria) => motivoIndisponivel(t, u);
+  const gestao = (() => { const p = perfilAtual(); return !!p && ehGestao(p); })();
 
   return (
     <div className="screen flex flex-col bg-cream">
@@ -105,7 +106,10 @@ export default function T07TipoVistoria() {
                     <span className="text-[0.8125rem] leading-relaxed text-fg-2">{t.descricao}</span>
                     {motivo ? (
                       <span className="mt-1 flex items-start gap-1.5 text-xs text-fg-2">
-                        <Icon icon="solar:info-circle-linear" width={16} className="shrink-0" aria-hidden="true" /> {motivo}
+                        <Icon icon="solar:info-circle-linear" width={16} className="shrink-0" aria-hidden="true" />
+                        {t.itens === 0 && REAL && gestao ? (
+                          <span>Nenhum item deste tipo no checklist desta unidade. <Link to="/admin/checklists" className="font-medium text-pine underline underline-offset-4">Cadastrar o checklist</Link></span>
+                        ) : motivo}
                       </span>
                     ) : (
                       <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-3">

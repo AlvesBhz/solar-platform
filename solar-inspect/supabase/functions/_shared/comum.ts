@@ -61,3 +61,6 @@ export async function lerJson(req: Request, maxBytes = 4096): Promise<Record<str
     return null;
   }
 }
+
+/** Senha (provisória ou nova): 8 a 72 bytes, com letras e números. A mesma regra das telas. */
+export const senhaValida = (s: string) => s.length >= 8 && new TextEncoder().encode(s).length <= 72 && /[A-Za-zÀ-ÿ]/.test(s) && /\d/.test(s);

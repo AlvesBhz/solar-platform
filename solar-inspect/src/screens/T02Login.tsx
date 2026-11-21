@@ -132,7 +132,7 @@ export default function T02Login() {
                     <button
                       type="button"
                       onClick={() => setVerSenha((v) => !v)}
-                      aria-label={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                      aria-label={verSenha ? 'Ocultar senha' : 'Mostrar senha'} title={verSenha ? 'Ocultar senha' : 'Mostrar senha'}
                       aria-pressed={verSenha}
                       className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-fg-3 hover:text-fg-1"
                     >

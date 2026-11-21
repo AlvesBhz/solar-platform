@@ -53,8 +53,12 @@ function rotas(page, db) {
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
     if (caminho === 'rpc/vst_unidades') return json(200, db.unidades);
     if (caminho === 'VST_TIPO_VISTORIA_ITEM') {
-      if (m === 'GET') { const id = Number(url.searchParams.get('ID_TIPO_VISTORIA').slice(3)); return json(200, db.tipoItens.filter((x) => x.ID_TIPO_VISTORIA === id)); }
-      if (m === 'POST') { db.tipoItens.push(corpo); return json(201, [{ ID_ITEM: corpo.ID_ITEM }]); }
+      if (m === 'GET') { const f = url.searchParams.get('ID_TIPO_VISTORIA'); return json(200, f ? db.tipoItens.filter((x) => x.ID_TIPO_VISTORIA === Number(f.slice(3))) : db.tipoItens); }
+      if (m === 'POST') {
+        const l = Array.isArray(corpo) ? corpo : [corpo];
+        for (const x of l) if (!db.tipoItens.some((y) => y.ID_TIPO_VISTORIA === x.ID_TIPO_VISTORIA && y.ID_ITEM === x.ID_ITEM)) db.tipoItens.push(x);
+        return json(201, l.map((x) => ({ ID_ITEM: x.ID_ITEM })));
+      }
       if (m === 'DELETE') { const t = Number(url.searchParams.get('ID_TIPO_VISTORIA').slice(3)), i = Number(url.searchParams.get('ID_ITEM').slice(3)); db.tipoItens = db.tipoItens.filter((x) => !(x.ID_TIPO_VISTORIA === t && x.ID_ITEM === i)); return json(200, [{ ID_ITEM: i }]); }
     }
     for (const [tab, chave, lista] of [['VST_AMBIENTE', 'ID_AMBIENTE', 'ambientes'], ['VST_ITEM', 'ID_ITEM', 'itens'], ['VST_TIPO_VISTORIA', 'ID_TIPO_VISTORIA', 'tipos']]) {
@@ -113,29 +117,40 @@ if (require.main === module) (async () => {
     ok(html.includes('Solar do Espinhaço') && html.includes('Todas'), 'mostra as pousadas de cada um (ADMIN: todas)');
 
     await page.click('button:has-text("Novo usuário")');
-    await page.fill('#u-nome', 'Maria Limpeza'); await page.fill('#u-login', 'maria.limpeza');
+    await page.fill('#u-nome', 'Laís Nardy de Magalhães');
+    ok(await page.inputValue('#u-login') === 'lais.magalhaes', 'usuário sai sozinho do nome: primeiro e último, sem acento nem "de"');
+    await page.fill('#u-nome', 'Ana Souza');
+    ok(await page.inputValue('#u-login') === 'ana.souza2', 'nome de quem já existe ganha número (ana.souza2), sem conflito');
+    await page.fill('#u-nome', 'Maria Limpeza');
+    ok(await page.inputValue('#u-login') === 'maria.limpeza', 'a sugestão acompanha o nome enquanto o usuário não é editado');
+    if (process.env.FOTO) { await page.fill('#u-nome', 'Laís Nardy de Magalhães'); await page.locator('form[aria-label]').first().screenshot({ path: process.env.FOTO }); await page.fill('#u-nome', 'Maria Limpeza'); }
     await page.click('button[type=submit]:has-text("Salvar")');
     ok((await texto(page, '[role=alert]')).includes('ao menos uma pousada') && !ultima(db, 'POST', 'fn:criar-usuario'), 'campo sem pousada: avisa e não chama o servidor');
-    await page.fill('#u-login', '1maria'); await page.check('text=Solar do Espinhaço');
+    await page.fill('#u-login', '1Maria Júlia');
+    ok(await page.inputValue('#u-login') === 'maria.julia', 'usuário digitado é ajustado na hora (minúsculo, sem acento, espaço vira ponto, começa por letra)');
+    await page.check('text=Solar do Espinhaço');
+    await page.fill('#u-senha', 'somenteletras');
+    ok((await texto(page, 'label:has(#u-senha)')).includes('Misture letras e números'), 'regra da senha aparece enquanto digita');
     await page.click('button[type=submit]:has-text("Salvar")');
-    ok((await texto(page, '[role=alert]')).includes('começando por letra') && !ultima(db, 'POST', 'fn:criar-usuario'), 'usuário que começa por número: avisa e não chama o servidor');
+    ok((await texto(page, '[role=alert]')).includes('Misture letras e números') && !ultima(db, 'POST', 'fn:criar-usuario'), 'senha provisória fraca: avisa e não chama o servidor');
+    await page.click('button[aria-label="Gerar outra senha"]');
     await page.fill('#u-login', 'maria.limpeza'); await page.fill('#u-cpf', '11144477736');
     await page.click('button[type=submit]:has-text("Salvar")');
     ok((await texto(page, '[role=alert]')).includes('CPF inválido'), 'CPF inválido: avisa');
     await page.fill('#u-cpf', ''); await page.type('#u-cpf', '11144477735'); await escolher(page, 'Perfil', 'Limpeza');
     const senha = await page.inputValue('#u-senha');
     await page.click('button[type=submit]:has-text("Salvar")');
-    await page.waitForSelector('text=criado. Senha inicial', { timeout: 6000 });
+    await page.waitForSelector('text=criado. Senha provisória', { timeout: 6000 });
     const c = ultima(db, 'POST', 'fn:criar-usuario');
     ok(c && c.corpo.cd_login === 'maria.limpeza' && c.corpo.cd_cpf === '11144477735' && c.corpo.tp_perfil === 'LIMPEZA' && c.corpo.ids_propriedade[0] === 1 && c.corpo.senha === senha, 'cria pela Edge Function criar-usuario: login, CPF só números, perfil Limpeza e pousada');
     ok((c.auth || '').startsWith('Bearer ey'), 'a criação vai com o login do ADMIN (a função confere o perfil)');
-    ok(senha.length >= 12 && (await texto(page, 'p:has-text("Senha inicial")')).includes(senha), 'senha inicial gerada (12 caracteres) e mostrada uma vez para passar ao funcionário');
+    ok(senha.length >= 12 && (await texto(page, 'p:has-text("Senha provisória")')).includes(senha), 'senha inicial gerada (12 caracteres) e mostrada uma vez para passar ao funcionário');
 
     db.respostas['POST fn:criar-usuario'] = { status: 409, corpo: { erro: 'login_em_uso', mensagem: 'Esse usuário já existe.' } };
     await page.click('button:has-text("Novo usuário")');
     await page.fill('#u-nome', 'Outra Pessoa'); await page.fill('#u-login', 'ana.souza'); await page.check('text=Solar do Espinhaço');
     await page.click('button[type=submit]:has-text("Salvar")');
-    ok((await texto(page, '[role=alert]')).includes('já existe'), 'usuário repetido: mensagem do servidor');
+    ok((await texto(page, '[role=alert]')).includes('já existe') && (await texto(page, '[role=alert]')).includes('outra.pessoa'), 'usuário repetido: avisa antes do servidor e sugere outro');
     delete db.respostas['POST fn:criar-usuario'];
     await page.click('button:has-text("Cancelar")');
 
@@ -257,7 +272,25 @@ if (require.main === module) (async () => {
     await page.waitForSelector('[data-item="Toalhas de banho"]');
     const pi = ultima(db, 'POST', 'VST_ITEM');
     ok(pi && pi.corpo.QTDE_ESPERADA === 4 && pi.corpo.SG_CRITICO === true && pi.corpo.SG_FOTO_OBRIGATORIA === true && pi.corpo.ID_AMBIENTE === db.ambientes.find((a) => a.NM_AMBIENTE === 'Banheiro').ID_AMBIENTE, 'inclui o item no ambiente certo, com crítico, foto e quantidade');
-    ok((await page.content()).includes('inclua-o nos tipos de vistoria'), 'lembra de incluir o item novo nos tipos de vistoria');
+    const idToalhas = db.itens.find((x) => x.NM_ITEM === 'Toalhas de banho').ID_ITEM, ativos = db.tipos.filter((t) => t.SG_ATIVO).map((t) => t.ID_TIPO_VISTORIA);
+    ok(ativos.length >= 2 && ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idToalhas && x.ID_TIPO_VISTORIA === t)), 'item novo já entra em todas as vistorias ativas (um passo só, sem ir à T31)');
+    ok((await texto(page, 'p.text-available')).includes('incluído e usado em'), 'avisa em quais vistorias o item passou a valer');
+    // item sem nenhum tipo marcado: não chega ao vistoriador, e a tela avisa com botão para corrigir
+    await page.locator('[data-ambiente="Sala"] button:has-text("+ Item")').click();
+    await page.fill('#i-nome', 'Sofá');
+    for (const c of await page.locator('fieldset:has(legend:has-text("Usar nas vistorias")) input[type=checkbox]').all()) await c.uncheck();
+    ok((await texto(page, 'fieldset:has(legend:has-text("Usar nas vistorias"))')).includes('não aparece em vistoria nenhuma'), 'sem tipo marcado: avisa que o item não aparece');
+    await page.setViewportSize({ width: 320, height: 720 });
+    ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), 'formulário do item com a escolha das vistorias cabe em 320 px');
+    if (process.env.FOTO) await page.locator('form[aria-label=Item]').screenshot({ path: process.env.FOTO });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.click('form[aria-label=Item] button[type=submit]');
+    await page.waitForSelector('text=1 item ainda não está em nenhuma vistoria');
+    const idSofa = db.itens.find((x) => x.NM_ITEM === 'Sofá').ID_ITEM;
+    ok(!db.tipoItens.some((x) => x.ID_ITEM === idSofa), 'item sem tipo marcado não é ligado a nenhum tipo');
+    await page.click('button:has-text("Incluir em todas as vistorias")');
+    await page.waitForSelector('text=1 item incluído em todas as vistorias');
+    ok(ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idSofa && x.ID_TIPO_VISTORIA === t)) && await page.locator('text=ainda não está em nenhuma vistoria').count() === 0, 'um clique liga o item solto a todas as vistorias e a faixa de alerta some');
     await page.locator('[data-item="Toalhas de banho"] button:has-text("Desativar")').click();
     await page.waitForSelector('text=Item desativado');
     ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
