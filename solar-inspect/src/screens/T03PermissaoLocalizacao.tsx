@@ -28,7 +28,9 @@ export default function T03PermissaoLocalizacao() {
     if (a.estado === 'sem-sessao') return navigate('/login', { replace: true });
     if (a.estado === 'bloqueado') return navigate(`/acesso-indisponivel?motivo=${a.motivo}`, { replace: true });
     if (!a.aceiteLocalizacao && !(await registrarAceiteLocalizacao())) { setSalvando(false); return setErroAceite(true); }
-    navigate(destino({ ...a, aceiteLocalizacao: true }), { replace: true });
+    // veio de uma tela de campo (ex.: gestor indo fazer vistoria): volta para ela; senão, o destino do perfil
+    const volta = new URLSearchParams(location.search).get('volta');
+    navigate(volta && /^\/app\/[\w/-]*$/.test(volta) ? volta : destino({ ...a, aceiteLocalizacao: true }), { replace: true });
   }
 
   // Só consulta o status da permissão; não lê a posição.

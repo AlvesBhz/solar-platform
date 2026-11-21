@@ -6,7 +6,7 @@ import { Seletor } from '../components/Filtros';
 import { useOnline } from '../components/NetworkBadge';
 import { btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, formatarData } from '../components/Status';
-import { sair } from '../lib/acesso';
+import { ehGestao, perfilAtual, sair } from '../lib/acesso';
 import type { EstadoUnidade } from '../mocks/unidades';
 import { listarUnidades, type Unidade } from '../lib/campo';
 
@@ -53,6 +53,11 @@ export default function T05MinhasUnidades() {
           <Link to="/app/historico" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Meu histórico">
             <Icon icon="solar:history-linear" width={22} aria-hidden="true" />
           </Link>
+          {(() => { const p = perfilAtual(); return p && ehGestao(p); })() && (
+            <Link to="/gestao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Voltar à gestão">
+              <Icon icon="solar:widget-linear" width={22} aria-hidden="true" />
+            </Link>
+          )}
           <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha">
             <Icon icon="solar:lock-keyhole-linear" width={22} aria-hidden="true" />
           </Link>

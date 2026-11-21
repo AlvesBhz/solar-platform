@@ -69,6 +69,7 @@ Cada uma lê `auth.uid()`, exige usuário ativo em `"VST_USUARIO"` e acesso à p
 | `vst_unidades()` | — | qualquer usuário ativo | chalés das pousadas dele, com validação, ponto, raio e situação (sem o QR) |
 | `vst_agenda(p_dt_ini, p_dt_fim, p_id_unidade?)` | `date`, `date` (fim = dia seguinte), `bigint` | qualquer usuário ativo | vistorias do período com `cd_reserva`, `dt_checkin`, `dt_checkout` (nunca CPF, passaporte, telefone ou e-mail) |
 | `vst_checklist(p_id_unidade, p_id_tipo_vistoria)` | `bigint`, `bigint` | quem tem acesso ao chalé | ambientes e itens ativos, na ordem de passagem |
+| `vst_auditoria(p_dt_ini, p_dt_fim, p_nm_tabela?, p_id_usuario?, p_limite?, p_deslocamento?)` | `date`, `date`, `text`, `uuid`, `int`, `int` | só ADMIN | T34: quem mudou o quê (VST_AUDITORIA), com nome, perfil, unidade, campos alterados e total para paginar; período até 1 ano |
 | `vst_ocorrencias(p_id_unidade?, p_id_vistoria?)` | `bigint`, `uuid` | quem tem acesso ao chalé | ocorrências com unidade, item, ambiente, vistoria de origem, autor, histórico do tratamento e último dia fora da venda (sem expor `SIT_BLOQUEIO`) |
 | `vst_tipos_unidade(p_id_unidade)` | `bigint` | quem tem acesso ao chalé | tipos que o perfil faz, com a quantidade de itens do checklist e a vistoria a retomar (a minha em andamento ou a agendada até hoje) |
 | `vst_resolver_qr(p_cd_hash_qr)` | `text` | qualquer usuário ativo | chalé do QR lido, se tiver acesso |
@@ -132,6 +133,14 @@ Esqueceu a senha: o ADMIN redefine pelo app (`redefinir-senha`). Para desligar u
 ## Gestão (T20–T27)
 
 `src/lib/gestao.ts`: painel (unidades, ocorrências em aberto e vistorias de hoje), situação da unidade (`vst_alterar_situacao_unidade`), QR (`vst_obter_qr`/`vst_rotacionar_qr`), vistorias paginadas no servidor com filtros e CSV, detalhe e relatório (respostas, fotos e assinatura por link assinado de 15 min), e tratamento de ocorrências: andamento, resolver ou cancelar com liberação da unidade (`vst_resolver_ocorrencia`) e tirar da venda (`vst_bloquear_por_ocorrencia`). O histórico do tratamento é acumulado pelo banco com data, hora e autor; ocorrência encerrada só aceita liberar a unidade. As rotas `/gestao/*` exigem perfil GESTOR ou ADMIN. Teste: `node tools/testar-gestao.cjs`.
+
+## Auditoria com o autor (VST_AUDITORIA, T34)
+
+A `SIT_AUDITORIA` do site grava só o papel do banco (`authenticated`), não a pessoa, e a função `auditar()` do site não pode mudar. Por isso cada uma das 12 tabelas VST_ tem também o gatilho `TG_<TABELA>_AUTOR` (`vst_auditar_autor`), que grava em `VST_AUDITORIA` o usuário do app (`auth.uid()`), a operação, a chave do registro, a unidade e só os campos alterados (antes → depois). CPF e código do QR viram `***`. A tabela não tem política RLS nem permissão para o app: escreve só o gatilho, lê só o ADMIN pela função `vst_auditoria`. Ela não tem o gatilho `auditar()`, para não duplicar cada registro na `SIT_AUDITORIA`.
+
+## Navegação
+
+`tools/testar-navegacao.cjs` abre todas as rotas com ASSESSOR, GESTOR e ADMIN e confere: sem erro de JavaScript, sem tela em branco, redirecionamentos esperados (sem laço), menu só com o que o perfil pode abrir, rotas proibidas indo para T04 e 320 px sem rolagem lateral.
 
 ## Acesso direto às tabelas (RLS)
 

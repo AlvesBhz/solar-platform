@@ -22,6 +22,8 @@ const OFFLINE_MAX_MS = 72 * 3600 * 1000;
 type Cache = { uid: string; nome: string; perfil: Perfil; aceite: boolean; trocar?: boolean; conferidoEm: number };
 const lerCache = (): Cache | null => { try { return JSON.parse(localStorage.getItem(CACHE) ?? 'null'); } catch { return null; } };
 const gravarCache = (c: Cache) => { try { localStorage.setItem(CACHE, JSON.stringify(c)); } catch { /* sem armazenamento */ } };
+/** Perfil do último acesso conferido neste aparelho (para montar menus; quem decide o acesso é o banco). */
+export const perfilAtual = (): Perfil | undefined => lerCache()?.perfil;
 /** Usuário logado neste aparelho (último acesso conferido). */
 export const uidAtual = (): string | undefined => lerCache()?.uid;
 const limparCache = () => { try { localStorage.removeItem(CACHE); } catch { /* sem armazenamento */ } };

@@ -2,13 +2,13 @@
 -- Cada linha: o que foi conferido, o valor obtido, o esperado e se bateu. Tudo "true" na coluna ok = aplicada.
 select item, obtido, esperado, obtido = esperado as ok from (
   select 1 as n, 'tabelas VST_ no schema "SE"' as item,
-         (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where x.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%')::int as obtido, 12 as esperado
+         (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where x.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%')::int as obtido, 13 as esperado
   union all select 2, 'tabelas VST_ sem RLS',
          (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where x.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%' and not c.relrowsecurity)::int, 0
   union all select 3, 'tabelas VST_ fora do schema "SE" ou em minúsculas',
          (select count(*) from pg_class c join pg_namespace x on x.oid = c.relnamespace where c.relkind = 'r' and upper(c.relname) like 'VST\_%' and (x.nspname <> 'SE' or c.relname <> upper(c.relname)))::int, 0
   union all select 4, 'funções vst_*',
-         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 43
+         (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%')::int, 45
   union all select 5, 'funções vst_* executáveis por anon ou public',
          (select count(*) from pg_proc p join pg_namespace x on x.oid = p.pronamespace where x.nspname = 'SE' and p.proname like 'vst\_%'
             and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('public', p.oid, 'execute')))::int, 0
@@ -30,6 +30,10 @@ select item, obtido, esperado, obtido = esperado as ok from (
          (select count(*) from pg_constraint where conname = 'CK_VST_USUARIO_TP_PERFIL' and pg_get_constraintdef(oid) like '%LIMPEZA%' and pg_get_constraintdef(oid) like '%MANUTENCAO%')::int, 1
   union all select 16, 'coluna DS_PERFIS (quem faz cada tipo de vistoria)',
          (select count(*) from information_schema.columns where table_schema = 'SE' and table_name = 'VST_TIPO_VISTORIA' and column_name = 'DS_PERFIS')::int, 1
+  union all select 18, 'gatilhos de autor TG_<TABELA>_AUTOR (VST_AUDITORIA)',
+         (select count(*) from pg_trigger where not tgisinternal and tgname like 'TG\_VST\_%\_AUTOR' and tgfoid = '"SE".vst_auditar_autor()'::regprocedure)::int, 12
+  union all select 19, 'VST_AUDITORIA sem acesso direto do app',
+         (select count(*) from information_schema.role_table_grants where table_schema = 'SE' and table_name = 'VST_AUDITORIA' and grantee in ('anon', 'authenticated', 'PUBLIC'))::int, 0
   union all select 17, 'coluna SG_TROCAR_SENHA (senha provisória exige troca)',
          (select count(*) from information_schema.columns where table_schema = 'SE' and table_name = 'VST_USUARIO' and column_name = 'SG_TROCAR_SENHA')::int, 1
   union all select 13, 'chalés do site sem linha de configuração VST_UNIDADE',

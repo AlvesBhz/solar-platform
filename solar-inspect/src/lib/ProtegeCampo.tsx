@@ -18,13 +18,13 @@ export default function ProtegeCampo({ children, perfis }: { children: ReactNode
     const conferir = ultima && Date.now() - ultima.em < 300_000 ? Promise.resolve(ultima.a) : verificarAcesso();
     conferir.then((a) => {
       if (!vivo) return;
-      ultima = a.estado === 'ok' ? { em: Date.now(), a } : null;
+      ultima = null;   // só guarda quando libera: um desvio (T03, T35, T04) tem de ser conferido de novo na volta
       if (a.estado === 'sem-sessao') navigate('/login', { replace: true });
       else if (a.estado === 'bloqueado') navigate(`/acesso-indisponivel?motivo=${a.motivo}`, { replace: true });
       else if (a.trocarSenha) navigate('/conta/senha', { replace: true });
       else if (perfis && !perfis.includes(a.perfil)) navigate('/acesso-indisponivel?motivo=sem-permissao', { replace: true });
-      else if (!perfis && !a.aceiteLocalizacao) navigate('/permissao-localizacao', { replace: true });
-      else setOk(a);
+      else if (!perfis && !a.aceiteLocalizacao) navigate(`/permissao-localizacao?volta=${encodeURIComponent(location.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '') || '/app/unidades')}`, { replace: true });
+      else { ultima = { em: Date.now(), a }; setOk(a); }
     });
     return () => { vivo = false; };
   }, [navigate]); // eslint-disable-line react-hooks/exhaustive-deps

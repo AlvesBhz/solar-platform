@@ -177,3 +177,51 @@ export function csvVistorias(l: VistoriaG[]): string {
   return '﻿' + ['Unidade;Tipo;Agendada;Início;Conclusão;Status;Responsável;Sinalizações;Situação resultante',
     ...l.map((v) => [v.unidade, v.tipo, v.agendada, v.inicio ?? '', v.fim ?? '', v.status, v.responsavel ?? '', v.sinalizacoes.join(' | '), v.situacao ?? ''].map(c).join(';'))].join('\n');
 }
+
+// ── auditoria (T34, só ADMIN): VST_AUDITORIA pela função vst_auditoria
+export const TABELAS_AUDITADAS: Record<string, string> = {
+  VST_VISTORIA: 'Vistoria', VST_RESPOSTA: 'Resposta do checklist', VST_OCORRENCIA: 'Ocorrência', VST_FOTO: 'Foto',
+  VST_UNIDADE: 'Unidade (situação, GPS, QR)', VST_USUARIO: 'Usuário', VST_USUARIO_PROPRIEDADE: 'Acesso a pousada',
+  VST_PROPRIEDADE: 'Configuração da pousada', VST_AMBIENTE: 'Ambiente', VST_ITEM: 'Item do checklist',
+  VST_TIPO_VISTORIA: 'Tipo de vistoria', VST_TIPO_VISTORIA_ITEM: 'Item do tipo de vistoria',
+};
+export type EventoAud = {
+  id: string; em: string; usuario: string; perfil?: string; tabela: string; acao: 'criou' | 'alterou' | 'removeu';
+  registro?: string; unidade?: string; detalhe: string; campos: [string, string][]; link?: string;
+};
+const valorAud = (v: unknown) => (v === null || v === undefined ? '—' : typeof v === 'object' ? JSON.stringify(v) : String(v)).slice(0, 120);
+const ACAO = { INSERT: 'criou', UPDATE: 'alterou', DELETE: 'removeu' } as const;
+function linkAud(t: string, reg?: string): string | undefined {
+  if (!reg) return undefined;
+  if (t === 'VST_VISTORIA') return `/gestao/vistorias/${reg}`;
+  if (t === 'VST_RESPOSTA') return `/gestao/vistorias/${reg.split('/')[0]}`;
+  if (t === 'VST_OCORRENCIA') return `/gestao/ocorrencias/${reg}`;
+  if (t === 'VST_UNIDADE') return `/gestao/unidades/${reg}`;
+  if (t === 'VST_USUARIO' || t === 'VST_USUARIO_PROPRIEDADE') return '/admin/usuarios';
+  return undefined;
+}
+
+export async function listarAuditoria(f: { de: string; ate: string; tabela?: string; usuario?: string }, pagina = 0, por = 50): Promise<{ lista: EventoAud[]; total: number }> {
+  if (!REAL) {
+    const l = mg.listarAuditoria().map((e, i): EventoAud => ({ id: String(i), em: e.em, usuario: e.usuario, tabela: e.acao, acao: 'alterou', detalhe: e.detalhe, campos: [] }));
+    return { lista: l, total: l.length };
+  }
+  const { data, error } = await db().rpc('vst_auditoria', {
+    p_dt_ini: f.de, p_dt_fim: f.ate, p_nm_tabela: f.tabela || null, p_id_usuario: f.usuario || null, p_limite: por, p_deslocamento: pagina * por,
+  });
+  if (error) throw error;
+  const lista = (data ?? []).map((a: any): EventoAud => {
+    const alt = (a.ds_alteracoes ?? {}) as Record<string, unknown>;
+    const campos: [string, string][] = a.tp_operacao === 'UPDATE'
+      ? Object.entries(alt).map(([k, v]) => [k, Array.isArray(v) ? `${valorAud(v[0])} → ${valorAud(v[1])}` : valorAud(v)])
+      : Object.entries(alt).filter(([, v]) => v !== null).map(([k, v]) => [k, valorAud(v)]);
+    const chave = a.tp_operacao === 'UPDATE' ? campos : campos.filter(([k]) => /^(TP_|NM_|DS_OCORRENCIA|DT_AGENDADA|SG_ATIVO|CD_LOGIN)/.test(k));
+    return {
+      id: String(a.id_auditoria), em: a.dt_criacao, perfil: a.tp_perfil ?? undefined,
+      usuario: a.nm_usuario ?? (a.nm_papel === 'service_role' ? 'Site / sistema' : a.nm_papel === 'postgres' ? 'SQL Editor' : 'Sistema'),
+      tabela: TABELAS_AUDITADAS[a.nm_tabela] ?? a.nm_tabela, acao: ACAO[a.tp_operacao as keyof typeof ACAO], registro: a.cd_registro ?? undefined,
+      unidade: a.nm_unidade ?? undefined, detalhe: chave.slice(0, 3).map(([k, v]) => `${k}: ${v}`).join(' · '), campos, link: linkAud(a.nm_tabela, a.cd_registro ?? undefined),
+    };
+  });
+  return { lista, total: Number((data ?? [])[0]?.qtde_total ?? 0) };
+}

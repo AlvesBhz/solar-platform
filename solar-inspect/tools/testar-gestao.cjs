@@ -27,6 +27,7 @@ function servidor(page, cen) {
     if (m === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
     if (url.includes('/auth/v1/user')) return json(200, { id: UID, aud: 'authenticated', role: 'authenticated' });
     if (url.includes('/rest/v1/VST_USUARIO_PROPRIEDADE')) return json(200, [], { 'content-range': '*/1' });
+    if (url.includes('/rest/v1/VST_USUARIO') && url.includes('CD_LOGIN')) return json(200, [{ ID_USUARIO: 'u-ana', NM_USUARIO: 'Ana', CD_LOGIN: 'ana', CD_CPF: null, TP_PERFIL: 'ASSESSOR', SG_ATIVO: true }]);
     if (url.includes('/rest/v1/VST_USUARIO')) return um({ NM_USUARIO: 'Gestor', TP_PERFIL: cen.perfil ?? 'GESTOR', SG_ATIVO: true, DT_ACEITE_LGPD: null, SG_TROCAR_SENHA: false });
     const rpc = url.match(/\/rest\/v1\/rpc\/(\w+)/)?.[1];
     if (rpc) {
@@ -39,6 +40,13 @@ function servidor(page, cen) {
       }
       if (rpc === 'vst_alterar_situacao_unidade') return cen.erroSit ? json(400, { code: 'P0001', message: cen.erroSit }) : json(204);
       if (rpc === 'vst_obter_qr' || rpc === 'vst_rotacionar_qr') return json(200, [{ cd_hash_qr: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6', no_versao_qr: rpc === 'vst_rotacionar_qr' ? 3 : 2 }]);
+      if (rpc === 'vst_auditoria') {
+        const l = [
+          { id_auditoria: 3, dt_criacao: '2026-11-21T12:00:00Z', id_usuario: 'u-ana', nm_usuario: 'Ana', tp_perfil: 'ASSESSOR', nm_papel: 'authenticated', nm_tabela: 'VST_OCORRENCIA', tp_operacao: 'UPDATE', cd_registro: '1', id_unidade: 7, nm_unidade: 'Casa do Mirante', ds_alteracoes: { TP_STATUS: ['ABERTA', 'EM_TRATAMENTO'] }, qtde_total: 3 },
+          { id_auditoria: 2, dt_criacao: '2026-11-21T11:00:00Z', id_usuario: null, nm_usuario: null, tp_perfil: null, nm_papel: 'service_role', nm_tabela: 'VST_VISTORIA', tp_operacao: 'INSERT', cd_registro: V2, id_unidade: 8, nm_unidade: 'Casa da Serra', ds_alteracoes: { ID_VISTORIA: V2, TP_STATUS: 'AGENDADA', DT_AGENDADA: HOJE, ID_UNIDADE: 8 }, qtde_total: 3 },
+          { id_auditoria: 1, dt_criacao: '2026-11-21T10:00:00Z', id_usuario: UID, nm_usuario: 'Gestor', tp_perfil: 'GESTOR', nm_papel: 'authenticated', nm_tabela: 'VST_UNIDADE', tp_operacao: 'UPDATE', cd_registro: '7', id_unidade: 7, nm_unidade: 'Casa do Mirante', ds_alteracoes: { CD_HASH_QR: '***', NO_VERSAO_QR: [1, 2], TP_SITUACAO: ['LIBERADO', 'MANUTENCAO'], DS_ANDAR: [null, 'Térreo'] }, qtde_total: 3 }];
+        return json(200, l.filter((x) => !a.p_nm_tabela || x.nm_tabela === a.p_nm_tabela).map((x, i, arr) => ({ ...x, qtde_total: arr.length })));
+      }
       if (rpc === 'vst_resolver_ocorrencia' || rpc === 'vst_bloquear_por_ocorrencia') return json(200, null);
       return json(404, { message: 'rpc não esperada ' + rpc });
     }
@@ -201,6 +209,34 @@ const ver = (page, t, o = {}) => page.getByText(t, o).first().waitFor({ timeout:
     await page.locator('input[type=date]').fill(ate);
     await page.getByRole('button', { name: 'Tirar da venda' }).click();
     ok(await esperar(() => cen.rpc.vst_bloquear_por_ocorrencia?.[0]?.p_dt_fim === d.toISOString().slice(0, 10)), 'tirar da venda até o dia escolhido (o banco recebe o dia seguinte, padrão do site)');
+    await ctx.close();
+  });
+
+  console.log('── T34 Auditoria');
+  await T('t34', async () => {
+    let { ctx, page } = await abrir(browser, {}, '/admin/auditoria');
+    ok(await esperarRota(page, '/acesso-indisponivel'), 'gestor não abre a auditoria (só ADMIN)');
+    await ctx.close();
+    const cen = { perfil: 'ADMIN' };
+    ({ ctx, page } = await abrir(browser, cen, '/admin/auditoria'));
+    await ver(page, '3 registros');
+    const a = cen.rpc.vst_auditoria?.[0], d = new Date(HOJE + 'T12:00:00'); d.setDate(d.getDate() - 6);
+    ok(a && a.p_dt_fim === HOJE && a.p_dt_ini === d.toISOString().slice(0, 10) && a.p_limite === 50 && a.p_deslocamento === 0, 'T34 consulta o banco: últimos 7 dias, página de 50');
+    ok(await ver(page, 'TP_STATUS: ABERTA → EM_TRATAMENTO') && await ver(page, 'alterou ocorrência · Casa do Mirante', { exact: false }), 'mostra quem fez, o quê, onde e o antes → depois');
+    ok(await ver(page, 'Site / sistema') && await ver(page, 'criou vistoria', { exact: false }), 'mudança feita pelo site aparece como "Site / sistema"');
+    ok(await ver(page, 'Ver todos os 4 campos') && !(await page.innerText('body')).match(/[0-9a-f]{32}/), 'detalhe completo sob demanda; código do QR nunca aparece');
+    await page.getByRole('button', { name: /Assunto/ }).click();
+    await page.getByRole('option', { name: 'Ocorrência' }).click();
+    ok(await ver(page, '1 registro') && cen.rpc.vst_auditoria.at(-1).p_nm_tabela === 'VST_OCORRENCIA', 'filtra por assunto no banco');
+    await page.getByRole('button', { name: /Usuário/ }).click();
+    await page.getByRole('option', { name: 'Ana' }).click();
+    ok(await esperar(() => cen.rpc.vst_auditoria.at(-1).p_id_usuario === 'u-ana'), 'filtra por usuário no banco');
+    await page.getByRole('link', { name: /Abrir/ }).first().click();
+    ok(await esperarRota(page, '/gestao/ocorrencias/1'), 'abre o registro auditado (ocorrência)');
+    await page.goto(BASE + '/admin/auditoria');
+    await ver(page, '3 registros');
+    await page.setViewportSize({ width: 320, height: 720 });
+    ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), 'T34 cabe em 320 px sem rolagem lateral');
     await ctx.close();
   });
 

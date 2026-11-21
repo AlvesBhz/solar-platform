@@ -1,6 +1,6 @@
 # Dicionário de dados — Vistorias
 
-Integrado ao banco de reservas do site (mesmo Supabase, esquema `public`): 16 tabelas, 4 delas do site (`SIT_`), e 22 ligações. Diagrama em [`der.html`](./der.html). proposta v3, 20/11/2026.
+Integrado ao banco de reservas do site (mesmo Supabase, esquema `public`): 17 tabelas, 4 delas do site (`SIT_`), e 22 ligações. Diagrama em [`der.html`](./der.html). proposta v3, 20/11/2026.
 
 Gerado por `tools/gerar-der.py`, que lê as tabelas do site em `site/database/schema.sql` e os textos em `site/database/gerar_der.py`.
 
@@ -382,6 +382,26 @@ Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas 
 | `ID_USUARIO` | `uuid` | sim | PK FK | Usuário. | 0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f01 |
 | `ID_PROPRIEDADE` | `bigint` | sim | PK FK | Pousada que ele pode ver. | 1 |
 | `DT_CRIACAO` | `timestamptz` | sim | — | Quando o acesso foi dado. | 20/11/2026 09:10 |
+
+## `VST_AUDITORIA` (APOIO)
+
+Quem mudou o quê nas tabelas VST_: completa a SIT_AUDITORIA (que só sabe o papel do banco) com o usuário do app. Consultada pelo ADMIN na T34.
+
+- **Ligada a:** 
+- **Acesso (RLS):** Sem acesso direto (RLS sem política): só o ADMIN, pela função vst_auditoria.
+- **Regras:** Escrita só pelo gatilho TG_<TABELA>_AUTOR (vst_auditar_autor) nas 12 tabelas VST_; ninguém altera nem apaga. UPDATE guarda só os campos que mudaram; CPF e código do QR nunca vão para o log. Não tem o gatilho auditar(): auditar o próprio log duplicaria cada registro.
+
+| Campo | Tipo | Obrigatório | Chave | Descrição | Exemplo (Gestor pôs a ocorrência em tratamento) |
+|---|---|---|---|---|---|
+| `ID_AUDITORIA` | `bigint` | auto | PK | Sequencial. | 101 |
+| `ID_USUARIO` | `uuid` | não | — | Quem fez a mudança pelo app (auth.uid); vazio = site, service_role ou SQL Editor. Sem FK: o log independe do cadastro. | 00000000-0000-4000-8000-0000000000a1 |
+| `NM_PAPEL` | `text` | sim | — | Papel do banco: authenticated, service_role, postgres… | authenticated |
+| `NM_TABELA` | `text` | sim | — | Tabela VST_ alterada. | VST_OCORRENCIA |
+| `TP_OPERACAO` | `text` | sim | — | INSERT, UPDATE ou DELETE. | UPDATE |
+| `CD_REGISTRO` | `text` | não | — | Chave do registro alterado. | 1 |
+| `ID_UNIDADE` | `bigint` | não | — | Unidade envolvida, quando a linha tem uma. | 1 |
+| `DS_ALTERACOES` | `jsonb` | sim | — | INSERT/DELETE: os campos; UPDATE: só os alterados, com antes e depois. CPF e código do QR viram ***. | {"TP_STATUS": ["ABERTA", "EM_TRATAMENTO"]} |
+| `DT_CRIACAO` | `timestamptz` | sim | — | Quando. | 26/12/2026 16:02 |
 
 ## Ligações
 

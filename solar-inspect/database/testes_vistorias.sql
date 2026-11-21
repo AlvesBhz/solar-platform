@@ -48,8 +48,8 @@ grant execute on all functions in schema teste to public;
 
 \echo '── 1. Estrutura'
 :dono
-select teste.ok((select count(*) = 12 from pg_class c join pg_namespace n on n.oid = c.relnamespace
-                 where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%'), '12 tabelas VST_ em MAIÚSCULAS no schema "SE"');
+select teste.ok((select count(*) = 13 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                 where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%'), '13 tabelas VST_ em MAIÚSCULAS no schema "SE" (12 de dados + VST_AUDITORIA)');
 select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
                             where n.nspname = 'public' and c.relkind = 'r' and upper(c.relname) like 'VST\_%'), 'nenhuma tabela VST_ em public');
 select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -599,6 +599,30 @@ do $$ declare n int; begin update "SE"."VST_TIPO_VISTORIA" set "NM_TIPO_VISTORIA
   perform teste.ok(n = 0, 'gestor não altera tipos (só ADMIN)'); end $$;
 :dono
 update "VST_TIPO_VISTORIA" set "NM_TIPO_VISTORIA" = 'Saída', "DS_PERFIS" = array['ASSESSOR', 'LIMPEZA'] where "CD_TIPO_VISTORIA" = 'SAIDA';
+
+\echo '── 6f. Autor das mudanças (VST_AUDITORIA) e T34'
+:dono
+select teste.ok((select count(*) > 0 from "VST_AUDITORIA" where "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a1' and "NM_TABELA" = 'VST_VISTORIA' and "NM_PAPEL" = 'authenticated'),
+                'cada mudança feita pelo app grava QUEM fez (usuário do app)');
+select teste.ok(not exists (select 1 from "VST_AUDITORIA" a join "VST_USUARIO" u on u."CD_CPF" is not null and a."DS_ALTERACOES"::text like '%' || u."CD_CPF" || '%'), 'o CPF nunca vai para o log');
+select teste.ok(not exists (select 1 from "VST_AUDITORIA" a join "VST_UNIDADE" u on a."DS_ALTERACOES"::text like '%' || u."CD_HASH_QR" || '%')
+                and exists (select 1 from "VST_AUDITORIA" where "NM_TABELA" = 'VST_UNIDADE' and "DS_ALTERACOES" ->> 'CD_HASH_QR' = '***'), 'o código do QR nunca vai para o log (só que mudou)');
+select teste.ok(exists (select 1 from "VST_AUDITORIA" where "NM_TABELA" = 'VST_OCORRENCIA' and "TP_OPERACAO" = 'UPDATE' and "DS_ALTERACOES" ? 'TP_STATUS' and not "DS_ALTERACOES" ? 'DS_OCORRENCIA'),
+                'UPDATE guarda só os campos alterados, com antes e depois');
+select teste.ok((select count(*) = 0 from "VST_AUDITORIA" where "NM_TABELA" = 'VST_AUDITORIA'), 'o log não audita a si mesmo');
+:como_admin
+select teste.ok((select count(*) > 0 and bool_and(qtde_total >= count_lin) from (select qtde_total, count(*) over () as count_lin from "SE".vst_auditoria(current_date - 1, current_date + 1, null, null, 200)) x),
+                'ADMIN consulta a auditoria paginada, com o total');
+select teste.ok((select count(*) > 0 and bool_and(nm_usuario = 'Ana (teste)' and tp_perfil = 'ASSESSOR')
+                 from "SE".vst_auditoria(current_date - 1, current_date + 1, 'VST_VISTORIA', '00000000-0000-4000-8000-0000000000a1', 200)), 'filtra por tabela e por usuário, com nome e perfil');
+select teste.ok((select count(*) <= 5 from "SE".vst_auditoria(current_date - 1, current_date + 1, null, null, 5)), 'respeita o limite da página');
+select teste.erro($q$select * from "SE".vst_auditoria(current_date, current_date - 1)$q$, 'periodo_invalido', 'período invertido é recusado');
+select teste.erro($q$select * from "SE"."VST_AUDITORIA"$q$, '42501', 'nem o ADMIN lê a tabela direto (só pela função)');
+select teste.erro($q$insert into "SE"."VST_AUDITORIA" ("NM_PAPEL", "NM_TABELA", "TP_OPERACAO", "DS_ALTERACOES") values ('x', 'x', 'INSERT', '{}')$q$, '42501', 'ninguém escreve no log pelo app');
+:como_gesto
+select teste.erro($q$select * from "SE".vst_auditoria(current_date, current_date)$q$, 'perfil_sem_permissao', 'gestor não consulta a auditoria (só ADMIN)');
+:como_anon
+select teste.erro($q$select * from "SE".vst_auditoria(current_date, current_date)$q$, '42501', 'anon não consulta a auditoria');
 
 \echo '── 7. Auditoria (SIT_AUDITORIA)'
 :dono

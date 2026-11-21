@@ -180,7 +180,7 @@ html.travado, html.travado body { overflow: hidden; }
       <h1>DER das Vistorias</h1>
       <p class="sub">Solar do Espinhaço · integrado ao banco de reservas do site · PostgreSQL (Supabase), schema "SE" · proposta v3, 20/11/2026 · prefixo VST_ = projeto Vistorias, SIT_ = projeto Site</p>
     </div>
-    <div class="stats"><span><b>16</b> tabelas</span><span><b>4</b> do site</span><span><b>175</b> campos</span><span><b>0</b> colunas novas no site</span><span><b>22</b> ligações</span></div>
+    <div class="stats"><span><b>17</b> tabelas</span><span><b>4</b> do site</span><span><b>184</b> campos</span><span><b>0</b> colunas novas no site</span><span><b>22</b> ligações</span></div>
   </header>
 
   <div class="legend" aria-label="Legenda">
@@ -755,6 +755,35 @@ html.travado, html.travado body { overflow: hidden; }
 <text class="cname" x="1860" y="756.5">DT_CAPTURA</text>
 <text class="ctype" x="2116" y="756.5" text-anchor="end">timestamptz</text>
 </g>
+<g class="tbl g-apo" data-t="VST_AUDITORIA" tabindex="0" role="button" aria-label="Tabela VST_AUDITORIA">
+<rect class="box" x="56" y="560" width="310" height="211" rx="6"/>
+<path class="head" d="M56,600 V566 Q56,560 62,560 H360 Q366,560 366,566 V600 Z"/>
+<text class="tname" x="68" y="585">VST_AUDITORIA</text>
+<text class="tgroup" x="354" y="585" text-anchor="end">APOIO</text>
+<text class="key" x="66" y="613.5"><tspan class="kpk">PK</tspan></text>
+<text class="cname" x="100" y="613.5">ID_AUDITORIA</text>
+<text class="ctype" x="356" y="613.5" text-anchor="end">bigint · auto</text>
+<rect class="zebra" x="57" y="619" width="308" height="19"/>
+<text class="cname opt" x="100" y="632.5">ID_USUARIO?</text>
+<text class="ctype" x="356" y="632.5" text-anchor="end">uuid</text>
+<text class="cname" x="100" y="651.5">NM_PAPEL</text>
+<text class="ctype" x="356" y="651.5" text-anchor="end">text</text>
+<rect class="zebra" x="57" y="657" width="308" height="19"/>
+<text class="cname" x="100" y="670.5">NM_TABELA</text>
+<text class="ctype" x="356" y="670.5" text-anchor="end">text</text>
+<text class="cname" x="100" y="689.5">TP_OPERACAO</text>
+<text class="ctype" x="356" y="689.5" text-anchor="end">text</text>
+<rect class="zebra" x="57" y="695" width="308" height="19"/>
+<text class="cname opt" x="100" y="708.5">CD_REGISTRO?</text>
+<text class="ctype" x="356" y="708.5" text-anchor="end">text</text>
+<text class="cname opt" x="100" y="727.5">ID_UNIDADE?</text>
+<text class="ctype" x="356" y="727.5" text-anchor="end">bigint</text>
+<rect class="zebra" x="57" y="733" width="308" height="19"/>
+<text class="cname" x="100" y="746.5">DS_ALTERACOES</text>
+<text class="ctype" x="356" y="746.5" text-anchor="end">jsonb</text>
+<text class="cname" x="100" y="765.5">DT_CRIACAO</text>
+<text class="ctype" x="356" y="765.5" text-anchor="end">timestamptz</text>
+</g>
 </svg>
     </div>
     <figcaption id="detalhe" aria-live="polite">A SIT_UNIDADE é o elo entre os dois produtos: o site a vende, o app a vistoria. A VST_VISTORIA aponta a unidade, o tipo, o assessor e, quando houver, a SIT_RESERVA; respostas, fotos e ocorrências saem dela, e uma ocorrência crítica cria um SIT_BLOQUEIO que tira as datas da venda. Passe o mouse numa linha para ver o nome da FK. <b>Clique numa tabela para ver aqui o detalhe dela: cada campo explicado, com exemplo, ligações e regras.</b></figcaption>
@@ -886,6 +915,14 @@ html.travado, html.travado body { overflow: hidden; }
     <aside><div><h4>Ligações</h4><ul><li><code>ID_USUARIO</code> → VST_USUARIO <i>(acessa)</i>: cada VST_USUARIO_PROPRIEDADE aponta para exatamente 1 VST_USUARIO.</li><li><code>ID_PROPRIEDADE</code> → SIT_PROPRIEDADE <i>(acesso a)</i>: cada VST_USUARIO_PROPRIEDADE aponta para exatamente 1 SIT_PROPRIEDADE.</li></ul></div><div><h4>Regras</h4><ul><li>Chave composta: um acesso por usuário e pousada.</li><li>ADMIN vê todas as pousadas; os demais só as listadas aqui.</li></ul></div><div><h4>Quem acessa</h4><p>Cada um lê os próprios acessos; GESTOR lê os da pousada dele; ADMIN mantém.</p></div></aside>
   </div>
 </div></template>
+<template id="d-VST_AUDITORIA"><div class="dt g-apo">
+  <header><h3>VST_AUDITORIA</h3><span class="chip">APOIO</span><span class="dmeta">9 campos</span><button type="button" class="dclose" aria-label="Fechar detalhe">Fechar ✕</button></header>
+  <p class="purpose">Quem mudou o quê nas tabelas VST_: completa a SIT_AUDITORIA (que só sabe o papel do banco) com o usuário do app. Consultada pelo ADMIN na T34.</p>
+  <div class="dgrid">
+    <div class="tscroll"><table class="dtab"><thead><tr><th>Campo</th><th>Tipo</th><th>Obrigatório</th><th>Para que serve</th><th>Exemplo: Gestor pôs a ocorrência em tratamento</th></tr></thead><tbody><tr><th scope="row"><span class="k kp">PK</span> ID_AUDITORIA</th><td class="ty">bigint</td><td>auto</td><td class="ds">Sequencial.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">101</td></tr><tr><th scope="row">ID_USUARIO</th><td class="ty">uuid</td><td>não</td><td class="ds">Quem fez a mudança pelo app (auth.uid); vazio = site, service_role ou SQL Editor. Sem FK: o log independe do cadastro.</td><td class="exv long" data-l="Gestor pôs a ocorrência em tratamento">00000000-0000-4000-8000-0000000000a1</td></tr><tr><th scope="row">NM_PAPEL</th><td class="ty">text</td><td>sim</td><td class="ds">Papel do banco: authenticated, service_role, postgres…</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">authenticated</td></tr><tr><th scope="row">NM_TABELA</th><td class="ty">text</td><td>sim</td><td class="ds">Tabela VST_ alterada.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">VST_OCORRENCIA</td></tr><tr><th scope="row">TP_OPERACAO</th><td class="ty">text</td><td>sim</td><td class="ds">INSERT, UPDATE ou DELETE.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">UPDATE</td></tr><tr><th scope="row">CD_REGISTRO</th><td class="ty">text</td><td>não</td><td class="ds">Chave do registro alterado.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">1</td></tr><tr><th scope="row">ID_UNIDADE</th><td class="ty">bigint</td><td>não</td><td class="ds">Unidade envolvida, quando a linha tem uma.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">1</td></tr><tr><th scope="row">DS_ALTERACOES</th><td class="ty">jsonb</td><td>sim</td><td class="ds">INSERT/DELETE: os campos; UPDATE: só os alterados, com antes e depois. CPF e código do QR viram ***.</td><td class="exv long" data-l="Gestor pôs a ocorrência em tratamento">{&quot;TP_STATUS&quot;: [&quot;ABERTA&quot;, &quot;EM_TRATAMENTO&quot;]}</td></tr><tr><th scope="row">DT_CRIACAO</th><td class="ty">timestamptz</td><td>sim</td><td class="ds">Quando.</td><td class="exv" data-l="Gestor pôs a ocorrência em tratamento">26/12/2026 16:02</td></tr></tbody></table></div>
+    <aside><div><h4>Ligações</h4><ul></ul></div><div><h4>Regras</h4><ul><li>Escrita só pelo gatilho TG_&lt;TABELA&gt;_AUTOR (vst_auditar_autor) nas 12 tabelas VST_; ninguém altera nem apaga.</li><li>UPDATE guarda só os campos que mudaram; CPF e código do QR nunca vão para o log.</li><li>Não tem o gatilho auditar(): auditar o próprio log duplicaria cada registro.</li></ul></div><div><h4>Quem acessa</h4><p>Sem acesso direto (RLS sem política): só o ADMIN, pela função vst_auditoria.</p></div></aside>
+  </div>
+</div></template>
   </figure>
 
   <div class="tela" id="tela" role="dialog" aria-modal="true" aria-label="DER em tela cheia" hidden>
@@ -1002,6 +1039,12 @@ html.travado, html.travado body { overflow: hidden; }
   <p class="meta">3 campos · ligada a SIT_PROPRIEDADE, VST_USUARIO</p>
   <ul><li>Chave composta: um acesso por usuário e pousada.</li><li>ADMIN vê todas as pousadas; os demais só as listadas aqui.</li></ul>
 </article>
+<article class="tcard g-apo" id="t-VST_AUDITORIA" data-t="VST_AUDITORIA">
+  <header><h3>VST_AUDITORIA</h3><span class="chip">APOIO</span></header>
+  <p class="purpose">Quem mudou o quê nas tabelas VST_: completa a SIT_AUDITORIA (que só sabe o papel do banco) com o usuário do app. Consultada pelo ADMIN na T34.</p>
+  <p class="meta">9 campos · ligada a </p>
+  <ul><li>Escrita só pelo gatilho TG_&lt;TABELA&gt;_AUTOR (vst_auditar_autor) nas 12 tabelas VST_; ninguém altera nem apaga.</li><li>UPDATE guarda só os campos que mudaram; CPF e código do QR nunca vão para o log.</li><li>Não tem o gatilho auditar(): auditar o próprio log duplicaria cada registro.</li></ul>
+</article>
   </div>
 
 <section class="explica" id="como-bloqueio">
@@ -1080,6 +1123,10 @@ html.travado, html.travado body { overflow: hidden; }
   <header><h3>VST_USUARIO_PROPRIEDADE</h3><span class="chip">ACESSO</span></header>
   <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Marina na pousada</th><th scope="col">Carlos na pousada</th></tr></thead><tbody><tr><th scope="row"><span class="k kp">PK</span> <span class="k kf">FK</span> ID_USUARIO</th><td class="long">0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f01</td><td class="long">0192f3a0-6c1e-7b3a-9d11-5a2e4c6b8f02</td></tr><tr><th scope="row"><span class="k kp">PK</span> <span class="k kf">FK</span> ID_PROPRIEDADE</th><td>1</td><td>1</td></tr><tr><th scope="row">DT_CRIACAO</th><td>20/11/2026 09:10</td><td>20/11/2026 09:10</td></tr></tbody></table></div>
 </section>
+<section class="ex g-apo" id="e-VST_AUDITORIA" data-t="VST_AUDITORIA">
+  <header><h3>VST_AUDITORIA</h3><span class="chip">APOIO</span></header>
+  <div class="tscroll"><table><thead><tr><th scope="col">Campo</th><th scope="col">Gestor pôs a ocorrência em tratamento</th></tr></thead><tbody><tr><th scope="row"><span class="k kp">PK</span> ID_AUDITORIA</th><td>101</td></tr><tr><th scope="row">ID_USUARIO</th><td class="long">00000000-0000-4000-8000-0000000000a1</td></tr><tr><th scope="row">NM_PAPEL</th><td>authenticated</td></tr><tr><th scope="row">NM_TABELA</th><td>VST_OCORRENCIA</td></tr><tr><th scope="row">TP_OPERACAO</th><td>UPDATE</td></tr><tr><th scope="row">CD_REGISTRO</th><td>1</td></tr><tr><th scope="row">ID_UNIDADE</th><td>1</td></tr><tr><th scope="row">DS_ALTERACOES</th><td class="long">{&quot;TP_STATUS&quot;: [&quot;ABERTA&quot;, &quot;EM_TRATAMENTO&quot;]}</td></tr><tr><th scope="row">DT_CRIACAO</th><td>26/12/2026 16:02</td></tr></tbody></table></div>
+</section>
   </div>
 
   <h2>Funções do banco</h2>
@@ -1100,7 +1147,7 @@ html.travado, html.travado body { overflow: hidden; }
   var cards = [].slice.call(document.querySelectorAll('.tcard, .ex'));
   var cap = document.getElementById('detalhe'), capPadrao = cap.innerHTML;
   var area = document.getElementById('area'), tela = document.getElementById('tela'), palco = document.getElementById('palco');
-  var info = document.getElementById('info'), W = 2194, A = 1097, DADOS = {"SIT_PROPRIEDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. A pousada: os horários de check-in e check-out montam a agenda. As regras de presença (GPS, raio) ficam em VST_PROPRIEDADE."}, "SIT_UNIDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Situação, QR e ponto de GPS ficam em VST_UNIDADE."}, "SIT_RESERVA": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out)."}, "SIT_BLOQUEIO": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal). Só funções do banco escrevem aqui."}, "VST_USUARIO": {"g": "ACESSO", "c": "g-ace", "p": "Os funcionários que usam o app: vistoria (assessor), limpeza, manutenção, gestão e administração. O ADMIN cadastra pelo app; entram por usuário ou CPF e senha. O cadastro aberto do Auth está desligado."}, "VST_USUARIO_PROPRIEDADE": {"g": "ACESSO", "c": "g-ace", "p": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas VST_."}, "VST_PROPRIEDADE": {"g": "CADASTRO", "c": "g-cad", "p": "Regras de presença da pousada: como o assessor prova que está no local, o raio aceito e o tempo mínimo de uma vistoria. Uma linha por SIT_PROPRIEDADE (1 para 1)."}, "VST_UNIDADE": {"g": "CADASTRO", "c": "g-cad", "p": "Dados do chalé que só a vistoria usa: situação operacional, QR da porta, ponto de GPS e andar. Uma linha por SIT_UNIDADE (1 para 1)."}, "VST_AMBIENTE": {"g": "CADASTRO", "c": "g-cad", "p": "Cômodos de cada unidade, na ordem em que o assessor percorre."}, "VST_ITEM": {"g": "CADASTRO", "c": "g-cad", "p": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada."}, "VST_TIPO_VISTORIA": {"g": "APOIO", "c": "g-apo", "p": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma e quem da equipe pode fazê-las. O site identifica o tipo pelo código (ENTRADA, SAIDA)."}, "VST_TIPO_VISTORIA_ITEM": {"g": "APOIO", "c": "g-apo", "p": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo)."}, "VST_VISTORIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Uma vistoria, da agenda à conclusão: nasce AGENDADA (o site cria a Entrada e a Saída da reserva), o assessor assume, inicia e conclui pelo celular."}, "VST_RESPOSTA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "A resposta de cada item: OK, PROBLEMA ou não se aplica."}, "VST_OCORRENCIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Problema encontrado que precisa de tratamento; se o item é crítico, tira o chalé da venda."}, "VST_FOTO": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Evidência de uma resposta: guarda o caminho do arquivo no Storage, com local e horário da câmera."}};
+  var info = document.getElementById('info'), W = 2194, A = 1097, DADOS = {"SIT_PROPRIEDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. A pousada: os horários de check-in e check-out montam a agenda. As regras de presença (GPS, raio) ficam em VST_PROPRIEDADE."}, "SIT_UNIDADE": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. O chalé é o elo entre os dois produtos: vendido pelo site e vistoriado pelo app. Situação, QR e ponto de GPS ficam em VST_UNIDADE."}, "SIT_RESERVA": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site, só leitura para a vistoria. Reservas CONFIRMADA viram a agenda de Entrada (check-in) e Saída (check-out)."}, "SIT_BLOQUEIO": {"g": "SITE · COMUM", "c": "g-site", "p": "Tabela do site. Uma ocorrência crítica cria aqui um bloqueio MANUTENCAO, que tira as datas da venda no site e nos canais (iCal). Só funções do banco escrevem aqui."}, "VST_USUARIO": {"g": "ACESSO", "c": "g-ace", "p": "Os funcionários que usam o app: vistoria (assessor), limpeza, manutenção, gestão e administração. O ADMIN cadastra pelo app; entram por usuário ou CPF e senha. O cadastro aberto do Auth está desligado."}, "VST_USUARIO_PROPRIEDADE": {"g": "ACESSO", "c": "g-ace", "p": "Quais pousadas cada usuário vê. É a base das regras de acesso (RLS) de todas as tabelas VST_."}, "VST_PROPRIEDADE": {"g": "CADASTRO", "c": "g-cad", "p": "Regras de presença da pousada: como o assessor prova que está no local, o raio aceito e o tempo mínimo de uma vistoria. Uma linha por SIT_PROPRIEDADE (1 para 1)."}, "VST_UNIDADE": {"g": "CADASTRO", "c": "g-cad", "p": "Dados do chalé que só a vistoria usa: situação operacional, QR da porta, ponto de GPS e andar. Uma linha por SIT_UNIDADE (1 para 1)."}, "VST_AMBIENTE": {"g": "CADASTRO", "c": "g-cad", "p": "Cômodos de cada unidade, na ordem em que o assessor percorre."}, "VST_ITEM": {"g": "CADASTRO", "c": "g-cad", "p": "O que se confere em cada cômodo: crítico, foto obrigatória e quantidade esperada."}, "VST_TIPO_VISTORIA": {"g": "APOIO", "c": "g-apo", "p": "Entrada, Saída, Rotina e Manutenção, com as regras de cada uma e quem da equipe pode fazê-las. O site identifica o tipo pelo código (ENTRADA, SAIDA)."}, "VST_TIPO_VISTORIA_ITEM": {"g": "APOIO", "c": "g-apo", "p": "Quais itens entram em cada tipo de vistoria (o checklist de cada tipo)."}, "VST_VISTORIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Uma vistoria, da agenda à conclusão: nasce AGENDADA (o site cria a Entrada e a Saída da reserva), o assessor assume, inicia e conclui pelo celular."}, "VST_RESPOSTA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "A resposta de cada item: OK, PROBLEMA ou não se aplica."}, "VST_OCORRENCIA": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Problema encontrado que precisa de tratamento; se o item é crítico, tira o chalé da venda."}, "VST_FOTO": {"g": "OPERAÇÃO", "c": "g-ope", "p": "Evidência de uma resposta: guarda o caminho do arquivo no Storage, com local e horário da câmera."}, "VST_AUDITORIA": {"g": "APOIO", "c": "g-apo", "p": "Quem mudou o quê nas tabelas VST_: completa a SIT_AUDITORIA (que só sabe o papel do banco) com o usuário do app. Consultada pelo ADMIN na T34."}};
   var reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var current = null, aberto = false;
   function vizinhos(name) {

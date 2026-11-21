@@ -2,7 +2,7 @@ import { Icon } from '@iconify/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LockupHorizontal } from './Logo';
-import { sair } from '../lib/acesso';
+import { MODO_DEMO, perfilAtual, sair } from '../lib/acesso';
 import NetworkBadge from './NetworkBadge';
 
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
@@ -12,13 +12,16 @@ const MENU = [
   { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades' },
   { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
   { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
-  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true },
+  { to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Fazer vistoria' },
+  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true, so: 'ADMIN' },
   { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', admin: true },
-  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true },
+  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true, so: 'ADMIN' },
   { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', admin: true },
-  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true },
-  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true },
+  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true, so: 'ADMIN' },
+  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true, so: 'ADMIN' },
 ];
+// o menu mostra só o que o perfil pode abrir (as telas e o banco conferem de novo)
+const menuDo = (p?: string) => MENU.filter((m) => !m.so || m.so === p || (MODO_DEMO && !p));
 
 /** Moldura de gestão/admin: responsiva para desktop e tablet (menu lateral) e utilizável no celular. */
 export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titulo: string; eyebrow?: string; acoes?: ReactNode; children: ReactNode }) {
@@ -54,9 +57,9 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
           <LockupHorizontal size="1.25rem" claro />
         </div>
         <nav ref={nav} className="relative flex gap-1 overflow-x-auto px-[45vw] py-2 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden" aria-label="Gestão">
-          {MENU.map((m, i) => (
+          {menuDo(perfilAtual()).map((m, i, menu) => (
             <div key={m.to} className="contents">
-              {m.admin && !MENU[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
+              {m.admin && !menu[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
               <NavLink to={m.to} end={m.end} className={link}><Icon icon={m.icon} width={18} aria-hidden="true" />{m.label}</NavLink>
             </div>
           ))}

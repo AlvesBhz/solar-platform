@@ -354,6 +354,26 @@ create table if not exists "VST_FOTO" (
 );
 create index if not exists "IX_VST_FOTO_RESPOSTA" on "VST_FOTO" ("ID_VISTORIA", "ID_ITEM");
 
+-- ── VST_AUDITORIA: QUEM (usuário do app) mudou o quê nas tabelas VST_ ─
+-- Complementa SIT_AUDITORIA, que grava só o papel do banco (authenticated). Escrita só pelo gatilho
+-- vst_auditar_autor(); ninguém altera nem apaga. Leitura só do ADMIN, pela função vst_auditoria (T34).
+-- Sem gatilho auditar() nesta tabela: auditar o próprio log duplicaria cada registro em SIT_AUDITORIA.
+create table if not exists "VST_AUDITORIA" (
+  "ID_AUDITORIA"   bigint generated always as identity,
+  "ID_USUARIO"     uuid,                                   -- auth.uid(); vazio = site, service_role ou SQL Editor
+  "NM_PAPEL"       text not null,                          -- papel do banco: authenticated, service_role, postgres…
+  "NM_TABELA"      text not null,
+  "TP_OPERACAO"    text not null,
+  "CD_REGISTRO"    text,                                   -- chave do registro alterado
+  "ID_UNIDADE"     bigint,                                 -- unidade envolvida, quando a linha tem uma
+  "DS_ALTERACOES"  jsonb not null,                         -- INSERT/DELETE: campos; UPDATE: só os alterados {campo: [antes, depois]}; CPF e QR mascarados
+  "DT_CRIACAO"     timestamptz not null default now(),
+  constraint "PK_VST_AUDITORIA" primary key ("ID_AUDITORIA"),
+  constraint "CK_VST_AUDITORIA_TP_OPERACAO" check ("TP_OPERACAO" in ('INSERT', 'UPDATE', 'DELETE'))
+);
+create index if not exists "IX_VST_AUDITORIA_DT_CRIACAO" on "VST_AUDITORIA" ("DT_CRIACAO");
+create index if not exists "IX_VST_AUDITORIA_ID_USUARIO" on "VST_AUDITORIA" ("ID_USUARIO", "DT_CRIACAO");
+
 
 -- ════════════════════════════════════════════════════════════════════
 --  2. FUNÇÕES AUXILIARES (acesso por usuário e propriedade)
@@ -1048,6 +1068,32 @@ begin
 end;
 $$;
 
+-- T34: auditoria das vistorias (só ADMIN), do mais recente ao mais antigo, paginada; período em dias de Brasília
+create or replace function vst_auditoria(p_dt_ini date, p_dt_fim date, p_nm_tabela text default null, p_id_usuario uuid default null,
+                                         p_limite int default 50, p_deslocamento int default 0)
+returns table (id_auditoria bigint, dt_criacao timestamptz, id_usuario uuid, nm_usuario text, tp_perfil text, nm_papel text,
+               nm_tabela text, tp_operacao text, cd_registro text, id_unidade bigint, nm_unidade text, ds_alteracoes jsonb, qtde_total bigint)
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  if "SE".vst_perfil() is distinct from 'ADMIN' then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
+  if p_dt_ini is null or p_dt_fim is null or p_dt_fim < p_dt_ini or p_dt_fim - p_dt_ini > 366 then
+    raise exception 'periodo_invalido' using errcode = 'P0001';
+  end if;
+  return query
+  select a."ID_AUDITORIA", a."DT_CRIACAO", a."ID_USUARIO", u."NM_USUARIO", u."TP_PERFIL", a."NM_PAPEL", a."NM_TABELA", a."TP_OPERACAO",
+         a."CD_REGISTRO", a."ID_UNIDADE", su."NM_UNIDADE", a."DS_ALTERACOES", count(*) over ()
+  from "VST_AUDITORIA" a
+  left join "VST_USUARIO" u on u."ID_USUARIO" = a."ID_USUARIO"
+  left join "SIT_UNIDADE" su on su."ID_UNIDADE" = a."ID_UNIDADE"
+  where a."DT_CRIACAO" >= (p_dt_ini::timestamp at time zone 'America/Sao_Paulo')
+    and a."DT_CRIACAO" < ((p_dt_fim + 1)::timestamp at time zone 'America/Sao_Paulo')
+    and (p_nm_tabela is null or a."NM_TABELA" = p_nm_tabela)
+    and (p_id_usuario is null or a."ID_USUARIO" = p_id_usuario)
+  order by a."DT_CRIACAO" desc, a."ID_AUDITORIA" desc
+  limit least(greatest(coalesce(p_limite, 50), 1), 200) offset greatest(coalesce(p_deslocamento, 0), 0);
+end;
+$$;
+
 -- Bloqueio manual a partir de uma ocorrência (gestão); p_dt_fim vazio = 7 dias (provisório)
 create or replace function vst_bloquear_por_ocorrencia(p_id_ocorrencia bigint, p_dt_fim date default null)
 returns bigint language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
@@ -1176,9 +1222,49 @@ $$;
 --  Nada para anon. O schema revoga tudo por padrão: cada permissão é concedida aqui.
 -- ════════════════════════════════════════════════════════════════════
 
+-- Autor de cada mudança (VST_AUDITORIA): usuário do app, só os campos alterados, sem CPF nem código do QR
+create or replace function vst_auditar_autor()
+returns trigger language plpgsql security definer set search_path = "SE", extensions, pg_temp as $$
+declare v_old jsonb := case when tg_op <> 'INSERT' then to_jsonb(old) end;
+        v_new jsonb := case when tg_op <> 'DELETE' then to_jsonb(new) end;
+        v_reg jsonb; v_dif jsonb; k text;
+begin
+  v_reg := coalesce(v_new, v_old);
+  if tg_op = 'UPDATE' then
+    select coalesce(jsonb_object_agg(n.key, jsonb_build_array(o.value, n.value)), '{}'::jsonb) into v_dif
+    from jsonb_each(v_new) n left join jsonb_each(v_old) o on o.key = n.key
+    where n.value is distinct from o.value and n.key <> 'DT_ATUALIZACAO';
+    if v_dif = '{}'::jsonb then return null; end if;          -- só mudou a data de atualização
+  else
+    v_dif := v_reg - 'DT_CRIACAO' - 'DT_ATUALIZACAO';
+  end if;
+  foreach k in array array['CD_CPF', 'CD_HASH_QR'] loop
+    if v_dif ? k then v_dif := jsonb_set(v_dif, array[k], '"***"'::jsonb); end if;
+  end loop;
+  insert into "VST_AUDITORIA" ("ID_USUARIO", "NM_PAPEL", "NM_TABELA", "TP_OPERACAO", "CD_REGISTRO", "ID_UNIDADE", "DS_ALTERACOES")
+  values ((select auth.uid()),
+          coalesce(nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role', session_user::text),
+          tg_table_name, tg_op,
+          case tg_table_name
+            when 'VST_RESPOSTA' then (v_reg ->> 'ID_VISTORIA') || '/' || (v_reg ->> 'ID_ITEM')
+            when 'VST_USUARIO_PROPRIEDADE' then (v_reg ->> 'ID_USUARIO') || '/' || (v_reg ->> 'ID_PROPRIEDADE')
+            when 'VST_TIPO_VISTORIA_ITEM' then (v_reg ->> 'ID_TIPO_VISTORIA') || '/' || (v_reg ->> 'ID_ITEM')
+            else v_reg ->> ('ID_' || substr(tg_table_name, 5)) end,
+          (v_reg ->> 'ID_UNIDADE')::bigint, v_dif);
+  return null;
+end;
+$$;
+
+alter table "VST_AUDITORIA" enable row level security;          -- sem política: nenhum acesso direto, só pela função
+revoke all on "VST_AUDITORIA" from public, anon, authenticated;
+grant select on "VST_AUDITORIA" to service_role;
+
 do $$ declare t text; begin
   foreach t in array array['VST_TIPO_VISTORIA', 'VST_USUARIO', 'VST_USUARIO_PROPRIEDADE', 'VST_PROPRIEDADE', 'VST_UNIDADE', 'VST_AMBIENTE',
                            'VST_ITEM', 'VST_TIPO_VISTORIA_ITEM', 'VST_VISTORIA', 'VST_RESPOSTA', 'VST_OCORRENCIA', 'VST_FOTO'] loop
+    execute format('drop trigger if exists %I on "SE".%I', 'TG_' || t || '_AUTOR', t);
+    execute format('create trigger %I after insert or update or delete on "SE".%I for each row execute function "SE".vst_auditar_autor()',
+                   'TG_' || t || '_AUTOR', t);
     execute format('alter table "SE".%I enable row level security', t);
     execute format('revoke all on "SE".%I from public, anon, authenticated', t);
     execute format('grant all on "SE".%I to service_role', t);
@@ -1270,7 +1356,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade', 'vst_ocorrencias') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade', 'vst_ocorrencias', 'vst_auditoria') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;

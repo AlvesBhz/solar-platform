@@ -244,6 +244,16 @@ T["VST_FOTO"] = dict(grupo="ope", cols=[
     col("QTDE_PRECISAO_METROS", "smallint", False, desc="Precisão do GPS."),
     col("SG_FORA_RAIO", "boolean", desc="Tirada fora do raio."),
     col("DT_CAPTURA", "timestamptz", desc="Momento da câmera, não do envio.")])
+T["VST_AUDITORIA"] = dict(grupo="apo", cols=[
+    col("ID_AUDITORIA", "bigint", pk=True, auto=True, desc="Sequencial."),
+    col("ID_USUARIO", "uuid", False, desc="Quem fez a mudança pelo app (auth.uid); vazio = site, service_role ou SQL Editor. Sem FK: o log independe do cadastro."),
+    col("NM_PAPEL", "text", desc="Papel do banco: authenticated, service_role, postgres…"),
+    col("NM_TABELA", "text", desc="Tabela VST_ alterada."),
+    col("TP_OPERACAO", "text", desc="INSERT, UPDATE ou DELETE."),
+    col("CD_REGISTRO", "text", False, desc="Chave do registro alterado."),
+    col("ID_UNIDADE", "bigint", False, desc="Unidade envolvida, quando a linha tem uma."),
+    col("DS_ALTERACOES", "jsonb", desc="INSERT/DELETE: os campos; UPDATE: só os alterados, com antes e depois. CPF e código do QR viram ***."),
+    col("DT_CRIACAO", "timestamptz", desc="Quando.")])
 
 # o DER tem de bater com a migração que vai para o Supabase: mesmas colunas, ordem, tipos, obrigatoriedade e chaves
 for _n, _t in T.items():
@@ -269,6 +279,7 @@ POS = {
     "SIT_RESERVA": (X[2], 40), "SIT_UNIDADE": (X[2], 262), "VST_AMBIENTE": (X[2], 520), "VST_ITEM": (X[2], 740),
     "VST_VISTORIA": (X[3], 40), "VST_RESPOSTA": (X[3], 570), "VST_OCORRENCIA": (X[3], 775),
     "VST_TIPO_VISTORIA": (X[4], 116), "VST_TIPO_VISTORIA_ITEM": (X[4], 380), "VST_FOTO": (X[4], 551),
+    "VST_AUDITORIA": (X[0], 560),
 }
 assert set(POS) == set(T)
 
@@ -441,6 +452,7 @@ PROPOSITO = {
     "VST_RESPOSTA": "A resposta de cada item: OK, PROBLEMA ou não se aplica.",
     "VST_OCORRENCIA": "Problema encontrado que precisa de tratamento; se o item é crítico, tira o chalé da venda.",
     "VST_FOTO": "Evidência de uma resposta: guarda o caminho do arquivo no Storage, com local e horário da câmera.",
+    "VST_AUDITORIA": "Quem mudou o quê nas tabelas VST_: completa a SIT_AUDITORIA (que só sabe o papel do banco) com o usuário do app. Consultada pelo ADMIN na T34.",
 }
 REGRAS = {
     "SIT_PROPRIEDADE": ["A vistoria só lê: horários de check-in e check-out e o fuso.", "Nenhuma coluna foi acrescentada pela vistoria."],
@@ -474,6 +486,8 @@ REGRAS = {
     "VST_OCORRENCIA": ["Nasce de uma resposta PROBLEMA (FK composta ID_VISTORIA + ID_ITEM); uma por resposta.", "TP_GRAVIDADE: BAIXA, MEDIA ou CRITICA; item crítico abre CRITICA.",
                        "TP_STATUS: ABERTA, EM_TRATAMENTO, RESOLVIDA ou CANCELADA; RESOLVIDA exige DT_RESOLUCAO.",
                        "ID_BLOQUEIO preenchido quando o chalé sai da venda (se o bloqueio for apagado no site, o campo volta a ficar vazio)."],
+    "VST_AUDITORIA": ["Escrita só pelo gatilho TG_<TABELA>_AUTOR (vst_auditar_autor) nas 12 tabelas VST_; ninguém altera nem apaga.",
+                      "UPDATE guarda só os campos que mudaram; CPF e código do QR nunca vão para o log.", "Não tem o gatilho auditar(): auditar o próprio log duplicaria cada registro."],
     "VST_FOTO": ["Aponta a resposta pela FK composta (ID_VISTORIA + ID_ITEM).", "CD_ARQUIVO começa pelo ID_VISTORIA e termina em .jpg, .png ou .webp; único.",
                  "Bucket privado vistorias, até 5 MB; o app não altera nem apaga fotos."],
 }
@@ -489,6 +503,7 @@ ACESSO = {
     "VST_VISTORIA": "Leitura por acesso ao chalé; escrita só pelas funções do app e pelo site (service_role).",
     "VST_RESPOSTA": "Mesma regra da vistoria.", "VST_OCORRENCIA": "Leitura por acesso ao chalé; GESTOR e ADMIN tratam pela função vst_resolver_ocorrencia.",
     "VST_FOTO": "Mesma regra da vistoria; o arquivo fica no Storage com política própria.",
+    "VST_AUDITORIA": "Sem acesso direto (RLS sem política): só o ADMIN, pela função vst_auditoria.",
 }
 INTEGRACAO = [
     ("Cadastro único", "SIT_PROPRIEDADE e SIT_UNIDADE são as tabelas do site, no mesmo schema \"SE\". A vistoria não acrescenta nenhuma coluna a elas: o que precisa fica em VST_PROPRIEDADE e VST_UNIDADE (1 para 1)."),
@@ -523,7 +538,7 @@ PREFIXOS = [("ID_", "identificador"), ("NM_", "nome"), ("DS_", "descrição ou t
             ("HR_", "hora"), ("VL_", "valor (dinheiro, coordenada)"), ("QTDE_", "quantidade"), ("NO_", "número (ordem, versão)"),
             ("CD_", "código"), ("TP_", "lista fixa, valores em MAIÚSCULAS"), ("SG_", "sim/não (boolean)")]
 ORDEM = ["SIT_UNIDADE", "SIT_PROPRIEDADE", "SIT_RESERVA", "SIT_BLOQUEIO", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO",
-         "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_PROPRIEDADE", "VST_UNIDADE", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE"]
+         "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA", "VST_TIPO_VISTORIA_ITEM", "VST_PROPRIEDADE", "VST_UNIDADE", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_AUDITORIA"]
 assert sorted(ORDEM) == sorted(T)
 
 
@@ -606,6 +621,9 @@ EX["VST_FOTO"] = [
          qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:11:00+00:00"),
     dict(id_foto=F2, id_vistoria=V2, id_item=3, cd_arquivo=V2 + "/torneira-2.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
          qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:12:00+00:00")]
+EX["VST_AUDITORIA"] = [
+    dict(id_auditoria=101, id_usuario="00000000-0000-4000-8000-0000000000a1", nm_papel="authenticated", nm_tabela="VST_OCORRENCIA", tp_operacao="UPDATE",
+         cd_registro="1", id_unidade=1, ds_alteracoes={"TP_STATUS": ["ABERTA", "EM_TRATAMENTO"]}, dt_criacao="2026-12-26T19:02:00+00:00")]
 CAP = {
     "SIT_PROPRIEDADE": ["A pousada"], "SIT_UNIDADE": ["A Casa do Mirante"],
     "SIT_RESERVA": ["1 · Confirmada no site", "2 · Pré-reserva aguardando Pix"],
@@ -616,7 +634,7 @@ CAP = {
     "VST_TIPO_VISTORIA": ["Entrada", "Saída", "Rotina"], "VST_TIPO_VISTORIA_ITEM": ["Entrada confere a torneira", "Saída confere a torneira", "Saída conta as toalhas"],
     "VST_VISTORIA": ["Entrada de 23/12", "Saída de 26/12"],
     "VST_RESPOSTA": ["Torneira OK na entrada", "Torneira com problema na saída", "Toalhas conferidas"],
-    "VST_OCORRENCIA": ["Torneira vazando"], "VST_FOTO": ["Foto 1 da torneira", "Foto 2 da torneira"],
+    "VST_OCORRENCIA": ["Torneira vazando"], "VST_FOTO": ["Foto 1 da torneira", "Foto 2 da torneira"], "VST_AUDITORIA": ["Gestor pôs a ocorrência em tratamento"],
 }
 PAINEL_IDX = {"SIT_BLOQUEIO": [1, 2], "VST_ITEM": [2, 3], "VST_RESPOSTA": [1, 2], "VST_TIPO_VISTORIA_ITEM": [1, 2]}
 for _n, _t in T.items():
