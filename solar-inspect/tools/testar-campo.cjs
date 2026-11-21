@@ -180,6 +180,16 @@ async function assinarEnviar(page) {
     await ctx.close();
   });
 
+  console.log('── Admin sem itens no checklist: a tela leva ao cadastro');
+  await T('semitens', async () => {
+    const { ctx, page } = await abrir(browser, { usuario: { TP_PERFIL: 'ADMIN' } }, { rota: BASEV });
+    await page.getByRole('link', { name: 'Cadastrar o checklist' }).waitFor({ timeout: 8000 });
+    ok(await page.getByRole('link', { name: 'Cadastrar o checklist' }).getAttribute('href').then((h) => h.endsWith('/admin/checklists')) && !(await page.innerText('body')).includes('Peça ao gestor'), 'admin: em vez de "peça ao gestor", o link leva direto ao cadastro do checklist');
+    await page.getByRole('link', { name: 'Cadastrar o checklist' }).click();
+    ok(await esperarRota(page, '/admin/checklists'), 'o link abre Ambientes e itens');
+    await ctx.close();
+  });
+
   console.log('── Vistoria avulsa feita sem internet e enviada quando a conexão volta');
   await T('offline', async () => {
     const cen = {};

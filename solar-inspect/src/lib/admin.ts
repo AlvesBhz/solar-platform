@@ -15,7 +15,7 @@ export type Propriedade = {
   vl_latitude: number | null; vl_longitude: number | null; qtde_raio_metros: number; qtde_precisao_max_metros: number; qtde_minutos_min_vistoria: number;
 };
 export type Usuario = { id: string; nome: string; login: string; cpf: string | null; perfil: Perfil; ativo: boolean; props: number[] };
-export type Resultado = { ok: true } | { ok: false; erro: string };
+export type Resultado = { ok: true; id?: number } | { ok: false; erro: string };
 
 // mensagens para os erros do banco e das funções
 const ERROS: Record<string, string> = {
@@ -220,7 +220,8 @@ async function gravar(tabela: string, chave: string, id: number | null, dados: R
   if (MODO_DEMO || !supabase) return { ok: true };
   const r = id === null ? await supabase.from(tabela).insert(dados).select(chave) : await supabase.from(tabela).update(dados).eq(chave, id).select(chave);
   if (r.error) return { ok: false, erro: mensagem(r.error.message) };
-  return (r.data ?? []).length ? { ok: true } : { ok: false, erro: 'Seu perfil não pode alterar este chalé.' };
+  const linha = (r.data ?? [])[0] as unknown as Record<string, unknown> | undefined;
+  return linha ? { ok: true, id: Number(linha[chave]) } : { ok: false, erro: 'Seu perfil não pode alterar este chalé.' };
 }
 export async function salvarAmbiente(a: { id: number | null; idUnidade: number; nome: string; ordem: number; ativo: boolean }): Promise<Resultado> {
   if (!nomeOk(a.nome)) return { ok: false, erro: 'Nome do ambiente: 2 a 80 caracteres.' };
@@ -285,4 +286,28 @@ export async function alternarItemNoTipo(idTipo: number, idItem: number, incluir
     : await supabase.from('VST_TIPO_VISTORIA_ITEM').delete().eq('ID_TIPO_VISTORIA', idTipo).eq('ID_ITEM', idItem).select('ID_ITEM');
   if (r.error) return { ok: false, erro: mensagem(r.error.message) };
   return (r.data ?? []).length ? { ok: true } : { ok: false, erro: 'Seu perfil não pode alterar este checklist.' };
+}
+
+// ── ligação item ↔ tipo de vistoria (o app só oferece um tipo que tenha itens)
+/** Para cada item, em quais tipos de vistoria ele entra. */
+export async function tiposDosItens(): Promise<Record<number, number[]>> {
+  if (MODO_DEMO || !supabase) return {};
+  const { data, error } = await supabase.from('VST_TIPO_VISTORIA_ITEM').select('ID_TIPO_VISTORIA, ID_ITEM').limit(5000);
+  if (error) throw new Error(error.message);
+  const m: Record<number, number[]> = {};
+  for (const r of data ?? []) (m[Number(r.ID_ITEM)] ??= []).push(Number(r.ID_TIPO_VISTORIA));
+  return m;
+}
+/** Deixa o item exatamente nos tipos pedidos (inclui os que faltam, tira os que sobram). */
+export async function definirTiposDoItem(idItem: number, desejados: number[], atuais: number[]): Promise<Resultado> {
+  for (const t of desejados.filter((x) => !atuais.includes(x))) { const r = await alternarItemNoTipo(t, idItem, true); if (!r.ok) return r; }
+  for (const t of atuais.filter((x) => !desejados.includes(x))) { const r = await alternarItemNoTipo(t, idItem, false); if (!r.ok) return r; }
+  return { ok: true };
+}
+/** Inclui os itens em todos os tipos informados, sem repetir o que já existe. */
+export async function incluirItensNosTipos(idsItens: number[], idsTipos: number[]): Promise<Resultado> {
+  if (MODO_DEMO || !supabase || !idsItens.length || !idsTipos.length) return { ok: true };
+  const linhas = idsItens.flatMap((i) => idsTipos.map((t) => ({ ID_TIPO_VISTORIA: t, ID_ITEM: i })));
+  const { error } = await supabase.from('VST_TIPO_VISTORIA_ITEM').upsert(linhas, { onConflict: 'ID_TIPO_VISTORIA,ID_ITEM', ignoreDuplicates: true });
+  return error ? { ok: false, erro: mensagem(error.message) } : { ok: true };
 }
