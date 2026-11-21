@@ -19,6 +19,8 @@ Tabelas do projeto Vistorias começam com **`VST_`**; as do site, com **`SIT_`**
 
 Conferir também em Project Settings › API que o schema **`SE`** está em *Exposed schemas* (o site já depende disso).
 
+Aplicar por script (confere, aplica, prova que o site não mudou e verifica): `python3 -I tools/aplicar-supabase.py` (veja `APLICAR_NA_SESSAO_SITE.md`). Para só conferir, `verificar_aplicacao.sql` (só lê) ou `--so-conferir`. Edge Functions: `tools/publicar-funcoes.sh`.
+
 Testar antes, num banco descartável (nunca no de produção): `PGHOST=… PGPORT=… PGUSER=… tools/testar-banco.sh`
 (o script também prova que tabelas, funções e gatilhos do site ficaram idênticos depois da migração).
 
