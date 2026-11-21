@@ -21,7 +21,10 @@ const repasseFuncoes = {
 export default defineConfig(({ mode }) => ({
   // `vite build --mode artifact`: arquivo único (navegação em memória, GPS simulado) para publicar como link.
   plugins: mode === 'celular' ? [react(), basicSsl()] : mode === 'artifact' ? [react(), viteSingleFile()] : [react()],
-  build: mode === 'artifact' ? { outDir: 'dist-artifact', assetsInlineLimit: 100_000_000 } : undefined,
+  build: mode === 'artifact' ? { outDir: 'dist-artifact', assetsInlineLimit: 100_000_000 }
+    : mode === 'pages' ? { outDir: '../docs', emptyOutDir: true } : undefined,
+  // `vite build --mode pages`: GitHub Pages em https://alvesbhz.github.io/solar-platform/ (origem aceita pelo login)
+  base: mode === 'pages' ? '/solar-platform/' : '/',
   // host: true expõe na rede local para testar no celular (mesmo Wi-Fi).
   server: { host: true, fs: { allow: ['..'] }, proxy: mode === 'teste' ? repasseFuncoes : undefined },
   preview: { host: true, proxy: mode === 'teste' ? repasseFuncoes : undefined },

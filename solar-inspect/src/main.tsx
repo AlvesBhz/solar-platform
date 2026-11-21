@@ -34,7 +34,7 @@ import { T28Propriedades, T29FormPropriedade, T30Ambientes, T31Tipos, T32Usuario
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Router>
+    <Router basename={import.meta.env.MODE === 'artifact' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <SimNav />
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
