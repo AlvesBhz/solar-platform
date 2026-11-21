@@ -55,7 +55,7 @@ export default function T05MinhasUnidades() {
           </Link>
           {(() => { const p = perfilAtual(); return p && ehGestao(p); })() && (
             <Link to="/gestao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Voltar à gestão" title="Voltar à gestão">
-              <Icon icon="solar:widget-linear" width={22} aria-hidden="true" />
+              <Icon icon="solar:widget-2-linear" width={22} aria-hidden="true" />
             </Link>
           )}
           <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha" title="Trocar senha">

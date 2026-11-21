@@ -8,7 +8,7 @@ import NetworkBadge from './NetworkBadge';
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
 
 const MENU = [
-  { to: '/gestao', icon: 'solar:widget-linear', label: 'Dashboard', end: true },
+  { to: '/gestao', icon: 'solar:widget-2-linear', label: 'Dashboard', end: true },
   { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades' },
   { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
   { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
