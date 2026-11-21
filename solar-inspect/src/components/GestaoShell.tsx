@@ -49,7 +49,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
     `flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] transition-colors duration-fast ${isActive ? 'bg-white/10 font-medium text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`;
   return (
     <div className="screen bg-cream lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="on-dark bg-pine-deep text-white lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:gap-6 lg:p-4">
+      <aside className="on-dark bg-pine-deep text-white print:hidden lg:sticky lg:top-0 lg:flex lg:h-[100svh] lg:flex-col lg:gap-6 lg:p-4">
         <div className="hidden px-2 pt-2 lg:block">
           <LockupHorizontal size="1.25rem" claro />
         </div>
@@ -69,7 +69,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         </button>
       </aside>
       <div className="flex min-w-0 flex-col">
-        <header className="flex flex-wrap items-end justify-between gap-3 px-[max(1rem,env(safe-area-inset-left))] pb-4 pt-6 lg:px-8">
+        <header className="flex flex-wrap items-end justify-between gap-3 print:hidden px-[max(1rem,env(safe-area-inset-left))] pb-4 pt-6 lg:px-8">
           <div className="flex min-w-0 flex-col gap-1">
             {eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>

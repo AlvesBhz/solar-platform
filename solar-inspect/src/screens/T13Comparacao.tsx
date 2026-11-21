@@ -75,10 +75,12 @@ export default function T13Comparacao() {
                 )}
               </Painel>
             </section>
-            <p className="-mt-3 flex items-start gap-1.5 text-[0.6875rem] text-fg-3">
-              <Icon icon="solar:info-circle-linear" width={14} className="mt-px shrink-0" aria-hidden="true" />
-              Mockup: a foto da entrada é simulada com a foto de referência do ambiente.
-            </p>
+            {!entrada.length && (
+              <p className="-mt-3 flex items-start gap-1.5 text-[0.6875rem] text-fg-3">
+                <Icon icon="solar:info-circle-linear" width={14} className="mt-px shrink-0" aria-hidden="true" />
+                {ctx.ambiente.ref ? 'Sem foto deste item na entrada: mostrando a foto de referência do ambiente.' : 'Sem foto deste item na entrada vinculada (ou sem internet para carregá-la).'}
+              </p>
+            )}
 
             <section className="flex flex-col gap-2">
               <h2 className="text-xs uppercase tracking-[0.08em] text-fg-2">Comparado à entrada, o item está</h2>

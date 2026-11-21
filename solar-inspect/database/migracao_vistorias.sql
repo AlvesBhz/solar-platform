@@ -1001,14 +1001,50 @@ begin
     end if;
   end if;
   if p_tp_status not in ('EM_TRATAMENTO', 'RESOLVIDA', 'CANCELADA') then raise exception 'status_invalido' using errcode = 'P0001'; end if;
+  -- encerrada (resolvida/cancelada) não volta nem recebe comentário; só pode liberar o chalé, mantendo o status
+  if o."TP_STATUS" in ('RESOLVIDA', 'CANCELADA') and (p_tp_status <> o."TP_STATUS" or not p_liberar or nullif(btrim(p_ds_tratamento), '') is not null) then
+    raise exception 'ocorrencia_encerrada' using errcode = 'P0001';
+  end if;
+  -- histórico do tratamento: cada registro ganha data/hora (Brasília) e autor, gravados pelo servidor; nada é sobrescrito
   update "VST_OCORRENCIA"
-  set "TP_STATUS" = p_tp_status, "DS_TRATAMENTO" = coalesce(nullif(btrim(p_ds_tratamento), ''), "DS_TRATAMENTO"),
+  set "TP_STATUS" = p_tp_status,
+      "DS_TRATAMENTO" = case when nullif(btrim(p_ds_tratamento), '') is null then "DS_TRATAMENTO"
+                             else left(concat_ws(E'\n', "DS_TRATAMENTO", to_char(now() at time zone 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') || ' · ' || u."NM_USUARIO" || ': ' || btrim(p_ds_tratamento)), 20000) end,
       "DT_RESOLUCAO" = case when p_tp_status = 'RESOLVIDA' then now() else "DT_RESOLUCAO" end
   where "ID_OCORRENCIA" = p_id_ocorrencia;
   if p_liberar then
     if p_tp_status not in ('RESOLVIDA', 'CANCELADA') then raise exception 'status_invalido' using errcode = 'P0001'; end if;
     perform "SE".vst_mudar_situacao(o."ID_UNIDADE", 'LIBERADO', u."TP_PERFIL");
   end if;
+end;
+$$;
+
+-- Gestão (T20/T22/T25/T26): ocorrências com unidade, item, ambiente, vistoria de origem e fim do bloqueio (sem ler SIT_BLOQUEIO)
+create or replace function vst_ocorrencias(p_id_unidade bigint default null, p_id_vistoria uuid default null)
+returns table (id_ocorrencia bigint, id_unidade bigint, nm_unidade text, id_vistoria uuid, nm_tipo_vistoria text, dt_vistoria timestamptz,
+               nm_autor text, id_item bigint, nm_item text, nm_ambiente text, tp_gravidade text, tp_status text, ds_ocorrencia text,
+               ds_tratamento text, dt_abertura timestamptz, dt_resolucao timestamptz, dt_bloqueio_fim date)
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  perform "SE".vst_usuario_atual();
+  return query
+  select o."ID_OCORRENCIA", o."ID_UNIDADE", u."NM_UNIDADE", o."ID_VISTORIA", t."NM_TIPO_VISTORIA", v."DT_FIM", us."NM_USUARIO",
+         o."ID_ITEM", i."NM_ITEM", a."NM_AMBIENTE", o."TP_GRAVIDADE", o."TP_STATUS", o."DS_OCORRENCIA", o."DS_TRATAMENTO",
+         o."DT_ABERTURA", o."DT_RESOLUCAO", case when b."DT_FIM" is not null then b."DT_FIM" - 1 end
+  from "VST_OCORRENCIA" o
+  join "SIT_UNIDADE" u on u."ID_UNIDADE" = o."ID_UNIDADE"
+  join "VST_VISTORIA" v on v."ID_VISTORIA" = o."ID_VISTORIA"
+  join "VST_TIPO_VISTORIA" t on t."ID_TIPO_VISTORIA" = v."ID_TIPO_VISTORIA"
+  left join "VST_USUARIO" us on us."ID_USUARIO" = v."ID_USUARIO"
+  join "VST_ITEM" i on i."ID_ITEM" = o."ID_ITEM"
+  join "VST_AMBIENTE" a on a."ID_AMBIENTE" = i."ID_AMBIENTE"
+  left join "SIT_BLOQUEIO" b on b."ID_BLOQUEIO" = o."ID_BLOQUEIO"
+  where "SE".vst_tem_acesso(u."ID_PROPRIEDADE")
+    and (p_id_unidade is null or o."ID_UNIDADE" = p_id_unidade)
+    and (p_id_vistoria is null or o."ID_VISTORIA" = p_id_vistoria)
+  order by (o."TP_STATUS" in ('ABERTA', 'EM_TRATAMENTO')) desc,
+           case o."TP_GRAVIDADE" when 'CRITICA' then 0 when 'MEDIA' then 1 else 2 end, o."DT_ABERTURA" desc
+  limit 500;
 end;
 $$;
 
@@ -1234,7 +1270,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade', 'vst_ocorrencias') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;

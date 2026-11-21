@@ -298,6 +298,17 @@ select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_
 select teste.ok((select "DT_FIM" = (now() at time zone 'America/Sao_Paulo')::date + 1 from "SIT_BLOQUEIO" where "ID_BLOQUEIO" = :r_bloq), 'liberar encerra o bloqueio: DT_FIM = amanhã (data da pousada)');
 select teste.ok((select coalesce(motivo, '') <> 'ocupado' from consultar_disponibilidade(current_date + 2, current_date + 4, 2, 0) where cd_unidade = 'casa-do-mirante'),
                 'o site volta a vender as noites depois da liberação');
+select teste.ok((select "DS_TRATAMENTO" ~ '^\d{2}/\d{2}/\d{4} \d{2}:\d{2} · .+: Encanador chamado\n\d{2}/\d{2}/\d{4} \d{2}:\d{2} · .+: Encanador trocou o reparo$' from "VST_OCORRENCIA" where "ID_OCORRENCIA" = :oc),
+                'o tratamento acumula o histórico com data, hora e autor (nada é sobrescrito)');
+:como_gesto
+select teste.erro(format($q$select "SE".vst_resolver_ocorrencia(%s, 'EM_TRATAMENTO', 'reabrir')$q$, :oc), 'ocorrencia_encerrada', 'ocorrência resolvida não reabre nem recebe comentário');
+select teste.ok((select count(*) = 1 and bool_and(nm_item = 'Torneira' and nm_ambiente = 'Banheiro' and nm_unidade is not null and nm_tipo_vistoria = 'Saída'
+                    and dt_bloqueio_fim = (now() at time zone 'America/Sao_Paulo')::date and tp_status = 'RESOLVIDA')
+                 from "SE".vst_ocorrencias(:ua) where id_ocorrencia = :oc), 'vst_ocorrencias traz item, ambiente, vistoria e o último dia do bloqueio');
+:como_bia
+select teste.ok((select count(*) = 0 from "SE".vst_ocorrencias(:ua)), 'vst_ocorrencias não mostra ocorrências de outra pousada');
+:como_anon
+select teste.erro($q$select * from "SE".vst_ocorrencias()$q$, '42501', 'anon não lista ocorrências');
 -- QR
 :como_gesto
 select "SE".vst_obter_qr(:ua) as qr_v1 \gset

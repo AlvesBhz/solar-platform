@@ -6,16 +6,18 @@ import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { checklistDa, type Ambiente } from '../mocks/checklist';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { VALIDACAO, formatarData } from '../components/Status';
+import { MODO_DEMO } from '../lib/supabase';
 import { listarAuditoria, registrarAuditoria, unidadesGestao } from '../mocks/gestao';
 import { listarTipos, type TipoVistoria, type Unidade } from '../mocks/unidades';
 
 /** T34 — Auditoria: eventos por usuário, ação e período. Somente leitura. */
 export function T34Auditoria() {
-  const ev = listarAuditoria();
+  const ev = MODO_DEMO ? listarAuditoria() : [];
   const [q, setQ] = useState('');
   const lista = ev.filter((e) => `${e.usuario} ${e.acao} ${e.detalhe}`.toLowerCase().includes(q.toLowerCase()));
   return (
     <GestaoShell eyebrow="Administração" titulo="Auditoria">
+      {!MODO_DEMO && <p role="status" className="rounded-md border border-line-1 bg-white p-3 text-[0.8125rem] text-fg-2">Toda alteração nas tabelas de vistoria já é gravada no banco (SIT_AUDITORIA). A consulta por esta tela será ligada na etapa de administração; até lá, nenhum dado de exemplo é exibido.</p>}
       <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filtrar por usuário, ação ou unidade" className="min-h-11 rounded-md border border-line-2 bg-white px-3 placeholder:text-fg-4" aria-label="Filtrar" />
       <TabelaResp rows={lista} cols={[
         { h: 'Quando', r: (e) => <span className="font-mono text-[0.75rem] text-fg-2">{formatarData(e.em)}</span> },

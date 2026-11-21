@@ -69,6 +69,7 @@ Cada uma lê `auth.uid()`, exige usuário ativo em `"VST_USUARIO"` e acesso à p
 | `vst_unidades()` | — | qualquer usuário ativo | chalés das pousadas dele, com validação, ponto, raio e situação (sem o QR) |
 | `vst_agenda(p_dt_ini, p_dt_fim, p_id_unidade?)` | `date`, `date` (fim = dia seguinte), `bigint` | qualquer usuário ativo | vistorias do período com `cd_reserva`, `dt_checkin`, `dt_checkout` (nunca CPF, passaporte, telefone ou e-mail) |
 | `vst_checklist(p_id_unidade, p_id_tipo_vistoria)` | `bigint`, `bigint` | quem tem acesso ao chalé | ambientes e itens ativos, na ordem de passagem |
+| `vst_ocorrencias(p_id_unidade?, p_id_vistoria?)` | `bigint`, `uuid` | quem tem acesso ao chalé | ocorrências com unidade, item, ambiente, vistoria de origem, autor, histórico do tratamento e último dia fora da venda (sem expor `SIT_BLOQUEIO`) |
 | `vst_tipos_unidade(p_id_unidade)` | `bigint` | quem tem acesso ao chalé | tipos que o perfil faz, com a quantidade de itens do checklist e a vistoria a retomar (a minha em andamento ou a agendada até hoje) |
 | `vst_resolver_qr(p_cd_hash_qr)` | `text` | qualquer usuário ativo | chalé do QR lido, se tiver acesso |
 | `vst_criar_vistoria(p_id_unidade, p_cd_tipo_vistoria, p_dt_agendada, p_id_vistoria?, p_id_reserva?, p_id_usuario?)` | `bigint`, `text`, `date`, `uuid`, `bigint`, `uuid` | assessor (para si, sem reserva); gestor/admin (qualquer responsável e reserva) | `uuid`; reenviar o mesmo id devolve a vistoria existente |
@@ -127,6 +128,10 @@ Esqueceu a senha: o ADMIN redefine pelo app (`redefinir-senha`). Para desligar u
 ## App de campo (T05–T19)
 
 `src/lib/campo.ts` lê unidades, tipos e checklist (com cópia no aparelho para abrir sem internet) e inicia a vistoria; `src/lib/fila.ts` guarda a vistoria confirmada e envia: cria a avulsa (UUID do aparelho), inicia com a hora real, sobe fotos e assinatura para `vistorias/<ID_VISTORIA>/` e conclui com `vst_concluir_vistoria`. Cada passo é idempotente: reenviar nunca duplica. Sem internet, a vistoria inteira é feita no aparelho e sobe quando a conexão volta. GPS fora do raio não bloqueia: o vistoriador assume e o banco sinaliza. As rotas `/app/*` exigem sessão, senha definitiva e aceite de localização. Teste: `node tools/testar-campo.cjs`.
+
+## Gestão (T20–T27)
+
+`src/lib/gestao.ts`: painel (unidades, ocorrências em aberto e vistorias de hoje), situação da unidade (`vst_alterar_situacao_unidade`), QR (`vst_obter_qr`/`vst_rotacionar_qr`), vistorias paginadas no servidor com filtros e CSV, detalhe e relatório (respostas, fotos e assinatura por link assinado de 15 min), e tratamento de ocorrências: andamento, resolver ou cancelar com liberação da unidade (`vst_resolver_ocorrencia`) e tirar da venda (`vst_bloquear_por_ocorrencia`). O histórico do tratamento é acumulado pelo banco com data, hora e autor; ocorrência encerrada só aceita liberar a unidade. As rotas `/gestao/*` exigem perfil GESTOR ou ADMIN. Teste: `node tools/testar-gestao.cjs`.
 
 ## Acesso direto às tabelas (RLS)
 
