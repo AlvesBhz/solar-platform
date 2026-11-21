@@ -24,10 +24,14 @@ type Dados = {
 export type EnvioReal = Envio & { uid?: string; dados?: Dados };
 
 function lerFila(): EnvioReal[] { try { return JSON.parse(localStorage.getItem(KEY) ?? '[]'); } catch { return []; } }
+// Aparelho compartilhado: cada funcionário vê só os próprios envios. Os dos outros ficam guardados (não se perdem)
+// e voltam a aparecer, e a ser enviados, quando o dono entrar de novo. Envio sem dono (antigo) aparece para quem estiver logado.
+const uidLocal = (): string | undefined => { try { return JSON.parse(localStorage.getItem('inspect.acesso') ?? 'null')?.uid; } catch { return undefined; } };
+const doUsuario = (l: EnvioReal[]) => { const u = uidLocal(); return l.filter((e) => !e.uid || e.uid === u); };
 function gravarFila(l: EnvioReal[]) { try { localStorage.setItem(KEY, JSON.stringify(l.slice(0, 200))); } catch { /* sem espaço */ } }
 
 export function listarEnvios(): Envio[] {
-  return REAL ? lerFila() : me.listarEnvios();
+  return REAL ? doUsuario(lerFila()) : me.listarEnvios();
 }
 export const temPendentes = () => listarEnvios().some((e) => e.status === 'pendente');
 
@@ -139,7 +143,7 @@ export function sincronizar(ids?: string[]): Promise<Envio[]> {
       }
       gravarFila(lerFila().map((x) => (x.id === novo.id ? novo : x)));
     }
-    return lerFila();
+    return doUsuario(lerFila());
   })().finally(() => { rodando = null; });
   return rodando;
 }
@@ -150,7 +154,7 @@ if (REAL && typeof window !== 'undefined') window.addEventListener('online', () 
 /** T19: vistorias concluídas por mim (servidor) + as que ainda estão na fila deste aparelho. */
 export async function historico(): Promise<Envio[]> {
   if (!REAL) return me.listarEnvios();
-  const locais = lerFila();
+  const locais = doUsuario(lerFila());
   try {
     const { data: s } = await db().auth.getSession();
     const uid = s.session?.user.id;

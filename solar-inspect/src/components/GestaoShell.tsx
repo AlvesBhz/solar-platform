@@ -8,14 +8,14 @@ import NetworkBadge from './NetworkBadge';
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
 
 const MENU = [
-  { to: '/gestao', icon: 'solar:widget-linear', label: 'Dashboard', end: true },
+  { to: '/gestao', icon: 'solar:widget-2-linear', label: 'Dashboard', end: true },
   { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades' },
   { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
   { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
   { to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Fazer vistoria' },
   { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true, so: 'ADMIN' },
   { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', admin: true },
-  { to: '/admin/tipos', icon: 'solar:clipboard-list-linear', label: 'Tipos de vistoria', admin: true, so: 'ADMIN' },
+  { to: '/admin/tipos', icon: 'solar:settings-linear', label: 'Tipos de vistoria', admin: true, so: 'ADMIN' },
   { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', admin: true },
   { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true, so: 'ADMIN' },
   { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true, so: 'ADMIN' },

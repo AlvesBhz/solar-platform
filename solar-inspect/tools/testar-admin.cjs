@@ -264,7 +264,7 @@ if (require.main === module) (async () => {
     await page.waitForSelector('text=Ordem salva');
     const patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
     ok(patches.length === 2 && patches[0].corpo.NO_ORDEM === 2 && patches[1].corpo.NO_ORDEM === 1, 'mudar a ordem troca a posição dos dois ambientes');
-    await page.locator('[data-ambiente="Banheiro"] button:has-text("+ Item")').click();
+    await page.locator('[data-ambiente="Banheiro"] button:has-text("Adicionar item")').click();
     await page.fill('#i-nome', 'Toalhas de banho'); await page.fill('#i-qtde', '-1'); await page.click('form[aria-label=Item] button[type=submit]');
     ok((await texto(page, '[role=alert]')).includes('0 a 999') && !ultima(db, 'POST', 'VST_ITEM'), 'quantidade negativa: avisa e não grava');
     await page.fill('#i-qtde', '4'); await page.check('text=Item crítico'); await page.check('text=Foto obrigatória');
@@ -274,9 +274,18 @@ if (require.main === module) (async () => {
     ok(pi && pi.corpo.QTDE_ESPERADA === 4 && pi.corpo.SG_CRITICO === true && pi.corpo.SG_FOTO_OBRIGATORIA === true && pi.corpo.ID_AMBIENTE === db.ambientes.find((a) => a.NM_AMBIENTE === 'Banheiro').ID_AMBIENTE, 'inclui o item no ambiente certo, com crítico, foto e quantidade');
     const idToalhas = db.itens.find((x) => x.NM_ITEM === 'Toalhas de banho').ID_ITEM, ativos = db.tipos.filter((t) => t.SG_ATIVO).map((t) => t.ID_TIPO_VISTORIA);
     ok(ativos.length >= 2 && ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idToalhas && x.ID_TIPO_VISTORIA === t)), 'item novo já entra em todas as vistorias ativas (um passo só, sem ir à T31)');
-    ok((await texto(page, 'p.text-available')).includes('incluído e usado em'), 'avisa em quais vistorias o item passou a valer');
+    ok((await texto(page, '[data-aviso]')).includes('incluído e usado em'), 'avisa em quais vistorias o item passou a valer');
+    const banheiro = await texto(page, '[data-ambiente="Banheiro"]');
+    ok(banheiro.includes('1 item · 1 crítico') && ['Crítico', 'Foto', '4', 'Entrada'].every((t) => banheiro.includes(t)), 'ambiente mostra o resumo e o item mostra etiquetas (crítico, foto, quantidade, vistorias)');
+    await page.click('button[aria-label="Editar Toalhas de banho"]');
+    ok(await page.locator('[data-item="Toalhas de banho"] form[aria-label=Item]').count() === 1 && (await texto(page, 'form[aria-label=Item]')).includes('Editando: Toalhas de banho · Banheiro'), 'editar abre o formulário junto do item, dizendo o que está sendo editado');
+    await page.click('form[aria-label=Item] button:has-text("Cancelar")');
+    await page.click('button[aria-label="Renomear Banheiro"]');
+    ok(await page.locator('[data-ambiente="Banheiro"] form[aria-label=Ambiente]').count() === 1 && (await texto(page, 'form[aria-label=Ambiente]')).includes('Renomeando: Banheiro'), 'renomear abre o formulário dentro do próprio ambiente');
+    await page.click('form[aria-label=Ambiente] button:has-text("Cancelar")');
+    if (process.env.FOTO2) { await page.setViewportSize({ width: 390, height: 900 }); await page.locator('[data-ambiente="Banheiro"]').screenshot({ path: process.env.FOTO2 }); await page.setViewportSize({ width: 1280, height: 720 }); }
     // item sem nenhum tipo marcado: não chega ao vistoriador, e a tela avisa com botão para corrigir
-    await page.locator('[data-ambiente="Sala"] button:has-text("+ Item")').click();
+    await page.locator('[data-ambiente="Sala"] button:has-text("Adicionar item")').click();
     await page.fill('#i-nome', 'Sofá');
     for (const c of await page.locator('fieldset:has(legend:has-text("Usar nas vistorias")) input[type=checkbox]').all()) await c.uncheck();
     ok((await texto(page, 'fieldset:has(legend:has-text("Usar nas vistorias"))')).includes('não aparece em vistoria nenhuma'), 'sem tipo marcado: avisa que o item não aparece');
@@ -291,7 +300,7 @@ if (require.main === module) (async () => {
     await page.click('button:has-text("Incluir em todas as vistorias")');
     await page.waitForSelector('text=1 item incluído em todas as vistorias');
     ok(ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idSofa && x.ID_TIPO_VISTORIA === t)) && await page.locator('text=ainda não está em nenhuma vistoria').count() === 0, 'um clique liga o item solto a todas as vistorias e a faixa de alerta some');
-    await page.locator('[data-item="Toalhas de banho"] button:has-text("Desativar")').click();
+    await page.click('button[aria-label="Desativar Toalhas de banho"]');
     await page.waitForSelector('text=Item desativado');
     ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
     await ctx.close();
