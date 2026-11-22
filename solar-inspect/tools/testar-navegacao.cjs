@@ -60,7 +60,7 @@ const ESPERADO = {
   '/app/vistorias/nova/7/presenca': '/app/vistorias/nova/7', '/app/vistorias/nova/7/checklist': '/app/vistorias/nova/7', '/app/vistorias/nova/7/resumo': '/app/vistorias/nova/7',
   '/rota-que-nao-existe': '/app/unidades',
 };
-const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria'] };
+const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria'] };
 
 (async () => {
   const browser = await chromium.launch();

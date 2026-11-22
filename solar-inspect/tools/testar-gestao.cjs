@@ -26,7 +26,7 @@ function servidor(page, cen) {
     const um = (l) => (objeto ? (l ? json(200, l) : json(406, { code: 'PGRST116' })) : json(200, l ? [l] : []));
     if (m === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' } });
     if (url.includes('/auth/v1/user')) return json(200, { id: UID, aud: 'authenticated', role: 'authenticated' });
-    if (url.includes('/rest/v1/VST_USUARIO_PROPRIEDADE')) return json(200, [], { 'content-range': '*/1' });
+    if (url.includes('/rest/v1/VST_USUARIO_PROPRIEDADE')) return json(200, [{ ID_USUARIO: 'u-ana', ID_PROPRIEDADE: 1 }], { 'content-range': '*/1' });
     if (url.includes('/rest/v1/VST_USUARIO') && url.includes('CD_LOGIN')) return json(200, [{ ID_USUARIO: 'u-ana', NM_USUARIO: 'Ana', CD_LOGIN: 'ana', CD_CPF: null, TP_PERFIL: 'ASSESSOR', SG_ATIVO: true }]);
     if (url.includes('/rest/v1/VST_USUARIO')) return um({ NM_USUARIO: 'Gestor', TP_PERFIL: cen.perfil ?? 'GESTOR', SG_ATIVO: true, DT_ACEITE_LGPD: null, SG_TROCAR_SENHA: false });
     const rpc = url.match(/\/rest\/v1\/rpc\/(\w+)/)?.[1];
@@ -35,7 +35,7 @@ function servidor(page, cen) {
       (cen.rpc[rpc] = cen.rpc[rpc] || []).push(a);
       if (rpc === 'vst_unidades') return json(200, [un(7, 'Casa do Mirante', 'MANUTENCAO'), un(8, 'Casa da Serra', 'LIBERADO')]);
       if (rpc === 'vst_ocorrencias') {
-        const l = [oc(1, 7, 'Casa do Mirante', 'CRITICA', 'ABERTA', { dt_bloqueio_fim: '2026-11-27', ds_tratamento: '20/11/2026 16:00 · Gestor: Encanador chamado' }), oc(2, 8, 'Casa da Serra', 'BAIXA', 'ABERTA'), oc(3, 7, 'Casa do Mirante', 'MEDIA', 'RESOLVIDA', { dt_resolucao: '2026-11-21T09:00:00Z' })];
+        const l = [oc(1, 7, 'Casa do Mirante', 'CRITICA', 'ABERTA', { dt_bloqueio_fim: '2026-11-27', ds_tratamento: '20/11/2026 16:00 · Gestor: Encanador chamado', id_responsavel: 'u-ana', nm_responsavel: 'Ana', dt_prazo: '2026-11-01' }), oc(2, 8, 'Casa da Serra', 'BAIXA', 'ABERTA'), oc(3, 7, 'Casa do Mirante', 'MEDIA', 'RESOLVIDA', { dt_resolucao: '2026-11-21T09:00:00Z' })];
         return json(200, l.filter((o) => (!a.p_id_unidade || o.id_unidade === a.p_id_unidade) && (!a.p_id_vistoria || o.id_vistoria === a.p_id_vistoria)));
       }
       if (rpc === 'vst_alterar_situacao_unidade') return cen.erroSit ? json(400, { code: 'P0001', message: cen.erroSit }) : json(204);
@@ -47,7 +47,7 @@ function servidor(page, cen) {
           { id_auditoria: 1, dt_criacao: '2026-11-21T10:00:00Z', id_usuario: UID, nm_usuario: 'Gestor', tp_perfil: 'GESTOR', nm_papel: 'authenticated', nm_tabela: 'VST_UNIDADE', tp_operacao: 'UPDATE', cd_registro: '7', id_unidade: 7, nm_unidade: 'Casa do Mirante', ds_alteracoes: { CD_HASH_QR: '***', NO_VERSAO_QR: [1, 2], TP_SITUACAO: ['LIBERADO', 'MANUTENCAO'], DS_ANDAR: [null, 'Térreo'] }, qtde_total: 3 }];
         return json(200, l.filter((x) => !a.p_nm_tabela || x.nm_tabela === a.p_nm_tabela).map((x, i, arr) => ({ ...x, qtde_total: arr.length })));
       }
-      if (rpc === 'vst_resolver_ocorrencia' || rpc === 'vst_bloquear_por_ocorrencia') return json(200, null);
+      if (rpc === 'vst_resolver_ocorrencia' || rpc === 'vst_bloquear_por_ocorrencia' || rpc === 'vst_planejar_ocorrencia') return json(200, null);
       return json(404, { message: 'rpc não esperada ' + rpc });
     }
     if (url.includes('/rest/v1/VST_OCORRENCIA')) return json(200, []);
@@ -185,11 +185,21 @@ const ver = (page, t, o = {}) => page.getByText(t, o).first().waitFor({ timeout:
     const { ctx, page } = await abrir(browser, cen, '/gestao/ocorrencias');
     await ver(page, 'Ocorrência 1');
     ok(await page.locator('a[href^="/gestao/ocorrencias/"]').count() === 2 && await ver(page, 'Fora da venda até', { exact: false }), 'T25 mostra as abertas e até quando a unidade está fora da venda');
+    ok(await ver(page, 'Atrasada desde', { exact: false }) && await ver(page, 'Ana'), 'T25 mostra o responsável e destaca a ocorrência atrasada');
     await page.getByRole('radio', { name: 'Resolvida' }).click();
     ok(await page.locator('a[href^="/gestao/ocorrencias/"]').count() === 1, 'filtro por situação');
     await page.goto(BASE + '/gestao/ocorrencias/1');
     await ver(page, 'Encanador chamado');
     ok(await ver(page, 'Aberta na vistoria de saída por Ana', { exact: false }) && await ver(page, '20/11/2026 16:00'), 'T26 mostra o histórico gravado pelo banco (origem, data e autor)');
+    ok(await ver(page, 'Prazo vencido em', { exact: false }), 'T26 avisa que o prazo venceu');
+    await page.getByRole('button', { name: /Responsável/ }).click();
+    await page.getByRole('option', { name: 'Sem responsável' }).click();
+    await page.getByRole('button', { name: /Responsável/ }).click();
+    await page.getByRole('option', { name: /Ana/ }).click();
+    const dp = new Date(HOJE + 'T12:00:00'); dp.setDate(dp.getDate() + 5); const novoPrazo = dp.toISOString().slice(0, 10);
+    await page.getByLabel('Prazo para resolver').fill(novoPrazo);
+    await page.getByRole('button', { name: 'Salvar responsável e prazo' }).click();
+    ok(await esperar(() => cen.rpc.vst_planejar_ocorrencia?.[0]?.p_id_responsavel === 'u-ana' && cen.rpc.vst_planejar_ocorrencia[0].p_dt_prazo === novoPrazo), 'T26 define responsável (só quem tem acesso à pousada) e prazo no banco');
     await page.getByLabel('Registro do tratamento').fill('Peça encomendada');
     await page.getByRole('button', { name: 'Registrar andamento' }).click();
     ok(await esperar(() => cen.rpc.vst_resolver_ocorrencia?.[0]?.p_tp_status === 'EM_TRATAMENTO' && cen.rpc.vst_resolver_ocorrencia[0].p_ds_tratamento === 'Peça encomendada'), 'registrar andamento grava no banco (EM_TRATAMENTO)');
@@ -206,7 +216,7 @@ const ver = (page, t, o = {}) => page.getByText(t, o).first().waitFor({ timeout:
     await page.setViewportSize({ width: 1280, height: 720 });
     ok(await page.getByRole('button', { name: /Cancelar/ }).isDisabled(), 'cancelar exige o motivo');
     const d = new Date(HOJE + 'T12:00:00'); d.setDate(d.getDate() + 3); const ate = d.toISOString().slice(0, 10); d.setDate(d.getDate() + 1);
-    await page.locator('input[type=date]').fill(ate);
+    await page.getByLabel('Tirar da venda até (inclusive)').fill(ate);
     await page.getByRole('button', { name: 'Tirar da venda' }).click();
     ok(await esperar(() => cen.rpc.vst_bloquear_por_ocorrencia?.[0]?.p_dt_fim === d.toISOString().slice(0, 10)), 'tirar da venda até o dia escolhido (o banco recebe o dia seguinte, padrão do site)');
     await ctx.close();

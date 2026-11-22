@@ -211,6 +211,8 @@ Problema encontrado que precisa de tratamento; se o item é crítico, tira o cha
 | `DS_TRATAMENTO` | `text` | não | — | O que a gestão fez. | Encanador agendado para 28/12. |
 | `DT_ABERTURA` | `timestamptz` | sim | — | Abertura. | 26/12/2026 15:21 |
 | `DT_RESOLUCAO` | `timestamptz` | não | — | Exigida quando RESOLVIDA. | vazio |
+| `ID_RESPONSAVEL` | `uuid` | não | FK | Quem cuida do tratamento (a gestão define pela T26). | 00000000-0000-4000-8000-0000000000a1 |
+| `DT_PRAZO` | `date` | não | — | Até quando resolver. | 28/12/2026 |
 
 ## `VST_FOTO` (OPERAÇÃO)
 

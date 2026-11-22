@@ -233,7 +233,9 @@ T["VST_OCORRENCIA"] = dict(grupo="ope", cols=[
     col("DS_OCORRENCIA", "text", desc="O que foi encontrado."),
     col("DS_TRATAMENTO", "text", False, desc="O que a gestão fez."),
     col("DT_ABERTURA", "timestamptz", desc="Abertura."),
-    col("DT_RESOLUCAO", "timestamptz", False, desc="Exigida quando RESOLVIDA.")])
+    col("DT_RESOLUCAO", "timestamptz", False, desc="Exigida quando RESOLVIDA."),
+    col("ID_RESPONSAVEL", "uuid", False, fk=True, desc="Quem cuida do tratamento (a gestão define pela T26)."),
+    col("DT_PRAZO", "date", False, desc="Até quando resolver.")])
 T["VST_FOTO"] = dict(grupo="ope", cols=[
     col("ID_FOTO", "uuid", pk=True, desc="uuid gerado pelo banco ou pelo celular."),
     col("ID_VISTORIA", "uuid", fk=True, desc="Vistoria (com ID_ITEM, aponta a resposta)."),
@@ -335,7 +337,7 @@ E = [  # filho, campo, pai, chave, rótulo, pontos (porta do filho primeiro)
 ]
 # FKs compostas: a outra coluna segue na mesma linha desenhada; ID_USUARIO de VST_USUARIO referencia auth.users (fora do diagrama)
 COMPOSTAS = {(VF, "ID_VISTORIA"), (VO, "ID_VISTORIA")}
-FORA_DO_DIAGRAMA = {(VU, "ID_USUARIO")}
+FORA_DO_DIAGRAMA = {(VU, "ID_USUARIO"), (VO, "ID_RESPONSAVEL")}
 UM_PARA_UM = {(VP, "ID_PROPRIEDADE"), (VUN, "ID_UNIDADE")}      # a chave da filha é a própria FK: zero ou um por pai
 marcadas = {(t, c["n"]) for t, d in T.items() for c in d["cols"] if c["fk"]}
 assert marcadas == {(e[0], e[1]) for e in E} | COMPOSTAS | FORA_DO_DIAGRAMA, marcadas ^ ({(e[0], e[1]) for e in E} | COMPOSTAS | FORA_DO_DIAGRAMA)
@@ -615,7 +617,7 @@ EX["VST_RESPOSTA"] = [
     dict(id_vistoria=V2, id_item=4, tp_resposta="OK", qtde_encontrada=4, ds_observacao=None, dt_resposta="2026-12-26T18:14:00+00:00")]
 EX["VST_OCORRENCIA"] = [
     dict(id_ocorrencia=1, id_vistoria=V2, id_item=3, id_unidade=1, id_bloqueio=3, tp_gravidade="CRITICA", tp_status="EM_TRATAMENTO",
-         ds_ocorrencia="Torneira pingando sem parar; pia molhada.", ds_tratamento="Encanador agendado para 28/12.", dt_abertura="2026-12-26T18:21:00+00:00", dt_resolucao=None)]
+         ds_ocorrencia="Torneira pingando sem parar; pia molhada.", ds_tratamento="Encanador agendado para 28/12.", dt_abertura="2026-12-26T18:21:00+00:00", dt_resolucao=None, id_responsavel="00000000-0000-4000-8000-0000000000a1", dt_prazo="2026-12-28")]
 EX["VST_FOTO"] = [
     dict(id_foto=F1, id_vistoria=V2, id_item=3, cd_arquivo=V2 + "/torneira-1.jpg", vl_latitude=-19.0851, vl_longitude=-43.5971,
          qtde_precisao_metros=9, sg_fora_raio=False, dt_captura="2026-12-26T18:11:00+00:00"),

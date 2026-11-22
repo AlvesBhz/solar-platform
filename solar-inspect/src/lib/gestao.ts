@@ -13,6 +13,8 @@ const ERROS_GESTAO: Record<string, string> = {
   ocorrencia_encerrada: 'Esta ocorrência já foi encerrada.',
   status_invalido: 'Para liberar a unidade, a ocorrência precisa estar resolvida ou cancelada.',
   data_fim_invalida: 'A data final do bloqueio precisa ser depois de hoje.',
+  responsavel_invalido: 'Esse responsável não está ativo ou não tem acesso a esta pousada.',
+  prazo_invalido: 'O prazo não pode estar no passado.',
   situacao_invalida: 'Situação inválida.',
 };
 const erro = (e: unknown): string => {
@@ -41,6 +43,7 @@ export type Registro = { quando: string; texto: string };
 export type OcorrenciaG = {
   id: string; unidadeId: string; unidade: string; ambiente: string; item: string; descricao: string; gravidade: Gravidade; status: StatusOc;
   abertura: string; resolucao?: string; bloqueioAte?: string; vistoriaId?: string; origem: string; historico: Registro[];
+  responsavelId?: string; responsavel?: string; prazo?: string;
 };
 export const emAberto = (o: OcorrenciaG) => o.status === 'aberta' || o.status === 'em_tratamento';
 const dataHora = (iso: string) => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -66,6 +69,7 @@ export async function listarOcorrencias(f: { unidadeId?: string; vistoriaId?: st
       id: String(o.id_ocorrencia), unidadeId: String(o.id_unidade), unidade: o.nm_unidade, ambiente: o.nm_ambiente, item: o.nm_item,
       descricao: o.ds_ocorrencia, gravidade: minusculo<Gravidade>(o.tp_gravidade)!, status: minusculo<StatusOc>(o.tp_status)!,
       abertura: o.dt_abertura, resolucao: o.dt_resolucao ?? undefined, bloqueioAte: o.dt_bloqueio_fim ?? undefined, vistoriaId: o.id_vistoria, origem,
+      responsavelId: o.id_responsavel ?? undefined, responsavel: o.nm_responsavel ?? undefined, prazo: o.dt_prazo ?? undefined,
       historico: [{ quando: dataHora(o.dt_abertura), texto: `${origem}: ${o.ds_ocorrencia}` }, ...tratamento, ...fim],
     };
   });
@@ -76,6 +80,14 @@ export async function tratarOcorrencia(id: string, status: 'em_tratamento' | 're
   if (!REAL) { await mg.atualizarOcorrencia(id, { status }, texto || status); return { ok: true }; }
   return rpc('vst_resolver_ocorrencia', { p_id_ocorrencia: Number(id), p_tp_status: status.toUpperCase(), p_ds_tratamento: texto.trim() || null, p_liberar: liberar });
 }
+
+/** Gestão: define quem cuida da ocorrência e até quando (vazio = sem responsável / sem prazo). */
+export async function planejarOcorrencia(id: string, responsavelId: string | null, prazo: string | null): Promise<Resultado> {
+  if (!REAL) return { ok: true };
+  return rpc('vst_planejar_ocorrencia', { p_id_ocorrencia: Number(id), p_id_responsavel: responsavelId, p_dt_prazo: prazo });
+}
+/** Prazo vencido de ocorrência em aberto. */
+export const atrasada = (o: OcorrenciaG) => emAberto(o) && !!o.prazo && o.prazo < hoje();
 
 /** Tira a unidade da venda por causa da ocorrência, até o dia informado (inclusive). */
 export async function bloquearPorOcorrencia(id: string, ateDia: string): Promise<Resultado> {

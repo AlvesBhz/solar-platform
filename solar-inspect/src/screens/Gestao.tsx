@@ -6,10 +6,10 @@ import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
-import { qrDaUnidade } from '../lib/admin';
+import { listarUsuarios, qrDaUnidade, rotuloPerfil } from '../lib/admin';
 import { hoje, type UnidadeCampo } from '../lib/campo';
 import {
-  alterarSituacao, bloquearPorOcorrencia, csvVistorias, detalheVistoria, emAberto, listarOcorrencias, listarVistorias, tratarOcorrencia, unidadesGestao, vistoriasDeHoje,
+  alterarSituacao, atrasada, bloquearPorOcorrencia, planejarOcorrencia, csvVistorias, detalheVistoria, emAberto, listarOcorrencias, listarVistorias, tratarOcorrencia, unidadesGestao, vistoriasDeHoje,
   type DetalheV, type FiltroV, type OcorrenciaG, type Resposta, type StatusOc, type StatusV, type VistoriaG,
 } from '../lib/gestao';
 import type { EstadoUnidade } from '../mocks/unidades';
@@ -422,7 +422,7 @@ export function T25Ocorrencias() {
           {lista.map((o) => (
             <li key={o.id}><Link to={`/gestao/ocorrencias/${o.id}`} className={`${card} flex flex-col gap-2 p-4 hover:shadow-md sm:flex-row sm:items-center ${o.gravidade === 'critica' && emAberto(o) ? 'border-error' : ''}`}>
               <div className="flex min-w-0 flex-1 flex-col gap-1"><GravidadeTag g={o.gravidade} /><span className="text-[0.875rem] text-fg-1">{o.descricao}</span><span className="text-[0.75rem] text-fg-3">{o.unidade} · {o.ambiente} · {o.item}</span></div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-fg-2"><span>Aberta em {dia(o.abertura)}</span>{o.bloqueioAte && emAberto(o) && <span className="text-error">Fora da venda até {dia(o.bloqueioAte)}</span>}<StatusOcTag s={o.status} /></div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-fg-2"><span>Aberta em {dia(o.abertura)}</span>{o.responsavel && <span className="inline-flex items-center gap-1"><Icon icon="solar:user-rounded-linear" width={14} aria-hidden="true" />{o.responsavel}</span>}{o.prazo && emAberto(o) && <span className={atrasada(o) ? 'font-medium text-error' : ''}>{atrasada(o) ? 'Atrasada desde' : 'Prazo'} {dia(o.prazo)}</span>}{o.bloqueioAte && emAberto(o) && <span className="text-error">Fora da venda até {dia(o.bloqueioAte)}</span>}<StatusOcTag s={o.status} /></div>
             </Link></li>
           ))}
           {lista.length === 0 && <li className="rounded-xl border border-dashed border-line-2 p-8 text-center text-[0.8125rem] text-fg-2">Nenhuma ocorrência neste filtro.</li>}
@@ -435,17 +435,22 @@ export function T25Ocorrencias() {
 /** T26 — Tratamento: andamento, resolver ou cancelar, tirar da venda e liberar a unidade. Histórico gravado pelo banco. */
 export function T26Tratamento() {
   const { id = '' } = useParams();
-  const c = useCarga(() => Promise.all([listarOcorrencias(), unidadesGestao()]));
+  const c = useCarga(() => Promise.all([listarOcorrencias(), unidadesGestao(), listarUsuarios().catch(() => [])]));
   const o = c.dados?.[0].find((x) => x.id === id);
   const u = c.dados?.[1].find((x) => x.id === o?.unidadeId);
   const [texto, setTexto] = useState('');
   const [liberar, setLiberar] = useState(true);
   const [ate, setAte] = useState('');
+  const [resp, setResp] = useState('');
+  const [prazo, setPrazo] = useState('');
+  useEffect(() => { if (o) { setResp(o.responsavelId ?? ''); setPrazo(o.prazo ?? ''); } }, [o?.id, o?.responsavelId, o?.prazo]); // eslint-disable-line react-hooks/exhaustive-deps
   const [ocupado, setOcupado] = useState(false);
   const [msg, setMsg] = useState<{ t: string; erro?: boolean } | null>(null);
   if (c.dados && !o) return <Navigate to="/gestao/ocorrencias" replace />;
 
   const foraDaVenda = u?.estado === 'manutencao' || u?.estado === 'bloqueado';
+  // quem pode receber a ocorrência: ativo e com acesso à pousada da unidade (o banco confere de novo)
+  const equipe = (c.dados?.[2] ?? []).filter((x) => x.ativo && (x.perfil === 'ADMIN' || (u?.idPropriedade !== undefined && x.props.includes(u.idPropriedade))));
   const outrasCriticas = (c.dados?.[0] ?? []).filter((x) => x.id !== id && x.unidadeId === o?.unidadeId && emAberto(x) && x.gravidade === 'critica').length;
   async function fazer(f: () => Promise<{ ok: boolean; erro?: string }>, ok: string) {
     setOcupado(true); setMsg(null);
@@ -479,6 +484,19 @@ export function T26Tratamento() {
           <aside className={`${card} flex flex-col gap-3 p-4`}>
             <GravidadeTag g={o.gravidade} />
             <div className="flex items-center justify-between gap-3 text-[0.8125rem]"><span className="text-fg-3">Unidade</span><Link to={`/gestao/unidades/${u.id}`} className="inline-flex items-center gap-2 text-pine"><EstadoBadge estado={u.estado} /></Link></div>
+            {!aberta && (o.responsavel || o.prazo) && <p className="text-[0.75rem] text-fg-2">Responsável: {o.responsavel ?? '—'}{o.prazo ? ` · prazo ${dia(o.prazo)}` : ''}</p>}
+            {aberta && (
+              <div className="flex flex-col gap-2 border-b border-line-1 pb-3">
+                <Seletor rotulo="Responsável" icone="solar:user-rounded-linear" valor={resp} onChange={setResp}
+                  opcoes={[{ valor: '', label: 'Sem responsável' }, ...equipe.map((x) => ({ valor: x.id, label: `${x.nome} · ${rotuloPerfil(x.perfil)}` }))]} />
+                <label className="flex flex-col gap-1 text-[0.75rem] text-fg-3">Prazo para resolver
+                  <input type="date" min={hoje()} value={prazo} onChange={(e) => setPrazo(e.target.value)} className="min-h-11 rounded-md border border-line-2 bg-white px-3 text-fg-1" />
+                </label>
+                {atrasada(o) && <p className="text-[0.75rem] font-medium text-error">Prazo vencido em {dia(o.prazo!)}.</p>}
+                <button type="button" className={btnSecondary} disabled={ocupado || (resp === (o.responsavelId ?? '') && prazo === (o.prazo ?? ''))}
+                  onClick={() => fazer(() => planejarOcorrencia(id, resp || null, prazo || null), 'Responsável e prazo salvos.')}>Salvar responsável e prazo</button>
+              </div>
+            )}
             {o.bloqueioAte && <p className="text-[0.75rem] text-fg-2">Fora da venda no site até {dia(o.bloqueioAte)}{aberta ? ' (renovado se precisar)' : ''}.</p>}
             {aberta && (
               <>

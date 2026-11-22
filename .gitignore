@@ -1,0 +1,2 @@
+# Saída do build do Solar Inspect (npm run build:pages). O GitHub Actions recompila a cada push na main.
+docs/
