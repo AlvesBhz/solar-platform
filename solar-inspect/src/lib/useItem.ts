@@ -28,6 +28,7 @@ export function useItem(unidadeId: string, itemId: string) {
   // Grava direto no armazenamento (fonte da verdade) para não perder nada se a tela trocar em seguida.
   const gravar = (f: (r: Rascunho) => Partial<Rascunho>) => { const r = lerRascunho(unidadeId)!; setRasc(salvarRascunho({ ...r, ...f(r) })); };
   const responder = (valor: string) => gravar((r) => ({ respostas: { ...r.respostas, [itemId]: valor } }));
+  const contar = (n: number | undefined) => gravar((r) => { const q = { ...(r.qtd ?? {}) }; if (n === undefined) delete q[itemId]; else q[itemId] = n; return { qtd: q }; });
   const observar = (texto: string) => gravar((r) => ({ obs: { ...(r.obs ?? {}), [itemId]: texto } }));
   // item crítico é sempre CRITICA (regra do banco); nos demais vale a escolha do vistoriador
   const gravidade: Gravidade = ctx?.item.critico ? 'critica' : rasc?.ocorrencias?.[itemId]?.gravidade ?? 'media';
@@ -39,6 +40,6 @@ export function useItem(unidadeId: string, itemId: string) {
     u, tipo, rasc, fotos, ctx, entrada, carregado: ambs !== null,
     resposta: rasc?.respostas[itemId],
     obs: rasc?.obs?.[itemId] ?? '',
-    responder, observar, remover, gravidade, definirGravidade,
+    responder, observar, remover, gravidade, definirGravidade, contar, qtd: rasc?.qtd?.[itemId],
   };
 }

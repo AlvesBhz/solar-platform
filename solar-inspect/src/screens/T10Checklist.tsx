@@ -33,7 +33,7 @@ export default function T10Checklist() {
   useEffect(() => { if (rasc?.id) contarFotosPorItem(rasc.id).then(setNFotos); }, [rasc?.id]);
 
   const todos = ambientes.flatMap((a) => a.itens);
-  const completo = (i: Item) => itemCompleto(i, rasc?.respostas[i.id], rasc?.obs?.[i.id], nFotos[i.id] ?? 0);
+  const completo = (i: Item) => itemCompleto(i, rasc?.respostas[i.id], rasc?.obs?.[i.id], nFotos[i.id] ?? 0, rasc?.qtd?.[i.id]);
   const respondidos = todos.filter(completo).length;
   const divergentes = todos.filter((i) => divergente(rasc?.respostas[i.id])).length;
   const pct = todos.length ? Math.round((respondidos / todos.length) * 100) : 0;
@@ -73,7 +73,7 @@ export default function T10Checklist() {
   useEffect(() => {
     const a = ambientes[idx];
     if (!rasc || !a || rasc.avancou?.[a.id]) return;
-    const completa = (x: typeof a) => x.itens.every((i) => itemCompleto(i, rasc.respostas[i.id], rasc.obs?.[i.id], nFotos[i.id] ?? 0));
+    const completa = (x: typeof a) => x.itens.every((i) => itemCompleto(i, rasc.respostas[i.id], rasc.obs?.[i.id], nFotos[i.id] ?? 0, rasc.qtd?.[i.id]));
     if (!completa(a)) return;
     const t = setTimeout(() => {
       const prox = [...ambientes.slice(idx + 1), ...ambientes.slice(0, idx)].find((x) => !completa(x));
@@ -103,6 +103,8 @@ export default function T10Checklist() {
     gravar((r) => ({ respostas: { ...r.respostas, [itemId]: valor }, ambAtual: amb.id, ultimoItem: itemId }));
     // Divergência exige foto e observação: abre o detalhe do item na hora.
     if (divergente(valor)) navigate(detalhe(itemId));
+    // Quantidade esperada: abre o detalhe para contar (a contagem vai para o banco).
+    else if (todos.find((i) => i.id === itemId)?.qtde !== undefined && valor !== 'N/A' && rasc?.qtd?.[itemId] === undefined) navigate(detalhe(itemId));
     // Foto obrigatória: abre a câmera na hora (sem foto o ambiente nunca fecha); volta direto ao checklist.
     else if (todos.find((i) => i.id === itemId)?.foto && valor !== 'N/A' && !nFotos[itemId]) navigate(`/app/vistorias/nova/${unidadeId}/item/${itemId}/foto?de=checklist`);
   }
@@ -211,6 +213,7 @@ export default function T10Checklist() {
                     temNA={temNA}
                     completo={completo(item)}
                     nFotos={nFotos[item.id] ?? 0}
+                    qtd={rasc.qtd?.[item.id]}
                     obs={!!rasc.obs?.[item.id]}
                     detalhe={detalhe(item.id)}
                     onOk={() => responder(item.id, positivo)}
@@ -247,12 +250,12 @@ export default function T10Checklist() {
 }
 
 type LinhaProps = {
-  item: Item; resposta?: string; positivo: string; temNA: boolean; completo: boolean; nFotos: number; obs: boolean; detalhe: string;
+  item: Item; resposta?: string; positivo: string; temNA: boolean; completo: boolean; nFotos: number; qtd?: number; obs: boolean; detalhe: string;
   onOk: () => void; onNao: () => void; onNA: () => void; onFoto: () => void; onAbrir: () => void;
 };
 
 /** Linha do item: ✓ / ✗ / N/A compactos + gesto de deslizar (→ OK, ← problema). */
-function LinhaItem({ item, resposta, positivo, temNA, completo, nFotos, obs, detalhe, onOk, onNao, onNA, onFoto, onAbrir }: LinhaProps) {
+function LinhaItem({ item, resposta, positivo, temNA, completo, nFotos, qtd, obs, detalhe, onOk, onNao, onNA, onFoto, onAbrir }: LinhaProps) {
   const [dx, setDx] = useState(0);
   const toque = useRef<{ x: number; y: number; arrastando: boolean } | null>(null);
   const LIMITE = 72;
@@ -296,10 +299,11 @@ function LinhaItem({ item, resposta, positivo, temNA, completo, nFotos, obs, det
         <div className="flex items-center gap-3">
           <Link to={detalhe} onClick={onAbrir} draggable={false} className="flex min-h-11 min-w-0 flex-1 flex-col justify-center">
             <span className={`text-[0.875rem] leading-snug ${resposta ? 'text-fg-2' : 'font-medium text-fg-1'}`}>{item.nome}</span>
-            {(item.critico || item.foto) && (
+            {(item.critico || item.foto || item.qtde !== undefined) && (
               <span className="mt-0.5 flex items-center gap-2.5 text-[0.6875rem] text-fg-3">
                 {item.critico && <span className="inline-flex items-center gap-1 text-error"><Icon icon="solar:danger-triangle-linear" width={12} aria-hidden="true" />Crítico</span>}
                 {item.foto && <span className="inline-flex items-center gap-1"><Icon icon="solar:camera-linear" width={12} aria-hidden="true" />{nFotos ? `${nFotos} foto${nFotos > 1 ? 's' : ''}` : 'Foto'}</span>}
+                {item.qtde !== undefined && <span className="inline-flex items-center gap-1"><Icon icon="solar:hashtag-linear" width={12} aria-hidden="true" />{qtd !== undefined ? `${qtd} de ${item.qtde}` : `Contar ${item.qtde}`}</span>}
               </span>
             )}
           </Link>

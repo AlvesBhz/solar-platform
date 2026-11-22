@@ -19,6 +19,7 @@ export type Rascunho = {
   inicio?: string;
   respostas: Record<string, string>;
   obs?: Record<string, string>;
+  qtd?: Record<string, number>; // contagem dos itens com quantidade esperada
   ocorrencias?: Record<string, { gravidade: 'baixa' | 'media' | 'critica'; descricao: string }>; // 1 por item (sem duplicidade)
   assinatura?: string;
   ambAtual?: string; // ambiente em avaliação (volta do detalhe reposiciona aqui)

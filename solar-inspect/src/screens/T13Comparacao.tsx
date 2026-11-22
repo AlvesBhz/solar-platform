@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { CampoObservacao, GradeEvidencias, ListaRequisitos, SeletorGravidade, SeletorResposta } from '../components/Evidencia';
+import { CampoObservacao, GradeEvidencias, ListaRequisitos, SeletorGravidade, SeletorResposta, Contagem } from '../components/Evidencia';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { formatarData } from '../components/Status';
 import { divergente, requisitos } from '../lib/evidencia';
@@ -13,7 +13,7 @@ import { useItem } from '../lib/useItem';
 export default function T13Comparacao() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, entrada, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, entrada, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado, contar, qtd } = useItem(unidadeId, itemId);
   const base = `/app/vistorias/nova/${unidadeId}`;
   const atual = fotos[fotos.length - 1];
   const [urlAtual, setUrlAtual] = useState<string>();
@@ -31,8 +31,8 @@ export default function T13Comparacao() {
   if (carregado && !ctx) return <Navigate to={`${base}/checklist`} replace />;   // item fora do checklist
 
   const semEntrada = !!u && !u.entradaVinculadaId;
-  const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length) : [];
-  const completo = !!resposta && reqs.every((r) => r.ok);
+  const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length, qtd) : [];
+  const completo = !!ctx && !!resposta && reqs.every((r) => r.ok);   // só com o item carregado (regras conhecidas)
 
   return (
     <div className="screen flex flex-col bg-cream">
@@ -87,6 +87,7 @@ export default function T13Comparacao() {
               <SeletorResposta opcoes={tipo.respostas} valor={resposta} onChange={responder} rotulo={`Estado de ${ctx.item.nome} na saída`} />
             </section>
 
+            {ctx.item.qtde !== undefined && resposta && resposta !== 'N/A' && <Contagem esperado={ctx.item.qtde} valor={qtd} onChange={contar} positivo={!divergente(resposta)} />}
             {divergente(resposta) && <SeletorGravidade valor={gravidade} onChange={definirGravidade} travado={ctx.item.critico} />}
 
             <CampoObservacao valor={obs} onChange={observar} obrigatoria={false} />

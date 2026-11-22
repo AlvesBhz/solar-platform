@@ -184,3 +184,32 @@ export function BotoesResposta({ resposta, positivo, temNA, nome, onOk, onNao, o
     </div>
   );
 }
+
+/** Contagem de item com quantidade esperada (ex.: toalhas): − / número / +. Abaixo do esperado com resposta positiva, avisa. */
+export function Contagem({ esperado, valor, onChange, positivo }: { esperado: number; valor?: number; onChange: (n: number | undefined) => void; positivo: boolean }) {
+  const mudar = (n: number) => onChange(Math.max(0, Math.min(999, n)));
+  const falta = valor !== undefined && valor < esperado;
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border border-line-1 bg-white p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex flex-col">
+          <span className="text-[0.8125rem] text-fg-1">Quantidade encontrada</span>
+          <span className="text-[0.75rem] text-fg-3">Esperado: {esperado}</span>
+        </span>
+        <div className="flex items-center gap-1">
+          <button type="button" aria-label="Diminuir quantidade" title="Diminuir quantidade" disabled={!valor} onClick={() => mudar((valor ?? 0) - 1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-line-2 text-lg text-fg-1 disabled:opacity-30">−</button>
+          <input aria-label="Quantidade encontrada" inputMode="numeric" className="h-11 w-16 rounded-md border border-line-2 text-center font-mono text-base text-fg-1 focus:border-pine focus:outline-none"
+            value={valor ?? ''} placeholder="—" onChange={(e) => { const t = e.target.value.replace(/\D/g, ''); onChange(t === '' ? undefined : Math.min(999, Number(t))); }} />
+          <button type="button" aria-label="Aumentar quantidade" title="Aumentar quantidade" onClick={() => mudar(valor === undefined ? esperado : valor + 1)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-line-2 text-lg text-fg-1">+</button>
+        </div>
+      </div>
+      {falta && positivo && (
+        <p className="flex items-start gap-1.5 text-[0.75rem] text-warning" role="status">
+          <Icon icon="solar:danger-triangle-linear" width={14} className="mt-px shrink-0" aria-hidden="true" />Abaixo do esperado ({esperado}). Se estiver faltando, marque como problema.
+        </p>
+      )}
+    </div>
+  );
+}
