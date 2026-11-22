@@ -22,6 +22,14 @@
 window.I18N = (function () {
   /* 'português': ['english', 'español'] */
   var DICT = {
+    /* ── Créditos das fotos (autor e licença não mudam) ── */
+    'Foto: Clube Trekking Santa Maria · CC BY 2.0': ['Photo: Clube Trekking Santa Maria · CC BY 2.0', 'Foto: Clube Trekking Santa Maria · CC BY 2.0'],
+    'Foto: Fábio M. Hayashi · CC BY-SA 3.0': ['Photo: Fábio M. Hayashi · CC BY-SA 3.0', 'Foto: Fábio M. Hayashi · CC BY-SA 3.0'],
+    'Foto: Guilherme Haruo · CC BY-SA 4.0': ['Photo: Guilherme Haruo · CC BY-SA 4.0', 'Foto: Guilherme Haruo · CC BY-SA 4.0'],
+    'Foto: Marcus F. R. Diniz · CC BY-SA 4.0 · ilustrativa': ['Photo: Marcus F. R. Diniz · CC BY-SA 4.0 · illustrative', 'Foto: Marcus F. R. Diniz · CC BY-SA 4.0 · ilustrativa'],
+    'Foto: Pedro Vilela/MTur · Domínio público': ['Photo: Pedro Vilela/MTur · Domínio público', 'Foto: Pedro Vilela/MTur · Domínio público'],
+    'Foto: Sudhertzen · CC BY-SA 4.0': ['Photo: Sudhertzen · CC BY-SA 4.0', 'Foto: Sudhertzen · CC BY-SA 4.0'],
+    'Foto: regiov · CC BY-SA 2.0 · ilustrativa': ['Photo: regiov · CC BY-SA 2.0 · illustrative', 'Foto: regiov · CC BY-SA 2.0 · ilustrativa'],
     /* ── Navegação ── */
     'O Chalé': ['The Chalet', 'El Chalet'],
     'Experiências': ['Experiences', 'Experiencias'],
@@ -55,7 +63,7 @@ window.I18N = (function () {
       'El baño, revestido en piedra natural y con acabados precisos, transmite la atmósfera de un spa privado. Un espacio concebido para transformar el baño en un momento de bienestar y contemplación.'],
     'Quarto 28 m²': ['Bedroom 28 m²', 'Habitación 28 m²'],
     'Vista Panorâmica': ['Panoramic View', 'Vista Panorámica'],
-    'Ar Quente e Frio': ['Heating & Cooling', 'Aire Frío y Calor'],
+    'Ar Quente e Frio': ['Heating & Air Conditioning', 'Aire Acondicionado Frío/Calor'],
     'Banheira de Imersão': ['Soaking Tub', 'Bañera de Inmersión'],
     'Cama King Size': ['King Size Bed', 'Cama King Size'],
     'Roupa de Cama 600 Fios': ['600-Thread-Count Linens', 'Ropa de Cama de 600 Hilos'],
@@ -64,12 +72,14 @@ window.I18N = (function () {
     'Ducha Dupla': ['Double Shower', 'Ducha Doble'],
     'Box até o Teto': ['Floor-to-Ceiling Shower Glass', 'Mampara hasta el Techo'],
 
-    'Sala Integrada': ['Open-Plan Living Room', 'Sala Integrada'],
+    'Sala Integrada': ['Open-Plan Living Room', 'Sala de Estar Integrada'],
     'A sala com cozinha integrada foi pensada como o coração da estadia: um ambiente fluido, de marcenaria sob medida e madeiras nobres, onde os espaços conversam entre si. Portas de correr abrem o ambiente por completo para o deck, e a Cordilheira do Espinhaço passa a fazer parte da sala — do preparo de uma refeição ao descanso no fim do dia.': [
       'The living room with its integrated kitchen was designed as the heart of the stay: a flowing space of custom joinery and noble woods, where the rooms speak to one another. Sliding doors open the space entirely onto the deck, and the Cordilheira do Espinhaço becomes part of the room — from preparing a meal to unwinding at the end of the day.',
       'La sala con cocina integrada fue pensada como el corazón de la estadía: un ambiente fluido, de carpintería a medida y maderas nobles, donde los espacios dialogan entre sí. Las puertas corredizas abren el ambiente por completo hacia el deck, y la Cordilheira do Espinhaço pasa a formar parte de la sala — desde la preparación de una comida hasta el descanso al final del día.'],
-    'Sala 26 m²': ['Living Room 26 m²', 'Sala 26 m²'],
-    'Cozinha Completa': ['Fully Equipped Kitchen', 'Cocina Completa'],
+    'Sala 26 m²': ['Living Room 26 m²', 'Sala de Estar 26 m²'],
+    'Cozinha Completa': ['Fully Equipped Kitchen', 'Cocina Equipada'],
+    'Soundbar': ['Soundbar', 'Barra de Sonido'],
+    'Robot Vacuum': ['Robot Vacuum', 'Aspiradora Robot'],
     'Sofá Cama': ['Sofa Bed', 'Sofá Cama'],
 
     'Piscina e Deck': ['Pool & Deck', 'Piscina y Deck'],
@@ -80,7 +90,7 @@ window.I18N = (function () {
     'Deck de Madeira': ['Wooden Deck', 'Deck de Madera'],
     'Espreguiçadeiras': ['Sun Loungers', 'Tumbonas'],
     'Iluminação Noturna': ['Night Lighting', 'Iluminación Nocturna'],
-    'Área Privativa': ['Private Area', 'Área Privada'],
+    'Área Privativa': ['Private Outdoor Area', 'Área Exterior Privada'],
     'Toalhas de Piscina': ['Pool Towels', 'Toallas de Piscina'],
     'Paisagismo Nativo': ['Native Landscaping', 'Paisajismo Nativo'],
     'Hidromassagem': ['Hot Tub', 'Hidromasaje'],
@@ -166,7 +176,7 @@ window.I18N = (function () {
     '14+ anos': ['Ages 14+', '14+ años'],
     '9 a 13 anos · 100%': ['Ages 9–13 · 100%', '9 a 13 años · 100%'],
     '5 a 8 anos · 30%': ['Ages 5–8 · 30%', '5 a 8 años · 30%'],
-    'até 4 anos · não paga': ['Up to 4 · stays free', 'Hasta 4 años · no paga'],
+    'até 4 anos · não paga': ['Ages 0–4 · free', 'Hasta 4 años · gratis'],
 
     /* ── Resultado da consulta de disponibilidade ── */
     'Indisponível': ['Unavailable', 'No disponible'],
@@ -174,9 +184,9 @@ window.I18N = (function () {
     'noite': ['night', 'noche'],
     'noites': ['nights', 'noches'],
     'ver valor de cada noite': ['see each night', 'ver cada noche'],
-    'Total da estadia': ['Total stay', 'Total de la estadía'],
-    'Sinal para reservar (50%)': ['Deposit to book (50%)', 'Seña para reservar (50%)'],
-    'Saldo no check-in': ['Balance at check-in', 'Saldo en el check-in'],
+    'Total da estadia': ['Total for your stay', 'Total de la estadía'],
+    'Sinal para reservar (50%)': ['Deposit to confirm booking (50%)', 'Anticipo para reservar (50%)'],
+    'Saldo no check-in': ['Balance due at check-in', 'Saldo a pagar en el check-in'],
     'Crianças até 4 anos não pagam. Valores consultados agora; as datas só ficam garantidas ao concluir a reserva.': ['Children up to 4 stay free. Prices checked just now; dates are only guaranteed once the booking is completed.', 'Los niños hasta 4 años no pagan. Precios consultados ahora; las fechas solo quedan garantizadas al completar la reserva.'],
     'Falar com a pousada': ['Contact the inn', 'Contactar a la posada'],
     'Mínimo de {n} noites para essas datas': ['Minimum of {n} nights for these dates', 'Mínimo de {n} noches para estas fechas'],
@@ -195,7 +205,7 @@ window.I18N = (function () {
     'Escolha uma data de check-in a partir de hoje.': ['Choose a check-in date from today on.', 'Elige una fecha de check-in a partir de hoy.'],
     'A estadia passa do máximo de noites permitido. Escolha um período menor.': ['The stay exceeds the maximum number of nights. Choose a shorter period.', 'La estadía supera el máximo de noches permitido. Elige un período más corto.'],
     'O chalé não está disponível para reserva no momento.': ['The chalet is not available for booking at the moment.', 'El chalé no está disponible para reservas en este momento.'],
-    'O chalé recebe até 2 adultos e 2 crianças ou bebês.': ['The chalet hosts up to 2 adults and 2 children or infants.', 'El chalé recibe hasta 2 adultos y 2 niños o bebés.'],
+    'O chalé recebe até 2 adultos e 2 crianças.': ['The chalet accommodates up to 2 adults and 2 children.', 'El chalé aloja hasta 2 adultos y 2 niños.'],
     'Ainda não abrimos a agenda para essas datas.': ['Bookings for these dates are not open yet.', 'Todavía no abrimos la agenda para estas fechas.'],
     'Uma das noites escolhidas não está disponível.': ['One of the selected nights is not available.', 'Una de las noches elegidas no está disponible.'],
     'Não há check-in nesse dia. Escolha outra data de chegada.': ['Check-in is not available on that day. Choose another arrival date.', 'No hay check-in ese día. Elige otra fecha de llegada.'],
@@ -296,8 +306,11 @@ window.I18N = (function () {
     catch (e) { return 'pt'; }
   }
 
+  function add(extra) { for (var k in extra) DICT[k] = extra[k]; }
   return {
     t: t,
+    add: add,
+    locale: function () { return lang === 'en' ? 'en-US' : lang === 'es' ? 'es' : 'pt-BR'; },
     apply: apply,
     saved: saved,
     lang: function () { return lang; },
