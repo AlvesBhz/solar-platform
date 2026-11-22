@@ -322,7 +322,7 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   box-shadow: 0 12px 48px rgba(0,0,0,0.60);
   animation: fadeDown 0.2s var(--ease-out) both;
 }
-.bk-pop-cal    { width: 220px; }
+.bk-pop-cal    { width: min(252px, calc(100vw - 32px)); }   /* 7 colunas de ~34 px: dia da semana e preço respiram */
 .bk-pop-guests { right: 0; width: 210px; }
 
 /* ── calendar ── */
@@ -1852,3 +1852,6 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
   color: rgba(255,255,255,0.45);
 }
 @media (pointer:coarse){ .cal-p { font-size:.58rem; } }
+
+/* Calendário: dia da semana discreto e sem colar nos vizinhos (Dom Seg Ter…), acima do mínimo de 10 px */
+.bk-pop-cal .cal-wd { text-transform: none; font-size: 0.66rem; letter-spacing: 0.02em; font-weight: 500; color: rgba(255,255,255,0.42); }
