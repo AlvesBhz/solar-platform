@@ -1868,3 +1868,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 
 /* Calendário: dia da semana discreto e sem colar nos vizinhos (Dom Seg Ter…), acima do mínimo de 10 px */
 .bk-pop-cal .cal-wd { text-transform: none; font-size: 0.66rem; letter-spacing: 0.02em; font-weight: 500; color: rgba(255,255,255,0.42); }
+
+/* títulos da barra de reserva (Check-in, Check-out, Hóspedes) com contraste melhor */
+#bookingBar label { color: rgba(255,255,255,0.66); }
+#bookingBar .group:hover label { color: rgba(255,255,255,0.86); }
