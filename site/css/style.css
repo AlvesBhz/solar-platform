@@ -1283,6 +1283,9 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
   transform: scale(1.04); transition: transform 14s ease;
 }
 .sx-figure:hover img { transform: scale(1.07); }
+/* foto inteira, na proporção original (sem corte nem zoom) */
+.sx-figure--foto { height: auto; aspect-ratio: 1920 / 1356; }
+.sx-figure--foto img, .sx-figure--foto:hover img { transform: none; }
 .sx-figure::before {
   content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
