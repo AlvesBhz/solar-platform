@@ -228,7 +228,8 @@ window.I18N = (function () {
     'Sala 2 — Solar do Espinhaço': ['Living room 2 — Solar do Espinhaço', 'Sala 2 — Solar do Espinhaço'],
     'Piscina — Solar do Espinhaço': ['Pool — Solar do Espinhaço', 'Piscina — Solar do Espinhaço'],
     'Piscina noturna — Solar do Espinhaço': ['Pool at night — Solar do Espinhaço', 'Piscina de noche — Solar do Espinhaço'],
-    'Trilha pela Serra do Espinhaço': ['Trail through the Serra do Espinhaço', 'Sendero por la Serra do Espinhaço']
+    'Trilha pela Serra do Espinhaço': ['Trail through the Serra do Espinhaço', 'Sendero por la Serra do Espinhaço'],
+    'Lapinha da Serra ao entardecer': ['Lapinha da Serra at sunset', 'Lapinha da Serra al atardecer']
   };
 
   var MONTHS = {
