@@ -1287,15 +1287,21 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
 }
 .sx-figure:hover img { transform: scale(1.07); }
 /* foto inteira, na proporção original (sem corte nem zoom) */
-/* foto inteira (sem corte), na largura do conteúdo, alinhada aos cards */
-.sx-figure--foto {
-  --sx-pad: clamp(2.5rem, 8vw, 9rem);
-  width: min(var(--max-w, 90rem) - 2 * var(--sx-pad), 100% - 2 * var(--sx-pad));
-  margin: 0 auto; height: auto; aspect-ratio: 1920 / 1356;
+/* foto inteira no centro (sem corte); as laterais são a mesma foto esticada e desfocada, dando profundidade */
+.sx-figure--foto { background: #1c2a22; }
+.sx-figure--foto .sx-fundo, .sx-figure--foto:hover .sx-fundo {
+  position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px);
+  object-fit: fill; filter: blur(26px) brightness(0.8) saturate(1.1); transform: none; transition: none;
 }
-.sx-figure--foto img, .sx-figure--foto:hover img { transform: none; }
-@media (min-width: 721px) and (max-width: 1100px) { .sx-figure--foto { --sx-pad: var(--gutter); } }
-@media (max-width: 720px) { .sx-figure--foto { --sx-pad: clamp(1.15rem, 5vw, 2.5rem); } }
+.sx-figure--foto .sx-foto, .sx-figure--foto:hover .sx-foto {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; transition: none;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(to right, transparent, #000 9%, #000 91%, transparent);
+}
+/* telas estreitas: a foto encosta nas laterais e sobra espaço em cima e embaixo */
+@media (max-width: 510px) {
+  .sx-figure--foto .sx-foto { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent); }
+}
 .sx-figure::before {
   content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
   background:
