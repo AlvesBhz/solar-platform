@@ -17,11 +17,8 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
-  publicar:
+  montar:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -57,5 +54,14 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _publicar
+
+  # publicação em job separado (padrão do GitHub): o pacote já está registrado quando o deploy o procura
+  publicar:
+    needs: montar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - id: deploy
         uses: actions/deploy-pages@v4
