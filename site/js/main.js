@@ -768,9 +768,21 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
 })();
 
 /* ── BOOKING POPUP ── */
+/* o que está atrás da barra (centro da tela) é claro? sobe até achar um fundo opaco e mede a luminância */
+function fundoClaro() {
+  var el = document.elementFromPoint(window.innerWidth / 2, window.innerHeight * 0.3);
+  for (; el && el !== document.documentElement; el = el.parentElement) {
+    if (el.tagName === 'IMG' || el.tagName === 'VIDEO' || getComputedStyle(el).backgroundImage !== 'none') return false;
+    var m = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+    if (m && (m.length < 4 || +m[3] > 0.5)) return (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.55;
+  }
+  return true;
+}
 function openBkPopup(e) {
   if (e) e.stopPropagation();
-  document.getElementById('bkPopup').classList.add('is-open');
+  var pop = document.getElementById('bkPopup');
+  pop.classList.toggle('bk-claro', fundoClaro());
+  pop.classList.add('is-open');
   if (!document.body.classList.contains('bk-lock')) {
     window._bkY = window.scrollY;
     document.body.style.top = '-' + window._bkY + 'px';

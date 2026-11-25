@@ -842,9 +842,9 @@ h1, h2, h3, h4, .serif { font-family: var(--font-serif); }
   transition: transform 0.4s var(--ease-spring);
 }
 #bkPopup.is-open #bookingBar { transform: translateY(0); }
-/* a barra sempre legível, mesmo sobre seções claras: véu escuro desfocado + vidro verde-escuro */
-#bkPopup { background: rgba(10,18,13,0.72); -webkit-backdrop-filter: blur(10px) saturate(0.9); backdrop-filter: blur(10px) saturate(0.9); }
-#bkPopup #bookingBar { background: rgba(28,42,34,0.82); border-color: rgba(255,255,255,0.14); }
+/* sobre seção clara (classe posta ao abrir): véu desfocado e vidro no verde do site; sobre fundo escuro fica o vidro original */
+#bkPopup.bk-claro { background: rgba(20,32,26,0.5); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+#bkPopup.bk-claro #bookingBar { background: rgba(52,74,62,0.86); border-color: rgba(255,255,255,0.16); }
 #bookingAnchor { position: relative; }
 .bk-pop { z-index: 920; }
 
