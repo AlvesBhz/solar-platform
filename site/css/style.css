@@ -1287,7 +1287,7 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
 }
 .sx-figure:hover img { transform: scale(1.07); }
 /* foto inteira, na proporção original (sem corte nem zoom) */
-/* mesma altura da faixa; o corte sai da parte de baixo e o zoom parte do topo */
+/* arquivo já recortado na proporção da faixa (2:1); o que sobrar sai da parte de baixo */
 .sx-figure--foto img { object-position: 50% 18%; transform-origin: 50% 0; }
 .sx-figure::before {
   content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
