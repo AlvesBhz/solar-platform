@@ -239,6 +239,9 @@ window.I18N = (function () {
     'Sala integrada — sala de estar e mesa de jantar': ['Open-plan living area — lounge and dining table', 'Sala integrada — sala de estar y comedor'],
     'Sala integrada — mesa posta com vista para a serra': ['Open-plan living area — set table with mountain view', 'Sala integrada — mesa puesta con vista a la sierra'],
     'Sala integrada — cozinha': ['Open-plan living area — kitchen', 'Sala integrada — cocina'],
+    'Foto: Portal Lapinha': ['Photo: Portal Lapinha', 'Foto: Portal Lapinha'],
+    'Foto: Henrique Alves': ['Photo: Henrique Alves', 'Foto: Henrique Alves'],
+    'Foto: Chico Trekking': ['Photo: Chico Trekking', 'Foto: Chico Trekking'],
     'Foto: Projeto': ['Photo: Project', 'Foto: Proyecto'],
     'Suíte — vista da cama para a serra': ['Suite — view from the bed to the mountains', 'Suite — vista desde la cama hacia la sierra']
   };
