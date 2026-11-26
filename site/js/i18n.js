@@ -229,7 +229,10 @@ window.I18N = (function () {
     'Piscina — Solar do Espinhaço': ['Pool — Solar do Espinhaço', 'Piscina — Solar do Espinhaço'],
     'Piscina noturna — Solar do Espinhaço': ['Pool at night — Solar do Espinhaço', 'Piscina de noche — Solar do Espinhaço'],
     'Trilha pela Serra do Espinhaço': ['Trail through the Serra do Espinhaço', 'Sendero por la Serra do Espinhaço'],
-    'Lapinha da Serra ao entardecer': ['Lapinha da Serra at sunset', 'Lapinha da Serra al atardecer']
+    'Lapinha da Serra ao entardecer': ['Lapinha da Serra at sunset', 'Lapinha da Serra al atardecer'],
+    'Suíte — cama de casal sob o telhado de madeira': ['Suite — double bed beneath the timber-beamed ceiling', 'Suite — cama de matrimonio bajo el techo de madera'],
+    'Suíte — cama, closet e banheira': ['Suite — bed, dressing area and freestanding bathtub', 'Suite — cama, vestidor y bañera exenta'],
+    'Suíte — vista da cama para a serra': ['Suite — view from the bed to the mountains', 'Suite — vista desde la cama hacia la sierra']
   };
 
   var MONTHS = {
