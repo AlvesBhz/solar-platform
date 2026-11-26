@@ -232,6 +232,9 @@ window.I18N = (function () {
     'Lapinha da Serra ao entardecer': ['Lapinha da Serra at sunset', 'Lapinha da Serra al atardecer'],
     'Suíte — cama de casal sob o telhado de madeira': ['Suite — double bed beneath the timber-beamed ceiling', 'Suite — cama de matrimonio bajo el techo de madera'],
     'Suíte — cama, closet e banheira': ['Suite — bed, dressing area and freestanding bathtub', 'Suite — cama, vestidor y bañera exenta'],
+    'Suíte — banheiro com espelho iluminado e cuba em terracota': ['Suite — bathroom with backlit mirror and terracotta basin', 'Suite — baño con espejo retroiluminado y lavabo de terracota'],
+    'Suíte — acesso ao banheiro pelo quarto': ['Suite — en-suite bathroom entrance', 'Suite — acceso al baño desde la habitación'],
+    'Foto: Projeto': ['Photo: Project', 'Foto: Proyecto'],
     'Suíte — vista da cama para a serra': ['Suite — view from the bed to the mountains', 'Suite — vista desde la cama hacia la sierra']
   };
 
