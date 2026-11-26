@@ -234,6 +234,11 @@ window.I18N = (function () {
     'Suíte — cama, closet e banheira': ['Suite — bed, dressing area and freestanding bathtub', 'Suite — cama, vestidor y bañera exenta'],
     'Suíte — banheiro com espelho iluminado e cuba em terracota': ['Suite — bathroom with backlit mirror and terracotta basin', 'Suite — baño con espejo retroiluminado y lavabo de terracota'],
     'Suíte — acesso ao banheiro pelo quarto': ['Suite — en-suite bathroom entrance', 'Suite — acceso al baño desde la habitación'],
+    'Sala integrada — sofá, mesa de jantar e cozinha sob o telhado de madeira': ['Open-plan living area — sofa, dining table and kitchen beneath the timber ceiling', 'Sala integrada — sofá, comedor y cocina bajo el techo de madera'],
+    'Sala integrada — sala de estar com vista para a serra': ['Open-plan living area — lounge with mountain views', 'Sala integrada — sala de estar con vista a la sierra'],
+    'Sala integrada — sala de estar e mesa de jantar': ['Open-plan living area — lounge and dining table', 'Sala integrada — sala de estar y comedor'],
+    'Sala integrada — mesa posta com vista para a serra': ['Open-plan living area — set table with mountain view', 'Sala integrada — mesa puesta con vista a la sierra'],
+    'Sala integrada — cozinha': ['Open-plan living area — kitchen', 'Sala integrada — cocina'],
     'Foto: Projeto': ['Photo: Project', 'Foto: Proyecto'],
     'Suíte — vista da cama para a serra': ['Suite — view from the bed to the mountains', 'Suite — vista desde la cama hacia la sierra']
   };
