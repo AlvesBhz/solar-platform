@@ -102,6 +102,11 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
     // menu da gestão: todo link visível abre a tela (nunca "sem permissão")
     if (perfil !== 'ASSESSOR') {
       await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {});
+      await page.locator('nav[aria-label="Gestão"] [data-grupo]').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+      const grupos = await page.locator('nav[aria-label="Gestão"] [data-grupo]').evaluateAll((g) => g.map((x) => x.getAttribute('data-grupo')).join(','));
+      const esperado = perfil === 'ADMIN' ? 'gestao,campo,inspect,site' : 'gestao,campo,inspect';
+      ok(grupos === esperado, `${perfil}: menu agrupado em ${esperado.replace(/,/g, ' · ')} (grupo sem item visível não aparece)` + (grupos !== esperado ? ' — veio ' + grupos : ''));
+      if (process.env.FOTO && perfil === 'ADMIN') await page.locator('aside').first().screenshot({ path: process.env.FOTO });
       const links = await page.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
       const ruins = [];
       for (const l of links) {
