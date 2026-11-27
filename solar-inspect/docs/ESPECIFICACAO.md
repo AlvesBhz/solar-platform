@@ -189,10 +189,10 @@ Telas responsivas: menu lateral no computador e no tablet; barra superior roláv
 | T32 Usuários e permissões | Usuário e CPF (parcialmente oculto), perfil, propriedades e status ativo; menor privilégio e RLS. |
 | T33 Configuração GPS/QR | Modo, raio (10 a 500 m) e **rotação do segredo** (invalida os códigos anteriores; o segredo não é exibido). |
 | T34 Auditoria | Eventos por usuário, ação e detalhe, somente leitura, com filtro. |
-| T38 Calendário de preços | Só Admin. Mês no formato do calendário do site, para a unidade escolhida: valor da noite (1,7k), mínimo de noites, noite ocupada ou fechada e dia com ajuste. Seleciona um dia ou um intervalo e ajusta valor, mínimo, fechar a venda, sem chegada e sem saída (`SIT_AJUSTE_DIARIO`). Dias passados não se ajustam; reservas já feitas não mudam de valor. **Protótipo**: dados de exemplo, nada é gravado. |
+| T38 Calendário de preços | Só Admin. Mês no formato do calendário do site, para a unidade escolhida: valor da noite (1,7k), mínimo de noites, noite ocupada ou fechada e dia com ajuste. Seleciona um dia ou um intervalo e ajusta valor, mínimo, fechar a venda, sem chegada e sem saída (`SIT_AJUSTE_DIARIO`). Dias passados não se ajustam; reservas já feitas não mudam de valor. Lê e grava pelas funções `prc_*` do banco (`site/database/migracao_precos_gestao.sql`); no link de demonstração, sem banco, usa dados de exemplo e avisa. |
 | T39 Tarifas por período | Só Admin. Lista de tarifas (`SIT_TARIFA`) com período, valor de domingo a quinta e de sexta a domingo, mínimo, prioridade e situação; "vale hoje" marca a tarifa em vigor. Ativar e desativar sem apagar. |
 | T41 Formulário de tarifa | Só Admin. Nome, primeira e última noite, prioridade, valores, adultos inclusos e adulto extra, percentuais das crianças (até 4, 5 a 8 e 9 a 13 anos), mínimo de noites e situação. Bloqueia período sobreposto na mesma prioridade (regra do banco) e mostra um exemplo de conta. |
-| T40 Simulador de preço | Só Admin. Entrada, saída e hóspedes: mostra noite a noite a mesma conta do site (`calcular_estadia`), total, sinal de 50% e, se o site não vende, o motivo com atalho para o calendário ou para as tarifas. Não grava nada. |
+| T40 Simulador de preço | Só Admin. Entrada, saída e hóspedes: mostra noite a noite a mesma conta do site (`calcular_estadia`, calculada no banco por `prc_calcular`), total, sinal de 50% e, se o site não vende, o motivo com atalho para o calendário ou para as tarifas. Não grava nada. |
 
 ## 8. Requisitos de interface e identidade visual
 
@@ -326,7 +326,7 @@ Motivos da T04: `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-l
 - [ ] Separar as telas de gestor e administrador por perfil (hoje ambos veem as mesmas).
 - [ ] Registrar na auditoria os eventos de presença e envio (hoje só as ações administrativas aparecem na T34).
 - [ ] Definir destinatários e canal das notificações críticas.
-- [ ] Preços (T38–T41): ligar ao banco. Falta liberar `SIT_TARIFA` e `SIT_AJUSTE_DIARIO` (leitura e escrita) só para ADMIN por RLS, expor `calcular_estadia` para o simulador e registrar as alterações na auditoria (os gatilhos de `SIT_AUDITORIA` já cobrem as duas tabelas).
+- [x] Preços (T38–T41) ligados ao banco: funções `prc_*` (só ADMIN, nada para anon, tabelas sem acesso direto), autoria na Auditoria (T34) e simulador calculado no servidor.
 - [ ] Confirmar se o gestor também ajusta preços (hoje só o Admin, como as Propriedades) ou se fechar datas fica liberado para ele.
 
 **Ordem técnica recomendada (dependências, sem datas):** schema, migrations, perfis e RLS; autenticação e rotas protegidas; cadastros e tipos de vistoria; presença e auditoria no servidor; checklist, câmera e armazenamento de fotos; envio imutável, ocorrências e estado; fila offline idempotente; painel e PDF; testes automatizados de regras, RLS, sincronização e fluxos críticos.

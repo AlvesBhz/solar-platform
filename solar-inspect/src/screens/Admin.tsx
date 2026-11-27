@@ -35,7 +35,7 @@ export function T34Auditoria() {
 
   return (
     <GestaoShell eyebrow="Administração" titulo="Auditoria">
-      <p className="text-[0.8125rem] text-fg-3">Cada mudança nas vistorias, unidades, checklists e usuários fica registrada pelo banco com quem fez e o que mudou. CPF e código do QR nunca aparecem.</p>
+      <p className="text-[0.8125rem] text-fg-3">Cada mudança nas vistorias, unidades, checklists, usuários e preços fica registrada pelo banco com quem fez e o que mudou. CPF e código do QR nunca aparecem.</p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <label className="flex flex-col gap-1 text-[0.75rem] text-fg-3">De<input type="date" className={data} value={f.de} max={f.ate} onChange={(e) => e.target.value && mudar({ de: e.target.value })} /></label>
         <label className="flex flex-col gap-1 text-[0.75rem] text-fg-3">Até<input type="date" className={data} value={f.ate} min={f.de} max={hoje()} onChange={(e) => e.target.value && mudar({ ate: e.target.value })} /></label>

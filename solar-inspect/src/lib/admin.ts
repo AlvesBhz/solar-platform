@@ -25,6 +25,11 @@ const ERROS: Record<string, string> = {
   senha_invalida: 'A senha precisa ter de 8 a 72 caracteres.', nome_invalido: 'Informe o nome completo.',
   propriedade_obrigatoria: 'Escolha ao menos uma pousada para este perfil.', sem_permissao: 'Só o administrador pode fazer isso.',
   usuario_inexistente: 'Usuário não encontrado.', tipo_do_site: 'Entrada e Saída são usadas pelo site: não mudam de código nem de comportamento e não podem ser desativadas.', perfil_sem_permissao: 'Seu perfil não pode fazer isso.',
+  // preços (T38–T41)
+  tarifa_sobreposta: 'O período se sobrepõe a outra tarifa ativa na mesma prioridade. Mude a prioridade ou as datas.',
+  tarifa_invalida: 'Confira a tarifa: nome, datas (a última noite não pode ser antes da primeira), valores, percentuais de 0 a 100 e mínimo de noites.',
+  tarifa_inexistente: 'Tarifa não encontrada.', unidade_inexistente: 'Chalé não encontrado.', data_passada: 'Noites que já passaram não podem ser ajustadas.',
+  ajuste_invalido: 'Confira o ajuste: o valor não pode ser negativo e o mínimo de noites é 1 ou mais.', periodo_invalido: 'Período inválido.',
 };
 export const mensagem = (codigo?: string, padrao = 'Não foi possível salvar agora. Tente de novo.') =>
   (codigo && (ERROS[codigo] ?? (/duplicate key|unique/i.test(codigo) ? 'Já existe um registro com esse nome.' : undefined))) || padrao;

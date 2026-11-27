@@ -1,14 +1,15 @@
 import { Icon } from '@iconify/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
 import {
-  MOTIVOS, UNIDADE, ajusteDe, brl, brlCurto, calcularEstadia, dataCurta, diaDe, diaSemana, mesAno, noites, noon, removerAjustes, salvarAjustes, somar, tarifaDe,
-  type Dia, type Hospedes, type Noite,
+  MOTIVOS, REAL, ajusteDe, brl, brlCurto, calcularEstadia, carregarMes, dataCurta, diaDe, diaSemana, mesAno, noites, noon, removerAjustes, salvarAjustes, somar, tarifaDe,
+  type Dia, type Estadia, type Hospedes, type Noite, type Unidade,
 } from '../lib/precos';
+import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
 export const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 placeholder:text-fg-4 focus:border-pine focus:outline-none';
@@ -16,8 +17,9 @@ export const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.0
 export const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(/\./g, '').replace(',', '.')));
 export const PERFIS_PRECO: 'ADMIN'[] = ['ADMIN']; // preços são dados do site: só o administrador, como as Propriedades
 
-/** Faixa fixa no topo das telas de preço: nada do que se faz aqui chega ao site enquanto for protótipo. */
+/** Faixa no topo das telas de preço, só na demonstração (link sem banco): nada do que se faz ali chega ao site. */
 export function AvisoPrototipo() {
+  if (REAL) return null;                                   // ligado ao banco: não é mais protótipo
   return (
     <p role="note" className="flex items-start gap-2 rounded-md border border-line-2 bg-warning-bg px-3 py-2 text-[0.75rem] text-fg-2">
       <Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
@@ -27,7 +29,14 @@ export function AvisoPrototipo() {
 }
 
 const ucf = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
-const UNIDADES = [{ valor: UNIDADE.codigo, label: UNIDADE.nome }];
+export const Carregando = () => <div className={`${card} h-40 animate-pulse`} aria-busy="true" />;
+export const Falha = ({ tentar, texto = 'Não foi possível carregar os preços. Verifique a conexão.' }: { tentar: () => void; texto?: string }) => (
+  <div role="alert" className={`${card} flex flex-col items-start gap-3 p-4 text-[0.8125rem] text-error`}>
+    {texto}
+    <button type="button" className={`${btnSecondary} !w-auto`} onClick={tentar}>Tentar de novo</button>
+  </div>
+);
+export const SemChale = () => <p className="rounded-xl border border-dashed border-line-2 p-8 text-center text-[0.8125rem] text-fg-2">Nenhum chalé ativo para configurar preços.</p>;
 const SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 /** Dias do mês em grade de domingo a sábado (null = célula vazia). */
@@ -58,8 +67,17 @@ export function T38Calendario() {
   const [sel, setSel] = useState<{ ini: string; fim: string } | null>(null);
   const [aguardaFim, setAguardaFim] = useState(false);
   const [, rever] = useState(0);
+  const [carga, setCarga] = useState<'carregando' | 'ok' | 'erro'>('carregando');
+  const un = useUnidades(!!perfil);
+  const uid = un.atual?.id;
   const painel = useRef<HTMLElement>(null);
   useEffect(() => { if (sel && matchMedia('(max-width: 1023px)').matches) painel.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [sel]);
+  const carregar = () => {
+    if (uid === undefined) return Promise.resolve();
+    setCarga('carregando');
+    return carregarMes(uid, mes).then(() => { setCarga('ok'); rever((n) => n + 1); }).catch(() => setCarga('erro'));
+  };
+  useEffect(() => { void carregar(); }, [uid, mes]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!perfil) return null;
 
   const grade = gradeDoMes(mes);
@@ -81,8 +99,9 @@ export function T38Calendario() {
   return (
     <GestaoShell eyebrow="Administração" titulo="Calendário de preços">
       <AvisoPrototipo />
+      {un.erro || carga === 'erro' ? <Falha tentar={() => { un.erro ? un.tentarDeNovo() : void carregar(); }} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
       <div className="flex flex-wrap items-center gap-3">
-        <Seletor rotulo="Chalé" valor={UNIDADE.codigo} onChange={() => {}} opcoes={UNIDADES} icone="solar:home-2-linear" className="min-w-0 sm:w-64" />
+        <Seletor rotulo="Chalé" valor={String(un.atual.id)} onChange={(v) => { un.escolher(v); setSel(null); setAguardaFim(false); }} opcoes={un.opcoes} icone="solar:home-2-linear" className="min-w-0 sm:w-64" />
         <Chips rotulo="O que selecionar" valor={modo} onChange={(v) => { setModo(v); setSel(null); setAguardaFim(false); }}
           opcoes={[{ valor: 'dia', label: 'Um dia' }, { valor: 'intervalo', label: 'Intervalo' }]} />
       </div>
@@ -157,15 +176,16 @@ export function T38Calendario() {
               <p className="text-[0.75rem] text-fg-3">O valor padrão de cada período vem das <Link to="/admin/tarifas" className="text-pine underline underline-offset-4">tarifas</Link>. O ajuste de um dia vale mais do que a tarifa.</p>
             </>
           ) : (
-            <PainelAjuste key={`${sel.ini}-${sel.fim}`} noites={noitesSel} aguardaFim={aguardaFim} onFechar={() => { setSel(null); setAguardaFim(false); }} onSalvo={() => rever((n) => n + 1)} />
+            <PainelAjuste key={`${sel.ini}-${sel.fim}`} unidade={un.atual.id} noites={noitesSel} aguardaFim={aguardaFim} onFechar={() => { setSel(null); setAguardaFim(false); }} onSalvo={carregar} />
           )}
         </aside>
       </div>
+      </>)}
     </GestaoShell>
   );
 }
 
-function PainelAjuste({ noites: ns, aguardaFim, onFechar, onSalvo }: { noites: string[]; aguardaFim: boolean; onFechar: () => void; onSalvo: () => void }) {
+function PainelAjuste({ unidade, noites: ns, aguardaFim, onFechar, onSalvo }: { unidade: number; noites: string[]; aguardaFim: boolean; onFechar: () => void; onSalvo: () => Promise<void> | void }) {
   const um = ns.length === 1;
   const x = diaDe(ns[0]);
   const a = um ? ajusteDe(ns[0]) : null;
@@ -182,14 +202,15 @@ function PainelAjuste({ noites: ns, aguardaFim, onFechar, onSalvo }: { noites: s
   const passou = ns.some((d) => d < hoje());
 
   async function salvar() {
-    const r = await salvarAjustes(ns, { valor: num(valor), minNoites: num(min), fechado, semChegada, semSaida, obs: obs.trim() });
+    const r = await salvarAjustes(unidade, ns, { valor: num(valor), minNoites: num(min), fechado, semChegada, semSaida, obs: obs.trim() });
     if (!r.ok) return setMsg({ t: r.erro, erro: true });
-    setMsg({ t: `Ajuste salvo em ${ns.length} ${um ? 'noite' : 'noites'}.` }); onSalvo();
+    setMsg({ t: `Ajuste salvo em ${ns.length} ${um ? 'noite' : 'noites'}.` }); await onSalvo();
   }
   async function remover() {
-    await removerAjustes(ns);
+    const r = await removerAjustes(unidade, ns);
+    if (!r.ok) return setMsg({ t: r.erro, erro: true });
     setValor(''); setMin(''); setFechado(false); setSemChegada(false); setSemSaida(false); setObs('');
-    setMsg({ t: 'Ajuste removido: volta a valer a tarifa.' }); onSalvo();
+    setMsg({ t: 'Ajuste removido: volta a valer a tarifa.' }); await onSalvo();
   }
 
   return (
@@ -260,32 +281,44 @@ export function T40Simulador() {
   const [entrada, setEntrada] = useState(proximaSexta);
   const [saida, setSaida] = useState(() => somar(proximaSexta(), 2));
   const [h, setH] = useState<Hospedes>({ adultos: 2, criancas: 0, criancasMaiores: 0, bebes: 0 });
-  const r = useMemo(() => calcularEstadia(entrada, saida, h), [entrada, saida, h]);
+  const un = useUnidades(!!perfil);
+  const u = un.atual;
+  const [r, setR] = useState<Estadia | null>(null);
+  const [erro, setErro] = useState(false);
+  const [vez, setVez] = useState(0);
+  useEffect(() => {
+    if (!u) return;
+    let vivo = true; setErro(false);
+    const t = setTimeout(() => { calcularEstadia(u, entrada, saida, h).then((x) => vivo && setR(x)).catch(() => vivo && setErro(true)); }, REAL ? 250 : 0);
+    return () => { vivo = false; clearTimeout(t); };
+  }, [u, entrada, saida, h, vez]);
   if (!perfil) return null;
   const set = (k: keyof Hospedes) => (n: number) => setH({ ...h, [k]: n });
-  const outros = UNIDADE.maxCriancas - h.criancas - h.criancasMaiores - h.bebes;
+  const outros = (u?.maxCriancas ?? 0) - h.criancas - h.criancasMaiores - h.bebes;
   const mudarEntrada = (v: string) => { setEntrada(v); if (v && (!saida || saida <= v)) setSaida(somar(v, 2)); };
 
   return (
     <GestaoShell eyebrow="Administração" titulo="Simulador de preço">
       <AvisoPrototipo />
+      {un.erro ? <Falha tentar={un.tentarDeNovo} /> : !un.lista ? <Carregando /> : !u ? <SemChale /> : (
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
         <form className={`${card} flex flex-col gap-4 p-4`} onSubmit={(e) => e.preventDefault()} aria-label="Dados da estadia">
-          <Seletor rotulo="Chalé" valor={UNIDADE.codigo} onChange={() => {}} opcoes={UNIDADES} icone="solar:home-2-linear" />
+          <Seletor rotulo="Chalé" valor={String(u.id)} onChange={(v) => { un.escolher(v); setH({ adultos: 2, criancas: 0, criancasMaiores: 0, bebes: 0 }); }} opcoes={un.opcoes} icone="solar:home-2-linear" />
           <div className="grid grid-cols-2 gap-3">
             <label className={rot}>Entrada<input type="date" className={campo} value={entrada} min={hoje()} onChange={(e) => mudarEntrada(e.target.value)} /></label>
             <label className={rot}>Saída<input type="date" className={campo} value={saida} min={entrada ? somar(entrada, 1) : hoje()} onChange={(e) => setSaida(e.target.value)} /></label>
           </div>
           <div className="flex flex-col gap-3 border-t border-line-1 pt-3">
-            <Contador rotulo="Adultos" dica={`até ${UNIDADE.maxAdultos}`} valor={h.adultos} min={1} max={UNIDADE.maxAdultos} onChange={set('adultos')} />
+            <Contador rotulo="Adultos" dica={`até ${u.maxAdultos}`} valor={h.adultos} min={1} max={u.maxAdultos} onChange={set('adultos')} />
             <Contador rotulo="Crianças de 5 a 8 anos" valor={h.criancas} min={0} max={h.criancas + Math.max(outros, 0)} onChange={set('criancas')} />
             <Contador rotulo="Crianças de 9 a 13 anos" valor={h.criancasMaiores} min={0} max={h.criancasMaiores + Math.max(outros, 0)} onChange={set('criancasMaiores')} />
             <Contador rotulo="Até 4 anos" dica="não pagam, mas ocupam vaga" valor={h.bebes} min={0} max={h.bebes + Math.max(outros, 0)} onChange={set('bebes')} />
           </div>
-          <p className="text-[0.75rem] text-fg-3">O chalé comporta {UNIDADE.maxHospedes} hóspedes: {UNIDADE.maxAdultos} adultos e até {UNIDADE.maxCriancas} crianças ou bebês. Estadia de 1 a {UNIDADE.maxNoites} noites.</p>
+          <p className="text-[0.75rem] text-fg-3">O chalé comporta {u.maxHospedes} hóspedes: {u.maxAdultos} adultos e até {u.maxCriancas} crianças ou bebês. Estadia de 1 a {u.maxNoites} noites.</p>
         </form>
 
         <section className="flex min-w-0 flex-col gap-4" aria-label="Resultado" aria-live="polite">
+          {erro ? <Falha texto="Não foi possível calcular agora. Verifique a conexão." tentar={() => setVez((n) => n + 1)} /> : !r ? <Carregando /> : (<>
           <div className={`${card} flex flex-col gap-4 p-4`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className={`inline-flex items-center gap-1.5 text-[0.8125rem] font-medium ${r.disponivel ? 'text-available' : 'text-warning'}`}>
@@ -294,7 +327,7 @@ export function T40Simulador() {
               </span>
               {r.noites > 0 && <span className="text-[0.75rem] text-fg-3">{r.noites} {r.noites === 1 ? 'noite' : 'noites'}{r.minNoites ? ` · mínimo ${r.minNoites}` : ''}</span>}
             </div>
-            {r.motivo && <p className="text-[0.8125rem] text-fg-2">{MOTIVOS[r.motivo]} {(r.motivo === 'min_noites' || r.motivo === 'sem_chegada' || r.motivo === 'sem_saida' || r.motivo === 'fechado') && <Link to={`/admin/precos?mes=${entrada.slice(0, 7)}`} className="text-pine underline underline-offset-4">Ver no calendário</Link>}{r.motivo === 'sem_tarifa' && <Link to="/admin/tarifas" className="text-pine underline underline-offset-4">Ver tarifas</Link>}</p>}
+            {r.motivo && <p className="text-[0.8125rem] text-fg-2">{MOTIVOS[r.motivo]}{r.motivo === 'capacidade' ? ` Até ${u.maxAdultos} adultos, ${u.maxCriancas} crianças e ${u.maxHospedes} hóspedes.` : r.motivo === 'estadia_longa' ? ` Máximo de ${u.maxNoites} noites.` : ''} {(r.motivo === 'min_noites' || r.motivo === 'sem_chegada' || r.motivo === 'sem_saida' || r.motivo === 'fechado') && <Link to={`/admin/precos?mes=${entrada.slice(0, 7)}`} className="text-pine underline underline-offset-4">Ver no calendário</Link>}{r.motivo === 'sem_tarifa' && <Link to="/admin/tarifas" className="text-pine underline underline-offset-4">Ver tarifas</Link>}</p>}
             {r.detalhe.length > 0 && (
               <>
                 <TabelaResp<Noite> rows={r.detalhe} cols={[
@@ -308,14 +341,16 @@ export function T40Simulador() {
                   <div className="flex justify-between gap-3"><dt className="text-fg-3">Hospedagem</dt><dd className="font-mono text-fg-1">{brl(r.hospedagem)}</dd></div>
                   <div className="flex justify-between gap-3"><dt className="text-fg-3">Taxa de limpeza</dt><dd className="font-mono text-fg-1">{r.taxaLimpeza ? brl(r.taxaLimpeza) : 'não cobra'}</dd></div>
                   <div className="flex justify-between gap-3 border-t border-line-1 pt-2 text-[0.9375rem]"><dt className="font-medium text-fg-1">Total</dt><dd className="font-mono font-semibold text-fg-1">{brl(r.total)}</dd></div>
-                  <div className="flex justify-between gap-3"><dt className="text-fg-3">Sinal pelo Pix ({UNIDADE.percentualSinal}%)</dt><dd className="font-mono text-fg-1">{brl(r.sinal)}</dd></div>
+                  <div className="flex justify-between gap-3"><dt className="text-fg-3">Sinal pelo Pix ({u.percentualSinal}%)</dt><dd className="font-mono text-fg-1">{brl(r.sinal)}</dd></div>
                 </dl>
               </>
             )}
           </div>
           <p className="text-[0.75rem] text-fg-3">A conta é a do site: vale o ajuste do dia e, sem ele, a tarifa de maior prioridade. Aqui é só conferência: nada é reservado nem gravado.</p>
+          </>)}
         </section>
       </div>
+      )}
     </GestaoShell>
   );
 }

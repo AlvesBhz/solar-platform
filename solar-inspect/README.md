@@ -69,7 +69,7 @@ Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu 
 | `/admin/propriedades` · `/admin/propriedades/nova` | T28 Propriedades · T29 Formulário |
 | `/admin/checklists` · `/admin/tipos` · `/admin/presenca` | T30 Ambientes e itens · T31 Tipos de vistoria · T33 GPS e QR Code |
 | `/admin/usuarios` · `/admin/auditoria` | T32 Usuários e permissões · T34 Auditoria |
-| `/admin/precos` | T38 Calendário de preços (só Admin; `?mes=2027-12` abre outro mês). Protótipo com dados de exemplo |
+| `/admin/precos` | T38 Calendário de preços (só Admin; `?mes=2027-12` abre outro mês). Ligado ao banco pelas funções `prc_*`; no link de demonstração usa dados de exemplo |
 | `/admin/tarifas` · `/admin/tarifas/:id` | T39 Tarifas por período · T41 Formulário de tarifa (`nova` para criar) |
 | `/admin/simulador` | T40 Simulador de preço: a mesma conta do site, noite a noite |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |

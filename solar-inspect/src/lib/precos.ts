@@ -1,11 +1,14 @@
-// Preços do site (T38–T41). PROTÓTIPO: dados de exemplo em memória, nada vai ao banco.
-// A regra de cálculo é a mesma de calcular_estadia() do site (site/database/schema.sql):
-//   ajuste do dia > tarifa de maior prioridade; sexta, sábado e domingo usam o valor de fim de semana;
-//   criança paga um percentual do valor por pessoa (valor da noite ÷ adultos inclusos).
-// Na versão real, estas funções passam a chamar o Supabase (SIT_TARIFA e SIT_AJUSTE_DIARIO, com RLS só para gestão e ADMIN)
-// e o simulador chama calcular_estadia() no servidor. As telas não mudam.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Preços do site (T38–T41).
+// Real: Supabase, só pelas funções prc_* (security definer; só o ADMIN passa lá dentro — site/database/migracao_precos_gestao.sql).
+// Demonstração (link publicado, sem banco): dados de exemplo em memória; a conta é a de calcular_estadia() do site.
 import { hoje } from './campo';
+import { mensagem } from './admin';
+import { MODO_DEMO, supabase } from './supabase';
 
+export type Unidade = {
+  id: number; codigo: string; nome: string; maxAdultos: number; maxCriancas: number; maxHospedes: number; maxNoites: number; taxaLimpeza: number; percentualSinal: number;
+};
 export type Tarifa = {
   id: number; nome: string; ini: string; fim: string; // fim = dia seguinte à última noite (igual ao banco)
   prioridade: number; valorNoite: number; valorFds: number | null; adultosInclusos: number; adultoExtra: number;
@@ -13,8 +16,10 @@ export type Tarifa = {
 };
 export type Ajuste = { data: string; valor: number | null; minNoites: number | null; fechado: boolean; semChegada: boolean; semSaida: boolean; obs: string };
 export type Ocupacao = { ini: string; fim: string; tipo: 'reserva' | 'pre-reserva' | 'bloqueio'; rotulo: string }; // fim = dia seguinte à última noite
-
 export type Resultado = { ok: true } | { ok: false; erro: string };
+
+/** true = o app fala com o banco; false = demonstração em memória */
+export const REAL = !MODO_DEMO && !!supabase;
 
 // ── datas (texto AAAA-MM-DD, sem fuso)
 export const noon = (iso: string) => new Date(iso + 'T12:00:00');
@@ -26,18 +31,17 @@ export const diaSemana = (s: string) => noon(s).toLocaleDateString('pt-BR', { we
 export const dataCurta = (s: string) => noon(s).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
 export const dataLonga = (s: string) => noon(s).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 export const mesAno = (s: string) => noon(s).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+export const primeiroDoMes = (s: string) => `${s.slice(0, 8)}01`;
+export const ultimoDoMes = (s: string) => { const d = noon(s); return iso(new Date(d.getFullYear(), d.getMonth() + 1, 0, 12)); };
 
 export const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: v % 1 ? 2 : 0 });
 /** Como no calendário do site: 1.700 → 1,7k */
 export const brlCurto = (v: number) => (v >= 1000 ? `${(v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}k` : String(v));
 
-// ── a pousada e o chalé de exemplo (SIT_PROPRIEDADE / SIT_UNIDADE)
-export const UNIDADE = {
-  codigo: 'casa-do-mirante', nome: 'Casa do Mirante', maxAdultos: 2, maxCriancas: 2, maxHospedes: 4, maxNoites: 7, taxaLimpeza: 0, percentualSinal: 50,
-};
-
-// ── dados de exemplo
+// ── memória: na demonstração é a "base"; no real guarda o que a tela carregou (tarifas, ajustes e ocupação do mês aberto)
+const DEMO_UNIDADE: Unidade = { id: 1, codigo: 'casa-do-mirante', nome: 'Casa do Mirante', maxAdultos: 2, maxCriancas: 2, maxHospedes: 4, maxNoites: 7, taxaLimpeza: 0, percentualSinal: 50 };
 const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupacao[]; seq: number } = (() => {
+  if (REAL) return { tarifas: [], ajustes: new Map(), ocupacoes: [], seq: 0 };
   const h = hoje();
   const aj = new Map<string, Ajuste>();
   const feriados: [string, string, number, string][] = [
@@ -63,12 +67,38 @@ const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupa
   };
 })();
 
-const espera = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 120));
+const espera = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), REAL ? 0 : 120));
+const falha = (e: { message?: string } | null | undefined): Resultado => ({ ok: false, erro: mensagem(e?.message) });
+const rpc = async (nome: string, args: Record<string, unknown>) => {
+  const { data, error } = await supabase!.rpc(nome, args);
+  if (error) throw error;
+  return data;
+};
+
+// ── chalés
+export async function listarUnidades(): Promise<Unidade[]> {
+  if (!REAL) return espera([DEMO_UNIDADE]);
+  return ((await rpc('prc_unidades', {})) as any[]).map((u) => ({
+    id: Number(u.id_unidade), codigo: u.cd_unidade, nome: u.nm_unidade, maxAdultos: u.qtde_max_adultos, maxCriancas: u.qtde_max_criancas, maxHospedes: u.qtde_max_hospedes,
+    maxNoites: u.qtde_max_noites, taxaLimpeza: Number(u.vl_taxa_limpeza), percentualSinal: Number(u.vl_percentual_sinal),
+  }));
+}
 
 // ── tarifas
-export const listarTarifas = () => espera([...dados.tarifas].sort((a, b) => b.prioridade - a.prioridade || a.ini.localeCompare(b.ini)));
-export const obterTarifa = (id: number) => espera(dados.tarifas.find((t) => t.id === id) ?? null);
+const ordenar = (l: Tarifa[]) => [...l].sort((a, b) => b.prioridade - a.prioridade || a.ini.localeCompare(b.ini) || a.id - b.id);
+export async function listarTarifas(unidade: number): Promise<Tarifa[]> {
+  if (REAL) {
+    dados.tarifas = ((await rpc('prc_tarifas', { p_id_unidade: unidade })) as any[]).map((t): Tarifa => ({
+      id: Number(t.id_tarifa), nome: t.nm_tarifa, ini: t.dt_ini, fim: t.dt_fim, prioridade: t.no_prioridade, valorNoite: Number(t.vl_noite),
+      valorFds: t.vl_noite_fds === null ? null : Number(t.vl_noite_fds), adultosInclusos: t.qtde_adultos_inclusos, adultoExtra: Number(t.vl_adulto_extra),
+      pcCrianca: Number(t.pc_crianca), pcCriancaMaior: Number(t.pc_crianca_maior), pcBebe: Number(t.pc_bebe), minNoites: t.qtde_min_noites, ativo: t.sg_ativo,
+    }));
+  }
+  return espera(ordenar(dados.tarifas));
+}
+export const obterTarifa = (id: number) => dados.tarifas.find((t) => t.id === id) ?? null;
 
+/** Conferência rápida na tela (o banco confere de novo). */
 export function validarTarifa(t: Omit<Tarifa, 'id'> & { id?: number }): string[] {
   const e: string[] = [];
   if (!t.nome.trim()) e.push('Dê um nome à tarifa.');
@@ -86,9 +116,17 @@ export function validarTarifa(t: Omit<Tarifa, 'id'> & { id?: number }): string[]
   return e;
 }
 
-export async function salvarTarifa(t: Omit<Tarifa, 'id'> & { id?: number }): Promise<Resultado> {
+export async function salvarTarifa(unidade: number, t: Omit<Tarifa, 'id'> & { id?: number }): Promise<Resultado> {
   const e = validarTarifa(t);
   if (e.length) return { ok: false, erro: e[0] };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_salvar_tarifa', {
+      p_id_tarifa: t.id ?? null, p_id_unidade: unidade, p_nm_tarifa: t.nome.trim(), p_dt_ini: t.ini, p_dt_fim: t.fim, p_no_prioridade: t.prioridade,
+      p_vl_noite: t.valorNoite, p_vl_noite_fds: t.valorFds, p_qtde_adultos_inclusos: t.adultosInclusos, p_vl_adulto_extra: t.adultoExtra,
+      p_pc_crianca: t.pcCrianca, p_pc_crianca_maior: t.pcCriancaMaior, p_pc_bebe: t.pcBebe, p_qtde_min_noites: t.minNoites, p_sg_ativo: t.ativo,
+    });
+    return error ? falha(error) : { ok: true };
+  }
   if (t.id) dados.tarifas = dados.tarifas.map((o) => (o.id === t.id ? { ...(t as Tarifa) } : o));
   else dados.tarifas.push({ ...t, id: ++dados.seq });
   return espera({ ok: true });
@@ -100,6 +138,10 @@ export async function alternarTarifa(id: number): Promise<Resultado> {
   const novo = { ...t, ativo: !t.ativo };
   const e = novo.ativo ? validarTarifa(novo) : [];
   if (e.length) return { ok: false, erro: e[0] };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_alternar_tarifa', { p_id_tarifa: id, p_sg_ativo: novo.ativo });
+    return error ? falha(error) : { ok: true };
+  }
   dados.tarifas = dados.tarifas.map((o) => (o.id === id ? novo : o));
   return espera({ ok: true });
 }
@@ -110,19 +152,43 @@ export const tarifaDe = (data: string) =>
 
 // ── ajustes de um dia
 export const ajusteDe = (data: string) => dados.ajustes.get(data) ?? null;
-export async function salvarAjustes(datas: string[], a: Omit<Ajuste, 'data'>): Promise<Resultado> {
+export async function salvarAjustes(unidade: number, datas: string[], a: Omit<Ajuste, 'data'>): Promise<Resultado> {
   if (a.valor !== null && !(a.valor >= 0)) return { ok: false, erro: 'Valor da noite inválido.' };
   if (a.minNoites !== null && !(a.minNoites >= 1)) return { ok: false, erro: 'O mínimo de noites é 1 ou mais.' };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_salvar_ajustes', {
+      p_id_unidade: unidade, p_datas: datas, p_vl_noite: a.valor, p_qtde_min_noites: a.minNoites, p_sg_fechado: a.fechado, p_sg_sem_chegada: a.semChegada,
+      p_sg_sem_saida: a.semSaida, p_ds_observacao: a.obs || null,
+    });
+    return error ? falha(error) : { ok: true };
+  }
   datas.forEach((d) => dados.ajustes.set(d, { ...a, data: d }));
   return espera({ ok: true });
 }
-export async function removerAjustes(datas: string[]): Promise<Resultado> {
+export async function removerAjustes(unidade: number, datas: string[]): Promise<Resultado> {
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_remover_ajustes', { p_id_unidade: unidade, p_datas: datas });
+    return error ? falha(error) : { ok: true };
+  }
   datas.forEach((d) => dados.ajustes.delete(d));
   return espera({ ok: true });
 }
 
 // ── ocupação (reservas e bloqueios)
 export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= o.ini && data < o.fim) ?? null;
+
+/** Traz para a memória o que o calendário do mês precisa: tarifas, ajustes e ocupação. */
+export async function carregarMes(unidade: number, mes: string): Promise<void> {
+  if (!REAL) return espera(undefined);
+  const ini = primeiroDoMes(mes), fim = ultimoDoMes(mes);
+  const [t, a, o] = await Promise.all([listarTarifas(unidade), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
+  void t;
+  dados.ajustes = new Map((a as any[]).map((x): [string, Ajuste] => [x.dt_ref, {
+    data: x.dt_ref, valor: x.vl_noite === null ? null : Number(x.vl_noite), minNoites: x.qtde_min_noites, fechado: x.sg_fechado, semChegada: x.sg_sem_chegada,
+    semSaida: x.sg_sem_saida, obs: x.ds_observacao ?? '',
+  }]));
+  dados.ocupacoes = (o as any[]).map((x): Ocupacao => ({ ini: x.dt_ini, fim: x.dt_fim, tipo: x.tp_ocupacao, rotulo: x.ds_rotulo }));
+}
 
 /** Situação de uma noite, como o calendário do site a vê (1 casal). */
 export type Dia = {
@@ -138,25 +204,27 @@ export function diaDe(data: string): Dia {
   };
 }
 
-// ── simulador: mesma conta de calcular_estadia()
+// ── simulador
 export const MOTIVOS: Record<string, string> = {
   datas_invalidas: 'Datas inválidas: a saída precisa ser depois da entrada.', data_passada: 'A entrada já passou.',
-  estadia_longa: `O site aceita no máximo ${UNIDADE.maxNoites} noites por reserva.`,
-  capacidade: `Acima da capacidade: até ${UNIDADE.maxAdultos} adultos, ${UNIDADE.maxCriancas} crianças e ${UNIDADE.maxHospedes} hóspedes (bebês também ocupam vaga).`,
+  estadia_longa: 'Acima do máximo de noites por reserva do site.',
+  capacidade: 'Acima da capacidade do chalé (bebês também ocupam vaga).',
   sem_tarifa: 'Alguma noite ainda não tem tarifa: a venda não está aberta para esse período.', fechado: 'Alguma noite está fechada para venda.',
   sem_chegada: 'Esse dia não aceita chegada.', sem_saida: 'Esse dia não aceita saída.', min_noites: 'Abaixo do mínimo de noites do período.', ocupado: 'As datas já estão ocupadas por reserva ou bloqueio.',
+  unidade_inativa: 'Chalé inativo.',
 };
 export type Hospedes = { adultos: number; criancas: number; criancasMaiores: number; bebes: number };
 export type Noite = { data: string; tarifa: string | null; base: number; extras: number; total: number; ajustada: boolean; obs: string };
 export type Estadia = { disponivel: boolean; motivo: string | null; noites: number; minNoites: number; hospedagem: number; taxaLimpeza: number; total: number; sinal: number; detalhe: Noite[] };
 
-export function calcularEstadia(checkin: string, checkout: string, h: Hospedes): Estadia {
+/** Demonstração: a mesma conta de calcular_estadia(), no navegador. No real o simulador chama o servidor. */
+function calcularLocal(u: Unidade, checkin: string, checkout: string, h: Hospedes): Estadia {
   const n = checkin && checkout ? noites(checkin, checkout) : 0;
   const vazio = (motivo: string): Estadia => ({ disponivel: false, motivo, noites: Math.max(n, 0), minNoites: 0, hospedagem: 0, taxaLimpeza: 0, total: 0, sinal: 0, detalhe: [] });
   if (!checkin || !checkout || n < 1) return vazio('datas_invalidas');
   if (checkin < hoje()) return vazio('data_passada');
-  if (n > UNIDADE.maxNoites) return vazio('estadia_longa');
-  if (h.adultos < 1 || h.adultos > UNIDADE.maxAdultos || h.criancas + h.criancasMaiores + h.bebes > UNIDADE.maxCriancas || h.adultos + h.criancas + h.criancasMaiores + h.bebes > UNIDADE.maxHospedes) return vazio('capacidade');
+  if (n > u.maxNoites) return vazio('estadia_longa');
+  if (h.adultos < 1 || h.adultos > u.maxAdultos || h.criancas + h.criancasMaiores + h.bebes > u.maxCriancas || h.adultos + h.criancas + h.criancasMaiores + h.bebes > u.maxHospedes) return vazio('capacidade');
 
   const detalhe: Noite[] = [];
   let semTarifa = false, fechado = false, min = 1;
@@ -178,5 +246,28 @@ export function calcularEstadia(checkin: string, checkout: string, h: Hospedes):
   const motivo = semTarifa ? 'sem_tarifa' : fechado ? 'fechado'
     : ajusteDe(checkin)?.semChegada ? 'sem_chegada' : ajusteDe(checkout)?.semSaida ? 'sem_saida' : n < min ? 'min_noites'
     : detalhe.some((x) => ocupacaoDe(x.data)) ? 'ocupado' : null;
-  return { disponivel: motivo === null, motivo, noites: n, minNoites: min, hospedagem, taxaLimpeza: UNIDADE.taxaLimpeza, total: hospedagem + UNIDADE.taxaLimpeza, sinal: Math.round(((hospedagem + UNIDADE.taxaLimpeza) * UNIDADE.percentualSinal)) / 100, detalhe };
+  const total = hospedagem + u.taxaLimpeza;
+  return { disponivel: motivo === null, motivo, noites: n, minNoites: min, hospedagem, taxaLimpeza: u.taxaLimpeza, total, sinal: Math.round(total * u.percentualSinal) / 100, detalhe };
+}
+
+export async function calcularEstadia(u: Unidade, checkin: string, checkout: string, h: Hospedes): Promise<Estadia> {
+  if (!REAL) return espera(calcularLocal(u, checkin, checkout, h));
+  if (!checkin || !checkout) return calcularLocal(u, '', '', h);                // datas em branco: não chama o servidor
+  const linhas = (await rpc('prc_calcular', {
+    p_id_unidade: u.id, p_checkin: checkin, p_checkout: checkout, p_adultos: h.adultos, p_criancas: h.criancas, p_bebes: h.bebes, p_criancas_maiores: h.criancasMaiores,
+  })) as any[];
+  const r = linhas[0];
+  if (!r) return calcularLocal(u, '', '', h);
+  // marca no resultado as noites que têm ajuste do dia (o cálculo do servidor não diz qual noite foi ajustada)
+  const aj = r.ds_detalhe?.length ? ((await rpc('prc_ajustes', { p_id_unidade: u.id, p_dt_ini: checkin, p_dt_fim: somar(checkout, -1) })) as any[]) : [];
+  const porData = new Map(aj.map((x) => [x.dt_ref as string, x]));
+  const detalhe: Noite[] = (r.ds_detalhe ?? []).map((d: any): Noite => ({
+    data: d.dt_ref, tarifa: d.nm_tarifa ?? null, base: Number(d.vl_base), extras: Number(d.vl_extras), total: Number(d.vl_noite),
+    ajustada: porData.has(d.dt_ref), obs: porData.get(d.dt_ref)?.ds_observacao ?? '',
+  }));
+  const total = Number(r.vl_total);
+  return {
+    disponivel: !!r.disponivel, motivo: r.motivo ?? null, noites: r.qtde_noites, minNoites: r.qtde_min_noites, hospedagem: Number(r.vl_hospedagem),
+    taxaLimpeza: Number(r.vl_taxa_limpeza), total, sinal: Math.round(total * Number(r.vl_percentual_sinal)) / 100, detalhe,
+  };
 }
