@@ -243,6 +243,7 @@ window.I18N = (function () {
     'Foto: Henrique Alves': ['Photo: Henrique Alves', 'Foto: Henrique Alves'],
     'Foto: Chico Trekking': ['Photo: Chico Trekking', 'Foto: Chico Trekking'],
     'Foto: Roda dos ventos': ['Photo: Roda dos Ventos', 'Foto: Roda dos Ventos'],
+    'Foto: Léo Castilho': ['Photo: Léo Castilho', 'Foto: Léo Castilho'],
     'Foto: Projeto': ['Photo: Project', 'Foto: Proyecto'],
     'Suíte — vista da cama para a serra': ['Suite — view from the bed to the mountains', 'Suite — vista desde la cama hacia la sierra']
   };
