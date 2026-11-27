@@ -26,7 +26,7 @@ export function useResumo(unidadeId: string) {
   const pronto = !!u && !!tipo && !!rasc && !!nFotos && !!ambientes?.length;
   const itens = (ambientes ?? []).flatMap((ambiente) => ambiente.itens.map((item) => ({ item, ambiente })));
   const resp = (id: string) => rasc?.respostas[id];
-  const pendentes = itens.filter(({ item }) => !itemCompleto(item, resp(item.id), rasc?.obs?.[item.id], nFotos?.[item.id] ?? 0));
+  const pendentes = itens.filter(({ item }) => !itemCompleto(item, resp(item.id), rasc?.obs?.[item.id], nFotos?.[item.id] ?? 0, rasc?.qtd?.[item.id]));
   const ocorrencias: OcorrenciaPrevista[] = itens
     .filter(({ item }) => divergente(resp(item.id)))
     .map(({ item, ambiente }) => {

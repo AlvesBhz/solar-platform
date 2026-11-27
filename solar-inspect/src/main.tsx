@@ -35,9 +35,11 @@ import { T31Tipos } from './screens/T31Tipos';
 import { T30Ambientes } from './screens/T30Ambientes';
 import { T33Presenca } from './screens/T33Presenca';
 import T35TrocarSenha from './screens/T35TrocarSenha';
+import { T36Ocorrencias, T37TratarOcorrencia } from './screens/T36Ocorrencias';
 import ProtegeCampo from './lib/ProtegeCampo';
 import type { Perfil } from './lib/acesso';
 const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
+const MANUTENCAO: Perfil[] = ['MANUTENCAO', 'GESTOR', 'ADMIN'];
 import { T32Usuarios } from './screens/T32Usuarios';
 import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
 
@@ -80,6 +82,8 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/admin/presenca" element={<T33Presenca />} />
         <Route path="/admin/usuarios" element={<T32Usuarios />} />
         <Route path="/admin/auditoria" element={<T34Auditoria />} />
+        <Route path="/app/ocorrencias" element={<ProtegeCampo perfis={MANUTENCAO}><T36Ocorrencias /></ProtegeCampo>} />
+        <Route path="/app/ocorrencias/:id" element={<ProtegeCampo perfis={MANUTENCAO}><T37TratarOcorrencia /></ProtegeCampo>} />
         <Route path="/conta/senha" element={<T35TrocarSenha />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

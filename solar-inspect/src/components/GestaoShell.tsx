@@ -7,18 +7,26 @@ import NetworkBadge from './NetworkBadge';
 
 let ultimoScroll = 0; // a moldura remonta a cada tela: guarda a posição para a barra deslizar em vez de pular
 
-const MENU = [
-  { to: '/gestao', icon: 'solar:widget-2-linear', label: 'Dashboard', end: true },
-  { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades' },
-  { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias' },
-  { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências' },
-  { to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Fazer vistoria' },
-  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', admin: true, so: 'ADMIN' },
-  { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', admin: true },
-  { to: '/admin/tipos', icon: 'solar:settings-linear', label: 'Tipos de vistoria', admin: true, so: 'ADMIN' },
-  { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', admin: true },
-  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', admin: true, so: 'ADMIN' },
-  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', admin: true, so: 'ADMIN' },
+// Grupos do menu: o nome diz o que o grupo representa e a linha de baixo explica para que serve.
+const GRUPOS = {
+  gestao: { nome: 'Gestão', desc: 'Acompanhar e decidir' },
+  campo: { nome: 'Vistoria em campo', desc: 'Quem faz a vistoria' },
+  inspect: { nome: 'Cadastros · Inspect', desc: 'Configuram as vistorias' },
+  site: { nome: 'Cadastros · Site', desc: 'Dados que vêm do site de reservas' },
+} as const;
+type Grupo = keyof typeof GRUPOS;
+const MENU: { to: string; icon: string; label: string; grupo: Grupo; end?: boolean; so?: string }[] = [
+  { to: '/gestao', icon: 'solar:widget-2-linear', label: 'Painel', grupo: 'gestao', end: true },
+  { to: '/gestao/unidades', icon: 'solar:home-2-linear', label: 'Unidades', grupo: 'gestao' },
+  { to: '/gestao/vistorias', icon: 'solar:clipboard-check-linear', label: 'Vistorias', grupo: 'gestao' },
+  { to: '/gestao/ocorrencias', icon: 'solar:danger-triangle-linear', label: 'Ocorrências', grupo: 'gestao' },
+  { to: '/admin/auditoria', icon: 'solar:shield-check-linear', label: 'Auditoria', grupo: 'gestao', so: 'ADMIN' },
+  { to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Fazer vistoria', grupo: 'campo' },
+  { to: '/admin/checklists', icon: 'solar:layers-minimalistic-linear', label: 'Ambientes e itens', grupo: 'inspect' },
+  { to: '/admin/tipos', icon: 'solar:settings-linear', label: 'Tipos de vistoria', grupo: 'inspect', so: 'ADMIN' },
+  { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', grupo: 'inspect' },
+  { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', grupo: 'inspect', so: 'ADMIN' },
+  { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', grupo: 'site', so: 'ADMIN' },
 ];
 // o menu mostra só o que o perfil pode abrir (as telas e o banco conferem de novo)
 const menuDo = (p?: string) => MENU.filter((m) => !m.so || m.so === p || (MODO_DEMO && !p));
@@ -59,7 +67,13 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         <nav ref={nav} className="relative flex gap-1 overflow-x-auto px-[45vw] py-2 [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:p-0 [&::-webkit-scrollbar]:hidden" aria-label="Gestão">
           {menuDo(perfilAtual()).map((m, i, menu) => (
             <div key={m.to} className="contents">
-              {m.admin && !menu[i - 1]?.admin && <span className="hidden px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/50 lg:block">Administração</span>}
+              {m.grupo !== menu[i - 1]?.grupo && (
+                // cabeçalho do grupo (só no menu lateral; um grupo sem item visível para o perfil nem aparece)
+                <span className={`hidden flex-col px-3 pb-1 lg:flex ${i ? 'pt-4' : 'pt-1'}`} data-grupo={m.grupo}>
+                  <span className="text-[0.625rem] uppercase tracking-[0.24em] text-white/60">{GRUPOS[m.grupo].nome}</span>
+                  <span className="text-[0.6875rem] text-white/40">{GRUPOS[m.grupo].desc}</span>
+                </span>
+              )}
               <NavLink to={m.to} end={m.end} className={link}><Icon icon={m.icon} width={18} aria-hidden="true" />{m.label}</NavLink>
             </div>
           ))}

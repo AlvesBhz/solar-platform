@@ -319,10 +319,13 @@ create table if not exists "VST_OCORRENCIA" (
   "DS_TRATAMENTO"   text,
   "DT_ABERTURA"     timestamptz not null default now(),
   "DT_RESOLUCAO"    timestamptz,
+  "ID_RESPONSAVEL"  uuid,                                  -- quem cuida do tratamento (gestão define)
+  "DT_PRAZO"        date,                                  -- até quando resolver
   constraint "PK_VST_OCORRENCIA" primary key ("ID_OCORRENCIA"),
   constraint "FK_VST_OCORRENCIA_VST_RESPOSTA" foreign key ("ID_VISTORIA", "ID_ITEM") references "VST_RESPOSTA" ("ID_VISTORIA", "ID_ITEM") on delete cascade,
   constraint "FK_VST_OCORRENCIA_SIT_UNIDADE" foreign key ("ID_UNIDADE") references "SIT_UNIDADE" ("ID_UNIDADE"),
   constraint "FK_VST_OCORRENCIA_SIT_BLOQUEIO" foreign key ("ID_BLOQUEIO") references "SIT_BLOQUEIO" ("ID_BLOQUEIO") on delete set null,
+  constraint "FK_VST_OCORRENCIA_VST_USUARIO" foreign key ("ID_RESPONSAVEL") references "VST_USUARIO" ("ID_USUARIO"),
   constraint "UQ_VST_OCORRENCIA_RESPOSTA" unique ("ID_VISTORIA", "ID_ITEM"),
   constraint "CK_VST_OCORRENCIA_TP_GRAVIDADE" check ("TP_GRAVIDADE" in ('BAIXA', 'MEDIA', 'CRITICA')),
   constraint "CK_VST_OCORRENCIA_TP_STATUS" check ("TP_STATUS" in ('ABERTA', 'EM_TRATAMENTO', 'RESOLVIDA', 'CANCELADA')),
@@ -331,6 +334,15 @@ create table if not exists "VST_OCORRENCIA" (
 create index if not exists "IX_VST_OCORRENCIA_ID_UNIDADE_STATUS" on "VST_OCORRENCIA" ("ID_UNIDADE", "TP_STATUS");
 create index if not exists "IX_VST_OCORRENCIA_ID_ITEM" on "VST_OCORRENCIA" ("ID_ITEM");
 create index if not exists "IX_VST_OCORRENCIA_ID_BLOQUEIO" on "VST_OCORRENCIA" ("ID_BLOQUEIO") where "ID_BLOQUEIO" is not null;
+-- responsável e prazo (acrescentados depois: em banco já existente, entram no fim da tabela)
+alter table "VST_OCORRENCIA" add column if not exists "ID_RESPONSAVEL" uuid;
+alter table "VST_OCORRENCIA" add column if not exists "DT_PRAZO" date;
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'FK_VST_OCORRENCIA_VST_USUARIO') then
+    alter table "SE"."VST_OCORRENCIA" add constraint "FK_VST_OCORRENCIA_VST_USUARIO" foreign key ("ID_RESPONSAVEL") references "SE"."VST_USUARIO" ("ID_USUARIO");
+  end if;
+end $$;
+create index if not exists "IX_VST_OCORRENCIA_ID_RESPONSAVEL" on "VST_OCORRENCIA" ("ID_RESPONSAVEL") where "ID_RESPONSAVEL" is not null;
 
 -- ── VST_FOTO: guarda o caminho no Storage, não a imagem ─────────────────
 -- CD_ARQUIVO = nome do objeto no bucket "vistorias": <ID_VISTORIA>/<arquivo>
@@ -1040,17 +1052,20 @@ end;
 $$;
 
 -- Gestão (T20/T22/T25/T26): ocorrências com unidade, item, ambiente, vistoria de origem e fim do bloqueio (sem ler SIT_BLOQUEIO)
+drop function if exists vst_ocorrencias(bigint, uuid);   -- o retorno ganhou colunas (responsável e prazo)
 create or replace function vst_ocorrencias(p_id_unidade bigint default null, p_id_vistoria uuid default null)
 returns table (id_ocorrencia bigint, id_unidade bigint, nm_unidade text, id_vistoria uuid, nm_tipo_vistoria text, dt_vistoria timestamptz,
                nm_autor text, id_item bigint, nm_item text, nm_ambiente text, tp_gravidade text, tp_status text, ds_ocorrencia text,
-               ds_tratamento text, dt_abertura timestamptz, dt_resolucao timestamptz, dt_bloqueio_fim date)
+               ds_tratamento text, dt_abertura timestamptz, dt_resolucao timestamptz, dt_bloqueio_fim date,
+               id_responsavel uuid, nm_responsavel text, dt_prazo date)
 language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
 begin
   perform "SE".vst_usuario_atual();
   return query
   select o."ID_OCORRENCIA", o."ID_UNIDADE", u."NM_UNIDADE", o."ID_VISTORIA", t."NM_TIPO_VISTORIA", v."DT_FIM", us."NM_USUARIO",
          o."ID_ITEM", i."NM_ITEM", a."NM_AMBIENTE", o."TP_GRAVIDADE", o."TP_STATUS", o."DS_OCORRENCIA", o."DS_TRATAMENTO",
-         o."DT_ABERTURA", o."DT_RESOLUCAO", case when b."DT_FIM" is not null then b."DT_FIM" - 1 end
+         o."DT_ABERTURA", o."DT_RESOLUCAO", case when b."DT_FIM" is not null then b."DT_FIM" - 1 end,
+         o."ID_RESPONSAVEL", rs."NM_USUARIO", o."DT_PRAZO"
   from "VST_OCORRENCIA" o
   join "SIT_UNIDADE" u on u."ID_UNIDADE" = o."ID_UNIDADE"
   join "VST_VISTORIA" v on v."ID_VISTORIA" = o."ID_VISTORIA"
@@ -1059,6 +1074,7 @@ begin
   join "VST_ITEM" i on i."ID_ITEM" = o."ID_ITEM"
   join "VST_AMBIENTE" a on a."ID_AMBIENTE" = i."ID_AMBIENTE"
   left join "SIT_BLOQUEIO" b on b."ID_BLOQUEIO" = o."ID_BLOQUEIO"
+  left join "VST_USUARIO" rs on rs."ID_USUARIO" = o."ID_RESPONSAVEL"
   where "SE".vst_tem_acesso(u."ID_PROPRIEDADE")
     and (p_id_unidade is null or o."ID_UNIDADE" = p_id_unidade)
     and (p_id_vistoria is null or o."ID_VISTORIA" = p_id_vistoria)
@@ -1091,6 +1107,33 @@ begin
     and (p_id_usuario is null or a."ID_USUARIO" = p_id_usuario)
   order by a."DT_CRIACAO" desc, a."ID_AUDITORIA" desc
   limit least(greatest(coalesce(p_limite, 50), 1), 200) offset greatest(coalesce(p_deslocamento, 0), 0);
+end;
+$$;
+
+-- Gestão (T26): define quem cuida da ocorrência e até quando (vazio = sem responsável / sem prazo). Fica no histórico.
+create or replace function vst_planejar_ocorrencia(p_id_ocorrencia bigint, p_id_responsavel uuid default null, p_dt_prazo date default null)
+returns void language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+declare u "VST_USUARIO"%rowtype; o "VST_OCORRENCIA"%rowtype; v_nome text;
+begin
+  u := "SE".vst_usuario_atual();
+  select * into o from "VST_OCORRENCIA" where "ID_OCORRENCIA" = p_id_ocorrencia for update;
+  if not found then raise exception 'ocorrencia_inexistente' using errcode = 'P0001'; end if;
+  if not "SE".vst_pode_gerir_unidade(o."ID_UNIDADE") then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
+  if o."TP_STATUS" in ('RESOLVIDA', 'CANCELADA') then raise exception 'ocorrencia_encerrada' using errcode = 'P0001'; end if;
+  if p_id_responsavel is not null then
+    select x."NM_USUARIO" into v_nome from "VST_USUARIO" x
+    where x."ID_USUARIO" = p_id_responsavel and x."SG_ATIVO"
+      and (x."TP_PERFIL" = 'ADMIN' or exists (select 1 from "VST_USUARIO_PROPRIEDADE" up
+                                              where up."ID_USUARIO" = x."ID_USUARIO" and up."ID_PROPRIEDADE" = "SE".vst_propriedade_da_unidade(o."ID_UNIDADE")));
+    if v_nome is null then raise exception 'responsavel_invalido' using errcode = 'P0001'; end if;
+  end if;
+  if p_dt_prazo is not null and p_dt_prazo < "SE".vst_hoje(o."ID_UNIDADE") then raise exception 'prazo_invalido' using errcode = 'P0001'; end if;
+  update "VST_OCORRENCIA"
+  set "ID_RESPONSAVEL" = p_id_responsavel, "DT_PRAZO" = p_dt_prazo,
+      "TP_STATUS" = case when p_id_responsavel is not null and "TP_STATUS" = 'ABERTA' then 'EM_TRATAMENTO' else "TP_STATUS" end,
+      "DS_TRATAMENTO" = left(concat_ws(E'\n', "DS_TRATAMENTO", to_char(now() at time zone 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') || ' · ' || u."NM_USUARIO" || ': '
+                        || 'Responsável: ' || coalesce(v_nome, 'ninguém') || ' · prazo: ' || coalesce(to_char(p_dt_prazo, 'DD/MM/YYYY'), 'sem prazo')), 20000)
+  where "ID_OCORRENCIA" = p_id_ocorrencia;
 end;
 $$;
 
@@ -1356,7 +1399,7 @@ do $$ declare f record; begin
                      'vst_unidades', 'vst_agenda', 'vst_checklist', 'vst_resolver_qr', 'vst_criar_vistoria', 'vst_atualizar_agenda',
                      'vst_iniciar_vistoria', 'vst_concluir_vistoria', 'vst_registrar_foto', 'vst_resolver_ocorrencia',
                      'vst_bloquear_por_ocorrencia', 'vst_alterar_situacao_unidade', 'vst_obter_qr', 'vst_rotacionar_qr',
-                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade', 'vst_ocorrencias', 'vst_auditoria') then
+                     'vst_registrar_aceite_lgpd', 'vst_propriedades', 'vst_senha_trocada', 'vst_tipos_unidade', 'vst_ocorrencias', 'vst_auditoria', 'vst_planejar_ocorrencia') then
       execute format('grant execute on function %s to authenticated', f.sig);
     end if;
   end loop;

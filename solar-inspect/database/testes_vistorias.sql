@@ -352,14 +352,14 @@ select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO');
 select teste.ok((select "TP_SITUACAO" = 'LIBERADO' from "VST_UNIDADE" where "ID_UNIDADE" = :ua), 'gestor libera o chalé depois da limpeza');
 -- ── T07: tipos do chalé e vistoria a retomar; gravidade escolhida no app
 :como_ana
-select "SE".vst_criar_vistoria(:ua, 'ENTRADA', current_date) as v_na \gset
+select "SE".vst_criar_vistoria(:ua, 'ENTRADA', (now() at time zone 'America/Sao_Paulo')::date) as v_na \gset
 select tp_status from "SE".vst_iniciar_vistoria(:'v_na', :'qr_novo', -19.0849, -43.5969, 8) \gset
 select teste.ok((select tp_status = 'CONCLUIDA' from "SE".vst_concluir_vistoria(:'v_na', format('[{"id_item":%s,"tp_resposta":"NAO_SE_APLICA"}]', :i_torneira)::jsonb)),
                 'item com foto obrigatória marcado "não se aplica" conclui sem foto');
 :como_gesto
 select "SE".vst_alterar_situacao_unidade(:ua, 'LIBERADO');
 :como_ana
-select "SE".vst_criar_vistoria(:ua, 'SAIDA', current_date) as v_s3 \gset
+select "SE".vst_criar_vistoria(:ua, 'SAIDA', (now() at time zone 'America/Sao_Paulo')::date) as v_s3 \gset
 select teste.ok((select count(*) filter (where cd_tipo_vistoria = 'ENTRADA' and qtde_itens = 1) = 1
                     and count(*) filter (where cd_tipo_vistoria = 'SAIDA' and qtde_itens = 3) = 1 from "SE".vst_tipos_unidade(:ua)), 'vst_tipos_unidade traz os tipos com a quantidade de itens do chalé');
 select teste.ok((select id_vistoria = :'v_s3' and tp_status = 'AGENDADA' from "SE".vst_tipos_unidade(:ua) where cd_tipo_vistoria = 'SAIDA'), 'oferece a Saída agendada para hoje');
@@ -375,7 +375,7 @@ select qtde_ocorrencias as g_oc, id_bloqueio is null as g_sem_bloq from "SE".vst
 :dono
 select teste.ok(:g_oc = 1 and :'g_sem_bloq' = 't' and (select "TP_GRAVIDADE" = 'MEDIA' from "VST_OCORRENCIA" where "ID_VISTORIA" = :'v_s3'), 'a gravidade escolhida no app (MEDIA) é gravada e não bloqueia');
 :como_ana
-select "SE".vst_criar_vistoria(:ua, 'SAIDA', current_date) as v_s4 \gset
+select "SE".vst_criar_vistoria(:ua, 'SAIDA', (now() at time zone 'America/Sao_Paulo')::date) as v_s4 \gset
 select tp_status from "SE".vst_iniciar_vistoria(:'v_s4', :'qr_novo', -19.0849, -43.5969, 8) \gset
 select format('[{"id_item":%s,"cd_arquivo":"%s/t.jpg"}]', :i_torneira, :'v_s4') as fotos_s4 \gset
 select id_bloqueio is not null as g_bloq from "SE".vst_concluir_vistoria(:'v_s4', format(:'resp_g', 'CRITICA')::jsonb, :'fotos_s4'::jsonb, 'x.png') \gset
@@ -384,6 +384,18 @@ select teste.ok(:'g_bloq' = 't' and (select "TP_SITUACAO" = 'MANUTENCAO' from "V
 :como_gesto
 select o."ID_OCORRENCIA" as oc_s4 from "SE"."VST_OCORRENCIA" o where o."ID_VISTORIA" = :'v_s4' \gset
 select "SE".vst_resolver_ocorrencia(:oc_s4, 'RESOLVIDA', 'Sofá trocado', true);
+-- ── responsável e prazo (T26)
+select o."ID_OCORRENCIA" as oc_s3 from "SE"."VST_OCORRENCIA" o where o."ID_VISTORIA" = :'v_s3' \gset
+select teste.erro(format($q$select "SE".vst_planejar_ocorrencia(%s, '00000000-0000-4000-8000-0000000000b1')$q$, :oc_s3), 'responsavel_invalido', 'responsável sem acesso à pousada é recusado');
+select teste.erro(format($q$select "SE".vst_planejar_ocorrencia(%s, null, current_date - 2)$q$, :oc_s3), 'prazo_invalido', 'prazo no passado é recusado');
+select teste.erro(format($q$select "SE".vst_planejar_ocorrencia(%s, '00000000-0000-4000-8000-0000000000a1')$q$, :oc_s4), 'ocorrencia_encerrada', 'ocorrência encerrada não recebe responsável');
+select "SE".vst_planejar_ocorrencia(:oc_s3, '00000000-0000-4000-8000-0000000000a1', current_date + 3);
+select teste.ok((select nm_responsavel = 'Ana (teste)' and dt_prazo = current_date + 3 and tp_status = 'EM_TRATAMENTO' and ds_tratamento like '%Responsável: Ana (teste) · prazo:%'
+                 from "SE".vst_ocorrencias(:ua) where id_ocorrencia = :oc_s3), 'define responsável e prazo, põe em tratamento e registra no histórico');
+:como_ana
+select teste.erro(format($q$select "SE".vst_planejar_ocorrencia(%s, null, null)$q$, :oc_s3), 'perfil_sem_permissao', 'assessor não define responsável nem prazo (só a gestão)');
+select teste.ok((select count(*) = 1 from "SE".vst_ocorrencias(:ua) where id_ocorrencia = :oc_s3 and id_responsavel = '00000000-0000-4000-8000-0000000000a1'), 'o responsável vê a ocorrência atribuída a ele');
+:como_gesto
 
 -- ── perfis de campo: limpeza e manutenção
 :dono

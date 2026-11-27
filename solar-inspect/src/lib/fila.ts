@@ -58,6 +58,7 @@ export async function registrarEnvio(r: Rascunho, ambs: Ambiente[], resumo: { un
   }
   const respostas = ambs.flatMap((a) => a.itens).filter((i) => r.respostas[i.id]).map((i) => ({
     id_item: Number(i.id), ...respostaDoItem(r.respostas[i.id], r.obs?.[i.id], r.ocorrencias?.[i.id], i.critico),
+    ...(r.qtd?.[i.id] !== undefined && r.respostas[i.id] !== 'N/A' ? { qtde_encontrada: r.qtd[i.id] } : {}),
   }));
   const g = r.presenca.gps;
   const e: EnvioReal = {

@@ -67,7 +67,7 @@ export const rotuloSinal = (c: string) => SINAIS[c] ?? c;
 
 // ── unidades (T05/T06)
 type ConfigGps = { lat: number | null; lng: number | null; raio: number; precisaoMax: number };
-export type UnidadeCampo = Unidade & { gps?: ConfigGps };
+export type UnidadeCampo = Unidade & { gps?: ConfigGps; idPropriedade?: number };
 
 const SITUACAO = (s?: string | null) => (s ?? 'LIBERADO').toLowerCase() as EstadoUnidade;
 const VALIDACAO: Record<string, ModoValidacao> = { GPS: 'gps', QR: 'qr', QR_E_GPS: 'gps_qr' };
@@ -103,6 +103,7 @@ export async function listarUnidades(): Promise<UnidadeCampo[]> {
           id: String(o.ID_OCORRENCIA), descricao: o.DS_OCORRENCIA, gravidade: GRAV(o.TP_GRAVIDADE), prazo: o.DT_ABERTURA, ambiente: nomeAmb.get(o.ID_ITEM) ?? '',
         })),
         ultima: ultima ? { tipo: ultima.VST_TIPO_VISTORIA?.NM_TIPO_VISTORIA ?? '', data: ultima.DT_FIM, assessor: ultima.VST_USUARIO?.NM_USUARIO ?? 'Equipe', sinalizada: !!ultima.DS_SINALIZACOES?.length } : undefined,
+        idPropriedade: u.id_propriedade,
         gps: { lat: num(u.vl_latitude), lng: num(u.vl_longitude), raio: u.qtde_raio_metros ?? 50, precisaoMax: u.qtde_precisao_max_metros ?? 50 },
       };
     });

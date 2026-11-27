@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import BottomBar from '../components/BottomBar';
-import { BotoesResposta, CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorGravidade } from '../components/Evidencia';
+import { BotoesResposta, CampoObservacao, FotoReferencia, GradeEvidencias, ListaRequisitos, SeletorGravidade, Contagem } from '../components/Evidencia';
 import { btnPrimary } from '../components/ScreenShell';
 import { divergente, requisitos } from '../lib/evidencia';
 import { useItem } from '../lib/useItem';
@@ -13,7 +13,7 @@ import { RESPOSTAS_OK } from '../mocks/checklist';
 export default function T11DetalheItem() {
   const { unidadeId = '', itemId = '' } = useParams();
   const navigate = useNavigate();
-  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado } = useItem(unidadeId, itemId);
+  const { u, tipo, rasc, fotos, ctx, resposta, obs, responder, observar, remover, gravidade, definirGravidade, carregado, contar, qtd } = useItem(unidadeId, itemId);
   const [obsAberta, setObsAberta] = useState(false);
   const base = `/app/vistorias/nova/${unidadeId}`;
 
@@ -22,8 +22,8 @@ export default function T11DetalheItem() {
   if (rasc.tipoId === 'saida') return <Navigate to={`${base}/item/${itemId}/comparar`} replace />; // saída usa a T13
   if (carregado && !ctx) return <Navigate to={`${base}/checklist`} replace />;   // item fora do checklist
 
-  const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length) : [];
-  const completo = !!resposta && reqs.every((r) => r.ok);
+  const reqs = ctx ? requisitos(ctx.item, resposta, obs, fotos.length, qtd) : [];
+  const completo = !!ctx && !!resposta && reqs.every((r) => r.ok);   // só com o item carregado (regras conhecidas)
   const div = divergente(resposta);
   const positivo = tipo?.respostas.find((x) => RESPOSTAS_OK.includes(x) && x !== 'N/A') ?? 'OK';
   const negativo = tipo?.respostas.find((x) => divergente(x)) ?? 'Problema';
@@ -64,6 +64,7 @@ export default function T11DetalheItem() {
               </div>
             )}
 
+            {ctx.item.qtde !== undefined && resposta && resposta !== 'N/A' && <Contagem esperado={ctx.item.qtde} valor={qtd} onChange={contar} positivo={!div} />}
             {div && <SeletorGravidade valor={gravidade} onChange={definirGravidade} travado={ctx.item.critico} />}
             {div && ctx.item.critico && (
               <p className="-mt-3 flex items-start gap-2 rounded-md bg-warning-bg p-3 text-[0.8125rem] text-warning">

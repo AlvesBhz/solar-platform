@@ -45,8 +45,10 @@ function servidor(page, cen) {
       (cen.rpc[rpc] = cen.rpc[rpc] || []).push(a);
       if (rpc === 'vst_unidades') return json(200, [{ ...UVA, ...(cen.unidade || {}) }]);
       if (rpc === 'vst_tipos_unidade') return json(200, TIPOS);
-      if (rpc === 'vst_checklist') return json(200, CHECKLIST);
+      if (rpc === 'vst_checklist') return json(200, cen.checklist ?? CHECKLIST);
       if (rpc === 'vst_criar_vistoria') return json(200, a.p_id_vistoria);
+      if (rpc === 'vst_ocorrencias') return json(200, cen.ocorrencias ?? []);
+      if (rpc === 'vst_resolver_ocorrencia') return json(200, null);
       if (rpc === 'vst_iniciar_vistoria') return cen.iniciarErro ? recusa(cen.iniciarErro) : json(200, [{ tp_status: 'EM_ANDAMENTO', sg_fora_raio: false, qtde_distancia_metros: 5, ds_sinalizacoes: null }]);
       if (rpc === 'vst_concluir_vistoria') {
         cen.situacao = 'OCUPADO';
@@ -220,6 +222,68 @@ async function assinarEnviar(page) {
     await page.getByText('Tudo sincronizado').waitFor({ timeout: 5000 });
     ok(true, 'T18 mostra a fila vazia');
     await ctx.close();
+  });
+
+  console.log('── Item com quantidade esperada: contar e enviar a contagem');
+  await T('contagem', async () => {
+    const cen = { checklist: [
+      { id_ambiente: 10, nm_ambiente: 'Sala', ds_foto_referencia: null, id_item: 101, nm_item: 'Sofá', ds_orientacao: null, sg_critico: false, sg_foto_obrigatoria: false, qtde_esperada: null },
+      { id_ambiente: 10, nm_ambiente: 'Sala', ds_foto_referencia: null, id_item: 104, nm_item: 'Toalhas', ds_orientacao: null, sg_critico: false, sg_foto_obrigatoria: false, qtde_esperada: 4 },
+    ] };
+    const { ctx, page } = await abrir(browser, cen, { rota: BASEV });
+    await page.locator('label', { hasText: 'Rotina' }).first().click();
+    await page.getByRole('button', { name: /Validar presença/ }).click();
+    ok(await esperarRota(page, BASEV + '/checklist', 10000), 'abre o checklist');
+    await page.getByText('Contar 4').waitFor({ timeout: 6000 });
+    ok(true, 'o checklist mostra que o item precisa ser contado (esperado 4)');
+    await responder(page, 'Sofá', 'OK');
+    await responder(page, 'Toalhas', 'OK');
+    ok(await esperarRota(page, BASEV + '/item/104'), 'item com quantidade abre o detalhe para contar');
+    await page.getByLabel('Quantidade encontrada').waitFor({ timeout: 6000 });
+    ok(await page.getByRole('button', { name: /Concluir item/ }).isDisabled(), 'sem a contagem o item não conclui');
+    await page.getByRole('button', { name: 'Aumentar quantidade' }).click();
+    ok(await page.getByLabel('Quantidade encontrada').inputValue() === '4', 'um toque em + já marca o esperado');
+    await page.getByLabel('Quantidade encontrada').fill('3');
+    ok(await page.getByText('Abaixo do esperado (4)', { exact: false }).isVisible(), 'abaixo do esperado com resposta OK: avisa');
+    await page.setViewportSize({ width: 320, height: 720 });
+    ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), 'contagem cabe em 320 px sem rolagem lateral');
+    if (process.env.FOTO3) await page.screenshot({ path: process.env.FOTO3 });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.getByRole('button', { name: /Concluir item/ }).click();
+    ok(await esperarRota(page, BASEV + '/resumo', 10000) || await esperarRota(page, BASEV + '/checklist'), 'conclui o item');
+    if (new URL(page.url()).pathname.endsWith('/checklist')) await page.waitForURL((u) => u.pathname.endsWith('/resumo'), { timeout: 8000 });
+    await assinarEnviar(page);
+    await page.getByRole('heading', { name: /Vistoria enviada|Enviada para revisão/ }).waitFor({ timeout: 10000 });
+    const t = (cen.rpc.vst_concluir_vistoria?.[0]?.p_respostas || []).find((x) => x.id_item === 104);
+    ok(t && t.qtde_encontrada === 3 && t.tp_resposta === 'OK', 'a contagem vai para o banco (qtde_encontrada = 3)');
+    await ctx.close();
+  });
+
+  console.log('── Manutenção: ocorrências no app de campo');
+  await T('manutencao', async () => {
+    const o = (id, extra) => ({ id_ocorrencia: id, id_unidade: 7, nm_unidade: 'Casa do Mirante', id_vistoria: AGENDADA, nm_tipo_vistoria: 'Saída', dt_vistoria: null, nm_autor: 'Ana', id_item: 100 + id, nm_item: 'Item ' + id, nm_ambiente: 'Banheiro',
+      tp_gravidade: 'MEDIA', tp_status: 'ABERTA', ds_ocorrencia: 'Ocorrência ' + id, ds_tratamento: null, dt_abertura: '2026-11-20T10:00:00Z', dt_resolucao: null, dt_bloqueio_fim: null, id_responsavel: null, nm_responsavel: null, dt_prazo: null, ...extra });
+    const cen = { usuario: { TP_PERFIL: 'MANUTENCAO' }, ocorrencias: [o(1, {}), o(2, { id_responsavel: '00000000-0000-4000-8000-0000000000a1', nm_responsavel: 'Ana', dt_prazo: '2026-11-01' }), o(3, { tp_status: 'RESOLVIDA' })] };
+    const { ctx, page } = await abrir(browser, cen);
+    await page.locator('a[aria-label="Ocorrências"]').click();
+    ok(await esperarRota(page, '/app/ocorrencias'), 'manutenção tem o atalho Ocorrências em Minhas unidades');
+    await page.getByText('2 em aberto · 1 com você').waitFor({ timeout: 6000 });
+    const cards = await page.locator('a[href^="/app/ocorrencias/"]').allInnerTexts();
+    ok(cards.length === 2 && cards[0].includes('Com você') && cards[0].includes('Atrasada desde'), 'lista só as abertas, a atribuída a mim primeiro, com atraso destacado');
+    await page.locator('a[href="/app/ocorrencias/2"]').click();
+    await page.getByLabel('O que foi feito').fill('Reparo trocado');
+    await page.getByRole('button', { name: 'Registrar andamento' }).click();
+    ok(await esperar(() => cen.rpc.vst_resolver_ocorrencia?.[0]?.p_tp_status === 'EM_TRATAMENTO' && cen.rpc.vst_resolver_ocorrencia[0].p_ds_tratamento === 'Reparo trocado'), 'registra o andamento no banco');
+    await page.getByRole('button', { name: /Resolvida/ }).click();
+    ok(await esperar(() => cen.rpc.vst_resolver_ocorrencia?.[1]?.p_tp_status === 'RESOLVIDA' && cen.rpc.vst_resolver_ocorrencia[1].p_liberar === false), 'marca como resolvida sem liberar a unidade (isso é da gestão)');
+    ok(await esperarRota(page, '/app/ocorrencias') && await page.getByText('A gestão confere e libera a unidade').isVisible(), 'volta para a lista avisando que a gestão libera');
+    await page.setViewportSize({ width: 320, height: 720 });
+    ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), 'lista de ocorrências cabe em 320 px');
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await ctx.close();
+    const c2 = await abrir(browser, {}, { rota: '/app/ocorrencias' });
+    ok(await esperarRota(c2.page, '/acesso-indisponivel'), 'assessor não abre a tela da manutenção');
+    await c2.ctx.close();
   });
 
   console.log('── Celular compartilhado: cada funcionário vê só a própria fila');
