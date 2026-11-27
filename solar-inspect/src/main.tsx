@@ -42,6 +42,8 @@ const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
 const MANUTENCAO: Perfil[] = ['MANUTENCAO', 'GESTOR', 'ADMIN'];
 import { T32Usuarios } from './screens/T32Usuarios';
 import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
+import { T38Calendario, T40Simulador } from './screens/Precos';
+import { T39Tarifas, T41FormTarifa } from './screens/Tarifas';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -82,6 +84,10 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/admin/presenca" element={<T33Presenca />} />
         <Route path="/admin/usuarios" element={<T32Usuarios />} />
         <Route path="/admin/auditoria" element={<T34Auditoria />} />
+        <Route path="/admin/precos" element={<T38Calendario />} />
+        <Route path="/admin/tarifas" element={<T39Tarifas />} />
+        <Route path="/admin/tarifas/:id" element={<T41FormTarifa />} />
+        <Route path="/admin/simulador" element={<T40Simulador />} />
         <Route path="/app/ocorrencias" element={<ProtegeCampo perfis={MANUTENCAO}><T36Ocorrencias /></ProtegeCampo>} />
         <Route path="/app/ocorrencias/:id" element={<ProtegeCampo perfis={MANUTENCAO}><T37TratarOcorrencia /></ProtegeCampo>} />
         <Route path="/conta/senha" element={<T35TrocarSenha />} />

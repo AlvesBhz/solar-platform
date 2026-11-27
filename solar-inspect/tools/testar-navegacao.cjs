@@ -52,7 +52,8 @@ const ROTAS = {
     '/app/sincronizacao', '/app/historico', '/conta/senha', '/permissao-localizacao', '/rota-que-nao-existe'],
   GESTOR: ['/', '/gestao', '/gestao/unidades', '/gestao/unidades/7', '/gestao/vistorias', `/gestao/vistorias/${V1}`, `/gestao/vistorias/${V1}/relatorio`, '/gestao/ocorrencias', '/gestao/ocorrencias/1',
     '/admin/checklists', '/admin/presenca', '/app/unidades', '/conta/senha'],
-  ADMIN: ['/', '/gestao', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria'],
+  ADMIN: ['/', '/gestao', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria',
+    '/admin/precos', '/admin/tarifas', '/admin/tarifas/1', '/admin/simulador'],
 };
 // destino esperado quando a rota redireciona de propósito
 const ESPERADO = {
@@ -60,7 +61,7 @@ const ESPERADO = {
   '/app/vistorias/nova/7/presenca': '/app/vistorias/nova/7', '/app/vistorias/nova/7/checklist': '/app/vistorias/nova/7', '/app/vistorias/nova/7/resumo': '/app/vistorias/nova/7',
   '/rota-que-nao-existe': '/app/unidades',
 };
-const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria'] };
+const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria', '/admin/precos', '/admin/tarifas', '/admin/simulador'] };
 
 (async () => {
   const browser = await chromium.launch();
