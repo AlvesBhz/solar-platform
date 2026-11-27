@@ -1089,7 +1089,7 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
 .cta-bg {
   position: absolute;
   inset: -12%;
-  background: url('../assets/images/serra-hero.avif') center / cover no-repeat;
+  background: url('../assets/images/cta-final.avif?v=20261127h') center / cover no-repeat;
   will-change: transform;
   transform: scale(1.12) translateY(0);
   /* sem transition: o parallax já é atualizado a cada quadro (rAF);
