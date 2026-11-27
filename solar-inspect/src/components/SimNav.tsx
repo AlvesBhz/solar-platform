@@ -49,6 +49,10 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
     { id: 'T35', nome: 'Trocar senha', rota: '/conta/senha' },
     { id: 'T33', nome: 'Configuração GPS/QR', rota: '/admin/presenca' },
     { id: 'T34', nome: 'Auditoria', rota: '/admin/auditoria' },
+    { id: 'T38', nome: 'Calendário de preços', rota: '/admin/precos' },
+    { id: 'T39', nome: 'Tarifas por período', rota: '/admin/tarifas' },
+    { id: 'T41', nome: 'Formulário de tarifa', rota: '/admin/tarifas/1' },
+    { id: 'T40', nome: 'Simulador de preço', rota: '/admin/simulador' },
   ] },
 ];
 

@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 (async () => { const U = process.env.URL || 'http://localhost:4173'; const b = await chromium.launch();
   const rotas = ['/','/login','/permissao-localizacao','/acesso-indisponivel?motivo=inativo','/app/unidades','/app/unidades/chale-sempre-viva','/app/vistorias/nova/chale-candeia','/app/sincronizacao','/app/historico',
     '/gestao','/gestao/unidades','/gestao/unidades/chale-sempre-viva','/gestao/vistorias','/gestao/vistorias/v-1018','/gestao/vistorias/v-1018/relatorio','/gestao/ocorrencias','/gestao/ocorrencias/o-2',
-    '/admin/propriedades','/admin/propriedades/nova','/admin/checklists','/admin/tipos','/admin/presenca','/admin/usuarios','/admin/auditoria'];
+    '/admin/propriedades','/admin/propriedades/nova','/admin/checklists','/admin/tipos','/admin/presenca','/admin/usuarios','/admin/auditoria','/admin/precos','/admin/tarifas','/admin/tarifas/1','/admin/simulador'];
   const fluxo = ['presenca','checklist','item/cama','item/cama/foto','resumo','assinatura'];
   for (const w of [280, 320, 390]) { const p = await b.newPage({ viewport: { width: w, height: 800 } }); const bad = [];
     const medir = async (r) => { await p.waitForTimeout(700);

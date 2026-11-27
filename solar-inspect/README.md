@@ -12,7 +12,7 @@ Os tokens vêm de `../design-system/colors_and_type.css`, importado sem alteraç
 
 ## Estado
 
-As 34 telas (T01–T34) estão prototipadas com dados fictícios e sem banco de dados. Falta ligar ao Supabase (RLS, autenticação real, PDF no servidor, sincronização real); a ordem técnica e as decisões em aberto estão nas seções 13 da especificação.
+As 41 telas (T01–T41) estão prototipadas com dados fictícios e sem banco de dados. Falta ligar ao Supabase (RLS, autenticação real, PDF no servidor, sincronização real); a ordem técnica e as decisões em aberto estão nas seções 13 da especificação.
 
 ## Rodar
 
@@ -43,7 +43,7 @@ Para publicar (Cloudflare Pages): comando de build `npm run build`, pasta de sa�
 
 ## Navegação da simulação
 
-Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu **Navegar entre telas** (T01–T34). Para as telas que dependem de uma vistoria em andamento (T08–T13), o menu cria o rascunho necessário antes de abrir. É só do mockup: remover na versão real (`src/components/SimNav.tsx`).
+Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu **Navegar entre telas** (T01–T41). Para as telas que dependem de uma vistoria em andamento (T08–T13), o menu cria o rascunho necessário antes de abrir. É só do mockup: remover na versão real (`src/components/SimNav.tsx`).
 
 ## Rotas
 
@@ -69,6 +69,9 @@ Em qualquer tela, o botão verde redondo no canto inferior esquerdo abre o menu 
 | `/admin/propriedades` · `/admin/propriedades/nova` | T28 Propriedades · T29 Formulário |
 | `/admin/checklists` · `/admin/tipos` · `/admin/presenca` | T30 Ambientes e itens · T31 Tipos de vistoria · T33 GPS e QR Code |
 | `/admin/usuarios` · `/admin/auditoria` | T32 Usuários e permissões · T34 Auditoria |
+| `/admin/precos` | T38 Calendário de preços (só Admin; `?mes=2027-12` abre outro mês). Protótipo com dados de exemplo |
+| `/admin/tarifas` · `/admin/tarifas/:id` | T39 Tarifas por período · T41 Formulário de tarifa (`nova` para criar) |
+| `/admin/simulador` | T40 Simulador de preço: a mesma conta do site, noite a noite |
 | `/acesso-indisponivel?motivo=…` | T04 Acesso indisponível — `sem-permissao`, `inativo`, `sessao-expirada`, `offline`, `sem-localizacao` |
 
 ## Contas de teste (mock)

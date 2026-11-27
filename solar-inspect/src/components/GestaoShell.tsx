@@ -27,6 +27,9 @@ const MENU: { to: string; icon: string; label: string; grupo: Grupo; end?: boole
   { to: '/admin/presenca', icon: 'solar:qr-code-linear', label: 'GPS e QR Code', grupo: 'inspect' },
   { to: '/admin/usuarios', icon: 'solar:users-group-rounded-linear', label: 'Usuários', grupo: 'inspect', so: 'ADMIN' },
   { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', grupo: 'site', so: 'ADMIN' },
+  { to: '/admin/precos', icon: 'solar:calendar-linear', label: 'Calendário de preços', grupo: 'site', so: 'ADMIN' },
+  { to: '/admin/tarifas', icon: 'solar:tag-price-linear', label: 'Tarifas', grupo: 'site', so: 'ADMIN' },
+  { to: '/admin/simulador', icon: 'solar:magnifer-linear', label: 'Simulador de preço', grupo: 'site', so: 'ADMIN' },
 ];
 // o menu mostra só o que o perfil pode abrir (as telas e o banco conferem de novo)
 const menuDo = (p?: string) => MENU.filter((m) => !m.so || m.so === p || (MODO_DEMO && !p));
