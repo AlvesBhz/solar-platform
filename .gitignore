@@ -1,2 +1,2 @@
-# Saída do build do Solar Inspect (npm run build:pages). O GitHub Actions recompila a cada push na main.
+# Pasta gerada pelo fluxo de publicação (solar-inspect: npm run build:pages); não guardar no Git
 docs/

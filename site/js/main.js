@@ -768,9 +768,21 @@ document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach((el, i
 })();
 
 /* ── BOOKING POPUP ── */
+/* o que está atrás da barra (centro da tela) é claro? sobe até achar um fundo opaco e mede a luminância */
+function fundoClaro() {
+  var el = document.elementFromPoint(window.innerWidth / 2, window.innerHeight * 0.3);
+  for (; el && el !== document.documentElement; el = el.parentElement) {
+    if (el.tagName === 'IMG' || el.tagName === 'VIDEO' || getComputedStyle(el).backgroundImage !== 'none') return false;
+    var m = getComputedStyle(el).backgroundColor.match(/[\d.]+/g);
+    if (m && (m.length < 4 || +m[3] > 0.5)) return (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255 > 0.55;
+  }
+  return true;
+}
 function openBkPopup(e) {
   if (e) e.stopPropagation();
-  document.getElementById('bkPopup').classList.add('is-open');
+  var pop = document.getElementById('bkPopup');
+  pop.classList.toggle('bk-claro', fundoClaro());
+  pop.classList.add('is-open');
   if (!document.body.classList.contains('bk-lock')) {
     window._bkY = window.scrollY;
     document.body.style.top = '-' + window._bkY + 'px';
@@ -803,6 +815,35 @@ document.addEventListener('click', function(e) {
 });
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeBkPopup(); });
 
+/* ── ARRASTAR PARA O LADO nos carrosséis (dedo ou mouse) ── */
+function arrastarSlides(container, prox, ant) {
+  var x0 = 0, y0 = 0, ativo = false, moveu = false;
+  container.style.touchAction = 'pan-y';          // rolagem vertical continua normal
+  container.style.userSelect = 'none';
+  container.addEventListener('dragstart', function (e) { e.preventDefault(); });   // não arrasta a imagem em si
+  container.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest('button')) return;
+    ativo = true; moveu = false; x0 = e.clientX; y0 = e.clientY;
+    window.addEventListener('pointerup', fim, { once: true });
+    window.addEventListener('pointercancel', cancela, { once: true });
+  });
+  function cancela() { ativo = false; window.removeEventListener('pointerup', fim); }
+  function fim(e) {
+    if (!ativo) return; ativo = false;
+    window.removeEventListener('pointercancel', cancela);
+    var dx = e.clientX - x0, dy = e.clientY - y0;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      moveu = true;
+      if (dx < 0) prox(); else ant();
+    }
+  }
+  // depois de arrastar, o clique que o navegador dispara não pode passar para a próxima foto
+  container.addEventListener('click', function (e) {
+    if (moveu) { moveu = false; e.stopPropagation(); e.preventDefault(); }
+  }, true);
+}
+
 /* ── D2 SLIDESHOWS — escopo por container (suporta múltiplas seções) ── */
 (function () {
   document.querySelectorAll('.d2-slideshow').forEach(function (container) {
@@ -831,6 +872,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
       if (e.target.closest('button')) return;
       goTo(current + 1); startTimer();
     });
+    arrastarSlides(container, function () { goTo(current + 1); startTimer(); }, function () { goTo(current - 1); startTimer(); });
     startTimer();
   });
 })();
@@ -866,6 +908,7 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close
       if (e.target.closest('button')) return;
       goTo(current + 1); startTimer();
     });
+    arrastarSlides(container, function () { goTo(current + 1); startTimer(); }, function () { goTo(current - 1); startTimer(); });
 
     startTimer();
   });

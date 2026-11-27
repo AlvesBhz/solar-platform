@@ -24,7 +24,7 @@
      recomendado para produção). Para regenerar após mudar classes no HTML:
      npx tailwindcss@3.4.17 --minify -o css/tailwind.css --content "index.html,js/*.js" -->
 <link rel="stylesheet" href="css/tailwind.css">
-<link rel="stylesheet" href="css/style.css?v=20261120h">
+<link rel="stylesheet" href="css/style.css?v=20261127l">
 </head>
 <body class="bg-stone-50 text-stone-600 antialiased">
 
@@ -215,23 +215,56 @@
         <div class="d2-slideshow">
           <div class="d2-slide is-active">
             <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/suite-novo-1.jpg?v=20261127l"
+                 alt="Suíte — cama de casal sob o telhado de madeira" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/suite-novo-2.jpg?v=20261127l"
+                 alt="Suíte — cama, closet e banheira" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/suite-novo-3.jpg?v=20261127l"
+                 alt="Suíte — vista da cama para a serra" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/suite-banheiro-1.jpg?v=20261127l"
+                 alt="Suíte — banheiro com espelho iluminado e cuba em terracota" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/suite-banheiro-2.jpg?v=20261127l"
+                 alt="Suíte — acesso ao banheiro pelo quarto" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/Suite.jpeg"
-                 alt="Suíte — Solar do Espinhaço" />
+                 alt="Suíte — Solar do Espinhaço" width="1600" height="900" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-slide">
             <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/suite-2.webp"
-                 alt="Suíte 2 — Solar do Espinhaço" />
+                 alt="Suíte 2 — Solar do Espinhaço" width="1920" height="1080" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-slide">
             <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/suite-3.webp"
-                 alt="Suíte 3 — Solar do Espinhaço" />
+                 alt="Suíte 3 — Solar do Espinhaço" width="1920" height="1080" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-dots">
             <button class="d2-dot is-active" aria-label="Slide 1"></button>
             <button class="d2-dot" aria-label="Slide 2"></button>
             <button class="d2-dot" aria-label="Slide 3"></button>
+            <button class="d2-dot" aria-label="Slide 4"></button>
+            <button class="d2-dot" aria-label="Slide 5"></button>
+            <button class="d2-dot" aria-label="Slide 6"></button>
+            <button class="d2-dot" aria-label="Slide 7"></button>
+            <button class="d2-dot" aria-label="Slide 8"></button>
           </div>
         </div>
       </div>
@@ -336,7 +369,14 @@
                          letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Smart TV 55'</span>
           </div>
 
-          <!-- 08 · Soundbar -->
+          <!-- 08 · Streaming -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:play-circle-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Streaming</span>
+          </div>
+
+          <!-- 09 · Soundbar -->
           <div class="d2-amenity">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
               <rect x="1.5" y="9.5" width="21" height="5" rx="2.5"/>
@@ -351,34 +391,7 @@
                          letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Soundbar</span>
           </div>
 
-          <!-- 09 · Streaming -->
-          <div class="d2-amenity">
-            <iconify-icon icon="solar:play-circle-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
-            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
-                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Streaming</span>
-          </div>
-
-          <!-- 10 · Closet & Roupão -->
-          <div class="d2-amenity">
-            <iconify-icon icon="solar:hanger-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
-            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
-                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Closet &amp; Roupão</span>
-          </div>
-
-          <!-- 11 · Toalhas Algodão Egípcio -->
-          <div class="d2-amenity">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
-              <line x1="3" y1="4" x2="21" y2="4"/>
-              <path d="M7 4 L7 7 L17 7 L17 4"/>
-              <rect x="7" y="7" width="10" height="14" rx="1.5"/>
-              <line x1="9.5" y1="12" x2="14.5" y2="12"/>
-              <line x1="9.5" y1="15" x2="14.5" y2="15"/>
-            </svg>
-            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
-                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Toalhas Algodão Egípcio</span>
-          </div>
-
-          <!-- 12 · Ducha Dupla -->
+          <!-- 10 · Ducha Dupla -->
           <div class="d2-amenity">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
               <line x1="6" y1="2" x2="6" y2="5.5"/>
@@ -396,7 +409,7 @@
                          letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Ducha Dupla</span>
           </div>
 
-          <!-- 13 · Box até o Teto -->
+          <!-- 11 · Box até o Teto -->
           <div class="d2-amenity">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
               <line x1="3" y1="2" x2="21" y2="2"/>
@@ -413,6 +426,27 @@
             <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
                          letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Box até o Teto</span>
           </div>
+
+          <!-- 12 · Closet & Roupão -->
+          <div class="d2-amenity">
+            <iconify-icon icon="solar:hanger-linear" width="15" style="color:var(--c-s500); flex-shrink:0;"></iconify-icon>
+            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Closet &amp; Roupão</span>
+          </div>
+
+          <!-- 13 · Toalhas Algodão Egípcio -->
+          <div class="d2-amenity d2-amenity--wide">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--c-s500); flex-shrink:0;">
+              <line x1="3" y1="4" x2="21" y2="4"/>
+              <path d="M7 4 L7 7 L17 7 L17 4"/>
+              <rect x="7" y="7" width="10" height="14" rx="1.5"/>
+              <line x1="9.5" y1="12" x2="14.5" y2="12"/>
+              <line x1="9.5" y1="15" x2="14.5" y2="15"/>
+            </svg>
+            <span style="font-family:var(--font-sans); font-size:var(--fs-micro); font-weight:600;
+                         letter-spacing:0.18em; text-transform:uppercase; color:var(--c-s600);">Toalhas Algodão Egípcio</span>
+          </div>
+
 
         </div><!-- /.d2-amenities -->
 
@@ -585,23 +619,56 @@
         <div class="d2-slideshow">
           <div class="d2-slide is-active">
             <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/sala-novo-1.jpg?v=20261127l"
+                 alt="Sala integrada — sofá, mesa de jantar e cozinha sob o telhado de madeira" width="1200" height="1600" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/sala-novo-2.jpg?v=20261127l"
+                 alt="Sala integrada — sala de estar com vista para a serra" width="960" height="1280" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/sala-novo-3.jpg?v=20261127l"
+                 alt="Sala integrada — sala de estar e mesa de jantar" width="960" height="1280" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/sala-novo-4.jpg?v=20261127l"
+                 alt="Sala integrada — mesa posta com vista para a serra" width="960" height="1280" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
+                 src="assets/images/sala-novo-5.jpg?v=20261127l"
+                 alt="Sala integrada — cozinha" width="960" height="1280" />
+          </div>
+          <div class="d2-slide">
+            <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/Sala + Cozinha.webp"
                  alt="Sala integrada — Solar do Espinhaço" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-slide">
             <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/Sala.webp"
                  alt="Sala — Solar do Espinhaço" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-slide">
             <img loading="lazy" decoding="async" class="d2-slide-img"
                  src="assets/images/Sala 2.webp"
                  alt="Sala 2 — Solar do Espinhaço" />
+            <span class="sx-card__credit">Foto: Projeto</span>
           </div>
           <div class="d2-dots">
             <button class="d2-dot is-active" aria-label="Slide 1"></button>
             <button class="d2-dot" aria-label="Slide 2"></button>
             <button class="d2-dot" aria-label="Slide 3"></button>
+            <button class="d2-dot" aria-label="Slide 4"></button>
+            <button class="d2-dot" aria-label="Slide 5"></button>
+            <button class="d2-dot" aria-label="Slide 6"></button>
+            <button class="d2-dot" aria-label="Slide 7"></button>
+            <button class="d2-dot" aria-label="Slide 8"></button>
           </div>
         </div>
       </div>
@@ -820,10 +887,10 @@
   </div>
 
   <!-- figura full-width (≡ wp-block-image > figure.aligncenter.size-full) -->
-  <figure class="sx-figure">
-    <img
-      src="assets/images/trilha.avif"
-      alt="Trilha pela Serra do Espinhaço"
+  <figure class="sx-figure sx-figure--foto">
+    <img class="sx-foto"
+      src="assets/images/lapinha-da-serra.jpg?v=20261127l"
+      alt="Lapinha da Serra ao entardecer" width="1920" height="1355"
       loading="lazy"
     />
   </figure>
@@ -850,61 +917,66 @@
 
       <div class="sx-card" data-type="cachoeiras">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/poco-8134543783.jpg" alt="Cachoeira do Lajeado" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Po%C3%A7o_%288134543783%29.jpg" target="_blank" rel="noopener">Foto: regiov · CC BY-SA 2.0 · ilustrativa</a>
+          <img class="sx-card__image" src="assets/images/experiencias/cachoeira-bicame.jpg?v=20261127l" alt="Cachoeira Bicame" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Henrique Alves</span>
         </div>
         <div class="sx-card__content">
-          <h3 class="sx-card__heading">Cachoeira do Lajeado</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <h3 class="sx-card__heading">Cachoeira Bicame</h3>
           <div class="sx-card__excerpt">
-            <p>A Cachoeira do Lajeado destaca-se por sua imponente queda de cerca de quarenta metros sobre um paredão de pedra, que forma, ao pé do salto, um amplo poço de águas verdes e cristalinas. Considerada um dos melhores pontos de mergulho da região, pode ser alcançada a pé, a cavalo ou de caiaque, conforme o nível das águas e a sua preferência.</p>
+            <p>Inserido em uma área de preservação alimentada pelo Rio das Pedras, o Bicame oferece uma piscina natural funda e de águas esverdeadas, emoldurada pela vegetação nativa. Com visitação limitada a poucas pessoas por dia, garante exclusividade e silêncio. O acesso pode ser feito pela trilha ou, quando a lagoa está cheia, por um agradável trajeto de canoa.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
       <div class="sx-card" data-type="cachoeiras">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/poco-verde-8134566302.jpg" alt="Cachoeira Bicame" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Po%C3%A7o_verde_%288134566302%29.jpg" target="_blank" rel="noopener">Foto: regiov · CC BY-SA 2.0 · ilustrativa</a>
+          <img class="sx-card__image" src="assets/images/experiencias/cachoeira-lajeado.jpg?v=20261127l" alt="Cachoeira do Lajeado" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Portal Lapinha</span>
         </div>
         <div class="sx-card__content">
-          <h3 class="sx-card__heading">Cachoeira Bicame</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <h3 class="sx-card__heading">Cachoeira do Lajeado</h3>
           <div class="sx-card__excerpt">
-            <p>Inserido em uma área de preservação alimentada pelo Rio das Pedras, o Bicame oferece uma piscina natural funda e de águas esverdeadas, emoldurada pela vegetação nativa. Com visitação limitada a poucas pessoas por dia, garante exclusividade e silêncio. O acesso pode ser feito pela trilha ou, quando a lagoa está cheia, por um agradável trajeto de canoa.</p>
+            <p>A Cachoeira do Lajeado destaca-se por sua imponente queda de cerca de quarenta metros sobre um paredão de pedra, que forma, ao pé do salto, um amplo poço de águas verdes e cristalinas. Considerada um dos melhores pontos de mergulho da região, pode ser alcançada a pé, a cavalo ou de caiaque, conforme o nível das águas e a sua preferência.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
+        </div>
+      </div>
+
+      <div class="sx-card" data-type="cachoeiras">
+        <div class="sx-card__media">
+          <img class="sx-card__image" src="assets/images/experiencias/cachoeira-rapel.jpg?v=20261127l" alt="Cachoeira Rapel" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Portal Lapinha</span>
+        </div>
+        <div class="sx-card__content">
+          <h3 class="sx-card__heading">Cachoeira Rapel</h3>
+          <div class="sx-card__excerpt">
+            <p>A poucos passos do vilarejo, a Cachoeira do Rapel reúne, em um mesmo cenário, o descanso e a aventura. Suas águas convidam ao banho tranquilo, enquanto o paredão serve de palco para a prática de rapel, conduzida com total segurança. Uma excursão versátil, que se adapta ao ritmo e ao interesse de cada visitante.</p>
+          </div>
         </div>
       </div>
 
       <div class="sx-card" data-type="pocos">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/vale-verde.jpg" alt="Poço do Soberbo" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Vale_verde.jpg" target="_blank" rel="noopener">Foto: Marcus F. R. Diniz · CC BY-SA 4.0 · ilustrativa</a>
+          <img class="sx-card__image" src="assets/images/experiencias/poco-do-soberbo.jpg?v=20261127l" alt="Poço do Soberbo" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Chico Trekking</span>
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Poço do Soberbo</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>Reservado aos que apreciam o desafio, o Poço do Soberbo é alcançado por uma trilha longa, de cerca de dezessete quilômetros, que exige preparo físico. Afastado do movimento, recompensa o esforço com isolamento, silêncio e a satisfação de um mergulho verdadeiramente conquistado.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
-      <div class="sx-card" data-type="cachoeiras">
+      <div class="sx-card" data-type="trilhas">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/pedrovilela-cachoeira-do-rapel-santana-do-riacho-mg-26996338.jpg" alt="Cachoeira Rapel" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:PedroVilela_Cachoeira_do_Rapel_Santana_do_Riacho_MG_%2826996338718%29.jpg" target="_blank" rel="noopener">Foto: Pedro Vilela/MTur · Domínio público</a>
+          <img class="sx-card__image" src="assets/images/experiencias/travessia-lapinha-tabuleiro.jpg?v=20261127l" alt="Travessia Lapinha – Tabuleiro" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Roda dos ventos</span>
         </div>
         <div class="sx-card__content">
-          <h3 class="sx-card__heading">Cachoeira Rapel</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
+          <h3 class="sx-card__heading">Travessia Lapinha – Tabuleiro</h3>
           <div class="sx-card__excerpt">
-            <p>A poucos passos do vilarejo, a Cachoeira do Rapel reúne, em um mesmo cenário, o descanso e a aventura. Suas águas convidam ao banho tranquilo, enquanto o paredão serve de palco para a prática de rapel, conduzida com total segurança. Uma excursão versátil, que se adapta ao ritmo e ao interesse de cada visitante.</p>
+            <p>Uma das travessias mais clássicas do montanhismo brasileiro, percorre a Serra do Espinhaço ao longo de dois a três dias, com pernoites em meio à serra. Tem como destino a Cachoeira do Tabuleiro, a mais alta de Minas Gerais, com 273 metros de queda. Indicada a caminhantes preparados, é sempre realizada com guia credenciado.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
@@ -915,41 +987,22 @@
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Cachoeira Paraíso</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>Reservada e de acesso discreto, a Cachoeira do Paraíso surge a partir de um desvio no caminho do Pico da Lapinha. Com cerca de vinte metros de queda e raras presenças por perto, é um refúgio para quem busca privacidade e contemplação — um convite a desacelerar diante da água.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
       <div class="sx-card" data-type="pocos">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/espinhaco-8134570714.jpg" alt="Poço do Boqueirão" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Espinha%C3%A7o_%288134570714%29.jpg" target="_blank" rel="noopener">Foto: regiov · CC BY-SA 2.0 · ilustrativa</a>
+          <img class="sx-card__image" src="assets/images/experiencias/poco-do-boqueirao.jpg?v=20261127l" alt="Poço do Boqueirão" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Léo Castilho</span>
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Poço do Boqueirão</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>O mais acessível e procurado dos poços da Lapinha, a apenas quinze minutos de caminhada do centro. Suas águas escuras e cristalinas, com até vinte metros de profundidade, são abraçadas por um pequeno desfiladeiro de pedra que forma uma ducha natural. Refrescante o ano inteiro, é ideal para visitantes de todas as idades.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
-        </div>
-      </div>
-
-      <div class="sx-card" data-type="trilhas">
-        <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/651a-trilha-travessia-lapinha-x-tabuleiro-mg-00029-301386755.jpg" alt="Travessia Lapinha – Tabuleiro" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:651%C2%AA_Trilha_Travessia_Lapinha_x_Tabuleiro_MG_00029_%2830138675595%29.jpg" target="_blank" rel="noopener">Foto: Clube Trekking Santa Maria · CC BY 2.0</a>
-        </div>
-        <div class="sx-card__content">
-          <h3 class="sx-card__heading">Travessia Lapinha – Tabuleiro</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
-          <div class="sx-card__excerpt">
-            <p>Uma das travessias mais clássicas do montanhismo brasileiro, percorre a Serra do Espinhaço ao longo de dois a três dias, com pernoites em meio à serra. Tem como destino a Cachoeira do Tabuleiro, a mais alta de Minas Gerais, com 273 metros de queda. Indicada a caminhantes preparados, é sempre realizada com guia credenciado.</p>
-          </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
@@ -960,56 +1013,35 @@
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Pinturas Rupestres</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>Ao pé do Pico do Breu, um paredão rochoso guarda pinturas rupestres de quase sete mil anos, produzidas com pigmentos naturais de ferro e manganês. Alcançado de barco ou por trilha, sempre com guia, é um patrimônio frágil e protegido — uma autêntica viagem no tempo, indicada a quem aprecia história, cultura e a dimensão ancestral da serra.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
       <div class="sx-card" data-type="aquatico">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/represa-da-lapinha-da-serra.jpg" alt="Stand Up e Caiaque" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Represa_da_Lapinha_da_Serra.jpg" target="_blank" rel="noopener">Foto: Guilherme Haruo · CC BY-SA 4.0</a>
+          <img class="sx-card__image" src="assets/images/experiencias/stand-up-e-caiaque.jpg?v=20261127l" alt="Stand Up e Caiaque" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Léo Castilho</span>
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Stand Up e Caiaque</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>Sobre as águas calmas da represa, o stand-up paddle e o caiaque permitem explorar enseadas escondidas e pequenas praias. Ao entardecer, a superfície se transforma em espelho e o sol doura as montanhas — cenário das remadas guiadas ao pôr do sol e, em datas especiais, sob a lua cheia. Atividade adequada a iniciantes e experientes.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
       <div class="sx-card" data-type="trilhas">
         <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/pico-da-lapinha-foto-do-cruzeiro.jpg" alt="Pico da Lapinha" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Pico_da_Lapinha%2C_foto_do_Cruzeiro..JPG" target="_blank" rel="noopener">Foto: Fábio M. Hayashi · CC BY-SA 3.0</a>
+          <img class="sx-card__image" style="object-position:50% 96%" src="assets/images/experiencias/pico-da-lapinha.jpg?v=20261127l" alt="Pico da Lapinha" loading="lazy" decoding="async"/>
+          <span class="sx-card__credit">Foto: Léo Castilho</span>
         </div>
         <div class="sx-card__content">
           <h3 class="sx-card__heading">Pico da Lapinha</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
           <div class="sx-card__excerpt">
             <p>Segundo ponto mais alto da Serra do Cipó, com cerca de 1.647 metros, o Pico da Lapinha recompensa a subida íngreme com uma vista soberana do vilarejo e da lagoa. É um dos mirantes naturais mais memoráveis da região, indicado a quem tem disposição para a caminhada.</p>
           </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
-        </div>
-      </div>
-
-      <div class="sx-card" data-type="trilhas">
-        <div class="sx-card__media">
-          <img class="sx-card__image" src="assets/images/experiencias/serra-do-espinhaco-vista-da-lapinha-da-serra.jpg" alt="Pico do Breu" loading="lazy" decoding="async"/>
-          <a class="sx-card__credit" href="https://commons.wikimedia.org/wiki/File:Serra_do_Espinha%C3%A7o_vista_da_Lapinha_da_Serra..jpg" target="_blank" rel="noopener">Foto: Fábio M. Hayashi · CC BY-SA 3.0</a>
-        </div>
-        <div class="sx-card__content">
-          <h3 class="sx-card__heading">Pico do Breu</h3>
-          <div class="sx-card__subheading">Solar do Espinhaço</div>
-          <div class="sx-card__excerpt">
-            <p>O ponto mais alto da região, a cerca de 1.687 metros. Sua trilha exigente, recomendada a caminhantes experientes e acompanhados de guia, conduz a um cume de onde se descortina um verdadeiro mar de montanhas, que alcança, em dias claros, a região do Pico do Itambé.</p>
-          </div>
-          <div class="sx-card__action-list"><a class="sx-card__action-link" href="mailto:reservas@solardoespinhaco.com.br">Contato</a></div>
         </div>
       </div>
 
@@ -1135,9 +1167,9 @@
 <!-- ═══════════════════════════════════════════════════
      JS · SITE (extraído dos <script> inline)
 ═══════════════════════════════════════════════════ -->
-<script src="js/i18n.js?v=20261120h"></script>
-<script src="js/main.js?v=20261120h"></script>
-<script src="js/disponibilidade.js?v=20261120h"></script>
+<script src="js/i18n.js?v=20261127l"></script>
+<script src="js/main.js?v=20261127l"></script>
+<script src="js/disponibilidade.js?v=20261127l"></script>
 
 <!-- ═══════════════════════════════════════════════════
      BOOKING POPUP — abre ao clicar em Reservar
