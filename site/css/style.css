@@ -999,11 +999,13 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
   padding-top: 1.75rem;
   margin-top: 0.25rem;
 }
+.d2-amenities { align-items: start; }          /* itens da mesma linha sempre alinhados pelo topo */
 .d2-amenity {
   display: flex;
   align-items: center;
   gap: 0.65rem;
 }
+.d2-amenity--wide { grid-column: 1 / -1; }      /* item longo ocupa a linha toda, sem quebrar o texto */
 @media (max-width: 900px) {
   .d2-grid {
     grid-template-columns: 1fr;
@@ -1877,3 +1879,12 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 /* títulos da barra de reserva (Check-in, Check-out, Hóspedes) com contraste melhor */
 #bookingBar label { color: rgba(255,255,255,0.66); }
 #bookingBar .group:hover label { color: rgba(255,255,255,0.86); }
+
+/* lista de itens da Suíte: linhas sempre simétricas, sem texto quebrando de um lado só */
+@media (min-width: 901px) and (max-width: 1280px) {
+  .d2-amenities .d2-amenity span { letter-spacing: 0.1em !important; }
+  .d2-amenities { column-gap: 1rem !important; }
+}
+@media (min-width: 901px) and (max-width: 1180px) {
+  .d2-amenities { grid-template-columns: repeat(2, 1fr) !important; }
+}
