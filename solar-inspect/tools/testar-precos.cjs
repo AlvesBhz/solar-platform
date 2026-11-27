@@ -1,10 +1,15 @@
-// Testa as telas de preços (T38 calendário, T39 tarifas, T40 simulador, T41 formulário de tarifa) no navegador.
-// São protótipos com dados de exemplo em memória: nada vai ao Supabase. O Supabase é simulado só para o login.
-// Uso: npx vite build && (npx vite preview --port 4173 &) && node tools/testar-precos.cjs
+// Testa as telas de preços (T38 calendário, T39 tarifas, T40 simulador, T41 formulário) no navegador, ponta a ponta:
+// o app conversa com um "Supabase" simulado cujas funções prc_* são executadas de verdade num PostgreSQL de TESTE
+// (banco "precos_e2e", montado aqui com o schema do site, as vistorias e migracao_precos_gestao.sql). Nada vai à produção.
+// Uso: npx vite build && (npx vite preview --port 4173 &) && PGUSER=... node tools/testar-precos.cjs   (PGUSER superusuário; padrão do ambiente)
 // Com FOTO=/pasta salva uma imagem de cada tela (desktop e celular).
 const { chromium } = require('playwright');
+const { execFileSync, execFile } = require('node:child_process');
+const path = require('node:path');
 const BASE = process.env.APP_URL || 'http://localhost:4173';
 const SUPA = 'https://tnjpyjbqcjrowzjfnuln.supabase.co';
+const DB = 'precos_e2e';
+const SITE = path.resolve(__dirname, '../../site/database'), INSPECT = path.resolve(__dirname, '../database');
 const UIDS = { GESTOR: '00000000-0000-4000-8000-0000000000a2', ADMIN: '00000000-0000-4000-8000-0000000000a3' };
 let falhas = 0, total = 0;
 const ok = (c, m) => { total++; if (c) console.log('ok  ' + m); else { falhas++; console.log('FALHOU: ' + m); } };
@@ -14,7 +19,34 @@ const sessao = (uid) => ({ access_token: `${b64({ alg: 'HS256' })}.${b64({ sub: 
 const hoje = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date());
 const somar = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 
-function servidor(page, perfil, perdidos) {
+// ── banco de teste
+const psql = (args, input) => execFileSync('psql', ['-v', 'ON_ERROR_STOP=1', '-q', '-At', ...args], { input, encoding: 'utf8', env: { ...process.env, PGOPTIONS: '-c client_min_messages=warning' } });
+function montarBanco() {
+  psql(['-d', 'postgres', '-c', `drop database if exists ${DB}`, '-c', `create database ${DB}`]);
+  for (const f of [`${INSPECT}/simulado_supabase.sql`, `${SITE}/schema.sql`, `${SITE}/seed_exemplo.sql`, `${INSPECT}/migracao_vistorias.sql`, `${SITE}/migracao_precos_gestao.sql`]) psql(['-d', DB, '-f', f]);
+  psql(['-d', DB], `
+    insert into auth.users (id, email) values ('${UIDS.GESTOR}', 'g@x.invalid'), ('${UIDS.ADMIN}', 'a@x.invalid');
+    insert into "SE"."VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "TP_PERFIL", "SG_ATIVO") values
+      ('${UIDS.GESTOR}', 'Gestor (teste)', 'gestor.teste', 'GESTOR', true), ('${UIDS.ADMIN}', 'Admin (teste)', 'admin.teste', 'ADMIN', true);
+    insert into "SE"."SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO")
+      select "ID_UNIDADE", current_date + 3, current_date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
+}
+const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::date[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
+const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular']);
+function chamarRpc(perfil, fn, corpo) {
+  const args = Object.entries(corpo || {}).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
+  const chamada = `"SE".${fn}(${args})`;
+  const sql = `begin; select set_config('request.jwt.claims', '{"sub":"${UIDS[perfil]}","role":"authenticated"}', true); set local role authenticated;
+    select ${TABELA.has(fn) ? `coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) from ${chamada} t` : `coalesce(to_jsonb(${chamada})::text, 'null')`}; commit;`;
+  return new Promise((res) => execFile('psql', ['-v', 'ON_ERROR_STOP=1', '-q', '-At', '-d', DB, '-c', sql], { encoding: 'utf8', env: { ...process.env, PGOPTIONS: '-c client_min_messages=warning' } },
+    (err, out, errOut) => {
+      if (err) { const m = /ERROR:\s+(.*)/.exec(errOut || ''); const msg = (m ? m[1] : 'erro').trim(); return res({ status: /permission denied/.test(msg) ? 403 : 400, corpo: { code: /permission denied/.test(msg) ? '42501' : 'P0001', message: msg, details: null, hint: null } }); }
+      const linha = out.trim().split('\n').filter((l) => l && !/^(BEGIN|COMMIT|SET|\{"sub|set_config)/.test(l)).pop();
+      res({ status: 200, corpo: JSON.parse(linha === undefined || linha === '' ? 'null' : linha) });
+    }));
+}
+
+function servidor(page, perfil, perdidos, chamadas) {
   return page.route(SUPA + '/**', async (route) => {
     const req = route.request(), url = decodeURIComponent(req.url()), h = req.headers(), m = req.method();
     const json = (s, c, extra = {}) => route.fulfill({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*', 'access-control-expose-headers': 'content-range', ...extra }, body: JSON.stringify(c) });
@@ -26,27 +58,37 @@ function servidor(page, perfil, perdidos) {
       const eu = { ID_USUARIO: UIDS[perfil], NM_USUARIO: 'Teste', CD_LOGIN: 'teste', CD_CPF: null, TP_PERFIL: perfil, SG_ATIVO: true, DT_ACEITE_LGPD: '2026-11-20T12:00:00Z', SG_TROCAR_SENHA: false };
       return objeto ? json(200, eu) : json(200, [eu]);
     }
-    if (url.includes('/rest/v1/rpc/') || url.includes('/rest/v1/VST_')) return json(200, [], { 'content-range': '*/0' });
+    const rpc = url.match(/\/rest\/v1\/rpc\/(\w+)/)?.[1];
+    if (rpc && rpc.startsWith('prc_')) {
+      const corpo = req.postData() ? JSON.parse(req.postData()) : {};
+      chamadas.push(rpc);
+      const r = await chamarRpc(perfil, rpc, corpo);
+      return json(r.status, r.corpo);
+    }
+    if (rpc) return json(200, [], { 'content-range': '*/0' });
+    if (url.includes('/rest/v1/VST_')) return json(200, [], { 'content-range': '*/0' });
     perdidos.push(m + ' ' + url.split('?')[0]);
     return json(404, { message: 'não esperado' });
   });
 }
 
 (async () => {
+  montarBanco();
   const browser = await chromium.launch();
   const novo = async (perfil, largura = 1280) => {
     const ctx = await browser.newContext({ viewport: { width: largura, height: 900 } });
     const page = await ctx.newPage();
-    const erros = [], perdidos = [];
+    const erros = [], perdidos = [], chamadas = [];
     page.on('pageerror', (e) => erros.push(e.message));
     page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) erros.push(m.text()); });
-    await servidor(page, perfil, perdidos);
+    await servidor(page, perfil, perdidos, chamadas);
     await page.goto(BASE + '/__vazio__');
     await page.evaluate((s) => { localStorage.clear(); localStorage.setItem('inspect.sessao', JSON.stringify(s)); }, sessao(UIDS[perfil]));
-    return { ctx, page, erros, perdidos };
+    return { ctx, page, erros, perdidos, chamadas };
   };
-  const abrir = async (page, rota) => { await page.goto(BASE + rota); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400); };
+  const abrir = async (page, rota) => { await page.goto(BASE + rota); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(500); };
   const foto = async (page, nome) => { if (process.env.FOTO) await page.screenshot({ path: `${process.env.FOTO}/${nome}.png`, fullPage: true }); };
+  const sql = (q) => psql(['-d', DB], q).trim();
 
   // ── só o ADMIN abre (preços são dados do site)
   console.log('── Acesso');
@@ -56,6 +98,7 @@ function servidor(page, perfil, perdidos) {
       await abrir(g.page, r);
       ok(new URL(g.page.url()).pathname === '/acesso-indisponivel', `GESTOR não abre ${r}`);
     }
+    ok(g.chamadas.length === 0, 'GESTOR: nenhuma função de preço chega a ser chamada');
     await g.ctx.close();
   }
   const A = await novo('ADMIN');
@@ -64,78 +107,90 @@ function servidor(page, perfil, perdidos) {
   const links = await p.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
   ok(['/admin/precos', '/admin/tarifas', '/admin/simulador'].every((l) => links.includes(l)), 'ADMIN vê Calendário de preços, Tarifas e Simulador no menu');
 
-  // ── T38 · calendário
+  // ── T38 · calendário (dados do banco)
   console.log('── T38 Calendário de preços');
-  const alvo = somar(hoje(), 40);                       // um dia futuro qualquer
+  const alvo = somar(hoje(), 40);
   const mes = alvo.slice(0, 7), dia = String(Number(alvo.slice(8)));
   await abrir(p, `/admin/precos?mes=${mes}`);
   const celula = () => p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${dia}")`) }).first();
   const rotulo = async () => (await celula().getAttribute('aria-label')) || '';
   ok((await p.locator('h1').innerText()).includes('Calendário de preços'), 'título da tela');
-  ok(await p.getByText('Protótipo.').isVisible(), 'aviso de protótipo visível');
+  ok(!(await p.getByText('Protótipo.').isVisible().catch(() => false)), 'ligado ao banco: a faixa "Protótipo" não aparece');
+  ok(A.chamadas.includes('prc_unidades') && A.chamadas.includes('prc_tarifas') && A.chamadas.includes('prc_ajustes') && A.chamadas.includes('prc_ocupacao'), 'o calendário lê unidades, tarifas, ajustes e ocupação do banco');
   const antes = await rotulo();
-  ok(/R\$\s?(800|1\.700)/.test(antes), `dia ${alvo} mostra o valor da tarifa padrão (${antes.match(/R\$[^,]*/)?.[0]})`);
+  ok(/R\$\s?(800|1\.700)/.test(antes), `dia ${alvo} mostra o valor da tarifa padrão do banco (${antes.match(/R\$[^,]*/)?.[0]})`);
+  const ocupado = p.locator('[role=gridcell]').filter({ hasText: /bloq\./ });
+  await abrir(p, `/admin/precos?mes=${somar(hoje(), 3).slice(0, 7)}`);
+  ok(await p.locator('[role=gridcell]').filter({ hasText: /bloq\./ }).count() >= 1, 'o bloqueio que existe no banco aparece no calendário');
+  void ocupado;
+  await abrir(p, `/admin/precos?mes=${mes}`);
   await celula().click();
-  ok(await p.getByRole('button', { name: 'Salvar ajuste' }).isVisible(), 'clicar no dia abre o painel de ajuste');
   await p.getByPlaceholder(/usar a tarifa · R\$/).first().fill('950');
   await foto(p, 'T38-ajuste');
   await p.getByRole('button', { name: 'Salvar ajuste' }).click();
-  await p.waitForTimeout(300);
-  ok(/R\$\s?950/.test(await rotulo()) && /com ajuste/.test(await rotulo()), 'ajuste de R$ 950 aparece no calendário, marcado como ajuste');
+  await p.waitForTimeout(500);
+  ok(/R\$\s?950/.test(await rotulo()) && /com ajuste/.test(await rotulo()), 'ajuste de R$ 950 gravado no banco e aparece no calendário');
+  ok(Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" = '${alvo}' and "VL_NOITE" = 950`)) === 1, 'a linha do ajuste existe em SIT_AJUSTE_DIARIO');
+  ok(Number(sql(`select count(*) from "SE"."VST_AUDITORIA" where "NM_TABELA" = 'SIT_AJUSTE_DIARIO' and "ID_USUARIO" = '${UIDS.ADMIN}'`)) >= 1, 'a Auditoria do Inspect registra o administrador como autor do ajuste');
   await p.getByRole('button', { name: 'Remover ajuste' }).click();
-  await p.waitForTimeout(300);
-  ok(await rotulo() === antes, 'remover o ajuste devolve o valor da tarifa');
+  await p.waitForTimeout(500);
+  ok(await rotulo() === antes && Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" = '${alvo}'`)) === 0, 'remover o ajuste apaga a linha e devolve o valor da tarifa');
   await p.getByLabel('Fechar para venda').check();
   await p.getByRole('button', { name: 'Salvar ajuste' }).click();
-  await p.waitForTimeout(300);
+  await p.waitForTimeout(500);
   ok(/fechado para venda/.test(await rotulo()), 'dia fechado fica marcado como fechado para venda');
   await p.getByRole('button', { name: 'Remover ajuste' }).click();
+  await p.waitForTimeout(400);
   await p.getByRole('radio', { name: 'Intervalo' }).click();
   await celula().click();
   await p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${Number(dia) + 2}")`) }).first().click().catch(() => {});
   ok(/3 noites/.test(await p.locator('aside[aria-label="Ajuste do dia"]').innerText()), 'modo intervalo: dois toques selecionam 3 noites');
-  // feriado de exemplo: ajuste com mínimo de 3 noites já marcado
+  await p.getByPlaceholder(/usar a tarifa · R\$/).first().fill('1000');
+  await p.getByRole('button', { name: 'Salvar ajuste' }).click();
+  await p.waitForTimeout(500);
+  ok(Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" between '${alvo}' and '${somar(alvo, 2)}' and "VL_NOITE" = 1000`)) === 3, 'ajuste em intervalo grava as 3 noites de uma vez');
+  sql(`delete from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" between '${alvo}' and '${somar(alvo, 2)}'`);
   await abrir(p, '/admin/precos?mes=2027-12');
   const natal = p.locator('[role=gridcell]').filter({ has: p.locator('span:text-is("24")') }).first();
-  ok(/mínimo 3 noites/.test(await natal.getAttribute('aria-label')) && /com ajuste/.test(await natal.getAttribute('aria-label')), 'Natal 2027 aparece com ajuste e mínimo de 3 noites');
+  ok(/mínimo 3 noites/.test(await natal.getAttribute('aria-label')) && /com ajuste/.test(await natal.getAttribute('aria-label')), 'Natal 2027 (do banco) aparece com ajuste e mínimo de 3 noites');
   await foto(p, 'T38-desktop');
 
-  // ── T40 · simulador
+  // ── T40 · simulador (a conta é do servidor)
   console.log('── T40 Simulador de preço');
   await abrir(p, '/admin/simulador');
   const datas = p.locator('input[type=date]');
+  const resultado = async () => { await p.waitForTimeout(700); return p.locator('section[aria-label=Resultado]').innerText(); };
   await datas.nth(0).fill('2027-12-24'); await datas.nth(1).fill('2027-12-27');
-  await p.waitForTimeout(200);
-  let txt = await p.locator('section[aria-label=Resultado]').innerText();
-  ok(/Venda liberada/.test(txt) && /R\$\s?5\.100/.test(txt), 'Natal 2027, casal, 3 noites: R$ 5.100');
+  let txt = await resultado();
+  ok(/Venda liberada/.test(txt) && /R\$\s?5\.100/.test(txt), 'Natal 2027, casal, 3 noites: R$ 5.100 (calculado no banco)');
   ok(/Sinal pelo Pix \(50%\)\s*R\$\s?2\.550/.test(txt.replace(/\n/g, ' ')), 'sinal de 50% = R$ 2.550');
+  ok(/Natal 2027/.test(txt), 'as noites com ajuste vêm marcadas com a observação do ajuste');
   await p.getByRole('button', { name: /Mais crianças de 5 a 8 anos/i }).click();
-  txt = await p.locator('section[aria-label=Resultado]').innerText();
+  txt = await resultado();
   await foto(p, 'T40-natal');
   ok(/R\$\s?5\.865/.test(txt), 'com 1 criança de 5 a 8 anos (30% do valor por pessoa): R$ 5.865');
   await datas.nth(1).fill('2027-12-26');
-  txt = await p.locator('section[aria-label=Resultado]').innerText();
+  txt = await resultado();
   ok(/não vende/.test(txt) && /mínimo de noites/i.test(txt), 'duas noites no Natal: abaixo do mínimo, o site não vende');
   await datas.nth(0).fill('2027-12-20'); await datas.nth(1).fill('2027-12-22');
-  await p.waitForTimeout(200);
-  txt = await p.locator('section[aria-label=Resultado]').innerText();
+  txt = await resultado();
   ok(/Venda liberada/.test(txt) && /R\$\s?1\.840/.test(txt), 'segunda e terça com 1 criança de 5 a 8 anos: 2 × (R$ 800 + R$ 120) = R$ 1.840');
   await datas.nth(0).fill('2030-01-05'); await datas.nth(1).fill('2030-01-07');
-  txt = await p.locator('section[aria-label=Resultado]').innerText();
+  txt = await resultado();
   ok(/Alguma noite ainda não tem tarifa/.test(txt), 'depois do fim das tarifas: sem tarifa, venda não aberta');
+  await datas.nth(0).fill(somar(hoje(), 3)); await datas.nth(1).fill(somar(hoje(), 5));
+  txt = await resultado();
+  ok(/já estão ocupadas/.test(txt), 'datas do bloqueio que existe no banco: ocupado');
   await foto(p, 'T40-desktop');
 
   // ── T39/T41 · tarifas
   console.log('── T39 Tarifas e T41 Formulário');
   await abrir(p, '/admin/tarifas');
   txt = await p.locator('main').innerText();
-  ok(/Tarifa padrão/.test(txt) && /vale hoje/.test(txt) && /Alta temporada de julho/.test(txt), 'lista mostra a tarifa padrão (vale hoje) e a de exemplo');
-  await p.getByRole('radio', { name: 'Inativas' }).click();
-  ok(!/Tarifa padrão/.test(await p.locator('main').innerText()), 'filtro Inativas esconde as ativas');
-  await p.getByRole('radio', { name: 'Todas' }).click();
+  ok(/Tarifa padrão/.test(txt) && /vale hoje/.test(txt), 'a lista mostra a tarifa padrão do banco, marcada como "vale hoje"');
   await foto(p, 'T39-desktop');
   await p.getByRole('link', { name: /Nova tarifa/ }).click();
-  await p.waitForTimeout(300);
+  await p.waitForTimeout(500);
   await p.getByPlaceholder(/Alta temporada de julho/).fill('Teste de sobreposição');
   const inputs = p.locator('input[type=date]');
   await inputs.nth(0).fill('2027-02-01'); await inputs.nth(1).fill('2027-02-10');
@@ -143,13 +198,33 @@ function servidor(page, perfil, perdidos) {
   await prio.fill('0');
   ok(/se sobrepõe a “Tarifa padrão”/.test(await p.locator('main').innerText()) && await p.getByRole('button', { name: /Salvar tarifa/ }).isDisabled(), 'mesma prioridade e período: avisa a sobreposição e bloqueia salvar');
   await prio.fill('3');
-  ok(await p.getByRole('button', { name: /Salvar tarifa/ }).isEnabled(), 'prioridade diferente: pode salvar');
   await p.getByRole('button', { name: /Salvar tarifa/ }).click();
-  await p.waitForTimeout(400);
-  ok(new URL(p.url()).pathname === '/admin/tarifas' && /Teste de sobreposição/.test(await p.locator('main').innerText()), 'tarifa salva volta para a lista');
-  await abrir(p, '/admin/tarifas/2');
-  await foto(p, 'T41-desktop');
+  await p.waitForTimeout(700);
+  ok(new URL(p.url()).pathname === '/admin/tarifas' && /Teste de sobreposição/.test(await p.locator('main').innerText()), 'tarifa salva no banco volta para a lista');
+  ok(Number(sql(`select count(*) from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição' and "NO_PRIORIDADE" = 3`)) === 1, 'a tarifa existe em SIT_TARIFA');
+  ok(Number(sql(`select count(*) from "SE"."VST_AUDITORIA" where "NM_TABELA" = 'SIT_TARIFA' and "TP_OPERACAO" = 'INSERT' and "ID_USUARIO" = '${UIDS.ADMIN}'`)) === 1, 'a Auditoria do Inspect mostra quem criou a tarifa');
+  // desativa e reativa pelo botão da lista
+  await p.getByRole('row', { name: /Teste de sobreposição/ }).getByRole('button', { name: 'Desativar' }).click();
+  await p.waitForTimeout(600);
+  ok(sql(`select "SG_ATIVO"::text from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição'`) === 'false', 'Desativar grava no banco (a tarifa continua na lista)');
+  await p.getByRole('radio', { name: 'Inativas' }).click();
+  ok(/Teste de sobreposição/.test(await p.locator('main').innerText()) && !/Tarifa padrão/.test(await p.locator('main').innerText()), 'filtro Inativas mostra só as desativadas');
+  await p.getByRole('radio', { name: 'Todas' }).click();
+  await p.getByRole('row', { name: /Teste de sobreposição/ }).getByRole('button', { name: 'Ativar' }).click();
+  await p.waitForTimeout(600);
+  ok(sql(`select "SG_ATIVO"::text from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição'`) === 'true', 'Ativar grava no banco');
+  // a regra do servidor também vale: o banco recusa sobreposição mesmo se a tela deixasse passar
+  const id = sql(`select "ID_TARIFA" from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição'`);
+  await abrir(p, `/admin/tarifas/${id}`);
   ok(/exemplo de conta/i.test(await p.locator('main').innerText()), 'formulário de edição abre com o exemplo de conta');
+  await foto(p, 'T41-desktop');
+  // simula outra pessoa criando uma tarifa na mesma prioridade enquanto a tela estava aberta
+  sql(`insert into "SE"."SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE") select "ID_UNIDADE", 'Criada por outra pessoa', '2027-02-01', '2027-02-10', 7, 900 from "SE"."SIT_UNIDADE" limit 1`);
+  await p.locator('label', { hasText: 'Prioridade' }).locator('input').fill('7');
+  await p.getByRole('button', { name: /Salvar tarifa/ }).click();
+  await p.waitForTimeout(700);
+  ok(/se sobrepõe a outra tarifa ativa na mesma prioridade/.test(await p.locator('main').innerText()) && new URL(p.url()).pathname === `/admin/tarifas/${id}`, 'sobreposição criada por outra pessoa: o banco recusa e a tela mostra a mensagem');
+  ok(sql(`select "NO_PRIORIDADE"::text from "SE"."SIT_TARIFA" where "ID_TARIFA" = ${id}`) === '3', 'a tarifa não foi alterada pelo salvamento recusado');
 
   // ── celular (280 px é o menor aparelho que o app atende)
   console.log('── Celular (280, 320 e 390 px)');
@@ -157,7 +232,7 @@ function servidor(page, perfil, perdidos) {
   const M = await novo('ADMIN', 390);
   for (const w of [280, 320, 390]) {
     await M.page.setViewportSize({ width: w, height: 800 });
-    for (const [rota, nome] of [['/admin/precos', 'T38'], ['/admin/tarifas', 'T39'], ['/admin/simulador', 'T40'], ['/admin/tarifas/1', 'T41']]) {
+    for (const [rota, nome] of [['/admin/precos', 'T38'], ['/admin/tarifas', 'T39'], ['/admin/simulador', 'T40'], [`/admin/tarifas/${id}`, 'T41']]) {
       await abrir(M.page, rota);
       const extra = await M.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       ok(extra <= 0, `${nome} sem rolagem lateral em ${w} px`);

@@ -196,6 +196,7 @@ export const TABELAS_AUDITADAS: Record<string, string> = {
   VST_UNIDADE: 'Unidade (situação, GPS, QR)', VST_USUARIO: 'Usuário', VST_USUARIO_PROPRIEDADE: 'Acesso a pousada',
   VST_PROPRIEDADE: 'Configuração da pousada', VST_AMBIENTE: 'Ambiente', VST_ITEM: 'Item do checklist',
   VST_TIPO_VISTORIA: 'Tipo de vistoria', VST_TIPO_VISTORIA_ITEM: 'Item do tipo de vistoria',
+  SIT_TARIFA: 'Tarifa de preço', SIT_AJUSTE_DIARIO: 'Preço de um dia',
 };
 export type EventoAud = {
   id: string; em: string; usuario: string; perfil?: string; tabela: string; acao: 'criou' | 'alterou' | 'removeu';
@@ -210,6 +211,8 @@ function linkAud(t: string, reg?: string): string | undefined {
   if (t === 'VST_OCORRENCIA') return `/gestao/ocorrencias/${reg}`;
   if (t === 'VST_UNIDADE') return `/gestao/unidades/${reg}`;
   if (t === 'VST_USUARIO' || t === 'VST_USUARIO_PROPRIEDADE') return '/admin/usuarios';
+  if (t === 'SIT_TARIFA') return `/admin/tarifas/${reg}`;
+  if (t === 'SIT_AJUSTE_DIARIO') return `/admin/precos?mes=${reg.split('/')[1]?.slice(0, 7) ?? ''}`;
   return undefined;
 }
 

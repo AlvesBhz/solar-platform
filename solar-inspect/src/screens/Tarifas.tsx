@@ -1,13 +1,14 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Chips } from '../components/Filtros';
+import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
 import { alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
+import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
-import { AvisoPrototipo, campo, num, rot } from './Precos';
+import { AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
 
 type Filtro = 'todas' | 'ativas' | 'inativas';
 const ultimaNoite = (t: Tarifa) => somar(t.fim, -1);
@@ -18,8 +19,15 @@ export function T39Tarifas() {
   const [ts, setTs] = useState<Tarifa[] | null>(null);
   const [filtro, setFiltro] = useState<Filtro>('todas');
   const [erro, setErro] = useState('');
-  const carregar = () => listarTarifas().then(setTs);
-  useEffect(() => { if (perfil) void carregar(); }, [perfil]);
+  const [falhou, setFalhou] = useState(false);
+  const un = useUnidades(!!perfil);
+  const uid = un.atual?.id;
+  const carregar = () => {
+    if (uid === undefined) return Promise.resolve();
+    setFalhou(false);
+    return listarTarifas(uid).then(setTs).catch(() => setFalhou(true));
+  };
+  useEffect(() => { setTs(null); void carregar(); }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!perfil) return null;
 
   const vigente = tarifaDe(hoje())?.id;
@@ -39,9 +47,13 @@ export function T39Tarifas() {
         Cada tarifa vale para um período e define o valor da noite para o casal. Quando duas tarifas cobrem a mesma noite, vale a de <strong className="font-medium text-fg-2">maior prioridade</strong>.
         Um ajuste de um dia, feito no <Link to="/admin/precos" className="text-pine underline underline-offset-4">calendário de preços</Link>, vale mais do que qualquer tarifa.
       </p>
-      <Chips rotulo="Situação" valor={filtro} onChange={setFiltro} opcoes={[{ valor: 'todas', label: 'Todas' }, { valor: 'ativas', label: 'Ativas' }, { valor: 'inativas', label: 'Inativas' }]} />
+      {un.erro || falhou ? <Falha tentar={() => { un.erro ? un.tentarDeNovo() : void carregar(); }} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
+      <div className="flex flex-wrap items-center gap-3">
+        <Seletor rotulo="Chalé" valor={String(un.atual.id)} onChange={un.escolher} opcoes={un.opcoes} icone="solar:home-2-linear" className="min-w-0 sm:w-64" />
+        <Chips rotulo="Situação" valor={filtro} onChange={setFiltro} opcoes={[{ valor: 'todas', label: 'Todas' }, { valor: 'ativas', label: 'Ativas' }, { valor: 'inativas', label: 'Inativas' }]} />
+      </div>
       {erro && <p role="alert" className="text-sm text-error">{erro}</p>}
-      {!ts ? <div className={`${card} h-40 animate-pulse`} aria-busy="true" />
+      {!ts ? <Carregando />
         : lista.length === 0 ? <p className="rounded-xl border border-dashed border-line-2 p-8 text-center text-[0.8125rem] text-fg-2">Nenhuma tarifa neste filtro.</p>
         : (
           <TabelaResp<Tarifa> rows={lista} cols={[
@@ -60,6 +72,7 @@ export function T39Tarifas() {
               </span>) },
           ]} />
         )}
+      </>)}
     </GestaoShell>
   );
 }
@@ -80,14 +93,19 @@ export function T41FormTarifa() {
   const [fdsIgual, setFdsIgual] = useState(false);
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
-  const [pronto, setPronto] = useState(nova);
+  const [pronto, setPronto] = useState(false);
+  const un = useUnidades(!!perfil);
+  const uid = un.atual?.id;
   useEffect(() => {
-    if (!perfil || nova) return;
-    obterTarifa(Number(id)).then((x) => {
-      if (!x) return setErro('Tarifa não encontrada.');
+    if (uid === undefined) return;
+    // carrega as tarifas do chalé (a conferência de sobreposição usa a lista) e, na edição, abre a escolhida
+    listarTarifas(uid).then(() => {
+      if (nova) return setPronto(true);
+      const x = obterTarifa(Number(id));
+      if (!x) return setErro('Tarifa não encontrada neste chalé.');
       setT(x); setAte(ultimaNoite(x)); setFdsIgual(x.valorFds === null); setPronto(true);
-    });
-  }, [perfil, id, nova]);
+    }).catch(() => setErro('Não foi possível carregar a tarifa. Verifique a conexão.'));
+  }, [uid, id, nova]);
   if (!perfil) return null;
 
   const atual = { ...t, fim: ate ? somar(ate, 1) : '', valorFds: fdsIgual ? null : t.valorFds };
@@ -103,7 +121,7 @@ export function T41FormTarifa() {
     e.preventDefault();
     if (erros.length) return;
     setSalvando(true); setErro('');
-    const r = await salvarTarifa(atual);
+    const r = await salvarTarifa(uid!, atual);
     setSalvando(false);
     if (!r.ok) return setErro(r.erro);
     navigate('/admin/tarifas');
@@ -113,7 +131,8 @@ export function T41FormTarifa() {
     <GestaoShell eyebrow="Administração" titulo={nova ? 'Nova tarifa' : t.nome || 'Tarifa'}>
       <AvisoPrototipo />
       {erro && <p role="alert" className="text-sm text-error">{erro}</p>}
-      {pronto && (
+      {un.erro ? <Falha tentar={un.tentarDeNovo} /> : un.lista && !un.atual ? <SemChale /> : !pronto && !erro ? <Carregando /> : null}
+      {pronto && un.atual && (
         <form className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-start" onSubmit={salvar} noValidate>
           <div className={`${card} grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`}>
             <label className={`${rot} sm:col-span-2`}>Nome
@@ -153,6 +172,7 @@ export function T41FormTarifa() {
 
           <aside className={`${card} flex flex-col gap-3 p-4`} aria-label="Exemplo de conta">
             <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Exemplo de conta</h2>
+            <p className="text-[0.75rem] text-fg-3">{un.atual.nome}</p>
             <p className="text-[0.75rem] text-fg-3">Casal com 1 criança de 5 a 8 anos, por noite.</p>
             <dl className="flex flex-col gap-1.5 text-[0.8125rem]">
               <div className="flex justify-between gap-3"><dt className="text-fg-3">Domingo a quinta</dt><dd className="font-mono text-fg-1">{brl(exemplo(t.valorNoite))}</dd></div>
