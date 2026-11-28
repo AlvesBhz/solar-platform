@@ -23,7 +23,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
 body { overflow-x: clip; overscroll-behavior-y: none; min-height: 100svh; }
-input, select, textarea { font-size: max(16px, 1rem); }
+input, select, textarea { font-size: 0.875rem; }
 
 .screen { min-height: 100svh; min-height: 100dvh; }
 @supports not (height: 100dvh) { .screen { min-height: 100vh; } }
@@ -61,10 +61,10 @@ input, select, textarea { font-size: max(16px, 1rem); }
 /* [RESPONSIVO] Leitor QR: vídeo da câmera cobre a área, sem distorcer */
 .qr-area video { width: 100%; height: 100%; object-fit: cover; }
 
-/* [RESPONSIVO] Densidade dos campos — no computador (ponteiro fino) texto de 13px e altura de 40px;
-   no toque mantém 16px (abaixo disso o iOS dá zoom ao tocar no campo) e a altura de 44px das classes. */
+/* [RESPONSIVO] Texto dos campos e listas: 14px em todo aparelho (no iPhone o zoom automático do Safari é desligado no
+   index.html, sem tirar a pinça). Altura: 44px no toque (alvo de dedo) e 40px no computador. */
 :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea, button[aria-haspopup="listbox"]):not(.font-mono) {
-  font-size: max(16px, 1rem);
+  font-size: 0.875rem;
 }
 @media (pointer: fine) {
   :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea, button[aria-haspopup="listbox"]):not(.font-mono) {
@@ -74,3 +74,6 @@ input, select, textarea { font-size: max(16px, 1rem); }
     min-height: 2.5rem;
   }
 }
+
+/* Teclado aberto no celular: a barra das áreas sai da frente do formulário */
+body.teclado-aberto nav[aria-label="Áreas"] { display: none; }

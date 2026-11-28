@@ -290,11 +290,19 @@ if (require.main === module) (async () => {
     await page.click('button[aria-label="Editar Toalhas de banho"]');
     ok(await page.locator('[data-item="Toalhas de banho"] form[aria-label=Item]').count() === 1 && (await texto(page, 'form[aria-label=Item]')).includes('Editando: Toalhas de banho · Banheiro'), 'editar abre o formulário junto do item, dizendo o que está sendo editado');
     await page.click('form[aria-label=Item] button:has-text("Cancelar")');
-    if (process.env.FOTO_TOQUE) {   // celular de verdade (toque): campos em 16px, como no iPhone
+    {   // iPhone (toque): campos em 14px sem o zoom automático do Safari, pinça preservada; teclado aberto esconde a barra das áreas
       const t = await abrir(browser, db, '/admin/checklists', { ...require('playwright').devices['iPhone 13'] });
       await t.page.locator('button[aria-label="Editar Toalhas de banho"]').first().click(); await t.page.waitForTimeout(600);
+      const vp = await t.page.locator('meta[name=viewport]').getAttribute('content');
+      ok(/maximum-scale=1/.test(vp) && !/user-scalable=no/.test(vp), 'iPhone: sem zoom automático ao tocar no campo (a pinça continua)');
+      ok(await t.page.locator('#i-nome').evaluate((e) => getComputedStyle(e).fontSize) === '14px', 'iPhone: texto do campo em 14px');
+      await t.page.locator('#i-nome').focus(); await t.page.waitForTimeout(200);
+      ok(!(await t.page.locator('nav[aria-label="Áreas"]').isVisible()), 'teclado aberto: a barra das áreas sai da frente');
+      await t.page.locator('#i-nome').blur(); await t.page.waitForTimeout(200);
+      ok(await t.page.locator('nav[aria-label="Áreas"]').isVisible(), 'teclado fechado: a barra volta');
       await t.page.locator('form[aria-label=Item]').scrollIntoViewIfNeeded();
-      await t.page.screenshot({ path: process.env.FOTO_TOQUE }); await t.ctx.close();
+      if (process.env.FOTO_TOQUE) await t.page.screenshot({ path: process.env.FOTO_TOQUE });
+      await t.ctx.close();
     }
     await page.click('button[aria-label="Renomear Banheiro"]');
     ok(await page.locator('[data-ambiente="Banheiro"] form[aria-label=Ambiente]').count() === 1 && (await texto(page, 'form[aria-label=Ambiente]')).includes('Renomeando: Banheiro'), 'renomear abre o formulário dentro do próprio ambiente');
