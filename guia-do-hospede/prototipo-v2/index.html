@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Guia do Hóspede · Protótipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../../design-system/colors_and_type.css"/>
+<script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--c-s100);font-family:var(--font-sans);color:var(--fg-1);font-size:15px;line-height:1.5}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+.app{position:relative;max-width:430px;height:100dvh;margin:0 auto;background:var(--c-cream);display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:500px){.app{height:min(900px,96dvh);margin-top:2dvh;border-radius:32px;box-shadow:var(--shadow-xl);border:1px solid var(--c-s200)}}
+/* header */
+.top{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;background:var(--c-cream);min-height:60px}
+.top .ttl{flex:1;font-family:var(--font-serif);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.1}
+.ib{width:44px;height:44px;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--c-pine)}
+.ib:active{background:var(--c-s200)}
+.lang{display:flex;gap:2px;background:var(--c-s100);border-radius:var(--r-pill);padding:3px}
+.lang button{font-size:11px;font-weight:600;letter-spacing:.08em;padding:6px 9px;border-radius:var(--r-pill);color:var(--fg-3)}
+.lang button.on{background:var(--c-pine);color:#fff}
+/* main */
+main{flex:1;overflow-y:auto;padding:4px 16px 120px;scroll-behavior:smooth}
+main::-webkit-scrollbar{width:0}
+.sec{margin-top:22px}
+.eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px}
+h2.h{font-family:var(--font-serif);font-weight:500;font-size:30px;line-height:1.05;letter-spacing:-.02em}
+h2.h em{font-family:var(--font-italic);font-style:italic;font-weight:400}
+p.sub{color:var(--fg-2);font-size:14px;margin-top:6px}
+/* cards */
+.card{background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);padding:16px;box-shadow:var(--shadow-sm)}
+.card+.card{margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:112px;padding:16px;text-align:left;background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);box-shadow:var(--shadow-sm);transition:transform var(--dur-fast),box-shadow var(--dur-base)}
+.tile:active{transform:scale(.98)}
+.tile .ic{width:44px;height:44px;border-radius:var(--r-lg);background:var(--c-s100);color:var(--c-pine);display:grid;place-items:center}
+.tile b{font-weight:600;font-size:15px;line-height:1.2}
+.tile small{display:block;font-weight:400;font-size:12px;color:var(--fg-3);margin-top:2px}
+.tile.dark{background:var(--c-pine);color:#fff;border-color:var(--c-pine)}
+.tile.dark .ic{background:rgba(255,255,255,.12);color:#fff}
+.tile.dark small{color:rgba(255,255,255,.7)}
+.row{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);text-align:left;min-height:64px}
+.row+.row{margin-top:10px}
+.row .ic{flex:none;width:40px;height:40px;border-radius:var(--r-md);background:var(--c-s100);color:var(--c-pine);display:grid;place-items:center}
+.row .tx{flex:1;min-width:0}
+.row .tx b{display:block;font-weight:600}
+.row .tx span{display:block;font-size:13px;color:var(--fg-3)}
+.row .go{color:var(--fg-4)}
+/* hero card */
+.hero{position:relative;border-radius:var(--r-2xl);overflow:hidden;padding:22px;color:#fff;background:linear-gradient(160deg,var(--c-pine-deep),var(--c-pine) 55%,var(--c-pine-mid))}
+.hero .gr{font-family:var(--font-serif);font-size:32px;font-weight:500;line-height:1}
+.hero .gr em{font-family:var(--font-italic);font-weight:400}
+.hero p{color:rgba(255,255,255,.75);font-size:13px;margin-top:6px}
+.hero .times{display:flex;gap:10px;margin-top:18px}
+.hero .t{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-lg);padding:10px 12px}
+.hero .t small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.hero .t b{font-family:var(--font-mono);font-size:18px;font-weight:500}
+/* wifi */
+.wifi{display:flex;align-items:center;gap:14px}
+.wifi .big{font-family:var(--font-mono);font-size:19px;font-weight:600;letter-spacing:.02em;word-break:break-all}
+.lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:var(--r-pill);background:var(--c-pine);color:#fff;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:transform var(--dur-base),background var(--dur-base)}
+.btn:active{transform:translateY(1px);background:var(--c-pine-deep)}
+.btn.out{background:#fff;color:var(--c-pine);border:1px solid var(--c-pine)}
+.btn.red{background:var(--c-error)}
+.btn.full{width:100%}
+.btns{display:grid;gap:10px;margin-top:14px}
+/* chips + badges */
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px}
+.chips::-webkit-scrollbar{height:0}
+.chip{flex:none;min-height:40px;padding:0 16px;border-radius:var(--r-pill);background:#fff;border:1px solid var(--c-s300);font-size:13px;font-weight:500;color:var(--fg-2)}
+.chip.on{background:var(--c-pine);border-color:var(--c-pine);color:#fff}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);border:1px solid}
+.b-leve{color:var(--c-available);border-color:#a7d9c5;background:#ecfdf5}
+.b-media{color:var(--c-warning);border-color:#f3d9a6;background:var(--c-warning-bg)}
+.b-exig{color:var(--c-error);border-color:#f0b8b8;background:#fef2f2}
+.meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:13px;color:var(--fg-2)}
+.meta span{display:inline-flex;align-items:center;gap:5px}
+.place h3{font-family:var(--font-serif);font-size:22px;font-weight:500;line-height:1.1;margin:8px 0 4px}
+.place p{font-size:14px;color:var(--fg-2)}
+.pend{display:inline-block;font-size:11px;font-weight:600;color:var(--c-warning);background:var(--c-warning-bg);border:1px solid #f3d9a6;border-radius:var(--r-sm);padding:1px 7px}
+/* search */
+.search{display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;background:#fff;border:1px solid var(--c-s300);border-radius:var(--r-pill);color:var(--fg-3)}
+.search input{flex:1;border:0;outline:0;font:inherit;font-size:16px;background:none;color:var(--fg-1);min-width:0}
+.plan{margin-top:14px;aspect-ratio:16/10;border-radius:var(--r-xl);border:1.5px dashed var(--c-s300);background:var(--c-s100);display:grid;place-items:center;text-align:center;color:var(--fg-3);font-size:13px;padding:16px}
+.steps{counter-reset:s;list-style:none;margin-top:12px}
+.steps li{counter-increment:s;display:flex;gap:14px;align-items:flex-start;padding:10px 0;font-size:17px;line-height:1.35}
+.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:var(--r-pill);background:var(--c-pine);color:#fff;font-weight:600;font-size:14px;display:grid;place-items:center;margin-top:-1px}
+.call{background:#fef2f2;border:1px solid #f0b8b8;color:var(--c-error);border-radius:var(--r-lg);padding:12px 14px;font-weight:600;display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.dont{background:#fff;border:1px solid var(--c-s200);border-left:4px solid var(--c-error);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px}
+.dont b{display:flex;align-items:center;gap:8px;color:var(--c-error);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.dont li{margin-left:18px;font-size:15px;line-height:1.4;margin-top:4px}
+.fixbar{position:absolute;left:0;right:0;bottom:78px;padding:10px 16px;background:linear-gradient(to top,var(--c-cream) 70%,transparent);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sosgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.call-row{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r-xl);background:var(--c-error);color:#fff;min-height:68px}
+.call-row+.call-row{margin-top:10px}
+.call-row.s{background:#fff;color:var(--c-error);border:1px solid #f0b8b8}
+.call-row b{display:block;font-size:20px;font-family:var(--font-mono)}
+.call-row span{font-size:13px;opacity:.9}
+.disc{margin-top:18px;font-size:12px;color:var(--fg-3);line-height:1.5;display:flex;gap:8px}
+/* tab bar + SOS */
+nav.tabs{position:absolute;left:0;right:0;bottom:0;height:78px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);background:rgba(250,250,249,.94);backdrop-filter:blur(14px);border-top:1px solid var(--c-s200)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--fg-3);font-size:11px;font-weight:500;border-radius:var(--r-lg)}
+.tab.on{color:var(--c-pine);font-weight:700}
+.tab.on iconify-icon{transform:translateY(-1px)}
+.sos{position:absolute;right:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;height:52px;padding:0 20px;border-radius:var(--r-pill);background:var(--c-error);color:#fff;font-weight:700;font-size:14px;letter-spacing:.12em;box-shadow:var(--shadow-lg)}
+.sos:active{transform:scale(.97)}
+.hasfix .sos{display:none}
+.toast{position:absolute;left:50%;bottom:150px;transform:translate(-50%,20px);opacity:0;background:var(--c-pine-deep);color:#fff;padding:12px 18px;border-radius:var(--r-pill);font-size:13px;pointer-events:none;transition:all var(--dur-base);z-index:20;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+/* welcome */
+.welcome{position:absolute;inset:0;z-index:30;background:linear-gradient(170deg,var(--c-pine-deep),var(--c-pine) 60%,var(--c-pine-mid));color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 28px 36px;transition:opacity var(--dur-slow),visibility var(--dur-slow)}
+.welcome.off{opacity:0;visibility:hidden}
+.welcome .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-serif);font-size:24px;font-weight:500}
+.welcome h1{font-family:var(--font-serif);font-weight:500;font-size:52px;line-height:.92;letter-spacing:-.03em}
+.welcome h1 em{font-family:var(--font-italic);font-weight:400}
+.welcome p{color:rgba(255,255,255,.75);margin-top:14px;max-width:30ch}
+.welcome .btn{background:#fff;color:var(--c-pine-deep)}
+.welcome .lang{background:rgba(255,255,255,.12);align-self:flex-start;margin-bottom:22px}
+.welcome .lang button{color:rgba(255,255,255,.7)}
+.welcome .lang button.on{background:#fff;color:var(--c-pine-deep)}
+.fade{animation:fadeUp var(--dur-slow) var(--ease-out) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.fade{animation:none}}
+.proto{margin-top:26px;font-size:11px;color:var(--fg-4);text-align:center}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="welcome" id="welcome">
+    <div>
+      <div class="lang" id="wlang"></div>
+      <div class="logo"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon>Solar do Espinhaço</div>
+    </div>
+    <div class="fade">
+      <h1 id="wh"></h1>
+      <p id="wp"></p>
+    </div>
+    <button class="btn full" id="enter"></button>
+  </div>
+  <header class="top" id="top"></header>
+  <main id="main"></main>
+  <button class="sos" id="sos"><iconify-icon icon="solar:danger-triangle-linear" width="22"></iconify-icon>SOS</button>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ───────── dados reais do guia atual (guide.json) ───────── */
+const GUIDE = {
+  "property": {
+    "name": "Solar do Espinhaço",
+    "tagline": "Guia do hóspede · Lapinha da Serra · Minas Gerais",
+    "address": "Rua Olhos D'água, nº 22 · Lapinha da Serra · Santana do Riacho · MG",
+    "mapsUrl": "https://maps.app.goo.gl/XfvBXTmR62YSmWRt5",
+    "phone": "+5531997555245",
+    "phoneDisplay": "+55 31 9 9755-5245",
+    "whatsapp": "5531997555245",
+    "email": "reservas@solardoespinhaco.com.br",
+    "instagram": "solardoespinhaco",
+    "checkin": "15h00",
+    "checkout": "12h00"
+  },
+  "wifi": {
+    "network": "SolarEspinhaço",
+    "password": "lapinha2024",
+    "band": "200 Mbps · Fibra"
+  },
+  "emergencyNational": [
+    { "label": "SAMU · ambulância", "tel": "192", "icon": "solar:medical-kit-linear" },
+    { "label": "Bombeiros", "tel": "193", "icon": "solar:flame-linear" },
+    { "label": "Polícia Militar", "tel": "190", "icon": "solar:shield-keyhole-linear" },
+    { "label": "Defesa Civil", "tel": "199", "icon": "solar:cloud-storm-linear" }
+  ],
+  "menu": [
+    {
+      "id": "wifi", "group": "01", "kind": "pinned", "icon": "solar:wi-fi-router-linear",
+      "label": "Wi-Fi", "value": "Conectar", "foot": "Rede & senha →"
+    },
+    {
+      "id": "checkin", "group": "01", "kind": "pinned", "icon": "solar:clock-circle-linear",
+      "label": "Estadia", "value": "15h — 12h", "foot": "Check-in / out →"
+    },
+    {
+      "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear",
+      "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/Suite.jpeg"
+    },
+    {
+      "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear",
+      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.webp"
+    },
+    {
+      "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear",
+      "num": "B · 01 — 1.686 metros", "title": "A serra <em>à porta</em>", "image": "assets/images/trilha.avif"
+    },
+    {
+      "id": "restaurantes", "group": "02", "kind": "tile", "icon": "solar:chef-hat-minimalistic-linear",
+      "num": "B · 02 — no vilarejo", "title": "Onde <em>comer</em>", "solid": true
+    },
+    {
+      "id": "compras", "group": "02", "kind": "tile", "icon": "solar:cart-3-linear",
+      "num": "B · 03 — mercado & farmácia", "title": "Compras", "solid": true
+    },
+    {
+      "id": "lapinha", "group": "02", "kind": "tile", "wide": true, "icon": "solar:map-point-linear",
+      "num": "B · 04 — o lugarejo · 500 hab · 140km de BH", "title": "Lapinha", "image": "assets/images/serra-hero.avif"
+    },
+    {
+      "id": "regras", "group": "03", "kind": "util", "icon": "solar:documents-linear", "label": "Combinações"
+    },
+    {
+      "id": "transporte", "group": "03", "kind": "util", "icon": "solar:bus-linear", "label": "Como chegar"
+    },
+    {
+      "id": "servicos", "group": "03", "kind": "util", "icon": "solar:bell-linear", "label": "Serviços"
+    },
+    {
+      "id": "emergencia", "group": "03", "kind": "util", "icon": "solar:shield-warning-linear", "label": "Emergência"
+    },
+    {
+      "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear",
+      "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/Piscina.jpeg"
+    }
+  ],
+  "groups": {
+    "01": { "title": "Sua estadia", "tag": "essenciais" },
+    "02": { "title": "A região", "tag": "Espinhaço · cipó" },
+    "03": { "title": "Prático", "tag": "o feijão com arroz" },
+    "04": { "title": "Antes de partir", "tag": "um último gesto" }
+  },
+  "places": {
+    "serraPerto": [
+      { "title": "Cachoeira do Boqueirão", "text": "O poço mais visitado, com 20m de profundidade e salva-vidas. Caminhada quase plana, ideal para crianças.", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:running-linear", "text": "500 m a pé" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Cachoeira do Rapel", "text": "40 m de paredão para rapel, num dos pontos mais altos da Lapinha. Queda forte só fora da seca.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:running-linear", "text": "1,8 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 15" }] },
+      { "title": "Poço Verde & Ducha Natural", "text": "Águas notavelmente cristalinas no caminho do Boqueirão. Boa parada antes ou depois do banho principal.", "icon": "solar:waterdrop-linear", "diff": "leve", "diffLabel": "Leve", "meta": [{ "icon": "solar:clock-circle-linear", "text": "30 min" }] }
+    ],
+    "serraLonge": [
+      { "title": "Cachoeira do Lajeado", "text": "Queda de 40m em paredão rochoso, com poço cristalino e fundo. Trilha quase plana ao redor do lago.", "diff": "media", "diffLabel": "Média", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h" }, { "icon": "solar:running-linear", "text": "12 km" }] },
+      { "title": "Cachoeira do Bicame", "text": "Uma das mais bonitas da Serra do Cipó. Limite de 30 visitantes/dia — saia cedo e leve voucher.", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h" }, { "icon": "solar:running-linear", "text": "18 km" }, { "icon": "solar:tag-price-linear", "text": "R$ 30" }] },
+      { "title": "Poço do Soberbo", "text": "O maior poço natural da Serra do Cipó — 18m de profundidade, 30m de diâmetro, três cursos d'água.", "icon": "solar:waterdrop-linear", "diff": "dif", "diffLabel": "Difícil", "meta": [{ "icon": "solar:running-linear", "text": "18 km" }] }
+    ],
+    "restaurantesEspeciais": [
+      { "title": "Bistrô Lapinha", "text": "O mais romântico da serra. Carta de vinhos, pratos autorais, música ao vivo aos sábados. Reserva indispensável.", "icon": "solar:chef-hat-minimalistic-linear", "meta": [{ "icon": "solar:star-shine-linear", "text": "Casais" }, { "icon": "solar:tag-price-linear", "text": "$$$" }, { "icon": "solar:running-linear", "text": "5 min" }] },
+      { "title": "A Forneria Lapinha", "text": "A primeira pizzaria da vila — italianas autênticas com sotaque mineiro, no forno a lenha. Ambiente rústico e charmoso.", "icon": "solar:flame-linear", "meta": [{ "icon": "solar:flame-linear", "text": "Forno a lenha" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:running-linear", "text": "4 min" }] }
+    ],
+    "restaurantesSelfService": [
+      { "title": "Restaurante Moendas", "text": "Self-service de fogão a lenha à beira da lagoa. Sobremesas regionais e cara de casa de avó. Fins de semana, 12h30 às 16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:calendar-linear", "text": "Sáb · Dom" }, { "icon": "solar:tag-price-linear", "text": "$$" }, { "icon": "solar:bus-linear", "text": "5 min" }] },
+      { "title": "Cantinho da Luci", "text": "Comida caseira no fogão a lenha. Ter–Sex pratos montados; Sáb–Dom self-service.", "icon": "solar:fire-linear", "meta": [{ "icon": "solar:tag-price-linear", "text": "$" }, { "icon": "solar:phone-calling-linear", "text": "(31) 99715-4652" }] },
+      { "title": "Restaurante Gruta da Lapinha", "text": "Trivial mineiro · prato do dia durante a semana, self-service nos finais de semana. Todos os dias 9h–16h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "9h — 16h" }, { "icon": "solar:tag-price-linear", "text": "$" }] }
+    ],
+    "restaurantesLeve": [
+      { "title": "Rancho do Zé", "text": "Hambúrgueres, porções, açaí. Aceita delivery — perfeito para uma noite de Netflix no chalé. Qua–Dom, 18h–22h.", "icon": "solar:plate-linear", "meta": [{ "icon": "solar:bag-3-linear", "text": "Delivery" }, { "icon": "solar:phone-calling-linear", "text": "(31) 97217-3762" }] }
+    ],
+    "comprasVilarejo": [
+      { "title": "Mercearia da Lapinha", "text": "O mercadinho do vilarejo. Tem o essencial — pães, frios, frutas, bebidas, doces. Aceita Pix e cartão.", "icon": "solar:cart-3-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 20h" }, { "icon": "solar:running-linear", "text": "4 min a pé" }] },
+      { "title": "Padaria da Vila", "text": "Pão de queijo fresco a partir das 6h. Bolos de fubá, broa de milho e biscoitos caseiros. Café coado no balcão.", "icon": "solar:donut-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "6h — 18h" }, { "icon": "solar:running-linear", "text": "3 min a pé" }] },
+      { "title": "Farmácia da Lapinha", "text": "Aberta de seg a sáb. Medicamentos básicos, repelente, protetor solar, kit primeiros socorros.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "8h — 19h" }, { "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ],
+    "comprasSantana": [
+      { "title": "Caixa Eletrônico", "text": "Banco do Brasil & Bradesco · 24h · ao lado da rodoviária.", "icon": "solar:card-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Posto de combustível", "text": "Único posto da região, com loja de conveniência. Encha o tanque na ida — não há postos depois.", "icon": "solar:gas-station-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "24h" }, { "icon": "solar:bus-linear", "text": "20 min" }] },
+      { "title": "Supermercado Santana", "text": "Para compras maiores · carnes, produtos de limpeza, bebidas, hortifruti completo.", "icon": "solar:bag-4-linear", "meta": [{ "icon": "solar:clock-circle-linear", "text": "7h — 21h" }] }
+    ],
+    "saude": [
+      { "title": "UPA Santana do Riacho", "text": "Unidade de Pronto Atendimento mais próxima · 24h.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "20 min · 12 km" }, { "icon": "solar:phone-calling-linear", "text": "(31) 3718-6000" }] },
+      { "title": "Hospital Regional · Lagoa Santa", "text": "Para casos mais graves · trauma, internação.", "icon": "solar:hospital-linear", "meta": [{ "icon": "solar:bus-linear", "text": "1h30" }] },
+      { "title": "Farmácia da Lapinha", "text": "Seg–sáb 8h–19h. Tem kit primeiros socorros no chalé · me avise se faltar algo.", "icon": "solar:medical-kit-linear", "meta": [{ "icon": "solar:running-linear", "text": "6 min a pé" }] }
+    ]
+  }
+};
+const P = GUIDE.property, PL = GUIDE.places;
+
+/* ───────── textos da interface (PT · EN · ES) ───────── */
+const L = {
+pt:{welcomeH:'Sinta-se <em>em casa</em>',welcomeP:'Tudo o que você precisa para a sua estadia, na palma da mão.',enter:'Entrar',
+ tHome:'Início',tCasa:'Casa',tSerra:'Serra',tSabores:'Sabores',tAjuda:'Ajuda',
+ hi:'Boa estadia',hiSub:'Chalé [CONFIRMAR]',checkin:'Check-in',checkout:'Check-out',
+ quick:'O que você precisa agora?',wifi:'Wi-Fi',network:'Rede',password:'Senha',copy:'Copiar senha',copied:'Senha copiada',
+ cafe:'Café da casa',where:'Onde está tudo',emerg:'Emergência',digital:'Check-in digital',digitalSub:'Preencha antes de chegar',
+ casaT:'A casa',casaSub:'Tudo sobre o seu chalé',whereSub:'Planta e busca',auto:'Automação',autoSub:'Luz, clima, água quente',equip:'Equipamentos',equipSub:'Cozinha, lareira, ofurô',conv:'Boa convivência',convSub:'Combinações da casa',
+ search:'Buscar: cobertor, extintor…',plan:'Planta ilustrada do chalé\n(a ser desenhada)',noRes:'Nada encontrado',loc:'Local',
+ serraT:'A serra à porta',all:'Todos',near:'Perto',kids:'Com crianças',rain:'Dia de chuva',easy:'Leve',mid:'Média',hard:'Exigente',
+ eatT:'Sabores',now:'Agora',eatSub:'Café da casa e restaurantes',
+ ajudaT:'Ajuda',ajudaSub:'Estamos aqui para você',fa:'Primeiros socorros',faSub:'O que fazer, passo a passo',talk:'Falar com a casa',talkSub:'WhatsApp e telefone',svc:'Serviços e saída',svcSub:'Lavanderia, transporte, saída',
+ emT:'Emergência',emSub:'Ligue primeiro. Depois siga os passos.',call:'Ligar',myAddr:'Meu endereço',addrHint:'Diga este endereço ao atendente',copyAddr:'Copiar endereço',addrCopied:'Endereço copiado',nearHelp:'Atendimento mais próximo',
+ faT:'Primeiros socorros',faPick:'O que aconteceu?',soon:'Em preparação',
+ callIf:'Ligue 192 agora se',dont:'Não faça',draft:'Rascunho de conteúdo. Será validado por profissional de saúde antes da publicação.',
+ disc:'Este guia orienta, não substitui atendimento médico.',
+ ckT:'Check-in digital',ckSub:'Em 3 passos, antes de chegar.',ck1:'Seus dados',ck2:'Documento',ck3:'Confirmação',ckStart:'Começar',ckProto:'Disponível na fase do app',
+ back:'Voltar',proto:'Protótipo de navegação · textos [CONFIRMAR] são provisórios · conteúdo dos passeios e restaurantes ainda em português',
+ fall:'Queda',cut:'Corte',bite:'Picada',burn:'Queimadura',heat:'Calor',choke:'Engasgo',drown:'Afogamento',lost:'Perdido'},
+en:{welcomeH:'Feel <em>at home</em>',welcomeP:'Everything you need for your stay, in the palm of your hand.',enter:'Enter',
+ tHome:'Home',tCasa:'House',tSerra:'Nature',tSabores:'Dining',tAjuda:'Help',
+ hi:'Enjoy your stay',hiSub:'Chalet [TO CONFIRM]',checkin:'Check-in',checkout:'Check-out',
+ quick:'What do you need now?',wifi:'Wi-Fi',network:'Network',password:'Password',copy:'Copy password',copied:'Password copied',
+ cafe:'House breakfast',where:'Where is everything',emerg:'Emergency',digital:'Digital check-in',digitalSub:'Fill in before you arrive',
+ casaT:'The house',casaSub:'Everything about your chalet',whereSub:'Floor plan and search',auto:'Automation',autoSub:'Lights, climate, hot water',equip:'Equipment',equipSub:'Kitchen, fireplace, hot tub',conv:'House etiquette',convSub:'Our house rules',
+ search:'Search: blanket, extinguisher…',plan:'Illustrated chalet floor plan\n(to be drawn)',noRes:'Nothing found',loc:'Location',
+ serraT:'The mountains outside',all:'All',near:'Nearby',kids:'With kids',rain:'Rainy day',easy:'Easy',mid:'Moderate',hard:'Demanding',
+ eatT:'Dining',now:'Now',eatSub:'House breakfast and restaurants',
+ ajudaT:'Help',ajudaSub:'We are here for you',fa:'First aid',faSub:'What to do, step by step',talk:'Contact the house',talkSub:'WhatsApp and phone',svc:'Services and checkout',svcSub:'Laundry, transport, departure',
+ emT:'Emergency',emSub:'Call first. Then follow the steps.',call:'Call',myAddr:'My address',addrHint:'Give this address to the operator',copyAddr:'Copy address',addrCopied:'Address copied',nearHelp:'Nearest care',
+ faT:'First aid',faPick:'What happened?',soon:'In preparation',
+ callIf:'Call 192 now if',dont:"Don't",draft:'Draft content. It will be validated by a health professional before publication.',
+ disc:'This guide gives guidance and does not replace medical care.',
+ ckT:'Digital check-in',ckSub:'3 steps, before you arrive.',ck1:'Your details',ck2:'ID document',ck3:'Confirmation',ckStart:'Start',ckProto:'Available in the app phase',
+ back:'Back',proto:'Navigation prototype · [TO CONFIRM] texts are placeholders · tour and restaurant content still in Portuguese',
+ fall:'Fall',cut:'Cut',bite:'Bite / sting',burn:'Burn',heat:'Heat',choke:'Choking',drown:'Drowning',lost:'Lost'},
+es:{welcomeH:'Siéntete <em>como en casa</em>',welcomeP:'Todo lo que necesitas para tu estancia, en la palma de tu mano.',enter:'Entrar',
+ tHome:'Inicio',tCasa:'Casa',tSerra:'Sierra',tSabores:'Sabores',tAjuda:'Ayuda',
+ hi:'Buena estancia',hiSub:'Cabaña [POR CONFIRMAR]',checkin:'Check-in',checkout:'Check-out',
+ quick:'¿Qué necesitas ahora?',wifi:'Wi-Fi',network:'Red',password:'Contraseña',copy:'Copiar contraseña',copied:'Contraseña copiada',
+ cafe:'Desayuno de la casa',where:'Dónde está todo',emerg:'Emergencia',digital:'Check-in digital',digitalSub:'Complétalo antes de llegar',
+ casaT:'La casa',casaSub:'Todo sobre tu cabaña',whereSub:'Plano y búsqueda',auto:'Automatización',autoSub:'Luz, clima, agua caliente',equip:'Equipos',equipSub:'Cocina, chimenea, jacuzzi',conv:'Convivencia',convSub:'Normas de la casa',
+ search:'Buscar: manta, extintor…',plan:'Plano ilustrado de la cabaña\n(por dibujar)',noRes:'Sin resultados',loc:'Lugar',
+ serraT:'La sierra a tu puerta',all:'Todos',near:'Cerca',kids:'Con niños',rain:'Día de lluvia',easy:'Fácil',mid:'Media',hard:'Exigente',
+ eatT:'Sabores',now:'Ahora',eatSub:'Desayuno y restaurantes',
+ ajudaT:'Ayuda',ajudaSub:'Estamos aquí para ti',fa:'Primeros auxilios',faSub:'Qué hacer, paso a paso',talk:'Hablar con la casa',talkSub:'WhatsApp y teléfono',svc:'Servicios y salida',svcSub:'Lavandería, transporte, salida',
+ emT:'Emergencia',emSub:'Llama primero. Luego sigue los pasos.',call:'Llamar',myAddr:'Mi dirección',addrHint:'Dile esta dirección al operador',copyAddr:'Copiar dirección',addrCopied:'Dirección copiada',nearHelp:'Atención más cercana',
+ faT:'Primeros auxilios',faPick:'¿Qué ocurrió?',soon:'En preparación',
+ callIf:'Llama al 192 ahora si',dont:'No hagas',draft:'Contenido en borrador. Será validado por un profesional de la salud antes de publicarse.',
+ disc:'Esta guía orienta, no sustituye la atención médica.',
+ ckT:'Check-in digital',ckSub:'En 3 pasos, antes de llegar.',ck1:'Tus datos',ck2:'Documento',ck3:'Confirmación',ckStart:'Empezar',ckProto:'Disponible en la fase de la app',
+ back:'Volver',proto:'Prototipo de navegación · textos [POR CONFIRMAR] son provisionales · contenido de paseos y restaurantes aún en portugués',
+ fall:'Caída',cut:'Corte',bite:'Picadura',burn:'Quemadura',heat:'Calor',choke:'Atragantamiento',drown:'Ahogamiento',lost:'Perdido'}
+};
+
+/* primeiros socorros: rascunho, a validar por profissional de saúde */
+const FA = {
+ fall:{ic:'solar:accessibility-linear',
+  pt:{call:'não consegue se mexer, dor intensa, deformidade, bateu a cabeça, desmaiou ou vomitou',steps:['Não mova a pessoa se houver dor no pescoço ou nas costas.','Mantenha-a calma e imóvel, sem remover o calçado.','Se houver sangramento, pressione com pano limpo.','Proteja do frio e do sol até a ajuda chegar.'],dont:['Não tente "colocar o osso no lugar".','Não dê comida ou bebida se estiver sonolenta.']},
+  en:{call:'cannot move, severe pain, deformity, hit the head, fainted or vomited',steps:['Do not move the person if there is neck or back pain.','Keep them calm and still, shoes on.','If bleeding, press with a clean cloth.','Protect from cold and sun until help arrives.'],dont:['Do not try to "set the bone".','Do not give food or drink if drowsy.']},
+  es:{call:'no puede moverse, dolor intenso, deformidad, golpe en la cabeza, desmayo o vómito',steps:['No muevas a la persona si hay dolor de cuello o espalda.','Mantenla tranquila e inmóvil, sin quitar el calzado.','Si sangra, presiona con un paño limpio.','Protege del frío y del sol hasta que llegue la ayuda.'],dont:['No intentes "acomodar el hueso".','No des comida ni bebida si está somnolienta.']}},
+ bite:{ic:'solar:bug-linear',
+  pt:{call:'qualquer picada de cobra, escorpião ou aranha, ou reação forte (inchaço, falta de ar)',steps:['Afaste-se do animal e acalme a pessoa.','Mantenha-a deitada e a parte picada em repouso.','Retire anéis, pulseiras e relógio perto do local.','Anote horário e, se possível, fotografe o animal de longe.','Leve ao atendimento: UPA Santana do Riacho.'],dont:['Não faça torniquete nem corte o local.','Não chupe o veneno nem use álcool, fumo ou ervas.']},
+  en:{call:'any snake, scorpion or spider bite, or a strong reaction (swelling, breathlessness)',steps:['Move away from the animal and calm the person.','Keep them lying down, bitten area at rest.','Remove rings, bracelets and watch near the site.','Note the time and, if possible, photograph the animal from a distance.','Get to care: UPA Santana do Riacho.'],dont:['Do not use a tourniquet or cut the area.','Do not suck out venom or apply alcohol, tobacco or herbs.']},
+  es:{call:'cualquier picadura de serpiente, escorpión o araña, o reacción fuerte (hinchazón, falta de aire)',steps:['Aléjate del animal y calma a la persona.','Mantenla acostada y la zona picada en reposo.','Quita anillos, pulseras y reloj cerca del lugar.','Anota la hora y, si es posible, fotografía el animal de lejos.','Ve a atención: UPA Santana do Riacho.'],dont:['No hagas torniquete ni cortes la zona.','No chupes el veneno ni uses alcohol, tabaco o hierbas.']}}
+};
+const FA_ORDER=['fall','cut','bite','burn','heat','choke','drown','lost'];
+const FA_ICON={cut:'solar:bandage-linear',burn:'solar:fire-linear',heat:'solar:sun-2-linear',choke:'solar:lungs-linear',drown:'solar:waterdrop-linear',lost:'solar:map-point-linear'};
+
+/* itens da casa e automação: estrutura de exemplo, dados reais a confirmar */
+const ITEMS=[['solar:fire-minimalistic-linear',{pt:'Extintor',en:'Fire extinguisher',es:'Extintor'}],['solar:layers-minimalistic-linear',{pt:'Cobertor extra',en:'Extra blanket',es:'Manta extra'}],['solar:fire-linear',{pt:'Lenha',en:'Firewood',es:'Leña'}],['solar:medical-kit-linear',{pt:'Kit de primeiros socorros',en:'First-aid kit',es:'Botiquín'}],['solar:bolt-linear',{pt:'Quadro de luz',en:'Fuse box',es:'Cuadro eléctrico'}],['solar:hanger-linear',{pt:'Cabides e roupão',en:'Hangers and robe',es:'Perchas y bata'}]];
+const AUTO=[['solar:lightbulb-linear',{pt:'Iluminação',en:'Lighting',es:'Iluminación'}],['solar:snowflake-linear',{pt:'Ar-condicionado',en:'Air conditioning',es:'Aire acondicionado'}],['solar:tv-linear',{pt:'TV e som',en:'TV and sound',es:'TV y sonido'}],['solar:lock-linear',{pt:'Fechadura digital',en:'Digital lock',es:'Cerradura digital'}]];
+
+/* ───────── estado e utilidades ───────── */
+let lang=(localStorage.getItem('gl')||'pt'), stack=['home'];
+const $=s=>document.querySelector(s), t=k=>L[lang][k]??k;
+const ico=(n,w=24)=>`<iconify-icon icon="${n}" width="${w}"></iconify-icon>`;
+const TABS=[['home','tHome','solar:home-2-linear'],['casa','tCasa','solar:key-minimalistic-linear'],['serra','tSerra','solar:mountains-linear'],['sabores','tSabores','solar:cup-hot-linear'],['ajuda','tAjuda','solar:lifebuoy-linear']];
+const PARENT={wifi:'home',digital:'home',where:'casa',auto:'casa',serra:'serra',sabores:'sabores',emerg:'ajuda',fa:'ajuda',fadet:'ajuda'};
+const pend=()=>`<span class="pend">[${lang==='pt'?'CONFIRMAR':lang==='en'?'TO CONFIRM':'POR CONFIRMAR'}]</span>`;
+function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
+function copy(txt,msg){try{navigator.clipboard.writeText(txt)}catch(e){};toast(msg)}
+function go(s,arg){stack.push(arg?s+':'+arg:s);render()}
+function back(){if(stack.length>1)stack.pop();render()}
+function tab(x){stack=[x];render()}
+
+/* ───────── telas ───────── */
+const V={};
+V.home=()=>`
+ <div class="hero fade"><div class="gr">${t('hi')}</div><p>${t('hiSub')}</p>
+  <div class="times"><div class="t"><small>${t('checkin')}</small><b>${P.checkin}</b></div><div class="t"><small>${t('checkout')}</small><b>${P.checkout}</b></div></div></div>
+ <div class="sec"><div class="eyebrow">${t('quick')}</div>
+  <div class="grid2">
+   <button class="tile" onclick="go('wifi')"><span class="ic">${ico('solar:wi-fi-router-linear')}</span><b>${t('wifi')}<small>${GUIDE.wifi.network}</small></b></button>
+   <button class="tile" onclick="go('sabores')"><span class="ic">${ico('solar:cup-hot-linear')}</span><b>${t('cafe')}<small>${t('tSabores')}</small></b></button>
+   <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereSub')}</small></b></button>
+   <button class="tile dark" onclick="go('emerg')"><span class="ic">${ico('solar:danger-triangle-linear')}</span><b>${t('emerg')}<small>192 · 193 · 190</small></b></button>
+  </div></div>
+ <div class="sec"><button class="row" onclick="go('digital')"><span class="ic">${ico('solar:documents-linear')}</span><span class="tx"><b>${t('digital')}</b><span>${t('digitalSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button></div>
+ <p class="proto">${t('proto')}</p>`;
+
+V.wifi=()=>`<div class="card fade"><div class="lbl">${t('network')}</div><div class="wifi"><div class="big" style="flex:1">${GUIDE.wifi.network}</div></div>
+ <div class="lbl" style="margin-top:18px">${t('password')}</div><div class="big" style="font-family:var(--font-mono);font-size:26px;font-weight:600;margin-top:2px">${GUIDE.wifi.password}</div>
+ <div class="btns"><button class="btn full" onclick="copy('${GUIDE.wifi.password}',t('copied'))">${ico('solar:copy-linear',20)}${t('copy')}</button></div>
+ <p class="sub" style="margin-top:14px">${GUIDE.wifi.band}</p></div>`;
+
+V.digital=()=>`<p class="sub" style="margin-top:0">${t('ckSub')}</p><div class="sec" style="margin-top:14px">
+ ${[['solar:user-linear','ck1'],['solar:documents-linear','ck2'],['solar:check-circle-linear','ck3']].map((x,i)=>`<div class="row"><span class="ic">${ico(x[0])}</span><span class="tx"><b>${i+1}. ${t(x[1])}</b></span></div>`).join('')}
+ <div class="btns"><button class="btn full" onclick="toast(t('ckProto'))">${t('ckStart')}</button></div></div>`;
+
+V.casa=()=>`<h2 class="h">${t('casaT')}</h2><p class="sub">${t('casaSub')}</p>
+ <div class="grid2 sec" style="margin-top:18px">
+  <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereSub')}</small></b></button>
+  <button class="tile" onclick="go('auto')"><span class="ic">${ico('solar:smart-home-linear')}</span><b>${t('auto')}<small>${t('autoSub')}</small></b></button>
+  <button class="tile" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:chef-hat-linear')}</span><b>${t('equip')}<small>${t('equipSub')}</small></b></button>
+  <button class="tile" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:heart-linear')}</span><b>${t('conv')}<small>${t('convSub')}</small></b></button>
+ </div>`;
+
+V.where=()=>`<label class="search">${ico('solar:magnifer-linear',22)}<input id="q" type="search" placeholder="${t('search')}" oninput="fill()"/></label>
+ <div class="plan">${t('plan').replace('\n','<br>')}</div><div class="sec" id="res" style="margin-top:14px"></div>`;
+function fill(){const q=($('#q')?.value||'').toLowerCase();const r=ITEMS.filter(i=>i[1][lang].toLowerCase().includes(q));
+ $('#res').innerHTML=r.length?r.map(i=>`<div class="row"><span class="ic">${ico(i[0])}</span><span class="tx"><b>${i[1][lang]}</b><span>${t('loc')}: ${pend()}</span></span></div>`).join(''):`<p class="sub">${t('noRes')}</p>`}
+
+V.auto=()=>AUTO.map(a=>`<div class="row"><span class="ic">${ico(a[0])}</span><span class="tx"><b>${a[1][lang]}</b><span>${pend()}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></div>`).join('');
+
+let serraFilter='all';
+V.serra=()=>{const list=[...PL.serraPerto,...PL.serraLonge].filter(p=>serraFilter==='all'||(serraFilter==='kids'&&p.diff==='leve')||(serraFilter==='near'&&PL.serraPerto.includes(p)));
+ const chip=(k,l)=>`<button class="chip ${serraFilter===k?'on':''}" onclick="serraFilter='${k}';render()">${l}</button>`;
+ return `<h2 class="h">${t('serraT')}</h2>
+ <div class="chips sec" style="margin-top:16px">${chip('all',t('all'))}${chip('near',t('near'))}${chip('kids',t('kids'))}</div>
+ <div class="sec" style="margin-top:12px">${list.map(p=>{const b={leve:['b-leve','solar:check-circle-linear',t('easy')],media:['b-media','solar:danger-circle-linear',t('mid')],exigente:['b-exig','solar:danger-triangle-linear',t('hard')]}[p.diff]||['b-media','solar:danger-circle-linear',p.diffLabel||''];
+  return `<div class="card place"><span class="badge ${b[0]}">${ico(b[1],14)}${b[2]}</span><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`}).join('')}</div>`};
+
+V.sabores=()=>`<h2 class="h">${t('eatT')}</h2><p class="sub">${t('eatSub')}</p>
+ <div class="sec" style="margin-top:16px">${[...PL.restaurantesEspeciais,...PL.restaurantesSelfService].slice(0,5).map(p=>`<div class="card place"><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`).join('')}</div>`;
+
+V.ajuda=()=>`<h2 class="h">${t('ajudaT')}</h2><p class="sub">${t('ajudaSub')}</p>
+ <div class="sec" style="margin-top:16px">
+  <button class="row" onclick="go('emerg')" style="border-color:#f0b8b8"><span class="ic" style="background:#fef2f2;color:var(--c-error)">${ico('solar:danger-triangle-linear')}</span><span class="tx"><b>${t('emerg')}</b><span>192 · 193 · 190 · 199</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
+  <button class="row" onclick="go('fa')"><span class="ic">${ico('solar:medical-kit-linear')}</span><span class="tx"><b>${t('fa')}</b><span>${t('faSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
+  <a class="row" href="https://wa.me/${P.whatsapp}" target="_blank" rel="noopener"><span class="ic">${ico('mdi:whatsapp')}</span><span class="tx"><b>${t('talk')}</b><span>${P.phoneDisplay}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></a>
+  <button class="row" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:suitcase-linear')}</span><span class="tx"><b>${t('svc')}</b><span>${t('svcSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
+ </div>`;
+
+V.emerg=()=>`<p class="sub" style="margin-top:0">${t('emSub')}</p>
+ <div class="sec" style="margin-top:14px">
+  ${GUIDE.emergencyNational.map((e,i)=>`<a class="call-row ${i?'s':''}" href="tel:${e.tel}">${ico(e.icon,28)}<div style="flex:1"><b>${e.tel}</b><span>${e.label}</span></div>${ico('solar:phone-calling-linear',24)}</a>`).join('')}
+ </div>
+ <div class="card sec" style="margin-top:18px"><div class="lbl">${t('myAddr')}</div><p style="font-size:17px;font-weight:600;margin-top:4px;line-height:1.35">${P.address}</p><p class="sub">${t('addrHint')}</p>
+  <div class="btns"><button class="btn out full" onclick="copy('${P.address.replace(/'/g,"\\'")}',t('addrCopied'))">${ico('solar:copy-linear',20)}${t('copyAddr')}</button></div></div>
+ <div class="sec"><div class="eyebrow">${t('nearHelp')}</div>${PL.saude.slice(0,2).map(p=>`<div class="card place"><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`).join('')}</div>`;
+
+V.fa=()=>`<p class="sub" style="margin-top:0">${t('faPick')}</p><div class="sosgrid sec" style="margin-top:14px">
+ ${FA_ORDER.map(k=>`<button class="tile" onclick="${FA[k]?`go('fadet','${k}')`:`toast('${t('soon')}')`}" style="min-height:104px"><span class="ic">${ico((FA[k]||{}).ic||FA_ICON[k])}</span><b>${t(k)}</b></button>`).join('')}</div>
+ <p class="disc">${ico('solar:info-circle-linear',18)}<span>${t('disc')}</span></p>`;
+
+function fadet(k){const d=FA[k][lang];return `<div class="call">${ico('solar:phone-calling-linear',22)}<span>${t('callIf')}: ${d.call}</span></div>
+ <ol class="steps">${d.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
+ <div class="dont"><b>${ico('solar:close-circle-linear',18)}${t('dont')}</b><ul>${d.dont.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+ <p class="disc">${ico('solar:info-circle-linear',18)}<span>${t('draft')}</span></p>
+ <div class="fixbar"><a class="btn red" href="tel:192">${ico('solar:phone-calling-linear',20)}${t('call')} 192</a><button class="btn out" onclick="go('emerg')">${t('myAddr')}</button></div>`}
+
+/* ───────── render ───────── */
+const TITLES={home:null,casa:'tCasa',serra:'tSerra',sabores:'tSabores',ajuda:'tAjuda',wifi:'wifi',digital:'ckT',where:'where',auto:'auto',emerg:'emT',fa:'faT'};
+function render(){
+  const cur=stack[stack.length-1],[id,arg]=cur.split(':'),isSub=stack.length>1;
+  const active=PARENT[id]||id;
+  const title=id==='fadet'?t(arg):id==='home'?null:t(TITLES[id]);
+  $('#top').innerHTML=(isSub?`<button class="ib" onclick="back()" aria-label="${t('back')}">${ico('solar:alt-arrow-left-linear',26)}</button>`:`<span class="ib">${ico('solar:leaf-linear',26)}</span>`)
+   +`<div class="ttl">${title||'Solar do Espinhaço'}</div><div class="lang">${['pt','en','es'].map(l=>`<button class="${l===lang?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}</div>`;
+  $('#main').innerHTML=id==='fadet'?fadet(arg):V[id]();
+  $('#main').scrollTop=0;
+  if(id==='where')fill();
+  $('#tabs').innerHTML=TABS.map(x=>`<button class="tab ${x[0]===active?'on':''}" onclick="tab('${x[0]}')">${ico(x[2],26)}<span>${t(x[1])}</span></button>`).join('');
+  $('#app').classList.toggle('hasfix',id==='fadet');
+  document.documentElement.lang={pt:'pt-BR',en:'en',es:'es'}[lang];
+}
+function setLang(l){lang=l;try{localStorage.setItem('gl',l)}catch(e){};welcomeText();render()}
+function welcomeText(){$('#wh').innerHTML=t('welcomeH');$('#wp').textContent=t('welcomeP');$('#enter').textContent=t('enter');
+ $('#wlang').innerHTML=['pt','en','es'].map(l=>`<button class="${l===lang?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}
+$('#sos').onclick=()=>go('emerg');
+$('#enter').onclick=()=>$('#welcome').classList.add('off');
+welcomeText();render();
+</script>
+</body>
+</html>
