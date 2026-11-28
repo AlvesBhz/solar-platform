@@ -1101,7 +1101,7 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
 .cta-bg {
   position: absolute;
   inset: -12%;
-  background: url('../assets/images/cta-final.avif?v=20261127i') center / cover no-repeat;
+  background: #0d1a12 center / cover no-repeat;   /* a foto entra por .bg-ok (carregada perto da seção) */
   will-change: transform;
   transform: scale(1.12) translateY(0);
   /* sem transition: o parallax já é atualizado a cada quadro (rAF);
@@ -1897,4 +1897,23 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 @media (min-width: 901px) and (max-width: 1180px) {
   .d2-amenities { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+
+/* <picture> (AVIF com reserva) não pode mudar o layout: a imagem se comporta como filha direta do contêiner */
+picture { display: contents; }
+
+.cta-bg.bg-ok { background-image: url('../assets/images/cta-final.avif?v=20261127i'); }
+
+/* aviso discreto sob o calendário: carregando os valores ou falha */
+.cal-pcarrega { opacity: .7; animation: calPulso 1.2s ease-in-out infinite; }
+.cal-perro { color: var(--c-warning, #b45309); }
+@keyframes calPulso { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .cal-pcarrega { animation: none; } }
+
+/* celular: o desfoque de vidro sobre conteúdo que rola é o efeito mais caro da página; raio menor mantém o visual e alivia a GPU */
+@media (max-width: 767px) {
+  .nav-top.is-scrolled, .glass-card, .bk-pop, .lang-combo-dropdown, .lang-combo:hover .lang-combo-trigger {
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
 }

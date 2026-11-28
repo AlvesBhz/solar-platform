@@ -205,6 +205,8 @@ window.I18N = (function () {
     'Olá! Quero reservar a {chale}. Check-in: {ci}. Check-out: {co}. Hóspedes: {h}. Total: {total}.': ['Hello! I would like to book {chale}. Check-in: {ci}. Check-out: {co}. Guests: {h}. Total: {total}.', '¡Hola! Quiero reservar {chale}. Check-in: {ci}. Check-out: {co}. Huéspedes: {h}. Total: {total}.'],
     'Reserva': ['Booking', 'Reserva'],
     'Escolha as datas de check-in e check-out.': ['Choose your check-in and check-out dates.', 'Elige las fechas de check-in y check-out.'],
+    'Carregando valores…': ['Loading rates…', 'Cargando precios…'],
+    'Não foi possível carregar os valores agora. Feche e abra o calendário para tentar de novo.': ['Rates could not be loaded right now. Close and reopen the calendar to try again.', 'No se pudieron cargar los precios ahora. Cierre y vuelva a abrir el calendario para intentarlo de nuevo.'],
     'Consultando disponibilidade…': ['Checking availability…', 'Consultando disponibilidad…'],
     'Não foi possível consultar agora. Tente de novo em instantes.': ['We could not check right now. Please try again in a moment.', 'No pudimos consultar ahora. Inténtalo de nuevo en unos instantes.'],
     'Essas datas não estão disponíveis.': ['These dates are not available.', 'Estas fechas no están disponibles.'],

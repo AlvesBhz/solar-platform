@@ -89,6 +89,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   const abrir = async (page, rota) => { await page.goto(BASE + rota); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(500); };
   const foto = async (page, nome) => { if (process.env.FOTO) await page.screenshot({ path: `${process.env.FOTO}/${nome}.png`, fullPage: true }); };
   const sql = (q) => psql(['-d', DB], q).trim();
+  const bloqueio = sql(`select "DT_INI"::text from "SE"."SIT_BLOQUEIO" order by 1 limit 1`);   // a data vem do banco (o fuso do banco pode estar um dia à frente do de São Paulo)
 
   // ── só o ADMIN abre (preços são dados do site)
   console.log('── Acesso');
@@ -120,7 +121,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   const antes = await rotulo();
   ok(/R\$\s?(800|1\.700)/.test(antes), `dia ${alvo} mostra o valor da tarifa padrão do banco (${antes.match(/R\$[^,]*/)?.[0]})`);
   const ocupado = p.locator('[role=gridcell]').filter({ hasText: /bloq\./ });
-  await abrir(p, `/admin/precos?mes=${somar(hoje(), 3).slice(0, 7)}`);
+  await abrir(p, `/admin/precos?mes=${bloqueio.slice(0, 7)}`);
   ok(await p.locator('[role=gridcell]').filter({ hasText: /bloq\./ }).count() >= 1, 'o bloqueio que existe no banco aparece no calendário');
   void ocupado;
   await abrir(p, `/admin/precos?mes=${mes}`);
@@ -195,7 +196,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await datas.nth(0).fill('2030-01-05'); await datas.nth(1).fill('2030-01-07');
   txt = await resultado();
   ok(/Alguma noite ainda não tem tarifa/.test(txt), 'depois do fim das tarifas: sem tarifa, venda não aberta');
-  await datas.nth(0).fill(somar(hoje(), 3)); await datas.nth(1).fill(somar(hoje(), 5));
+  await datas.nth(0).fill(bloqueio); await datas.nth(1).fill(somar(bloqueio, 2));
   txt = await resultado();
   ok(/já estão ocupadas/.test(txt), 'datas do bloqueio que existe no banco: ocupado');
   await foto(p, 'T40-desktop');

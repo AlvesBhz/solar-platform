@@ -851,6 +851,24 @@ function arrastarSlides(container, prox, ant) {
   }, true);
 }
 
+/* ── Carrosséis: só a primeira foto carrega com a página; as outras, quando o carrossel aparece e uma de cada vez ── */
+function carregarSlide(sl) {
+  if (!sl) return;
+  sl.querySelectorAll('source[data-srcset]').forEach(function (x) { x.srcset = x.getAttribute('data-srcset'); x.removeAttribute('data-srcset'); });
+  sl.querySelectorAll('img[data-src]').forEach(function (i) { i.src = i.getAttribute('data-src'); i.removeAttribute('data-src'); });
+}
+/** Liga o carrossel à tela: segunda foto ao chegar perto, a próxima antes de cada troca; fora da tela não avança nem baixa. */
+function slidesPreguicosos(container, slides, atual) {
+  var visivel = false;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      visivel = es[0].isIntersecting;
+      if (visivel) carregarSlide(slides[(atual() + 1) % slides.length]);
+    }, { rootMargin: '300px 0px' }).observe(container);
+  } else { visivel = true; slides.forEach(carregarSlide); }
+  return { visivel: function () { return visivel; }, preparar: function (i) { carregarSlide(slides[i]); carregarSlide(slides[(i + 1) % slides.length]); } };
+}
+
 /* ── D2 SLIDESHOWS — escopo por container (suporta múltiplas seções) ── */
 (function () {
   document.querySelectorAll('.d2-slideshow').forEach(function (container) {
@@ -859,16 +877,18 @@ function arrastarSlides(container, prox, ant) {
     if (slides.length < 2) return;
     var current = 0;
     var timer;
+    var lazy = slidesPreguicosos(container, slides, function () { return current; });
     function goTo(idx) {
       slides[current].classList.remove('is-active');
       if (dots[current]) dots[current].classList.remove('is-active');
       current = (idx + slides.length) % slides.length;
+      lazy.preparar(current);
       slides[current].classList.add('is-active');
       if (dots[current]) dots[current].classList.add('is-active');
     }
     function startTimer() {
       clearInterval(timer);
-      timer = setInterval(function () { goTo(current + 1); }, 5000);
+      timer = setInterval(function () { if (lazy.visivel()) goTo(current + 1); }, 5000);
     }
     dots.forEach(function (dot, i) {
       dot.addEventListener('click', function () { goTo(i); startTimer(); });
@@ -892,18 +912,20 @@ function arrastarSlides(container, prox, ant) {
     if (slides.length < 2) return;
     var current = 0;
     var timer;
+    var lazy = slidesPreguicosos(container, slides, function () { return current; });
 
     function goTo(idx) {
       slides[current].classList.remove('is-active');
       if (dots[current]) dots[current].classList.remove('is-active');
       current = (idx + slides.length) % slides.length;
+      lazy.preparar(current);
       slides[current].classList.add('is-active');
       if (dots[current]) dots[current].classList.add('is-active');
     }
 
     function startTimer() {
       clearInterval(timer);
-      timer = setInterval(function () { goTo(current + 1); }, 6000);
+      timer = setInterval(function () { if (lazy.visivel()) goTo(current + 1); }, 6000);
     }
 
     dots.forEach(function (dot, i) {
@@ -922,6 +944,23 @@ function arrastarSlides(container, prox, ant) {
 })();
 
 /* CTA final — parallax, reveals e filtro de Passeios Privativos */
+/* ── Abertura: o pulso da foto só roda enquanto a abertura está na tela (economiza GPU e bateria) ── */
+(function () {
+  var h = document.getElementById('hero'), img = h && h.querySelector('img');
+  if (!img || !('IntersectionObserver' in window)) return;
+  new IntersectionObserver(function (es) { img.style.animationPlayState = es[0].isIntersecting ? 'running' : 'paused'; }, { threshold: 0 }).observe(h);
+})();
+
+/* ── Foto de fundo do fim da página: só baixa quando a seção está perto (não pesa na abertura) ── */
+(function () {
+  var bg = document.getElementById('ctaBg');
+  if (!bg) return;
+  var ligar = function () { bg.classList.add('bg-ok'); };
+  if (!('IntersectionObserver' in window)) return ligar();
+  var o = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { ligar(); o.disconnect(); } }, { rootMargin: '900px 0px' });
+  o.observe(document.getElementById('cta-final') || bg);
+})();
+
 /* ── PARALLAX: move fundo da serra no scroll ── */
 (function () {
   const bg  = document.getElementById('ctaBg');

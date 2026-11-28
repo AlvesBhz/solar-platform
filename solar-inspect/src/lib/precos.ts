@@ -64,8 +64,8 @@ export const brlCurto = (v: number) => (v >= 1000 ? `${(v / 1000).toLocaleString
 
 // ── memória: na demonstração é a "base"; no real guarda o que a tela carregou (tarifas, ajustes e ocupação do mês aberto)
 const DEMO_UNIDADE: Unidade = { id: 1, codigo: 'casa-do-mirante', nome: 'Casa do Mirante', maxAdultos: 2, maxCriancas: 2, maxHospedes: 4, maxNoites: 7, taxaLimpeza: 0, percentualSinal: 50 };
-const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupacao[]; pacotes: Pacote[]; seq: number } = (() => {
-  if (REAL) return { tarifas: [], ajustes: new Map(), ocupacoes: [], pacotes: [], seq: 0 };
+const dados: { tarifas: Tarifa[]; tarifasDe: number | null; tarifasEm: number; ajustes: Map<string, Ajuste>; ocupacoes: Ocupacao[]; pacotes: Pacote[]; seq: number } = (() => {
+  if (REAL) return { tarifas: [], tarifasDe: null, tarifasEm: 0, ajustes: new Map(), ocupacoes: [], pacotes: [], seq: 0 };
   const h = hoje();
   const aj = new Map<string, Ajuste>();
   const feriados: [string, string, number, string][] = [
@@ -76,7 +76,7 @@ const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupa
   ];
   feriados.forEach(([a, b, min, obs]) => { for (let d = a; d < b; d = somar(d, 1)) aj.set(d, { data: d, valor: 1700, minNoites: min, fechado: false, semChegada: false, semSaida: false, obs }); });
   return {
-    seq: 3,
+    seq: 3, tarifasDe: null, tarifasEm: 0,
     tarifas: [
       { id: 1, nome: 'Tarifa padrão', ini: '2026-11-01', fim: '2029-01-01', prioridade: 0, valorNoite: 800, valorFds: 1700, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 2, ativo: true, diasFds: [5, 6, 7] },
       // exemplo desativado: mostra a situação "Inativa" sem mexer nos preços do calendário
@@ -104,18 +104,25 @@ const rpc = async (nome: string, args: Record<string, unknown>) => {
 };
 
 // ── chalés
+// os chalés quase não mudam: uma consulta por 5 minutos serve as quatro telas (o banco confere o perfil toda vez que chamado)
+let unidadesEm = 0, unidadesP: Promise<Unidade[]> | null = null;
 export async function listarUnidades(): Promise<Unidade[]> {
   if (!REAL) return espera([DEMO_UNIDADE]);
-  return ((await rpc('prc_unidades', {})) as any[]).map((u) => ({
-    id: Number(u.id_unidade), codigo: u.cd_unidade, nome: u.nm_unidade, maxAdultos: u.qtde_max_adultos, maxCriancas: u.qtde_max_criancas, maxHospedes: u.qtde_max_hospedes,
-    maxNoites: u.qtde_max_noites, taxaLimpeza: Number(u.vl_taxa_limpeza), percentualSinal: Number(u.vl_percentual_sinal),
-  }));
+  if (!unidadesP || Date.now() - unidadesEm > 300000) {
+    unidadesEm = Date.now();
+    unidadesP = rpc('prc_unidades', {}).then((l) => (l as any[]).map((u): Unidade => ({
+      id: Number(u.id_unidade), codigo: u.cd_unidade, nome: u.nm_unidade, maxAdultos: u.qtde_max_adultos, maxCriancas: u.qtde_max_criancas, maxHospedes: u.qtde_max_hospedes,
+      maxNoites: u.qtde_max_noites, taxaLimpeza: Number(u.vl_taxa_limpeza), percentualSinal: Number(u.vl_percentual_sinal),
+    }))).catch((e) => { unidadesP = null; throw e; });
+  }
+  return unidadesP;
 }
 
 // ── tarifas
 const ordenar = (l: Tarifa[]) => [...l].sort((a, b) => b.prioridade - a.prioridade || a.ini.localeCompare(b.ini) || a.id - b.id);
 export async function listarTarifas(unidade: number): Promise<Tarifa[]> {
   if (REAL) {
+    dados.tarifasDe = unidade; dados.tarifasEm = Date.now();
     dados.tarifas = ((await rpc('prc_tarifas', { p_id_unidade: unidade })) as any[]).map((t): Tarifa => ({
       id: Number(t.id_tarifa), nome: t.nm_tarifa, ini: t.dt_ini, fim: t.dt_fim, prioridade: t.no_prioridade, valorNoite: Number(t.vl_noite),
       valorFds: t.vl_noite_fds === null ? null : Number(t.vl_noite_fds), adultosInclusos: t.qtde_adultos_inclusos, adultoExtra: Number(t.vl_adulto_extra),
@@ -156,6 +163,7 @@ export async function salvarTarifa(unidade: number, t: Omit<Tarifa, 'id'> & { id
       // só envia os dias quando mudam do padrão: assim funciona também com o banco anterior à coluna NO_DIAS_FDS
       ...([...t.diasFds].sort().join() === DIAS_PADRAO.join() ? {} : { p_no_dias_fds: [...new Set(t.diasFds)].sort() }),
     });
+    dados.tarifasEm = 0;
     return error ? falha(error) : { ok: true };
   }
   if (t.id) dados.tarifas = dados.tarifas.map((o) => (o.id === t.id ? { ...(t as Tarifa) } : o));
@@ -171,6 +179,7 @@ export async function alternarTarifa(id: number): Promise<Resultado> {
   if (e.length) return { ok: false, erro: e[0] };
   if (REAL) {
     const { error } = await supabase!.rpc('prc_alternar_tarifa', { p_id_tarifa: id, p_sg_ativo: novo.ativo });
+    dados.tarifasEm = 0;
     return error ? falha(error) : { ok: true };
   }
   dados.tarifas = dados.tarifas.map((o) => (o.id === id ? novo : o));
@@ -282,8 +291,9 @@ export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= 
 export async function carregarMes(unidade: number, mes: string): Promise<void> {
   if (!REAL) return espera(undefined);
   const ini = primeiroDoMes(mes), fim = ultimoDoMes(mes);
-  // pacotes: se o banco ainda não tiver a função (migração não aplicada), o calendário funciona igual, sem pacotes
-  const [t, a, o] = await Promise.all([listarTarifas(unidade).then(async (x) => { await listarPacotes(unidade).catch(() => { dados.pacotes = []; }); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
+  // pacotes: se o banco não responder a função, o calendário funciona igual, sem pacotes
+  const tarifasFrescas = dados.tarifasDe === unidade && Date.now() - dados.tarifasEm < 30000;       // virar o mês não precisa buscar as tarifas de novo
+  const [t, a, o] = await Promise.all([(tarifasFrescas ? Promise.resolve() : listarTarifas(unidade)).then(async (x) => { await listarPacotes(unidade).catch(() => { dados.pacotes = []; }); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
   void t;
   dados.ajustes = new Map((a as any[]).map((x): [string, Ajuste] => [x.dt_ref, {
     data: x.dt_ref, valor: x.vl_noite === null ? null : Number(x.vl_noite), minNoites: x.qtde_min_noites, fechado: x.sg_fechado, semChegada: x.sg_sem_chegada,

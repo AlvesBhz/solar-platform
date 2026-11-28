@@ -127,12 +127,14 @@ window.Disponibilidade = (function () {
   function rpcPacotes(ini, fim) {
     var k = iso(ini) + '|' + iso(fim);
     if (!cachePac[k]) {
+      var guardados = doNavegador('pac|' + k);                          // mesma validade (2 min) dos preços
+      if (guardados) { guardados.forEach(function (p) { pacotes[p.dt_checkin + '|' + p.qtde_noites] = p; }); return (cachePac[k] = Promise.resolve(guardados)); }
       cachePac[k] = fetch(CONFIG.url + '/rest/v1/rpc/consultar_pacotes', {
         method: 'POST',
         headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
         body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim) })
       }).then(function (r) { if (r.status === 404) return []; if (!r.ok) throw new Error(); return r.json(); })  // 404: banco ainda sem pacotes
-        .then(function (l) { l.forEach(function (p) { pacotes[p.dt_checkin + '|' + p.qtde_noites] = p; }); return l; })
+        .then(function (l) { l.forEach(function (p) { pacotes[p.dt_checkin + '|' + p.qtde_noites] = p; }); paraNavegador('pac|' + k, l); return l; })
         .catch(function () { delete cachePac[k]; return []; });
     }
     return cachePac[k];
@@ -274,25 +276,60 @@ window.Disponibilidade = (function () {
       });
   }
 
-  /* Preço de cada noite no calendário, para os hóspedes escolhidos (cache por mês e hóspedes). */
+  /* Preço de cada noite no calendário, para os hóspedes escolhidos.
+     Uma única consulta traz o mês pedido e o seguinte; o resultado fica na memória e na aba (2 min), com tempo limite
+     e uma segunda tentativa. A página também pede o mês atual em segundo plano, antes de o calendário abrir. */
   var cachePrecos = {};
-  function precosDoMes(ano, mes0) {
-    var s = Booking.getState(), ini = new Date(ano, mes0, 1), fim = new Date(ano, mes0 + 1, 1);
-    var chave = [iso(ini), s.adults, s.children, s.older, s.babies].join('|');
-    if (!cachePrecos[chave]) {
-      cachePrecos[chave] = fetch(CONFIG.url + '/rest/v1/rpc/consultar_precos', {
-        method: 'POST',
-        headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
-        body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies, p_criancas_maiores: s.older || undefined })
-      }).then(function (r) {
-          if (r.status === 404) return precosPorDisponibilidade(ini, fim, s); // banco ainda sem consultar_precos
-          if (!r.ok) throw new Error(); return r.json();
-        })
-        .then(function (l) { var m = {}; l.forEach(function (x) { m[x.dt_ref] = x; }); return m; })
-        .catch(function () { delete cachePrecos[chave]; return null; });
-    }
-    return cachePrecos[chave];
+  var VALIDADE_MS = 120000, LIMITE_MS = 8000;
+  function chaveMes(ini, s) { return [iso(ini), s.adults, s.children, s.older, s.babies].join('|'); }
+  function doNavegador(k) {
+    try { var x = JSON.parse(sessionStorage.getItem('pr:' + k) || 'null'); return x && Date.now() - x.t < VALIDADE_MS ? x.l : null; } catch (e) { return null; }
   }
+  function paraNavegador(k, l) { try { sessionStorage.setItem('pr:' + k, JSON.stringify({ t: Date.now(), l: l })); } catch (e) { /* aba cheia ou bloqueada: segue sem */ } }
+  function comLimite(url, opcoes) {
+    var c = window.AbortController ? new AbortController() : null, t = setTimeout(function () { if (c) c.abort(); }, LIMITE_MS);
+    if (c) opcoes.signal = c.signal;
+    return fetch(url, opcoes).then(function (r) { clearTimeout(t); return r; }, function (e) { clearTimeout(t); throw e; });
+  }
+  function pedirPrecos(ini, fim, s) {
+    var corpo = JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim), p_adultos: s.adults, p_criancas: s.children, p_bebes: s.babies, p_criancas_maiores: s.older || undefined });
+    function uma() {
+      return comLimite(CONFIG.url + '/rest/v1/rpc/consultar_precos', {
+        method: 'POST', headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema }, body: corpo
+      }).then(function (r) {
+        if (r.status === 404) return precosPorDisponibilidade(ini, fim, s); // banco ainda sem consultar_precos
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      });
+    }
+    return uma().catch(function () { return new Promise(function (ok) { setTimeout(ok, 500); }).then(uma); });   // uma segunda tentativa
+  }
+  function porMes(lista, ini) {
+    var pref = iso(ini).slice(0, 7), m = {};
+    lista.forEach(function (x) { if (String(x.dt_ref).slice(0, 7) === pref) m[x.dt_ref] = x; });
+    return m;
+  }
+  function precosDoMes(ano, mes0) {
+    var s = Booking.getState(), ini = new Date(ano, mes0, 1), prox = new Date(ano, mes0 + 1, 1), fim = new Date(ano, mes0 + 2, 1);
+    var k0 = chaveMes(ini, s), k1 = chaveMes(prox, s);
+    if (!cachePrecos[k0]) {
+      var guardada = doNavegador(k0);
+      var req = guardada ? Promise.resolve(guardada) : pedirPrecos(ini, fim, s).then(function (l) { paraNavegador(k0, l); return l; });
+      cachePrecos[k0] = req.then(function (l) { return porMes(l, ini); }).catch(function () { delete cachePrecos[k0]; delete cachePrecos[k1]; return null; });
+      if (!cachePrecos[k1]) cachePrecos[k1] = req.then(function (l) { return porMes(l, prox); }).catch(function () { delete cachePrecos[k1]; return null; });
+      setTimeout(function () { delete cachePrecos[k0]; delete cachePrecos[k1]; }, VALIDADE_MS);   // dados do banco mudam: a memória também vence
+    }
+    return cachePrecos[k0];
+  }
+  /* Em segundo plano, quando a página fica ociosa: o calendário já abre com os valores na mão. */
+  function aquecer() {
+    var h = new Date();
+    try {
+      precosDoMes(h.getFullYear(), h.getMonth());
+      rpcPacotes(new Date(h.getFullYear(), h.getMonth(), 1), new Date(h.getFullYear(), h.getMonth() + 2, 1));   // pacotes de datas especiais dos mesmos 2 meses
+    } catch (e) { /* o calendário pede de novo quando abrir */ }
+  }
+  (window.requestIdleCallback || function (f) { setTimeout(f, 1500); })(aquecer, { timeout: 4000 });
   /* Alternativa enquanto consultar_precos não existe no banco: usa consultar_disponibilidade em blocos de
      até 7 noites; num bloco indisponível, consulta noite a noite para saber quais estão livres. */
   function rpcDisp(ci, co, s) {
@@ -357,10 +394,17 @@ window.Disponibilidade = (function () {
     });
   }
   function precosNoCalendario(cal, ano, mes0) {
-    precosDoMes(ano, mes0 + 1 > 11 ? ano + 1 : ano, (mes0 + 1) % 12).then(registrar);  // mês seguinte: estadias que viram o mês
-    rpcPacotes(new Date(ano, mes0, 1), new Date(ano, mes0 + 2, 1)).then(function () { marcarSelecao(cal); });
-    precosDoMes(ano, mes0).then(function (m) {
-      if (!m) return;
+    var velha = cal.querySelector('.cal-pnota'); if (velha) velha.remove();
+    var meuMes = cal._pmes = ano + '-' + mes0;                                            // mês que esta tela mostra (o usuário pode já ter virado a página)
+    var nota = document.createElement('div'); nota.className = 'cal-pnota cal-pcarrega';
+    nota.textContent = t('Carregando valores…'); cal.appendChild(nota);
+    var atual = precosDoMes(ano, mes0);                                                   // traz este mês e o seguinte numa consulta só
+    precosDoMes(mes0 + 1 > 11 ? ano + 1 : ano, (mes0 + 1) % 12).then(registrar);          // mês seguinte: estadias que viram o mês (já está na memória)
+    rpcPacotes(new Date(ano, mes0, 1), new Date(ano, mes0 + 2, 1)).then(function () { marcarSelecao(cal); });                                         // pacotes de datas especiais (valem para a seleção de saída)
+    atual.then(function (m) {
+      if (cal._pmes !== meuMes) return;
+      nota.classList.remove('cal-pcarrega');
+      if (!m) { nota.textContent = t('Não foi possível carregar os valores agora. Feche e abra o calendário para tentar de novo.'); nota.classList.add('cal-perro'); return; }
       registrar(m);
       var achou = false;
       cal.querySelectorAll('.cal-d').forEach(function (c) {
@@ -373,11 +417,8 @@ window.Disponibilidade = (function () {
           if (pk) { c.classList.add('cal-pac'); c.title = t('Pacote {nome}').replace('{nome}', pk.nm_pacote); }
         } else c.classList.add('cal-ocu');
       });
-      if (achou && !cal.querySelector('.cal-pnota')) {
-        var n = document.createElement('div'); n.className = 'cal-pnota';
-        n.textContent = t('Valor por noite') + ' · ' + document.getElementById('guestsDisplay').textContent;
-        cal.appendChild(n);
-      }
+      if (achou) nota.textContent = t('Valor por noite') + ' · ' + document.getElementById('guestsDisplay').textContent;
+      else nota.remove();
       marcarSelecao(cal);
     });
   }
