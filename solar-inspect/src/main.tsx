@@ -5,6 +5,12 @@ import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
 import SimNav from './components/SimNav';
 import './index.css';
+// teclado do celular aberto (foco num campo de texto, em tela de toque): marca o body para a barra das áreas sair da frente
+if (typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches) {
+  const ehTexto = (el: EventTarget | null) => el instanceof HTMLElement && (el.matches('textarea, select, [contenteditable]') || (el instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'file', 'button', 'submit'].includes(el.type)));
+  document.addEventListener('focusin', (e) => { if (ehTexto(e.target)) document.body.classList.add('teclado-aberto'); });
+  document.addEventListener('focusout', () => setTimeout(() => { if (!ehTexto(document.activeElement)) document.body.classList.remove('teclado-aberto'); }, 50));
+}
 
 addCollection(solar);
 
