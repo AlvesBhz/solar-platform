@@ -205,6 +205,33 @@ export async function removerAjustes(unidade: number, datas: string[]): Promise<
   return espera({ ok: true });
 }
 
+// ── faixas de idade das crianças (por pousada): até `bebe` anos, até `menor`, até `crianca`; acima disso, adulto
+export type Idades = { bebe: number; menor: number; crianca: number };
+export const IDADES_PADRAO: Idades = { bebe: 4, menor: 8, crianca: 13 };
+let idadesDemo: Idades = { ...IDADES_PADRAO };
+/** Rótulos das faixas: "até 4 anos", "5 a 8 anos", "9 a 13 anos" e "14+ anos". */
+export const faixas = (i: Idades) => ({ bebe: `até ${i.bebe} anos`, menor: `${i.bebe + 1} a ${i.menor} anos`, crianca: `${i.menor + 1} a ${i.crianca} anos`, adulto: `${i.crianca + 1}+ anos` });
+export async function carregarIdades(unidade: number): Promise<{ idades: Idades; editavel: boolean }> {
+  if (!REAL) return espera({ idades: { ...idadesDemo }, editavel: true });
+  try {
+    const r = ((await rpc('prc_idades', { p_id_unidade: unidade })) as any[])[0];
+    return r ? { idades: { bebe: r.no_idade_max_bebe, menor: r.no_idade_max_crianca_menor, crianca: r.no_idade_max_crianca }, editavel: true } : { idades: IDADES_PADRAO, editavel: false };
+  } catch { return { idades: IDADES_PADRAO, editavel: false }; }        // banco ainda sem a função: mostra as faixas de sempre
+}
+export function validarIdades(i: Idades): string | null {
+  return i.bebe >= 0 && i.bebe < i.menor && i.menor < i.crianca && i.crianca <= 17 ? null : 'As faixas de idade precisam crescer (ex.: até 4, até 8, até 13) e ir no máximo até 17 anos.';
+}
+export async function salvarIdades(unidade: number, i: Idades): Promise<Resultado> {
+  const e = validarIdades(i);
+  if (e) return { ok: false, erro: e };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_salvar_idades', { p_id_unidade: unidade, p_bebe: i.bebe, p_menor: i.menor, p_crianca: i.crianca });
+    return error ? falha(error) : { ok: true };
+  }
+  idadesDemo = { ...i };
+  return espera({ ok: true });
+}
+
 // ── pacotes
 export const fimPacote = (p: Pacote) => somar(p.checkin, p.noites);
 const ordenarPacotes = (l: Pacote[]) => [...l].sort((a, b) => Number(b.ativo) - Number(a.ativo) || a.checkin.localeCompare(b.checkin) || a.noites - b.noites);

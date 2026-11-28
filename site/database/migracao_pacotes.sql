@@ -7,6 +7,8 @@
 --   • fora dos pacotes, nada muda.
 -- Dias da semana do segundo valor da tarifa (NO_DIAS_FDS): antes fixos em sexta, sábado e domingo; agora a tarifa diz quais
 -- dias (ISO: 1 = segunda … 7 = domingo) usam VL_NOITE_FDS. O padrão {5,6,7} mantém os preços de hoje.
+-- Faixas de idade das crianças (por pousada, em SIT_PROPRIEDADE): o administrador muda no Inspect (prc_salvar_idades) e o
+-- site lê com consultar_regras_hospedes (rótulos "até 4 anos", "5 a 8 anos"…). A conta continua por faixa, como antes.
 -- Idempotente e transacional. Pré-requisitos: schema.sql do site e migracao_precos_gestao.sql (prc_exigir_admin).
 -- Base: calcular_estadia e consultar_precos copiadas de produção em 28/11/2026, com as mudanças marcadas "2b" e 'pacote'.
 begin;
@@ -372,5 +374,61 @@ revoke all on function prc_tarifas(bigint) from public, anon, authenticated;
 revoke all on function prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean, smallint[]) from public, anon, authenticated;
 grant execute on function prc_tarifas(bigint) to authenticated;
 grant execute on function prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean, smallint[]) to authenticated;
+
+-- ── faixas de idade das crianças (por pousada) ─────────────────────────────────────────────────────
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'CK_SIT_PROPRIEDADE_IDADES') then
+    alter table "SE"."SIT_PROPRIEDADE" add constraint "CK_SIT_PROPRIEDADE_IDADES"
+      check ("NO_IDADE_MAX_BEBE" >= 0 and "NO_IDADE_MAX_BEBE" < "NO_IDADE_MAX_CRIANCA_MENOR" and "NO_IDADE_MAX_CRIANCA_MENOR" < "NO_IDADE_MAX_CRIANCA" and "NO_IDADE_MAX_CRIANCA" <= 17);
+  end if;
+end $$;
+
+create or replace function prc_idades(p_id_unidade bigint)
+returns table (no_idade_max_bebe int, no_idade_max_crianca_menor int, no_idade_max_crianca int)
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  perform "SE".prc_exigir_admin();
+  return query
+  select pr."NO_IDADE_MAX_BEBE"::int, pr."NO_IDADE_MAX_CRIANCA_MENOR"::int, pr."NO_IDADE_MAX_CRIANCA"::int
+  from "SIT_UNIDADE" u join "SIT_PROPRIEDADE" pr on pr."ID_PROPRIEDADE" = u."ID_PROPRIEDADE" where u."ID_UNIDADE" = p_id_unidade;
+end;
+$$;
+
+-- Muda as faixas da pousada do chalé: até p_bebe anos (PC_BEBE), até p_menor (PC_CRIANCA), até p_crianca (PC_CRIANCA_MAIOR); acima, adulto.
+create or replace function prc_salvar_idades(p_id_unidade bigint, p_bebe int, p_menor int, p_crianca int)
+returns void language plpgsql volatile security definer set search_path = "SE", extensions, pg_temp as $$
+declare v_prop bigint;
+begin
+  perform "SE".prc_exigir_admin();
+  select u."ID_PROPRIEDADE" into v_prop from "SIT_UNIDADE" u where u."ID_UNIDADE" = p_id_unidade;
+  if v_prop is null then raise exception 'unidade_inexistente' using errcode = 'P0001'; end if;
+  if p_bebe is null or p_menor is null or p_crianca is null or not (p_bebe >= 0 and p_bebe < p_menor and p_menor < p_crianca and p_crianca <= 17) then
+    raise exception 'idades_invalidas' using errcode = 'P0001';
+  end if;
+  update "SIT_PROPRIEDADE" set "NO_IDADE_MAX_BEBE" = p_bebe, "NO_IDADE_MAX_CRIANCA_MENOR" = p_menor, "NO_IDADE_MAX_CRIANCA" = p_crianca
+  where "ID_PROPRIEDADE" = v_prop;
+end;
+$$;
+
+-- API pública do site: faixas de idade e percentuais da tarifa que vale hoje (rótulos do seletor de hóspedes).
+create or replace function consultar_regras_hospedes(p_cd_unidade text default 'casa-do-mirante')
+returns table (no_idade_max_bebe int, no_idade_max_crianca_menor int, no_idade_max_crianca int, pc_bebe numeric, pc_crianca numeric, pc_crianca_maior numeric)
+language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
+  select pr."NO_IDADE_MAX_BEBE"::int, pr."NO_IDADE_MAX_CRIANCA_MENOR"::int, pr."NO_IDADE_MAX_CRIANCA"::int, t."PC_BEBE", t."PC_CRIANCA", t."PC_CRIANCA_MAIOR"
+  from "SIT_UNIDADE" u
+  join "SIT_PROPRIEDADE" pr on pr."ID_PROPRIEDADE" = u."ID_PROPRIEDADE"
+  left join lateral (
+    select * from "SIT_TARIFA" x
+    where x."ID_UNIDADE" = u."ID_UNIDADE" and x."SG_ATIVO" and (now() at time zone pr."DS_FUSO_HORARIO")::date >= x."DT_INI" and (now() at time zone pr."DS_FUSO_HORARIO")::date < x."DT_FIM"
+    order by x."NO_PRIORIDADE" desc limit 1
+  ) t on true
+  where u."CD_UNIDADE" = p_cd_unidade and u."SG_ATIVO";
+$$;
+revoke all on function prc_idades(bigint) from public, anon, authenticated;
+revoke all on function prc_salvar_idades(bigint, int, int, int) from public, anon, authenticated;
+revoke all on function consultar_regras_hospedes(text) from public;
+grant execute on function prc_idades(bigint) to authenticated;
+grant execute on function prc_salvar_idades(bigint, int, int, int) to authenticated;
+grant execute on function consultar_regras_hospedes(text) to anon, authenticated;
 
 commit;

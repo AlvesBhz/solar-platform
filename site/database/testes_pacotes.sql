@@ -111,6 +111,20 @@ select teste.ok((select disponivel and vl_hospedagem <> 2900 and ds_detalhe -> 0
 select teste.ok((select count(*) = 2 from "SIT_PACOTE" where "ID_UNIDADE" = :ua and not "SG_ATIVO"), 'desativar não apaga (histórico)');
 select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_PACOTE'), 'mudanças nos pacotes ficam na auditoria');
 
+\echo '── Faixas de idade das crianças (por pousada)'
+:como_admin
+select teste.ok((select no_idade_max_bebe = 4 and no_idade_max_crianca_menor = 8 and no_idade_max_crianca = 13 from "SE".prc_idades(:ua)), 'faixas de hoje: até 4, até 8 e até 13 anos');
+select "SE".prc_salvar_idades(:ua, 3, 7, 12);
+select teste.ok((select no_idade_max_bebe = 3 and no_idade_max_crianca_menor = 7 and no_idade_max_crianca = 12 from "SE".prc_idades(:ua)), 'o administrador muda as faixas');
+select teste.erro(format($q$select "SE".prc_salvar_idades(%s, 8, 5, 12)$q$, :ua), 'idades_invalidas', 'faixas fora de ordem são recusadas');
+select teste.erro(format($q$select "SE".prc_salvar_idades(%s, 3, 7, 18)$q$, :ua), 'idades_invalidas', 'acima de 17 já é adulto: recusado');
+:dono
+set role anon;
+select teste.ok((select no_idade_max_bebe = 3 and no_idade_max_crianca = 12 from consultar_regras_hospedes()), 'o site lê as faixas (anon)');
+reset role;
+:como_admin
+select "SE".prc_salvar_idades(:ua, 4, 8, 13);
+
 \echo '── Dias da semana do segundo valor (NO_DIAS_FDS)'
 :como_admin
 select teste.ok((select no_dias_fds = '{5,6,7}' from "SE".prc_tarifas(:ua) where id_tarifa = :tf), 'tarifa salva sem informar os dias: sexta, sábado e domingo (como antes)');

@@ -6,7 +6,7 @@ import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
 import {
-  MOTIVOS, REAL, ajusteDe, brl, brlCurto, calcularEstadia, carregarMes, dataCurta, dataLonga, diaDe, diaSemana, fimPacote, listarPacotes, mesAno, noites, noon, pacotesDe, removerAjustes, salvarAjustes, salvarPacote, somar, tarifaDe,
+  IDADES_PADRAO, carregarIdades, faixas, type Idades, MOTIVOS, REAL, ajusteDe, brl, brlCurto, calcularEstadia, carregarMes, dataCurta, dataLonga, diaDe, diaSemana, fimPacote, listarPacotes, mesAno, noites, noon, pacotesDe, removerAjustes, salvarAjustes, salvarPacote, somar, tarifaDe,
   type Dia, type Estadia, type Hospedes, type Noite, type Pacote, type Unidade,
 } from '../lib/precos';
 import { useUnidades } from '../lib/usePrecos';
@@ -449,6 +449,9 @@ export function T40Simulador() {
   const [r, setR] = useState<Estadia | null>(null);
   const [erro, setErro] = useState(false);
   const [vez, setVez] = useState(0);
+  const [idades, setIdades] = useState<Idades>(IDADES_PADRAO);
+  useEffect(() => { if (u) void carregarIdades(u.id).then((r) => setIdades(r.idades)); }, [u]);
+  const fx = faixas(idades);
   useEffect(() => {
     if (!u) return;
     let vivo = true; setErro(false);
@@ -474,9 +477,9 @@ export function T40Simulador() {
           </div>
           <div className="flex flex-col gap-3 border-t border-line-1 pt-3">
             <Contador rotulo="Adultos" dica={`até ${u.maxAdultos}`} valor={h.adultos} min={1} max={u.maxAdultos} onChange={set('adultos')} />
-            <Contador rotulo="Crianças de 5 a 8 anos" valor={h.criancas} min={0} max={h.criancas + Math.max(outros, 0)} onChange={set('criancas')} />
-            <Contador rotulo="Crianças de 9 a 13 anos" valor={h.criancasMaiores} min={0} max={h.criancasMaiores + Math.max(outros, 0)} onChange={set('criancasMaiores')} />
-            <Contador rotulo="Até 4 anos" dica="não pagam, mas ocupam vaga" valor={h.bebes} min={0} max={h.bebes + Math.max(outros, 0)} onChange={set('bebes')} />
+            <Contador rotulo={`Crianças de ${fx.menor}`} valor={h.criancas} min={0} max={h.criancas + Math.max(outros, 0)} onChange={set('criancas')} />
+            <Contador rotulo={`Crianças de ${fx.crianca}`} valor={h.criancasMaiores} min={0} max={h.criancasMaiores + Math.max(outros, 0)} onChange={set('criancasMaiores')} />
+            <Contador rotulo={ucf(fx.bebe)} dica="não pagam, mas ocupam vaga" valor={h.bebes} min={0} max={h.bebes + Math.max(outros, 0)} onChange={set('bebes')} />
           </div>
           <p className="text-[0.75rem] text-fg-3">O chalé comporta {u.maxHospedes} hóspedes: {u.maxAdultos} adultos e até {u.maxCriancas} crianças ou bebês. Estadia de 1 a {u.maxNoites} noites.</p>
         </form>

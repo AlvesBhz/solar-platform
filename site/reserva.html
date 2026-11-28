@@ -175,9 +175,9 @@ input.err,select.err{border-color:var(--bad)}
             </div>
             <div class="bloco">
               <h3>Crianças <small>sobre o valor por pessoa da diária</small></h3>
-              <div class="lin"><span>9 a 13 anos</span><b>100%</b></div>
-              <div class="lin"><span>5 a 8 anos</span><b>30%</b></div>
-              <div class="lin"><span>Até 4 anos</span><b>Grátis</b></div>
+              <div class="lin"><span id="fxM">9 a 13 anos</span><b id="pcM">100%</b></div>
+              <div class="lin"><span id="fxC">5 a 8 anos</span><b id="pcC">30%</b></div>
+              <div class="lin"><span id="fxB">Até 4 anos</span><b id="pcB">Grátis</b></div>
             </div>
             <div class="bloco">
               <h3>Estadia</h3>
@@ -229,7 +229,7 @@ input.err,select.err{border-color:var(--bad)}
             <p><b>Cláusula quinta — da conservação.</b> O LOCATÁRIO obriga-se a conservar o imóvel como se fosse seu, assim como móveis, objetos de decoração e utensílios, sob pena de rescisão e indenização por qualquer dano. Os objetos danificados serão repostos por outros de igual valor, marca e modelo, ou indenizados pelo valor correspondente.</p>
             <p><b>Cláusula sexta — da apresentação.</b> O LOCADOR, ou alguém de sua confiança, receberá o LOCATÁRIO na chegada. Na saída, conferirão conjuntamente os mesmos bens. O LOCATÁRIO autoriza o LOCADOR, ou quem este indicar, a acessar o imóvel para eventuais consertos necessários.</p>
             <p><b>Cláusula sétima — das particularidades.</b> A capacidade máxima do imóvel é de 2 adultos e até 2 crianças, cabendo ao LOCATÁRIO observar todas as condições informadas neste site e responsabilizar-se pelas escolhas.</p>
-            <p>§ 1º-A O valor da reserva considera as idades das crianças informadas pelo LOCATÁRIO (até 4 anos, 5 a 8 anos e 9 a 13 anos). O LOCADOR pode pedir documento das crianças no check-in e, havendo divergência, a diferença das diárias é cobrada no check-in.</p>
+            <p>§ 1º-A O valor da reserva considera as idades das crianças informadas pelo LOCATÁRIO (<span id="fxContrato">até 4 anos, 5 a 8 anos e 9 a 13 anos</span>). O LOCADOR pode pedir documento das crianças no check-in e, havendo divergência, a diferença das diárias é cobrada no check-in.</p>
             <p>§ 1º Se o LOCATÁRIO exceder o número máximo de pessoas previsto na reserva, sem consentimento expresso do LOCADOR, incorrerá em multa equivalente ao valor da diária por pessoa, por cada dia de ocupação, além da possibilidade de rescisão e entrega imediata do imóvel, a critério do LOCADOR.</p>
             <p>§ 2º Não é permitida a presença de animais. § 3º Não é permitida a saída com qualquer objeto ou equipamento pertencente ao imóvel. § 4º O LOCADOR fornece roupa de cama, toalhas, utensílios e equipamentos de cozinha, estando o imóvel mobiliado e em bom estado de conservação. § 5º Deve ser observado o horário de silêncio das 22:00 às 07:00.</p>
             <p><b>Cláusula oitava — responsabilidades e advertências.</b> O LOCATÁRIO declara saber que o imóvel está em área natural, remota e/ou isolada, na região da Serra do Cipó e Lapinha da Serra, integrada à natureza, com riscos de quedas, picadas de insetos, carrapatos, animais peçonhentos, afogamento, rajadas de vento, raios, tromba d'água, entre outros, sendo o único responsável pela própria segurança e pela de seus convidados, e assumindo o risco de suas atividades nesse ambiente. Isenta o Solar do Espinhaço de responsabilidade por esses eventos e por problemas de saúde, mal súbito ou acidentes pessoais ocorridos consigo e com os demais ocupantes durante o período contratado.</p>
@@ -330,9 +330,9 @@ input.err,select.err{border-color:var(--bad)}
   function hospedes() {
     var f = function (n, s, p) { return n + ' ' + T(n === 1 ? s : p); };
     var t = [f(P.a, 'adulto', 'adultos')];
-    if (P.m) t.push(f(P.m, 'criança', 'crianças') + ' ' + T('de 9 a 13 anos'));
-    if (P.c) t.push(f(P.c, 'criança', 'crianças') + ' ' + T('de 5 a 8 anos'));
-    if (P.b) t.push(f(P.b, 'criança', 'crianças') + ' ' + T('até 4 anos'));
+    if (P.m) t.push(f(P.m, 'criança', 'crianças') + ' ' + T('de {a} a {b} anos', { a: REG.m + 1, b: REG.c }));
+    if (P.c) t.push(f(P.c, 'criança', 'crianças') + ' ' + T('de {a} a {b} anos', { a: REG.b + 1, b: REG.m }));
+    if (P.b) t.push(f(P.b, 'criança', 'crianças') + ' ' + T('até {n} anos', { n: REG.b }));
     return t.join(', ');
   }
   function estado(txt, ruim) { var e = $('resEstado'); e.className = 'state' + (ruim ? ' bad' : ''); e.textContent = T(txt); e.classList.remove('hide'); $('resCorpo').classList.add('hide'); }
@@ -343,6 +343,25 @@ input.err,select.err{border-color:var(--bad)}
     var m = { validacao: 'Confira os dados informados e tente de novo.', limite: 'Muitas tentativas. Tente de novo mais tarde ou fale com a pousada.', captcha: 'Não foi possível validar que você não é um robô. Atualize a página e tente de novo.', expirada: 'O tempo para concluir passou. Consulte as datas de novo.', indisponivel: MOTIVOS[j.motivo] || 'Essas datas não estão disponíveis.' };
     return T(m[j.erro] || 'Não foi possível concluir agora. Tente de novo em instantes.');
   }
+
+  /* faixas de idade e percentuais das crianças (definidos no Inspect, por pousada); sem resposta, as de sempre */
+  var REG = { b: 4, m: 8, c: 13, pcB: 0, pcC: 30, pcM: 100 };
+  function pctTxt(v) { return v ? String(Math.round(v * 100) / 100).replace('.', ',') + '%' : T('Grátis'); }
+  function faixasNaTela() {
+    $('fxM').textContent = T('{a} a {b} anos', { a: REG.m + 1, b: REG.c }); $('pcM').textContent = pctTxt(REG.pcM);
+    $('fxC').textContent = T('{a} a {b} anos', { a: REG.b + 1, b: REG.m }); $('pcC').textContent = pctTxt(REG.pcC);
+    $('fxB').textContent = T('Até {n} anos', { n: REG.b }); $('pcB').textContent = pctTxt(REG.pcB);
+    $('fxContrato').textContent = 'até ' + REG.b + ' anos, ' + (REG.b + 1) + ' a ' + REG.m + ' anos e ' + (REG.m + 1) + ' a ' + REG.c + ' anos';   // contrato: sempre em português
+    if (P.ci && P.co && $('rH').textContent) $('rH').textContent = hospedes();
+  }
+  fetch(API.url + '/rest/v1/rpc/consultar_regras_hospedes', { method: 'POST', headers: { apikey: API.chave, 'Content-Type': 'application/json', 'Content-Profile': API.schema }, body: '{}' })
+    .then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (l) {
+      var x = l && l[0]; if (!x) return;
+      REG = { b: x.no_idade_max_bebe, m: x.no_idade_max_crianca_menor, c: x.no_idade_max_crianca,
+        pcB: x.pc_bebe == null ? REG.pcB : Number(x.pc_bebe), pcC: x.pc_crianca == null ? REG.pcC : Number(x.pc_crianca), pcM: x.pc_crianca_maior == null ? REG.pcM : Number(x.pc_crianca_maior) };
+      faixasNaTela();
+    }).catch(function () {});
 
   /* acompanhantes e fotos dos documentos: pedidos depois da confirmação do pagamento do sinal */
 
@@ -566,6 +585,7 @@ input.err,select.err{border-color:var(--bad)}
       e.innerHTML = l === 'pt' ? IH_PT[k] : window.I18N_IH[k][l === 'en' ? 0 : 1];
     });
     paises();
+    faixasNaTela();
     document.title = T('Realizar reserva · Solar do Espinhaço');
     var n = $('notaIdioma'); n.classList.toggle('hide', l === 'pt'); n.textContent = l === 'pt' ? '' : T('Aviso: o texto do contrato abaixo está em português, que é a versão com validade jurídica. Se precisar de uma tradução, fale com a nossa equipe por e-mail ou WhatsApp antes de reservar.');
     document.querySelectorAll('.idiomas button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-l') === l); b.setAttribute('aria-pressed', b.getAttribute('data-l') === l); });

@@ -485,10 +485,12 @@ const Booking = (() => {
       rows[key] = r;
       return r;
     }
-    pop.appendChild(row(I18N.t('Adultos'),  I18N.t('14+ anos'),  'adults'));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('9 a 13 anos · 100%'), 'older'));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('5 a 8 anos · 30%'), 'children'));
-    pop.appendChild(row(I18N.t('Crianças'), I18N.t('até 4 anos · não paga'), 'babies'));
+    // faixas de idade e percentuais vêm do banco (Inspect › Tarifa); sem resposta, as de sempre
+    const D = window.Disponibilidade, fx = (k, padrao) => (D && D.rotuloFaixa ? D.rotuloFaixa(k) : I18N.t(padrao));
+    pop.appendChild(row(I18N.t('Adultos'),  fx('adults', '14+ anos'),  'adults'));
+    pop.appendChild(row(I18N.t('Crianças'), fx('older', '9 a 13 anos · 100%'), 'older'));
+    pop.appendChild(row(I18N.t('Crianças'), fx('children', '5 a 8 anos · 30%'), 'children'));
+    pop.appendChild(row(I18N.t('Crianças'), fx('babies', 'até 4 anos · não paga'), 'babies'));
     const nota = document.createElement('div'); nota.className = 'gst-note';
     nota.textContent = I18N.t('Criança paga um percentual do valor por pessoa da diária. Máximo: 2 adultos e 2 crianças.');
     pop.appendChild(nota);

@@ -5,7 +5,7 @@ import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
-import { DIAS_PADRAO, SEMANA_ISO, alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, rotuloDias, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
+import { DIAS_PADRAO, IDADES_PADRAO, SEMANA_ISO, carregarIdades, faixas, salvarIdades, validarIdades, type Idades, alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, rotuloDias, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
 import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
 import { AbasPrecos, AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
@@ -125,10 +125,13 @@ export function T41FormTarifa() {
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [pronto, setPronto] = useState(false);
+  const [idades, setIdades] = useState<Idades>(IDADES_PADRAO);
+  const [idadesOrig, setIdadesOrig] = useState<Idades | null>(null);   // null = banco sem faixas editáveis
   const un = useUnidades(!!perfil);
   const uid = un.atual?.id;
   useEffect(() => {
     if (uid === undefined) return;
+    void carregarIdades(uid).then((r) => { setIdades(r.idades); setIdadesOrig(r.editavel ? r.idades : null); });
     // carrega as tarifas do chalé (a conferência de sobreposição usa a lista) e, na edição, abre a escolhida
     listarTarifas(uid).then(() => {
       if (nova) { setV2('1700'); return setPronto(true); }
@@ -145,6 +148,16 @@ export function T41FormTarifa() {
   const atual = { ...t, fim: ate ? somar(ate, 1) : '', valorFds: temV2 ? num(v2) ?? -1 : null, diasFds: temV2 ? t.diasFds : [...DIAS_PADRAO] };
   const erros = validarTarifa(atual).map((e) => e.replace('Valor de fim de semana inválido.', 'Informe o valor da noite dos dias do segundo grupo.'));
   if (temV2 && dias1.length === 0 && !erros.length) erros.push('Deixe ao menos um dia no primeiro valor, ou desmarque os dias do segundo.');
+  const erroIdades = validarIdades(idades);
+  if (erroIdades) erros.push(erroIdades);
+  const fx = faixas(idades);
+  const mudouIdades = !!idadesOrig && (idades.bebe !== idadesOrig.bebe || idades.menor !== idadesOrig.menor || idades.crianca !== idadesOrig.crianca);
+  const idadeMax = (k: keyof Idades, de: number, rot: string) => (
+    <select className={`${curto} !min-h-9 w-[4.5rem] !px-2`} value={idades[k]} disabled={!idadesOrig} aria-label={`${rot}: idade máxima`}
+      onChange={(e) => setIdades({ ...idades, [k]: Number(e.target.value) })}>
+      {Array.from({ length: 18 - de }, (_, i) => de + i).map((n) => <option key={n} value={n}>{n}</option>)}
+    </select>
+  );
   const campoNum = (k: 'valorNoite' | 'adultoExtra' | 'pcCrianca' | 'pcCriancaMaior' | 'pcBebe' | 'adultosInclusos' | 'minNoites', extra = {}) =>
     ({ inputMode: 'decimal' as const, className: curto, value: String(t[k]).replace('.', ','), onChange: (e: React.ChangeEvent<HTMLInputElement>) => setT({ ...t, [k]: num(e.target.value) ?? 0 }), ...extra });
   // um dia sai de um grupo e entra no outro
@@ -158,6 +171,10 @@ export function T41FormTarifa() {
     e.preventDefault();
     if (erros.length) return;
     setSalvando(true); setErro('');
+    if (mudouIdades) {
+      const ri = await salvarIdades(uid!, idades);
+      if (!ri.ok) { setSalvando(false); return setErro(ri.erro); }
+    }
     const r = await salvarTarifa(uid!, atual);
     setSalvando(false);
     if (!r.ok) return setErro(r.erro);
@@ -210,12 +227,17 @@ export function T41FormTarifa() {
 
             <fieldset className="flex flex-col gap-3 border-t border-line-1 pt-4">
               <legend className={`${secao} float-left mb-1 w-full`}>Crianças: % do valor por pessoa</legend>
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-[7.5rem_7.5rem_7.5rem]">
-                <label className={rotC}>Até 4 anos<input {...campoNum('pcBebe')} aria-label="Até 4 anos (%)" /></label>
-                <label className={rotC}>5 a 8 anos<input {...campoNum('pcCrianca')} aria-label="5 a 8 anos (%)" /></label>
-                <label className={rotC}>9 a 13 anos<input {...campoNum('pcCriancaMaior')} aria-label="9 a 13 anos (%)" /></label>
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-3 sm:max-w-[30rem]">
+                {([['bebe', 0, 'pcBebe', 'Bebês'], ['menor', idades.bebe + 1, 'pcCrianca', 'Crianças'], ['crianca', idades.menor + 1, 'pcCriancaMaior', 'Crianças maiores']] as const).map(([k, de, pc, nome]) => (
+                  <div key={k} className="flex flex-col gap-1.5 rounded-md border border-line-1 p-2.5">
+                    <span className="flex flex-wrap items-center gap-1.5 text-[0.75rem] text-fg-2">{k === 'bebe' ? 'Até' : `De ${de} até`} {idadeMax(k, k === 'bebe' ? 0 : de, nome)} anos</span>
+                    <label className={rotC}>% do valor<input {...campoNum(pc)} aria-label={`${fx[k]} (%)`} /></label>
+                  </div>
+                ))}
               </div>
-              <p className="text-[0.75rem] text-fg-3">De 14 anos em diante conta como adulto. Valor por pessoa = valor da noite ÷ adultos inclusos.</p>
+              <p className="text-[0.75rem] text-fg-3">De {idades.crianca + 1} anos em diante conta como adulto. Valor por pessoa = valor da noite ÷ adultos inclusos.
+                {idadesOrig ? ' As idades valem para todas as tarifas da pousada e aparecem no site.' : ' As faixas de idade passam a ser editáveis quando o banco for atualizado.'}</p>
+              {mudouIdades && <p role="note" className="flex items-start gap-1.5 text-[0.75rem] text-warning"><Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />Ao salvar, as novas faixas valem para todas as tarifas e para o site.</p>}
             </fieldset>
 
             <label className="flex min-h-11 items-center gap-2 border-t border-line-1 pt-4 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={t.ativo} onChange={(e) => setT({ ...t, ativo: e.target.checked })} />Tarifa ativa (à venda no site)</label>
@@ -229,7 +251,7 @@ export function T41FormTarifa() {
 
           <aside className={`${card} flex flex-col gap-3 p-4`} aria-label="Exemplo de conta">
             <h2 className={secao}>Exemplo de conta</h2>
-            <p className="text-[0.75rem] text-fg-3">{un.atual.nome} · casal com 1 criança de 5 a 8 anos, por noite.</p>
+            <p className="text-[0.75rem] text-fg-3">{un.atual.nome} · casal com 1 criança de {fx.menor}, por noite.</p>
             <dl className="flex flex-col gap-1.5 text-[0.8125rem]">
               {dias1.length > 0 && <div className="flex justify-between gap-3"><dt className="text-fg-3">{rotuloDias(dias1)}</dt><dd className="font-mono text-fg-1">{brl(exemplo(t.valorNoite))}</dd></div>}
               {temV2 && <div className="flex justify-between gap-3"><dt className="text-fg-3">{rotuloDias(t.diasFds)}</dt><dd className="font-mono text-fg-1">{brl(exemplo(num(v2) ?? 0))}</dd></div>}

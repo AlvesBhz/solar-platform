@@ -32,7 +32,7 @@ function montarBanco() {
       select "ID_UNIDADE", (now() at time zone 'America/Sao_Paulo')::date + 3, (now() at time zone 'America/Sao_Paulo')::date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
 }
 const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::${typeof v[0] === 'number' ? 'smallint' : 'date'}[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
-const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes']);
+const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes', 'prc_idades']);
 function chamarRpc(perfil, fn, corpo) {
   const args = Object.entries(corpo || {}).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
   const chamada = `"SE".${fn}(${args})`;
@@ -286,6 +286,15 @@ function servidor(page, perfil, perdidos, chamadas) {
   await p.waitForTimeout(700);
   ok(/se sobrepõe a outra tarifa ativa na mesma prioridade/.test(await p.locator('main').innerText()) && new URL(p.url()).pathname === `/admin/tarifas/${id}`, 'sobreposição criada por outra pessoa: o banco recusa e a tela mostra a mensagem');
   ok(sql(`select "NO_PRIORIDADE"::text from "SE"."SIT_TARIFA" where "ID_TARIFA" = ${id}`) === '3', 'a tarifa não foi alterada pelo salvamento recusado');
+
+  // faixas de idade das crianças (por pousada): caixa de seleção no formulário
+  await abrir(p, `/admin/tarifas/${id}`);
+  await p.getByLabel('Bebês: idade máxima').selectOption('3');
+  ok(/De 4 até/.test(await p.locator('form').innerText()) && /novas faixas valem para todas as tarifas/.test(await p.locator('form').innerText()), 'mudar a idade dos bebês ajusta a faixa seguinte e avisa que vale para todas as tarifas');
+  await p.getByRole('button', { name: /Salvar tarifa/ }).click();
+  await p.waitForTimeout(700);
+  ok(sql(`select "NO_IDADE_MAX_BEBE" || '-' || "NO_IDADE_MAX_CRIANCA_MENOR" || '-' || "NO_IDADE_MAX_CRIANCA" from "SE"."SIT_PROPRIEDADE" limit 1`) === '3-8-13', 'as faixas ficam gravadas na pousada');
+  sql(`update "SE"."SIT_PROPRIEDADE" set "NO_IDADE_MAX_BEBE" = 4`);
 
   // ── celular (280 px é o menor aparelho que o app atende)
   console.log('── Celular (280, 320 e 390 px)');
