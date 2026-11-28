@@ -253,6 +253,17 @@ export async function trocarOrdem(tabela: 'VST_AMBIENTE' | 'VST_ITEM', a: { id: 
   return gravar(tabela, chave, b.id, { NO_ORDEM: a.ordem });
 }
 
+/** Grava a ordem nova de uma lista (ids na ordem desejada): NO_ORDEM = 1, 2, 3… só onde mudou. */
+export async function reordenar(tabela: 'VST_AMBIENTE' | 'VST_ITEM', lista: { id: number; ordem: number }[]): Promise<Resultado> {
+  const chave = tabela === 'VST_AMBIENTE' ? 'ID_AMBIENTE' : 'ID_ITEM';
+  for (const [k, x] of lista.entries()) {
+    if (x.ordem === k + 1) continue;
+    const r = await gravar(tabela, chave, x.id, { NO_ORDEM: k + 1 });
+    if (!r.ok) return r;
+  }
+  return { ok: true };
+}
+
 // ── T31 tipos de vistoria (só ADMIN altera o tipo; a lista de itens de cada tipo é da gestão)
 export type Comportamento = 'ENTRADA' | 'SAIDA' | 'ROTINA' | 'MANUTENCAO';
 export type Tipo = { id: number; codigo: string; nome: string; comportamento: Comportamento; periodicidade: 'DIARIA' | 'SEMANAL' | 'MENSAL' | null;
