@@ -17,6 +17,8 @@ export type Tarifa = {
 export type Ajuste = { data: string; valor: number | null; minNoites: number | null; fechado: boolean; semChegada: boolean; semSaida: boolean; obs: string };
 export type Ocupacao = { ini: string; fim: string; tipo: 'reserva' | 'pre-reserva' | 'bloqueio'; rotulo: string }; // fim = dia seguinte à última noite
 export type Resultado = { ok: true } | { ok: false; erro: string };
+/** Pacote: preço final fechado para um check-in e um número de noites (ex.: Natal 24/12 + 3 noites = R$ 2.400). Nas noites de um pacote o site só vende os pacotes. */
+export type Pacote = { id: number; nome: string; checkin: string; noites: number; total: number; ativo: boolean };
 
 /** true = o app fala com o banco; false = demonstração em memória */
 export const REAL = !MODO_DEMO && !!supabase;
@@ -40,8 +42,8 @@ export const brlCurto = (v: number) => (v >= 1000 ? `${(v / 1000).toLocaleString
 
 // ── memória: na demonstração é a "base"; no real guarda o que a tela carregou (tarifas, ajustes e ocupação do mês aberto)
 const DEMO_UNIDADE: Unidade = { id: 1, codigo: 'casa-do-mirante', nome: 'Casa do Mirante', maxAdultos: 2, maxCriancas: 2, maxHospedes: 4, maxNoites: 7, taxaLimpeza: 0, percentualSinal: 50 };
-const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupacao[]; seq: number } = (() => {
-  if (REAL) return { tarifas: [], ajustes: new Map(), ocupacoes: [], seq: 0 };
+const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupacao[]; pacotes: Pacote[]; seq: number } = (() => {
+  if (REAL) return { tarifas: [], ajustes: new Map(), ocupacoes: [], pacotes: [], seq: 0 };
   const h = hoje();
   const aj = new Map<string, Ajuste>();
   const feriados: [string, string, number, string][] = [
@@ -59,6 +61,10 @@ const dados: { tarifas: Tarifa[]; ajustes: Map<string, Ajuste>; ocupacoes: Ocupa
       { id: 2, nome: 'Alta temporada de julho (exemplo)', ini: '2027-07-01', fim: '2027-08-01', prioridade: 1, valorNoite: 1100, valorFds: 2000, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 3, ativo: false },
     ],
     ajustes: aj,
+    pacotes: [
+      { id: 1, nome: 'Natal 2026', checkin: '2026-12-24', noites: 3, total: 2400, ativo: true },
+      { id: 2, nome: 'Natal 2026', checkin: '2026-12-24', noites: 4, total: 2900, ativo: true },
+    ],
     ocupacoes: [
       { ini: somar(h, 3), fim: somar(h, 5), tipo: 'pre-reserva', rotulo: 'Pré-reserva · aguardando o sinal' },
       { ini: somar(h, 9), fim: somar(h, 12), tipo: 'reserva', rotulo: 'Reserva confirmada' },
@@ -174,6 +180,49 @@ export async function removerAjustes(unidade: number, datas: string[]): Promise<
   return espera({ ok: true });
 }
 
+// ── pacotes
+export const fimPacote = (p: Pacote) => somar(p.checkin, p.noites);
+const ordenarPacotes = (l: Pacote[]) => [...l].sort((a, b) => Number(b.ativo) - Number(a.ativo) || a.checkin.localeCompare(b.checkin) || a.noites - b.noites);
+export async function listarPacotes(unidade: number): Promise<Pacote[]> {
+  if (REAL) {
+    dados.pacotes = ((await rpc('prc_pacotes', { p_id_unidade: unidade })) as any[]).map((p): Pacote => ({
+      id: Number(p.id_pacote), nome: p.nm_pacote, checkin: p.dt_checkin, noites: p.qtde_noites, total: Number(p.vl_total), ativo: p.sg_ativo,
+    }));
+  }
+  return espera(ordenarPacotes(dados.pacotes));
+}
+/** Pacotes ativos cujas noites incluem a data (todas as opções do mesmo check-in). */
+export const pacotesDe = (data: string) => dados.pacotes.filter((p) => p.ativo && data >= p.checkin && data < fimPacote(p));
+
+/** Conferência rápida na tela (o banco confere de novo). */
+export function validarPacote(p: Omit<Pacote, 'id'> & { id?: number }): string | null {
+  const nome = p.nome.trim();
+  if (nome.length < 2 || nome.length > 60) return 'Dê um nome ao pacote (2 a 60 letras).';
+  if (!p.checkin) return 'Informe a data de check-in.';
+  if (!(p.noites >= 1 && p.noites <= 30)) return 'O pacote tem de 1 a 30 noites.';
+  if (!(p.total > 0)) return 'Informe o valor total do pacote.';
+  if (!p.ativo) return null;
+  if (p.checkin < hoje()) return 'O check-in já passou.';
+  const fim = somar(p.checkin, p.noites);
+  const outros = dados.pacotes.filter((o) => o.ativo && o.id !== p.id);
+  if (outros.some((o) => o.checkin === p.checkin && o.noites === p.noites)) return 'Já existe um pacote ativo com esse check-in e esse número de noites.';
+  if (outros.some((o) => o.checkin !== p.checkin && o.checkin < fim && p.checkin < fimPacote(o))) return 'As noites se sobrepõem a outro pacote com check-in diferente. Opções do mesmo pacote precisam ter o mesmo check-in.';
+  return null;
+}
+export async function salvarPacote(unidade: number, p: Omit<Pacote, 'id'> & { id?: number }): Promise<Resultado> {
+  const e = validarPacote(p);
+  if (e) return { ok: false, erro: e };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_salvar_pacote', {
+      p_id_pacote: p.id ?? null, p_id_unidade: unidade, p_nm_pacote: p.nome.trim(), p_dt_checkin: p.checkin, p_qtde_noites: p.noites, p_vl_total: p.total, p_sg_ativo: p.ativo,
+    });
+    return error ? falha(error) : { ok: true };
+  }
+  if (p.id) dados.pacotes = dados.pacotes.map((o) => (o.id === p.id ? { ...(p as Pacote) } : o));
+  else dados.pacotes.push({ ...p, nome: p.nome.trim(), id: ++dados.seq });
+  return espera({ ok: true });
+}
+
 // ── ocupação (reservas e bloqueios)
 export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= o.ini && data < o.fim) ?? null;
 
@@ -181,7 +230,7 @@ export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= 
 export async function carregarMes(unidade: number, mes: string): Promise<void> {
   if (!REAL) return espera(undefined);
   const ini = primeiroDoMes(mes), fim = ultimoDoMes(mes);
-  const [t, a, o] = await Promise.all([listarTarifas(unidade), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
+  const [t, a, o] = await Promise.all([listarTarifas(unidade).then(async (x) => { await listarPacotes(unidade); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
   void t;
   dados.ajustes = new Map((a as any[]).map((x): [string, Ajuste] => [x.dt_ref, {
     data: x.dt_ref, valor: x.vl_noite === null ? null : Number(x.vl_noite), minNoites: x.qtde_min_noites, fechado: x.sg_fechado, semChegada: x.sg_sem_chegada,
@@ -193,14 +242,14 @@ export async function carregarMes(unidade: number, mes: string): Promise<void> {
 /** Situação de uma noite, como o calendário do site a vê (1 casal). */
 export type Dia = {
   data: string; valor: number | null; minNoites: number; tarifa: string | null; fechado: boolean; semChegada: boolean; semSaida: boolean;
-  ajustado: boolean; obs: string; ocupacao: Ocupacao | null;
+  ajustado: boolean; obs: string; ocupacao: Ocupacao | null; pacotes: Pacote[];
 };
 export function diaDe(data: string): Dia {
   const t = tarifaDe(data), a = ajusteDe(data);
   const base = t ? (fimDeSemana(data) ? t.valorFds ?? t.valorNoite : t.valorNoite) : null;
   return {
     data, valor: a?.valor ?? base, minNoites: Math.max(a?.minNoites ?? t?.minNoites ?? 1, 1), tarifa: t?.nome ?? null,
-    fechado: !!a?.fechado, semChegada: !!a?.semChegada, semSaida: !!a?.semSaida, ajustado: !!a, obs: a?.obs ?? '', ocupacao: ocupacaoDe(data),
+    fechado: !!a?.fechado, semChegada: !!a?.semChegada, semSaida: !!a?.semSaida, ajustado: !!a, obs: a?.obs ?? '', ocupacao: ocupacaoDe(data), pacotes: pacotesDe(data),
   };
 }
 
@@ -211,6 +260,7 @@ export const MOTIVOS: Record<string, string> = {
   capacidade: 'Acima da capacidade do chalé (bebês também ocupam vaga).',
   sem_tarifa: 'Alguma noite ainda não tem tarifa: a venda não está aberta para esse período.', fechado: 'Alguma noite está fechada para venda.',
   sem_chegada: 'Esse dia não aceita chegada.', sem_saida: 'Esse dia não aceita saída.', min_noites: 'Abaixo do mínimo de noites do período.', ocupado: 'As datas já estão ocupadas por reserva ou bloqueio.',
+  pacote: 'Essas noites são vendidas só em pacote: escolha o check-in e o número de noites de um dos pacotes.',
   unidade_inativa: 'Chalé inativo.',
 };
 export type Hospedes = { adultos: number; criancas: number; criancasMaiores: number; bebes: number };
@@ -242,9 +292,20 @@ function calcularLocal(u: Unidade, checkin: string, checkout: string, h: Hospede
       : 0;
     detalhe.push({ data: d, tarifa: t?.nome ?? null, base, extras: Math.round(extras * 100) / 100, total: Math.round((base + extras) * 100) / 100, ajustada: !!a, obs: a?.obs ?? '' });
   }
+  // pacote: check-in e noites iguais a uma opção ativa → valor fechado (extras de criança/adulto continuam por noite)
+  const pac = semTarifa ? null : dados.pacotes.find((p) => p.ativo && p.checkin === checkin && p.noites === n) ?? null;
+  const toca = !pac && dados.pacotes.some((p) => p.ativo && p.checkin < checkout && checkin < fimPacote(p));
+  if (pac) {
+    const cada = Math.floor((pac.total / n) * 100) / 100;
+    detalhe.forEach((x, i) => {
+      x.base = i === n - 1 ? Math.round((pac.total - cada * (n - 1)) * 100) / 100 : cada;
+      x.total = Math.round((x.base + x.extras) * 100) / 100; x.tarifa = `Pacote ${pac.nome}`;
+    });
+    min = n;
+  }
   const hospedagem = Math.round(detalhe.reduce((s, x) => s + x.total, 0) * 100) / 100;
   const motivo = semTarifa ? 'sem_tarifa' : fechado ? 'fechado'
-    : ajusteDe(checkin)?.semChegada ? 'sem_chegada' : ajusteDe(checkout)?.semSaida ? 'sem_saida' : n < min ? 'min_noites'
+    : ajusteDe(checkin)?.semChegada ? 'sem_chegada' : ajusteDe(checkout)?.semSaida ? 'sem_saida' : toca ? 'pacote' : n < min ? 'min_noites'
     : detalhe.some((x) => ocupacaoDe(x.data)) ? 'ocupado' : null;
   const total = hospedagem + u.taxaLimpeza;
   return { disponivel: motivo === null, motivo, noites: n, minNoites: min, hospedagem, taxaLimpeza: u.taxaLimpeza, total, sinal: Math.round(total * u.percentualSinal) / 100, detalhe };

@@ -336,7 +336,7 @@ input.err,select.err{border-color:var(--bad)}
     return t.join(', ');
   }
   function estado(txt, ruim) { var e = $('resEstado'); e.className = 'state' + (ruim ? ' bad' : ''); e.textContent = T(txt); e.classList.remove('hide'); $('resCorpo').classList.add('hide'); }
-  var MOTIVOS = { datas_invalidas: 'O check-out precisa ser depois do check-in.', data_passada: 'A data de check-in já passou.', estadia_longa: 'A estadia passa do máximo de 7 noites.', capacidade: 'O chalé recebe até 2 adultos e 2 crianças.', sem_tarifa: 'A agenda ainda não está aberta para essas datas.', fechado: 'Uma das noites escolhidas não está disponível.', sem_chegada: 'Não há check-in nesse dia.', sem_saida: 'Não há check-out nesse dia.', ocupado: 'Essas datas já estão reservadas.', unidade_inativa: 'O chalé não está disponível no momento.', pendente_em_aberto: 'Você já tem uma pré-reserva aguardando o Pix do sinal. Pague o Pix dela ou aguarde 30 minutos para fazer outra.' };
+  var MOTIVOS = { pacote: 'Nessas datas vendemos só pacotes. Volte ao site e escolha uma das opções.', datas_invalidas: 'O check-out precisa ser depois do check-in.', data_passada: 'A data de check-in já passou.', estadia_longa: 'A estadia passa do máximo de 7 noites.', capacidade: 'O chalé recebe até 2 adultos e 2 crianças.', sem_tarifa: 'A agenda ainda não está aberta para essas datas.', fechado: 'Uma das noites escolhidas não está disponível.', sem_chegada: 'Não há check-in nesse dia.', sem_saida: 'Não há check-out nesse dia.', ocupado: 'Essas datas já estão reservadas.', unidade_inativa: 'O chalé não está disponível no momento.', pendente_em_aberto: 'Você já tem uma pré-reserva aguardando o Pix do sinal. Pague o Pix dela ou aguarde 30 minutos para fazer outra.' };
   /* mensagem do servidor: em português fica como veio; em EN/ES troca pelo código do erro */
   function msgServidor(j) {
     if (I18N.lang() === 'pt') return j.mensagem;
@@ -362,6 +362,7 @@ input.err,select.err{border-color:var(--bad)}
       }
       $('resEstado').classList.add('hide'); $('resCorpo').classList.remove('hide');
       $('rN').textContent = r.qtde_noites;
+      var pac = r.ds_detalhe && r.ds_detalhe[0] && r.ds_detalhe[0].nm_pacote; if (pac) $('rN').textContent = r.qtde_noites + ' · ' + T('Pacote {nome}', { nome: pac });
       $('rNoites').innerHTML = (r.ds_detalhe || []).map(function (n) { var d = dt(n.dt_ref); return '<li><span>' + dataCurta(d) + '</span><span>' + brl(n.vl_noite) + '</span></li>'; }).join('');
       $('rT').textContent = brl(r.vl_total); $('rS').textContent = brl(r.vl_sinal); $('rSd').textContent = brl(Number(r.vl_total) - Number(r.vl_sinal));
     }).catch(function () { estado('Não foi possível consultar os valores agora. Atualize a página em instantes.', true); });

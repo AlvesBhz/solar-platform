@@ -23,16 +23,16 @@ const somar = (s, n) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDa
 const psql = (args, input) => execFileSync('psql', ['-v', 'ON_ERROR_STOP=1', '-q', '-At', ...args], { input, encoding: 'utf8', env: { ...process.env, PGOPTIONS: '-c client_min_messages=warning' } });
 function montarBanco() {
   psql(['-d', 'postgres', '-c', `drop database if exists ${DB}`, '-c', `create database ${DB}`]);
-  for (const f of [`${INSPECT}/simulado_supabase.sql`, `${SITE}/schema.sql`, `${SITE}/seed_exemplo.sql`, `${INSPECT}/migracao_vistorias.sql`, `${SITE}/migracao_precos_gestao.sql`]) psql(['-d', DB, '-f', f]);
+  for (const f of [`${INSPECT}/simulado_supabase.sql`, `${SITE}/schema.sql`, `${SITE}/seed_exemplo.sql`, `${INSPECT}/migracao_vistorias.sql`, `${SITE}/migracao_precos_gestao.sql`, `${SITE}/migracao_pacotes.sql`]) psql(['-d', DB, '-f', f]);
   psql(['-d', DB], `
     insert into auth.users (id, email) values ('${UIDS.GESTOR}', 'g@x.invalid'), ('${UIDS.ADMIN}', 'a@x.invalid');
     insert into "SE"."VST_USUARIO" ("ID_USUARIO", "NM_USUARIO", "CD_LOGIN", "TP_PERFIL", "SG_ATIVO") values
       ('${UIDS.GESTOR}', 'Gestor (teste)', 'gestor.teste', 'GESTOR', true), ('${UIDS.ADMIN}', 'Admin (teste)', 'admin.teste', 'ADMIN', true);
     insert into "SE"."SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO")
-      select "ID_UNIDADE", current_date + 3, current_date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
+      select "ID_UNIDADE", (now() at time zone 'America/Sao_Paulo')::date + 3, (now() at time zone 'America/Sao_Paulo')::date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
 }
 const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::date[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
-const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular']);
+const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes']);
 function chamarRpc(perfil, fn, corpo) {
   const args = Object.entries(corpo || {}).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
   const chamada = `"SE".${fn}(${args})`;
@@ -125,28 +125,45 @@ function servidor(page, perfil, perdidos, chamadas) {
   void ocupado;
   await abrir(p, `/admin/precos?mes=${mes}`);
   await celula().click();
-  await p.getByPlaceholder(/usar a tarifa · R\$/).first().fill('950');
+  await p.getByLabel('Diária (R$)').fill('950');
   await foto(p, 'T38-ajuste');
-  await p.getByRole('button', { name: 'Salvar ajuste' }).click();
+  await p.getByRole('button', { name: 'Salvar', exact: true }).click();
   await p.waitForTimeout(500);
+  ok(/^Salvo\. 1 noite atualizada/.test(await p.locator('aside [role=status]').innerText()), 'depois de salvar aparece a mensagem "Salvo"');
   ok(/R\$\s?950/.test(await rotulo()) && /com ajuste/.test(await rotulo()), 'ajuste de R$ 950 gravado no banco e aparece no calendário');
   ok(Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" = '${alvo}' and "VL_NOITE" = 950`)) === 1, 'a linha do ajuste existe em SIT_AJUSTE_DIARIO');
   ok(Number(sql(`select count(*) from "SE"."VST_AUDITORIA" where "NM_TABELA" = 'SIT_AJUSTE_DIARIO' and "ID_USUARIO" = '${UIDS.ADMIN}'`)) >= 1, 'a Auditoria do Inspect registra o administrador como autor do ajuste');
   await p.getByRole('button', { name: 'Remover ajuste' }).click();
   await p.waitForTimeout(500);
   ok(await rotulo() === antes && Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" = '${alvo}'`)) === 0, 'remover o ajuste apaga a linha e devolve o valor da tarifa');
+  await p.getByRole('button', { name: /Mais opções/ }).click();
   await p.getByLabel('Fechar para venda').check();
-  await p.getByRole('button', { name: 'Salvar ajuste' }).click();
+  await p.getByRole('button', { name: 'Salvar', exact: true }).click();
   await p.waitForTimeout(500);
   ok(/fechado para venda/.test(await rotulo()), 'dia fechado fica marcado como fechado para venda');
   await p.getByRole('button', { name: 'Remover ajuste' }).click();
   await p.waitForTimeout(400);
+  // dias avulsos: cada toque marca ou desmarca um dia; os marcados recebem a diária e o mínimo juntos
+  await p.getByRole('button', { name: 'Fechar painel' }).click();
+  const cel = (n) => p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${n}")`) }).first();
+  const d2 = Number(somar(alvo, 4).slice(8)), d3 = Number(somar(alvo, 6).slice(8));
+  if (somar(alvo, 6).slice(0, 7) === mes) {
+    await celula().click(); await cel(d2).click(); await cel(d3).click(); await cel(d3).click();
+    ok(/2 noites selecionadas/.test(await p.locator('aside[aria-label="Ajuste dos dias"]').innerText()), 'dias avulsos: tocar marca, tocar de novo desmarca (2 noites)');
+    await p.getByLabel('Diária (R$)').fill('1234'); await p.getByLabel('Mínimo de noites').fill('4');
+    await p.getByRole('button', { name: 'Salvar', exact: true }).click();
+    await p.waitForTimeout(500);
+    ok(Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "VL_NOITE" = 1234 and "QTDE_MIN_NOITES" = 4 and "DT_REF" in ('${alvo}', '${somar(alvo, 4)}')`)) === 2, 'dias avulsos gravam diária e mínimo só nos dias marcados');
+    ok(/Salvo\. 2 noites atualizadas/.test(await p.locator('aside [role=status]').innerText()), 'mensagem "Salvo" com o número de noites');
+    sql(`delete from "SE"."SIT_AJUSTE_DIARIO" where "VL_NOITE" = 1234`);
+    await abrir(p, `/admin/precos?mes=${mes}`);
+  }
   await p.getByRole('radio', { name: 'Intervalo' }).click();
   await celula().click();
   await p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${Number(dia) + 2}")`) }).first().click().catch(() => {});
-  ok(/3 noites/.test(await p.locator('aside[aria-label="Ajuste do dia"]').innerText()), 'modo intervalo: dois toques selecionam 3 noites');
-  await p.getByPlaceholder(/usar a tarifa · R\$/).first().fill('1000');
-  await p.getByRole('button', { name: 'Salvar ajuste' }).click();
+  ok(/3 noites/.test(await p.locator('aside[aria-label="Ajuste dos dias"]').innerText()), 'modo intervalo: dois toques selecionam 3 noites');
+  await p.getByLabel('Diária (R$)').fill('1000');
+  await p.getByRole('button', { name: 'Salvar', exact: true }).click();
   await p.waitForTimeout(500);
   ok(Number(sql(`select count(*) from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" between '${alvo}' and '${somar(alvo, 2)}' and "VL_NOITE" = 1000`)) === 3, 'ajuste em intervalo grava as 3 noites de uma vez');
   sql(`delete from "SE"."SIT_AJUSTE_DIARIO" where "DT_REF" between '${alvo}' and '${somar(alvo, 2)}'`);
@@ -182,6 +199,43 @@ function servidor(page, perfil, perdidos, chamadas) {
   txt = await resultado();
   ok(/já estão ocupadas/.test(txt), 'datas do bloqueio que existe no banco: ocupado');
   await foto(p, 'T40-desktop');
+
+  // ── Pacotes: Natal 2027 com check-in 24/12, 3 noites R$ 2.400 e 4 noites R$ 2.900
+  console.log('── Pacotes');
+  await abrir(p, '/admin/precos?mes=2027-12');
+  for (const [n, v] of [['3', '2400'], ['4', '2900']]) {
+    await p.getByRole('button', { name: 'Novo pacote' }).click();
+    const f = p.locator('form[aria-label="Novo pacote"]');
+    await f.getByLabel('Nome').fill('Natal 2027'); await f.getByLabel('Check-in').fill('2027-12-24');
+    await f.getByLabel('Noites').fill(n); await f.getByLabel('Valor total (R$)').fill(v);
+    await f.getByRole('button', { name: 'Salvar pacote' }).click();
+    await p.waitForTimeout(600);
+  }
+  ok(sql(`select string_agg("QTDE_NOITES" || '=' || "VL_TOTAL"::int, ',' order by "QTDE_NOITES") from "SE"."SIT_PACOTE" where "SG_ATIVO"`) === '3=2400,4=2900', 'os dois pacotes do Natal ficam gravados no banco');
+  ok(/Pacote salvo/.test(await p.locator('section[aria-label=Pacotes] [role=status]').innerText()), 'mensagem "Pacote salvo"');
+  const lista = await p.locator('section[aria-label=Pacotes]').innerText();
+  ok(/Natal 2027/.test(lista) && /R\$\s?2\.400/.test(lista) && /R\$\s?2\.900/.test(lista) && /\+ R\$\s?500/.test(lista), 'a lista mostra as duas opções e a diferença de R$ 500');
+  ok(/só pacote Natal 2027/.test(await natal.getAttribute('aria-label')), 'as noites do pacote ficam marcadas no calendário');
+  await p.getByRole('button', { name: 'Novo pacote' }).click();
+  { const f = p.locator('form[aria-label="Novo pacote"]');
+    await f.getByLabel('Nome').fill('Repetido'); await f.getByLabel('Check-in').fill('2027-12-24'); await f.getByLabel('Noites').fill('3'); await f.getByLabel('Valor total (R$)').fill('100');
+    await f.getByRole('button', { name: 'Salvar pacote' }).click(); await p.waitForTimeout(300);
+    ok(/Já existe um pacote ativo/.test(await p.getByRole('alert').first().innerText()), 'mesmo check-in e mesmas noites: recusado com mensagem');
+    await f.getByRole('button', { name: 'Cancelar' }).click(); }
+  await foto(p, 'T38-pacotes');
+  await abrir(p, '/admin/simulador');
+  await datas.nth(0).fill('2027-12-24'); await datas.nth(1).fill('2027-12-27');
+  txt = await resultado();
+  ok(/Venda liberada/.test(txt) && /R\$\s?2\.400/.test(txt) && /Pacote Natal 2027/.test(txt), 'simulador: 24 a 27/12 cobra o pacote de 3 noites, R$ 2.400');
+  await datas.nth(1).fill('2027-12-28');
+  txt = await resultado();
+  ok(/R\$\s?2\.900/.test(txt), 'simulador: 24 a 28/12 cobra o pacote de 4 noites, R$ 2.900');
+  await datas.nth(0).fill('2027-12-25');
+  txt = await resultado();
+  ok(/não vende/.test(txt) && /só em pacote/.test(txt), 'simulador: estadia que não é um dos pacotes não é vendida');
+  await abrir(p, '/admin/precos?mes=2027-12');
+  for (let i = 0; i < 2; i++) { await p.locator('section[aria-label=Pacotes]').getByRole('button', { name: 'Desativar' }).first().click(); await p.waitForTimeout(600); }
+  ok(Number(sql(`select count(*) from "SE"."SIT_PACOTE" where "SG_ATIVO"`)) === 0, 'Desativar tira os pacotes da venda');
 
   // ── T39/T41 · tarifas
   console.log('── T39 Tarifas e T41 Formulário');
@@ -236,7 +290,17 @@ function servidor(page, perfil, perdidos, chamadas) {
       await abrir(M.page, rota);
       const extra = await M.page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
       ok(extra <= 0, `${nome} sem rolagem lateral em ${w} px`);
-      if (w === 390 && nome === 'T38') { await M.page.locator('[role=gridcell]:not([disabled])').last().click(); await M.page.waitForTimeout(700); }
+      if (w === 390 && nome === 'T38') {
+        await abrir(M.page, `/admin/precos?mes=${somar(hoje(), 35).slice(0, 7)}`);
+        await M.page.evaluate(() => scrollTo(0, 250)); await M.page.waitForTimeout(200);
+        const y0 = await M.page.evaluate(() => scrollY);
+        await M.page.locator('[role=gridcell]:not([disabled])').nth(10).click(); await M.page.waitForTimeout(700);
+        ok(Math.abs((await M.page.evaluate(() => scrollY)) - y0) < 2, 'celular: tocar no dia não tira o calendário do lugar');
+        const caixa = await M.page.locator('aside[aria-label="Ajuste dos dias"]').boundingBox();
+        ok(caixa && caixa.y + caixa.height <= 801 && caixa.y > 300, 'celular: o painel abre por baixo, sobre a tela, com Diária e Salvar');
+        ok(await M.page.getByRole('button', { name: 'Salvar', exact: true }).isVisible(), 'celular: botão Salvar visível sem rolar');
+        if (process.env.FOTO) await M.page.screenshot({ path: `${process.env.FOTO}/T38-celular-painel.png` });
+      }
       if (w === 390) await foto(M.page, `${nome}-celular`);
     }
   }

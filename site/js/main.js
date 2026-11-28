@@ -279,6 +279,11 @@ const Booking = (() => {
         const v = D ? D.saidaValida(s.start, date) : { ok: true };
         if (!v.ok) {
           if (v.motivo === 'min') { s.aviso = I18N.t('Mínimo de {n} noites para essas datas').replace('{n}', v.min); refresh(); }
+          else if (v.motivo === 'pacote') {                 // datas de pacote: só as opções cadastradas
+            const o = v.opcoes, d = o[0].dt_checkin.split('-');
+            s.aviso = I18N.t('Só pacotes: check-in {d}, {n} noites').replace('{d}', d[2] + '/' + d[1]).replace('{n}', o.map(p => p.qtde_noites).join(I18N.t(' ou ')));
+            refresh();
+          }
           else if (!D.noiteOcupada(date)) { s.start = date; s.hover = null; refresh(); }  // atravessa dia ocupado: recomeça daqui
           return;
         }

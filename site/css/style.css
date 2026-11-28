@@ -904,6 +904,16 @@ body.bk-lock { position: fixed; left: 0; right: 0; width: 100%; overflow: hidden
   border-radius: 999px; background: #f5f5f4; color: #1c1917; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em;
   text-transform: uppercase; text-decoration: none; }
 #bkResult .bkr-cta:hover { background: #fff; }
+/* pacotes de datas especiais: opções clicáveis e oferta de mais noites */
+#bkResult .bkr-pacotes { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+#bkResult .bkr-pacotes li { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; font-size: 0.78rem; color: #e7e5e4; }
+#bkResult .bkr-op { min-height: 44px; padding: 0.45rem 1rem; border-radius: 999px; border: 1px solid #c9b98a; background: transparent; color: #f5f5f4;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; cursor: pointer; }
+#bkResult .bkr-op:hover, #bkResult .bkr-op:focus-visible { background: #c9b98a; color: #1c1917; }
+#bkResult .bkr-oferta { margin: 0.6rem 0 0; padding: 0.6rem 0.75rem; border-radius: 0.75rem; border: 1px solid rgba(201,185,138,0.45);
+  background: rgba(201,185,138,0.08); display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+#bkResult .bkr-oferta p { margin: 0; color: #f5f5f4; font-size: 0.8rem; }
+.cal-pac { box-shadow: inset 0 -2px 0 #c9b98a; }
 @media (prefers-reduced-motion: reduce) { #bkResult { transition: none; } }
 
 /* ═══════════════════════════════════════
