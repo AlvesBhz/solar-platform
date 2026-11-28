@@ -3,19 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <script>
-      /* iPhone/iPad: o Safari dá zoom sozinho ao tocar num campo com texto menor que 16px. maximum-scale=1 desliga só esse
-         zoom automático; no iOS a pinça para ampliar continua funcionando (o Safari ignora o limite para o usuário).
-         No Android não se aplica: lá o limite bloquearia a pinça, e o Android não dá esse zoom. */
-      if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-        document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
-      }
-    </script>
+    <!-- CSP: injetada no build publicado (vite.config.ts); sem scripts embutidos nesta página -->
     <meta name="theme-color" content="#1C2922" />
     <title>Solar Inspect · Vistorias</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>

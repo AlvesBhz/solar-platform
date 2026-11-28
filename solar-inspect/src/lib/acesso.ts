@@ -26,7 +26,26 @@ const gravarCache = (c: Cache) => { try { localStorage.setItem(CACHE, JSON.strin
 export const perfilAtual = (): Perfil | undefined => lerCache()?.perfil;
 /** Usuário logado neste aparelho (último acesso conferido). */
 export const uidAtual = (): string | undefined => lerCache()?.uid;
-const limparCache = () => { try { localStorage.removeItem(CACHE); } catch { /* sem armazenamento */ } };
+const limparCache = () => { try { localStorage.removeItem(CACHE); localStorage.removeItem(TEMPO); } catch { /* sem armazenamento */ } };
+
+// ── validade da sessão no aparelho (o limite do Supabase é do plano pago): 12 h sem uso ou 7 dias desde o login → entra de novo.
+// Aparelhos da equipe são compartilhados; assim um celular esquecido não fica com o acesso aberto.
+const TEMPO = 'inspect.sessao.tempo';
+const INATIVIDADE_MAX_MS = 12 * 3600 * 1000, DURACAO_MAX_MS = 7 * 24 * 3600 * 1000;
+type Tempo = { inicio: number; ultimo: number };
+const lerTempo = (): Tempo | null => { try { return JSON.parse(localStorage.getItem(TEMPO) ?? 'null'); } catch { return null; } };
+const gravarTempo = (t: Tempo) => { try { localStorage.setItem(TEMPO, JSON.stringify(t)); } catch { /* sem armazenamento */ } };
+/** Registra uso do app (no máximo uma gravação por minuto). */
+export function marcarAtividade(): void {
+  const t = lerTempo(), agora = Date.now();
+  if (!t) return gravarTempo({ inicio: agora, ultimo: agora });
+  if (agora - t.ultimo > 60_000) gravarTempo({ ...t, ultimo: agora });
+}
+/** A sessão deste aparelho passou do limite de inatividade ou de duração? */
+export function sessaoVencida(agora = Date.now()): boolean {
+  const t = lerTempo();
+  return !!t && (agora - t.ultimo > INATIVIDADE_MAX_MS || agora - t.inicio > DURACAO_MAX_MS);
+}
 
 let demoLogado: AcessoOk | null = null;
 
@@ -56,6 +75,8 @@ export async function verificarAcesso(): Promise<Acesso> {
   if (MODO_DEMO || !supabase) return demoLogado ?? { estado: 'sem-sessao' };
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { estado: 'sem-sessao' };
+  if (sessaoVencida()) { await sair(); return { estado: 'sem-sessao' }; }
+  marcarAtividade();
   const uid = session.user.id;
   if (!navigator.onLine) return offline(uid);
 
@@ -125,6 +146,7 @@ export async function entrar(login: string, senha: string): Promise<ResultadoLog
   if (!s?.access_token || !s?.refresh_token) return { ok: false, erro: 'indisponivel' };
   const { error } = await supabase.auth.setSession({ access_token: s.access_token, refresh_token: s.refresh_token });
   if (error) return { ok: false, erro: 'indisponivel' };
+  gravarTempo({ inicio: Date.now(), ultimo: Date.now() });   // a contagem dos limites recomeça a cada login
   const a = await verificarAcesso();
   if (a.estado === 'ok') return { ok: true, acesso: a };
   if (a.estado === 'bloqueado' && (a.motivo === 'inativo' || a.motivo === 'sem-permissao')) return { ok: false, erro: a.motivo };
@@ -141,10 +163,23 @@ export async function registrarAceiteLocalizacao(): Promise<boolean> {
   return true;
 }
 
-export const SENHA_MIN = 8;
-export type ErroSenha = 'atual_incorreta' | 'fraca' | 'igual' | 'offline' | 'muitas_tentativas' | 'sessao' | 'indisponivel';
+export const SENHA_MIN = 10;
+export type ErroSenha = 'atual_incorreta' | 'fraca' | 'vazada' | 'igual' | 'offline' | 'muitas_tentativas' | 'sessao' | 'indisponivel';
 
-/** Regras da nova senha (as mesmas das Edge Functions: 8 a 72 bytes) mais letra e número e diferente do usuário. */
+/** A senha aparece em vazamentos conhecidos (Have I Been Pwned)? Consulta anônima: só os 5 primeiros caracteres do hash SHA-1
+ *  saem do aparelho (k-anonimato). Sem internet ou se o serviço não responder em 4 s, não bloqueia (devolve false). */
+export async function senhaVazada(senha: string): Promise<boolean> {
+  try {
+    const h = [...new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(senha)))].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 4000);
+    const r = await fetch(`https://api.pwnedpasswords.com/range/${h.slice(0, 5)}`, { headers: { 'Add-Padding': 'true' }, signal: ctl.signal });
+    clearTimeout(t);
+    if (!r.ok) return false;
+    return (await r.text()).split('\n').some((l) => { const [suf, n] = l.trim().split(':'); return suf === h.slice(5) && Number(n) > 0; });
+  } catch { return false; }
+}
+
+/** Regras da nova senha (as mesmas das Edge Functions: 10 a 72 bytes) mais letra e número e diferente do usuário. */
 export function problemaSenha(nova: string, login = ''): string | null {
   if (nova.length < SENHA_MIN) return `Use pelo menos ${SENHA_MIN} caracteres.`;
   if (new TextEncoder().encode(nova).length > 72) return 'Use no máximo 72 caracteres.';
@@ -158,6 +193,7 @@ export async function trocarSenha(atual: string, nova: string): Promise<{ ok: tr
   if (!navigator.onLine) return { ok: false, erro: 'offline' };
   if (atual === nova) return { ok: false, erro: 'igual' };
   if (problemaSenha(nova)) return { ok: false, erro: 'fraca' };
+  if (await senhaVazada(nova)) return { ok: false, erro: 'vazada' };
   if (MODO_DEMO || !supabase) {
     if (demoLogado) demoLogado = { ...demoLogado, trocarSenha: false };
     return { ok: true };

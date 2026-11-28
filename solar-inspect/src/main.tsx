@@ -1,10 +1,29 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
 import SimNav from './components/SimNav';
 import './index.css';
+import { marcarAtividade, sair, sessaoVencida } from './lib/acesso';
+
+// iPhone/iPad: o Safari dá zoom sozinho ao tocar num campo com texto menor que 16px. maximum-scale=1 desliga só esse zoom
+// automático; no iOS a pinça para ampliar continua funcionando (o Safari ignora o limite para o usuário). No Android não se aplica.
+if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+  document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
+}
+// o app não abre dentro de outra página (proteção contra clique enganado); a demonstração em arquivo único roda em quadro de propósito
+if (import.meta.env.MODE !== 'artifact' && window.top !== window.self) {
+  document.documentElement.style.display = 'none';
+  try { window.top!.location.href = window.location.href; } catch { /* outro domínio: a página fica em branco */ }
+}
+// validade da sessão: uso do app conta como atividade; ao voltar para o app depois do limite, pede login de novo
+if (typeof window !== 'undefined') {
+  ['pointerdown', 'keydown'].forEach((ev) => addEventListener(ev, () => marcarAtividade(), { passive: true }));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && sessaoVencida()) void sair().then(() => location.replace(import.meta.env.BASE_URL + 'login'));
+  });
+}
 // teclado do celular aberto (foco num campo de texto, em tela de toque): marca o body para a barra das áreas sair da frente
 if (typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches) {
   const ehTexto = (el: EventTarget | null) => el instanceof HTMLElement && (el.matches('textarea, select, [contenteditable]') || (el instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'file', 'button', 'submit'].includes(el.type)));
@@ -20,41 +39,64 @@ import T01Inicializacao from './screens/T01Inicializacao';
 import T02Login from './screens/T02Login';
 import T03PermissaoLocalizacao from './screens/T03PermissaoLocalizacao';
 import T04AcessoIndisponivel from './screens/T04AcessoIndisponivel';
-import T05MinhasUnidades from './screens/T05MinhasUnidades';
-import T06DetalheUnidade from './screens/T06DetalheUnidade';
-import T07TipoVistoria from './screens/T07TipoVistoria';
-import T08ValidacaoPresenca from './screens/T08ValidacaoPresenca';
-import T09LeitorQr from './screens/T09LeitorQr';
-import T10Checklist from './screens/T10Checklist';
-import T11DetalheItem from './screens/T11DetalheItem';
-import T12CapturaEvidencia from './screens/T12CapturaEvidencia';
-import T13Comparacao from './screens/T13Comparacao';
-import T14Ocorrencia from './screens/T14Ocorrencia';
-import T15Resumo from './screens/T15Resumo';
-import T16Assinatura from './screens/T16Assinatura';
-import T17Confirmacao from './screens/T17Confirmacao';
-import T18Sincronizacao from './screens/T18Sincronizacao';
-import T19MeuHistorico from './screens/T19MeuHistorico';
-import { T20Dashboard, T42Pendencias, T43Cadastros, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
-import { T34Auditoria } from './screens/Admin';
-import { T31Tipos } from './screens/T31Tipos';
-import { T30Ambientes } from './screens/T30Ambientes';
-import { T33Presenca } from './screens/T33Presenca';
-import T35TrocarSenha from './screens/T35TrocarSenha';
-import { T36Ocorrencias, T37TratarOcorrencia } from './screens/T36Ocorrencias';
 import ProtegeCampo from './lib/ProtegeCampo';
+// Telas carregadas sob demanda (o login abre sem baixar o app inteiro); depois do primeiro desenho, o resto vem em segundo plano
+// e fica no cache do service worker, para a vistoria funcionar sem sinal.
+const telas: (() => Promise<unknown>)[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function carregar(f: () => Promise<any>, nome?: string): LazyExoticComponent<ComponentType<any>> {
+  telas.push(f);
+  return lazy(() => f().then((m) => ({ default: nome ? m[nome] : m.default })));
+}
+const T05MinhasUnidades = carregar(() => import('./screens/T05MinhasUnidades'));
+const T06DetalheUnidade = carregar(() => import('./screens/T06DetalheUnidade'));
+const T07TipoVistoria = carregar(() => import('./screens/T07TipoVistoria'));
+const T08ValidacaoPresenca = carregar(() => import('./screens/T08ValidacaoPresenca'));
+const T09LeitorQr = carregar(() => import('./screens/T09LeitorQr'));
+const T10Checklist = carregar(() => import('./screens/T10Checklist'));
+const T11DetalheItem = carregar(() => import('./screens/T11DetalheItem'));
+const T12CapturaEvidencia = carregar(() => import('./screens/T12CapturaEvidencia'));
+const T13Comparacao = carregar(() => import('./screens/T13Comparacao'));
+const T14Ocorrencia = carregar(() => import('./screens/T14Ocorrencia'));
+const T15Resumo = carregar(() => import('./screens/T15Resumo'));
+const T16Assinatura = carregar(() => import('./screens/T16Assinatura'));
+const T17Confirmacao = carregar(() => import('./screens/T17Confirmacao'));
+const T18Sincronizacao = carregar(() => import('./screens/T18Sincronizacao'));
+const T19MeuHistorico = carregar(() => import('./screens/T19MeuHistorico'));
+const T20Dashboard = carregar(() => import('./screens/Gestao'), 'T20Dashboard');
+const T42Pendencias = carregar(() => import('./screens/Gestao'), 'T42Pendencias');
+const T43Cadastros = carregar(() => import('./screens/Gestao'), 'T43Cadastros');
+const T21Unidades = carregar(() => import('./screens/Gestao'), 'T21Unidades');
+const T22DetalheUnidade = carregar(() => import('./screens/Gestao'), 'T22DetalheUnidade');
+const T23Vistorias = carregar(() => import('./screens/Gestao'), 'T23Vistorias');
+const T24DetalheVistoria = carregar(() => import('./screens/Gestao'), 'T24DetalheVistoria');
+const T25Ocorrencias = carregar(() => import('./screens/Gestao'), 'T25Ocorrencias');
+const T26Tratamento = carregar(() => import('./screens/Gestao'), 'T26Tratamento');
+const T27Relatorio = carregar(() => import('./screens/Gestao'), 'T27Relatorio');
+const T34Auditoria = carregar(() => import('./screens/Admin'), 'T34Auditoria');
+const T31Tipos = carregar(() => import('./screens/T31Tipos'), 'T31Tipos');
+const T30Ambientes = carregar(() => import('./screens/T30Ambientes'), 'T30Ambientes');
+const T33Presenca = carregar(() => import('./screens/T33Presenca'), 'T33Presenca');
+const T35TrocarSenha = carregar(() => import('./screens/T35TrocarSenha'));
+const T36Ocorrencias = carregar(() => import('./screens/T36Ocorrencias'), 'T36Ocorrencias');
+const T37TratarOcorrencia = carregar(() => import('./screens/T36Ocorrencias'), 'T37TratarOcorrencia');
+const T32Usuarios = carregar(() => import('./screens/T32Usuarios'), 'T32Usuarios');
+const T28Propriedades = carregar(() => import('./screens/T28Propriedades'), 'T28Propriedades');
+const T29FormPropriedade = carregar(() => import('./screens/T28Propriedades'), 'T29FormPropriedade');
+const T38Calendario = carregar(() => import('./screens/Precos'), 'T38Calendario');
+const T40Simulador = carregar(() => import('./screens/Precos'), 'T40Simulador');
+const T44Pacotes = carregar(() => import('./screens/Precos'), 'T44Pacotes');
+const T39Tarifas = carregar(() => import('./screens/Tarifas'), 'T39Tarifas');
+const T41FormTarifa = carregar(() => import('./screens/Tarifas'), 'T41FormTarifa');
 import type { Perfil } from './lib/acesso';
 const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
 const MANUTENCAO: Perfil[] = ['MANUTENCAO', 'GESTOR', 'ADMIN'];
-import { T32Usuarios } from './screens/T32Usuarios';
-import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
-import { T38Calendario, T40Simulador, T44Pacotes } from './screens/Precos';
-import { T39Tarifas, T41FormTarifa } from './screens/Tarifas';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router basename={import.meta.env.MODE === 'artifact' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       {import.meta.env.MODE === 'artifact' && <SimNav />}
+      <Suspense fallback={<div className="screen bg-cream" aria-busy="true" />}>
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
         <Route path="/login" element={<T02Login />} />
@@ -103,6 +145,16 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/conta/senha" element={<T35TrocarSenha />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </Router>
   </StrictMode>,
 );
+
+// em segundo plano, quando o aparelho estiver livre: baixa as demais telas (navegação instantânea e uso sem sinal)
+const ocioso = (f: () => void) => ('requestIdleCallback' in window ? (window as Window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(f) : setTimeout(f, 1500));
+addEventListener('load', () => setTimeout(() => ocioso(() => { telas.forEach((f) => { void f().catch(() => undefined); }); }), 1200));
+
+// service worker: guarda o app no aparelho (abre na hora e sem internet). Só no app publicado.
+if (import.meta.env.PROD && import.meta.env.MODE !== 'artifact' && 'serviceWorker' in navigator) {
+  addEventListener('load', () => { void navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js', { scope: import.meta.env.BASE_URL }).catch(() => undefined); });
+}

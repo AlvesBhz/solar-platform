@@ -24,6 +24,7 @@ function rpc(fn, corpo) {
   for (const w of [1280, 390]) {
     const p = await b.newPage({ viewport: { width: w, height: 860 } });
     const erros = []; p.on('pageerror', (e) => erros.push(String(e)));
+    p.on('console', (m) => { if (/Content Security Policy|Refused to/.test(m.text())) erros.push('CSP: ' + m.text().slice(0, 120)); });
     await p.route('https://tnjpyjbqcjrowzjfnuln.supabase.co/**', (r) => {
       const fn = new URL(r.request().url()).pathname.split('/').pop();
       if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });

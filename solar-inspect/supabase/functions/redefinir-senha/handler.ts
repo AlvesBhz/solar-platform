@@ -29,7 +29,7 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     const login = typeof c?.cd_login === "string" ? c.cd_login.trim().toLowerCase() : "";
     const senha = typeof c?.senha === "string" ? c.senha : "";
     if (!LOGIN_VALIDO.test(login)) return R(req, 422, { erro: "login_invalido", mensagem: "Informe o usuário do funcionário." });
-    if (!senhaValida(senha)) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 8 a 72 caracteres, com letras e números." });
+    if (!senhaValida(senha)) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 10 a 72 caracteres, com letras e números." });
 
     const r = await banco.rpc("vst_localizar_login", { p_login: login });
     if (r.error) return R(req, 503, { erro: "indisponivel", mensagem: "Tente de novo em instantes." });

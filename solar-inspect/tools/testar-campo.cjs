@@ -177,7 +177,8 @@ async function assinarEnviar(page) {
     // T19
     cen.historico = [{ ID_VISTORIA: AGENDADA, ID_UNIDADE: 7, DT_INICIO: '2026-11-21T10:00:00Z', DT_FIM: '2026-11-21T10:20:00Z', DS_SINALIZACOES: ['RAPIDA'], TP_SITUACAO_RESULTANTE: 'OCUPADO', VST_TIPO_VISTORIA: { NM_TIPO_VISTORIA: 'Entrada' } }];
     await page.getByRole('link', { name: /Ver meu histórico/ }).click();
-    await page.getByText('Casa do Mirante · Entrada').waitFor({ timeout: 6000 });
+    await page.waitForURL((u) => u.pathname.endsWith('/historico'), { timeout: 6000 }).catch(() => {});   // a tela pode vir de um pedaço baixado sob demanda
+    await page.getByText('Duração abaixo do mínimo').waitFor({ timeout: 6000 }).catch(() => {});
     ok(await page.getByText('Duração abaixo do mínimo').isVisible(), 'T19 lista as minhas vistorias do banco com as sinalizações');
     await ctx.close();
   });

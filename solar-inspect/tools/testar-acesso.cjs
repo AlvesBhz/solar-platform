@@ -281,7 +281,7 @@ const temSessao = (page) => page.evaluate(() => !!localStorage.getItem('inspect.
     await page.getByText('Misture letras e números.').waitFor({ timeout: 3000 });
     ok(!cen.reauth && !cen.novaSenha, 'senha fraca é recusada na tela, sem ir ao servidor');
     await preencher('Provisoria-1', 'curta1', 'curta1');
-    ok(await page.getByText('Use pelo menos 8 caracteres.').isVisible(), 'senha curta é recusada');
+    ok(await page.getByText('Use pelo menos 10 caracteres.').isVisible(), 'senha curta é recusada');
     await preencher('Provisoria-1', 'NovaSenha22', 'NovaSenha23');
     ok(await page.getByText('As senhas não são iguais.').isVisible() && !cen.novaSenha, 'confirmação diferente é recusada');
     await preencher('Provisoria-1', 'Provisoria-1', 'Provisoria-1');

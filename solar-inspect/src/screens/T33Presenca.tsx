@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import QRCode from 'qrcode';
 import { FormEvent, useEffect, useState } from 'react';
 import { Seletor } from '../components/Filtros';
+import AvisoFixo from '../components/AvisoFixo';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { VALIDACOES, listarPropriedades, listarUnidadesPresenca, qrDaUnidade, salvarPresencaUnidade, validarPresencaUnidade, type Herdavel, type Propriedade, type UnidadePresenca } from '../lib/admin';
@@ -51,7 +52,7 @@ export function T33Presenca() {
     <GestaoShell eyebrow="Administração" titulo="Presença por chalé">
       <p className="text-[0.8125rem] text-fg-3">Campos vazios usam a configuração da pousada. O QR da porta prova que o assessor está no chalé.</p>
       {erro && <p role="alert" className="rounded-md border border-error bg-white p-3 text-sm text-error">{erro}</p>}
-      {aviso && <p className="rounded-md border border-line-1 bg-white p-3 text-sm text-available">{aviso}</p>}
+      {aviso && <AvisoFixo texto={aviso} onFechar={() => setAviso('')} />}
 
       {ed && (
         <form onSubmit={salvar} className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} noValidate aria-label="Presença do chalé">

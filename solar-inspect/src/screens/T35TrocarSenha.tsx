@@ -7,6 +7,7 @@ import { type AcessoOk, type ErroSenha, destino, problemaSenha, sair, SENHA_MIN,
 const ERROS: Record<ErroSenha, string> = {
   atual_incorreta: 'A senha atual não confere.',
   fraca: 'A nova senha não atende às regras: misture letras e números e não use o seu usuário.',
+  vazada: 'Essa senha já apareceu em vazamentos de dados na internet. Escolha outra.',
   igual: 'A nova senha precisa ser diferente da atual.',
   offline: 'Sem internet. A troca de senha precisa de conexão.',
   muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos e tente de novo.',

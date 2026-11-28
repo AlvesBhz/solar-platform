@@ -13,7 +13,7 @@ import {
   type DetalheV, type FiltroV, type OcorrenciaG, type Resposta, type StatusOc, type StatusV, type VistoriaG,
 } from '../lib/gestao';
 import type { EstadoUnidade } from '../mocks/unidades';
-import { perfilAtual } from '../lib/acesso';
+import { perfilAtual, uidAtual } from '../lib/acesso';
 import { listarPendencias, resumoPendencias, type Pendencia } from '../lib/pendencias';
 
 const ORD = { critica: 0, media: 1, baixa: 2 };
@@ -45,11 +45,18 @@ const Falha = ({ tentar }: { tentar: () => void }) => (
 const Aviso = ({ msg, erro }: { msg: string; erro?: boolean }) => <p role={erro ? 'alert' : 'status'} className={`rounded-md border bg-white p-3 text-[0.8125rem] ${erro ? 'border-error text-error' : 'border-line-1 text-available'}`}>{msg}</p>;
 const Titulo = ({ children }: { children: React.ReactNode }) => <h2 className="flex items-center justify-between ui-secao">{children}</h2>;
 
-/** Carrega dados do banco com estado de erro e recarga. */
+// último resultado de cada consulta nesta sessão (por usuário): ao voltar a uma tela, mostra na hora e atualiza em segundo plano
+const memoria = new Map<string, unknown>();
+/** Carrega dados do banco com estado de erro e recarga; reaproveita o último resultado enquanto busca o novo. */
 function useCarga<T>(f: () => Promise<T>, deps: unknown[] = []) {
-  const [dados, setDados] = useState<T | null>(null);
+  const chave = `${uidAtual() ?? ''}|${f.toString()}|${JSON.stringify(deps)}`;
+  const [dados, setDados] = useState<T | null>(() => (memoria.get(chave) as T | undefined) ?? null);
   const [erro, setErro] = useState(false);
-  const carregar = useCallback(() => { setErro(false); f().then(setDados).catch(() => setErro(true)); }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  const carregar = useCallback(() => {
+    setErro(false);
+    if (memoria.has(chave)) setDados(memoria.get(chave) as T);
+    f().then((d) => { memoria.set(chave, d); setDados(d); }).catch(() => setErro(true));
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(carregar, [carregar]);
   return { dados, erro, carregar };
 }

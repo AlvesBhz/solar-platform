@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useEffect, useState } from 'react';
 import { Seletor } from '../components/Filtros';
+import AvisoFixo from '../components/AvisoFixo';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { cpfValido, formatarCpf } from '../lib/cpf';
@@ -96,7 +97,7 @@ export function T32Usuarios() {
     <GestaoShell eyebrow="Administração" titulo="Usuários e permissões"
       acoes={<button type="button" className={`${btnPrimary} w-auto`} onClick={() => { setErro(''); setAviso(''); setSenhaDe(null); setForm(vazio()); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo usuário</button>}>
       {erro && <p role="alert" className="flex items-start gap-2 rounded-md border border-error bg-white p-3 text-sm text-error"><Icon icon="solar:danger-circle-linear" width={18} className="mt-px shrink-0" aria-hidden="true" />{erro}</p>}
-      {aviso && <p role="status" className="flex items-start gap-2 rounded-md border border-line-1 bg-white p-3 text-sm text-available [overflow-wrap:anywhere]"><Icon icon="solar:check-circle-linear" width={18} className="mt-px shrink-0" aria-hidden="true" />{aviso}</p>}
+      {aviso && <AvisoFixo texto={aviso} manter={/senha/i.test(aviso)} onFechar={() => setAviso('')} />}
 
       {form && (
         <form onSubmit={salvar} className={`${card} flex flex-col gap-4 p-4`} aria-label={form.modo === 'novo' ? 'Novo usuário' : 'Editar usuário'}>
