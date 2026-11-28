@@ -3,8 +3,9 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Seletor } from '../components/Filtros';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
-import { definirTiposDoItem, incluirItensNosTipos, listarAmbientes, listarTipos, listarUnidadesPresenca, salvarAmbiente, salvarItem, tiposDosItens, trocarOrdem, type Ambiente, type Item, type Resultado, type Tipo, type UnidadePresenca } from '../lib/admin';
+import { definirTiposDoItem, incluirItensNosTipos, listarAmbientes, listarTipos, listarUnidadesPresenca, reordenar, salvarAmbiente, salvarItem, tiposDosItens, type Ambiente, type Item, type Resultado, type Tipo, type UnidadePresenca } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
+import { mover, useReordenar } from '../lib/useReordenar';
 
 const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
 const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
@@ -23,6 +24,26 @@ function BotaoIcone({ icone, rotulo, onClick, disabled, pequeno }: { icone: stri
     <button type="button" aria-label={rotulo} title={rotulo} disabled={disabled} onClick={onClick}
       className={`flex ${pequeno ? 'h-8 w-11' : 'h-11 w-11'} items-center justify-center rounded-md text-fg-2 transition-colors duration-fast hover:bg-white hover:text-pine disabled:opacity-25 disabled:hover:bg-transparent`}>
       <Icon icon={icone} width={pequeno ? 16 : 18} aria-hidden="true" />
+    </button>
+  );
+}
+/** Alça de arrastar (seis pontos): segure e mova para cima ou para baixo; no teclado, setas ↑ ↓. */
+function Alca({ rotulo, props }: { rotulo: string; props: Record<string, unknown> }) {
+  return (
+    <button type="button" aria-label={`Mover ${rotulo} (arraste ou use as setas)`} title="Arraste para mudar a ordem" {...props}
+      className="flex h-11 w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-md text-fg-4 transition-colors duration-fast hover:bg-white hover:text-fg-2 active:cursor-grabbing">
+      <span aria-hidden="true" className="h-4 w-2.5 bg-[radial-gradient(circle,currentColor_1.25px,transparent_1.5px)] bg-[length:5px_5.33px]" />
+    </button>
+  );
+}
+/** Olho: aberto = aparece nas vistorias; com um x = oculto (desativado, histórico preservado). Um toque alterna. */
+function BotaoOlho({ visivel, rotulo, onClick }: { visivel: boolean; rotulo: string; onClick: () => void }) {
+  const txt = `${visivel ? 'Ocultar' : 'Mostrar'} ${rotulo}`;
+  return (
+    <button type="button" aria-label={txt} title={visivel ? 'Aparece nas vistorias · tocar para ocultar' : 'Oculto · tocar para mostrar'} aria-pressed={!visivel} onClick={onClick}
+      className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors duration-fast hover:bg-white ${visivel ? 'text-fg-2 hover:text-pine' : 'text-fg-4 hover:text-fg-2'}`}>
+      <Icon icon="solar:eye-linear" width={20} aria-hidden="true" />
+      {!visivel && <Icon icon="solar:close-circle-bold" width={12} aria-hidden="true" className="absolute bottom-2.5 right-2.5 rounded-full bg-white text-fg-2" />}
     </button>
   );
 }
@@ -53,6 +74,19 @@ export function T30Ambientes() {
   const carregar = () => uid && Promise.all([listarAmbientes(Number(uid)), listarTipos(), tiposDosItens()])
     .then(([a, t, v]) => { setAmbs(a); setTipos(t.filter((x) => x.ativo)); setVinc(v); }).catch(() => setErro('Não foi possível carregar os ambientes.'));
   useEffect(() => { carregar(); }, [uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  const { alca, estilo } = useReordenar((lista, de, para) => {
+    // a lista muda na hora (otimista) e a ordem nova é gravada; se falhar, recarrega do banco
+    if (lista === 'amb') {
+      const nova = mover(ambs, de, para);
+      setAmbs(nova.map((x, k) => ({ ...x, ordem: k + 1 })));
+      void tratar(reordenar('VST_AMBIENTE', nova), 'Ordem salva.');
+    } else {
+      const a = ambs.find((x) => `itens-${x.id}` === lista); if (!a) return;
+      const nova = mover(a.itens, de, para);
+      setAmbs(ambs.map((x) => (x.id === a.id ? { ...x, itens: nova.map((i, k) => ({ ...i, ordem: k + 1 })) } : x)));
+      void tratar(reordenar('VST_ITEM', nova), 'Ordem salva.');
+    }
+  });
   if (!perfil) return null;
 
   const tratar = async (p: Promise<Resultado>, ok: string) => { setErro(''); setAviso(''); const r = await p; if (!r.ok) { setErro(r.erro); return false; } setAviso(ok); await carregar(); return true; };
@@ -142,44 +176,39 @@ export function T30Ambientes() {
 
       {fa && fa.id === null && formAmbiente()}
 
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-4" data-lista="amb">
         {ambs.map((a, ai) => {
           const ativosA = a.itens.filter((i) => i.ativo);
           const criticos = ativosA.filter((i) => i.critico).length;
           return (
-            <li key={a.id} className={`${card} overflow-hidden ${a.ativo ? '' : 'opacity-60'}`} data-ambiente={a.nome}>
-              {/* cabeçalho do ambiente */}
-              <div className="flex items-center gap-3 p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-pine"><Icon icon={iconeAmbiente(a.nome)} width={22} aria-hidden="true" /></span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[0.9375rem] font-medium text-fg-1">{a.nome}</p>
-                  <p className="text-[0.75rem] text-fg-3">
-                    {a.ativo ? `${ativosA.length} ${ativosA.length === 1 ? 'item' : 'itens'}${criticos ? ` · ${criticos} crítico${criticos > 1 ? 's' : ''}` : ''}` : 'Desativado: não aparece nas vistorias'}
+            <li key={a.id} className={`${card} overflow-hidden bg-white`} data-ambiente={a.nome} data-arrastar style={estilo('amb', ai)}>
+              {/* cabeçalho do ambiente: alça · ícone · nome inteiro · ações, tudo na mesma linha de centro */}
+              <div className="flex items-center gap-2 py-3 pl-3 pr-3 sm:gap-3">
+                <Alca rotulo={a.nome} props={alca('amb', ai, ambs.length)} />
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-pine ${a.ativo ? '' : 'opacity-50'}`}><Icon icon={iconeAmbiente(a.nome)} width={22} aria-hidden="true" /></span>
+                <div className={`min-w-0 flex-1 ${a.ativo ? '' : 'opacity-60'}`}>
+                  <p className="text-[0.9375rem] font-medium leading-snug text-fg-1 [overflow-wrap:anywhere]">{a.nome}</p>
+                  <p className="text-[0.75rem] leading-snug text-fg-3">
+                    {a.ativo ? `${ativosA.length} ${ativosA.length === 1 ? 'item' : 'itens'}${criticos ? ` · ${criticos} crítico${criticos > 1 ? 's' : ''}` : ''}` : 'Oculto: não aparece nas vistorias'}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center">
                   <BotaoIcone icone="solar:pen-linear" rotulo={`Renomear ${a.nome}`} onClick={() => abrirAmbiente(a)} />
-                  <BotaoIcone icone="solar:alt-arrow-up-linear" rotulo={`Subir ${a.nome}`} disabled={ai === 0} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai - 1]), 'Ordem salva.')} />
-                  <BotaoIcone icone="solar:alt-arrow-down-linear" rotulo={`Descer ${a.nome}`} disabled={ai === ambs.length - 1} onClick={() => tratar(trocarOrdem('VST_AMBIENTE', a, ambs[ai + 1]), 'Ordem salva.')} />
-                  <BotaoIcone icone={a.ativo ? 'solar:eye-closed-linear' : 'solar:restart-linear'} rotulo={`${a.ativo ? 'Desativar' : 'Reativar'} ${a.nome}`}
-                    onClick={() => tratar(salvarAmbiente({ ...a, ativo: !a.ativo }), a.ativo ? 'Ambiente desativado (histórico preservado).' : 'Ambiente reativado.')} />
+                  <BotaoOlho visivel={a.ativo} rotulo={a.nome} onClick={() => tratar(salvarAmbiente({ ...a, ativo: !a.ativo }), a.ativo ? 'Ambiente oculto (histórico preservado).' : 'Ambiente visível de novo.')} />
                 </div>
               </div>
               {fa?.id === a.id && <div className="px-4 pb-4">{formAmbiente()}</div>}
 
               {/* itens do ambiente: bloco recuado, fundo cream */}
-              <ul className="mx-4 flex flex-col divide-y divide-line-1 rounded-lg border border-line-1 bg-cream">
+              <ul className="mx-2 flex flex-col divide-y divide-line-1 rounded-lg border border-line-1 bg-cream" data-lista={`itens-${a.id}`}>
                 {a.itens.map((i, ii) => (
-                  <li key={i.id} data-item={i.nome}>
-                    <div className={`flex items-start gap-1 py-2 pl-1 pr-1 ${i.ativo ? '' : 'opacity-60'} ${fi?.id === i.id ? 'bg-white' : ''}`}>
-                      <div className="flex shrink-0 flex-col">
-                        <BotaoIcone pequeno icone="solar:alt-arrow-up-linear" rotulo={`Subir ${i.nome}`} disabled={ii === 0} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii - 1]), 'Ordem salva.')} />
-                        <BotaoIcone pequeno icone="solar:alt-arrow-down-linear" rotulo={`Descer ${i.nome}`} disabled={ii === a.itens.length - 1} onClick={() => tratar(trocarOrdem('VST_ITEM', i, a.itens[ii + 1]), 'Ordem salva.')} />
-                      </div>
-                      <button type="button" className="min-w-0 flex-1 py-1.5 text-left" onClick={() => editarItem(i)} aria-label={`Editar ${i.nome}`}>
-                        <span className="block text-[0.875rem] font-medium text-fg-1 [overflow-wrap:anywhere]">{i.nome}</span>
+                  <li key={i.id} data-item={i.nome} data-arrastar className="bg-cream" style={estilo(`itens-${a.id}`, ii)}>
+                    <div className={`flex items-center gap-2 py-2 pl-[3px] pr-[3px] sm:gap-3 ${fi?.id === i.id ? 'bg-white' : ''}`}>
+                      <Alca rotulo={i.nome} props={alca(`itens-${a.id}`, ii, a.itens.length)} />
+                      <button type="button" className={`min-w-0 flex-1 py-1 text-left ${i.ativo ? '' : 'opacity-60'}`} onClick={() => editarItem(i)} aria-label={`Editar ${i.nome}`}>
+                        <span className="block text-[0.875rem] font-medium leading-snug text-fg-1 [overflow-wrap:anywhere]">{i.nome}</span>
                         <span className="mt-1 flex flex-wrap gap-1.5">
-                          {!i.ativo && <Etiqueta icone="solar:eye-closed-linear" texto="Desativado" />}
+                          {!i.ativo && <Etiqueta icone="solar:eye-closed-linear" texto="Oculto" />}
                           {i.critico && <Etiqueta icone="solar:danger-triangle-linear" texto="Crítico" tom="text-error" />}
                           {i.fotoObrigatoria && <Etiqueta icone="solar:camera-linear" texto="Foto" />}
                           {i.qtdeEsperada !== null && <Etiqueta icone="solar:hashtag-linear" texto={String(i.qtdeEsperada)} />}
@@ -188,10 +217,9 @@ export function T30Ambientes() {
                             : tipos.filter((t) => (vinc[i.id] ?? []).includes(t.id)).map((t) => <span key={t.id} className="rounded-full border border-line-2 bg-white px-2 py-0.5 text-[0.6875rem] text-fg-2">{t.nome}</span>)}
                         </span>
                       </button>
-                      <div className="flex shrink-0 items-center self-center">
+                      <div className="flex shrink-0 items-center">
                         <BotaoIcone icone="solar:pen-linear" rotulo={`Editar ${i.nome}`} onClick={() => editarItem(i)} />
-                        <BotaoIcone icone={i.ativo ? 'solar:eye-closed-linear' : 'solar:restart-linear'} rotulo={`${i.ativo ? 'Desativar' : 'Reativar'} ${i.nome}`}
-                          onClick={() => tratar(salvarItem({ ...i, ativo: !i.ativo }), i.ativo ? 'Item desativado (histórico preservado).' : 'Item reativado.')} />
+                        <BotaoOlho visivel={i.ativo} rotulo={i.nome} onClick={() => tratar(salvarItem({ ...i, ativo: !i.ativo }), i.ativo ? 'Item oculto (histórico preservado).' : 'Item visível de novo.')} />
                       </div>
                     </div>
                     {fi?.id === i.id && <div className="bg-white p-3">{formItem(`Editando: ${i.nome} · ${a.nome}`)}</div>}
@@ -200,7 +228,7 @@ export function T30Ambientes() {
                 {a.itens.length === 0 && <li className="px-4 py-3 text-[0.8125rem] text-fg-3">Nenhum item ainda.</li>}
                 {fi && fi.id === null && fi.idAmbiente === a.id && <li className="bg-white p-3">{formItem(`Novo item em ${a.nome}`)}</li>}
               </ul>
-              <div className="p-4 pt-3">
+              <div className="p-2 pt-3">
                 <button type="button" className="flex min-h-11 w-full items-center justify-center gap-2 rounded-md border border-dashed border-line-2 text-[0.8125rem] font-medium text-pine transition-colors duration-fast hover:border-pine hover:bg-cream"
                   onClick={() => abrirNovoItem(a)}>
                   <Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Adicionar item em {a.nome}

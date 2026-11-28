@@ -63,7 +63,7 @@ function rotas(page, db) {
     }
     for (const [tab, chave, lista] of [['VST_AMBIENTE', 'ID_AMBIENTE', 'ambientes'], ['VST_ITEM', 'ID_ITEM', 'itens'], ['VST_TIPO_VISTORIA', 'ID_TIPO_VISTORIA', 'tipos']]) {
       if (caminho !== tab) continue;
-      if (m === 'GET') return json(200, db[lista]);
+      if (m === 'GET') return json(200, [...db[lista]].sort((x, y) => (x.NO_ORDEM ?? 0) - (y.NO_ORDEM ?? 0)));   // como o banco: order=NO_ORDEM
       if (m === 'POST') {
         const nomeCampo = { VST_AMBIENTE: 'NM_AMBIENTE', VST_ITEM: 'NM_ITEM', VST_TIPO_VISTORIA: 'CD_TIPO_VISTORIA' }[tab];
         if (db[lista].some((x) => x[nomeCampo] === corpo[nomeCampo])) return json(409, { code: '23505', message: `duplicate key value violates unique constraint "UQ_${tab}_${nomeCampo}"` });
@@ -260,10 +260,20 @@ if (require.main === module) (async () => {
     ok((await texto(page, '[role=alert]')).includes('Já existe'), 'nome repetido no chalé: o banco recusa e a tela explica');
     await page.fill('#a-nome', 'Sala'); await page.click('form[aria-label=Ambiente] button[type=submit]');
     await page.waitForSelector('[data-ambiente="Sala"]');
-    await page.click('button[aria-label="Descer Banheiro"]');
+    ok(await page.locator('button[aria-label^="Subir"], button[aria-label^="Descer"]').count() === 0, 'sem botões de subir e descer: a ordem muda arrastando');
+    // arrastar Banheiro (1º) para baixo de Sala (2º) pela alça
+    const h = await page.locator('[data-ambiente="Banheiro"] [data-alca]').first().boundingBox();
+    const alvo = await page.locator('[data-ambiente="Sala"]').boundingBox();
+    await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down();
+    await page.mouse.move(h.x + h.width / 2, alvo.y + alvo.height * 0.8, { steps: 8 }); await page.mouse.up();
     await page.waitForSelector('text=Ordem salva');
-    const patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
-    ok(patches.length === 2 && patches[0].corpo.NO_ORDEM === 2 && patches[1].corpo.NO_ORDEM === 1, 'mudar a ordem troca a posição dos dois ambientes');
+    let patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
+    ok(patches.length === 2 && patches.some((x) => x.corpo.NO_ORDEM === 1) && patches.some((x) => x.corpo.NO_ORDEM === 2)
+      && (await page.locator('[data-ambiente]').evaluateAll((l) => l.map((x) => x.getAttribute('data-ambiente')).join(','))) === 'Sala,Banheiro', 'arrastar pela alça muda a ordem e grava');
+    // teclado: seta para cima na alça devolve Banheiro ao topo
+    await page.locator('[data-ambiente="Banheiro"] [data-alca]').first().focus(); await page.keyboard.press('ArrowUp');
+    await page.waitForTimeout(600);
+    ok((await page.locator('[data-ambiente]').evaluateAll((l) => l.map((x) => x.getAttribute('data-ambiente')).join(','))) === 'Banheiro,Sala', 'no teclado, setas na alça também mudam a ordem');
     await page.locator('[data-ambiente="Banheiro"] button:has-text("Adicionar item")').click();
     await page.fill('#i-nome', 'Toalhas de banho'); await page.fill('#i-qtde', '-1'); await page.click('form[aria-label=Item] button[type=submit]');
     ok((await texto(page, '[role=alert]')).includes('0 a 999') && !ultima(db, 'POST', 'VST_ITEM'), 'quantidade negativa: avisa e não grava');
@@ -300,8 +310,10 @@ if (require.main === module) (async () => {
     await page.click('button:has-text("Incluir em todas as vistorias")');
     await page.waitForSelector('text=1 item incluído em todas as vistorias');
     ok(ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idSofa && x.ID_TIPO_VISTORIA === t)) && await page.locator('text=ainda não está em nenhuma vistoria').count() === 0, 'um clique liga o item solto a todas as vistorias e a faixa de alerta some');
-    await page.click('button[aria-label="Desativar Toalhas de banho"]');
-    await page.waitForSelector('text=Item desativado');
+    ok(await page.locator('button[aria-label="Ocultar Toalhas de banho"] svg').count() === 1, 'olho aberto: o item aparece nas vistorias');
+    await page.click('button[aria-label="Ocultar Toalhas de banho"]');
+    await page.waitForSelector('text=Item oculto');
+    ok(await page.locator('button[aria-label="Mostrar Toalhas de banho"][aria-pressed=true] svg').count() === 2, 'oculto: o olho ganha um x e o botão passa a mostrar de novo');
     ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
     await ctx.close();
   });
