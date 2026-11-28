@@ -71,7 +71,6 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
   useEffect(() => { let vivo = true; void contarPendencias(pathname === '/gestao').then((n) => vivo && setPend(n)); return () => { vivo = false; }; }, [pathname]);
   const menu = menuDo(perfilAtual());
   const area = areaDe(pathname);
-  const areas = (Object.keys(AREAS) as Area[]).filter((x) => x === 'vistoria' || menu.some((m) => GRUPOS[m.grupo].area === x));
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] transition-colors duration-fast ${isActive ? 'bg-white/10 font-medium text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`;
   return (
@@ -120,19 +119,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         </header>
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-28 lg:px-8 lg:pb-24">{children}</main>
       </div>
-      <nav aria-label="Áreas" className="fixed inset-x-0 bottom-0 z-30 grid auto-cols-fr grid-flow-col border-t border-line-1 bg-white px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] print:hidden lg:hidden">
-        {areas.map((id) => {
-          const a = AREAS[id], atual = area === id;
-          return (
-            <Link key={id} to={a.to} aria-current={atual ? 'page' : undefined} aria-label={a.nome + (id === 'gestao' && pend ? `, ${pend} pendências` : '')}
-              className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[0.6875rem] ${atual ? 'font-semibold text-pine' : 'text-fg-3'}`}>
-              <span className={`flex h-7 w-12 items-center justify-center rounded-full ${atual ? 'bg-pine/10' : ''}`}><Icon icon={a.icon} width={20} aria-hidden="true" /></span>
-              <span className="max-w-full truncate px-0.5" aria-hidden="true">{a.curto}</span>
-              {id === 'gestao' && !!pend && <span className="absolute left-1/2 top-1 ml-2 min-w-[1.125rem] rounded-full bg-error px-1 text-center text-[0.625rem] font-semibold leading-[1.125rem] text-white">{pend}<span className="sr-only"> pendências</span></span>}
-            </Link>
-          );
-        })}
-      </nav>
+      <BarraAreas pend={pend} />
     </div>
   );
 }
@@ -169,3 +156,30 @@ export function TabelaResp<T>({ cols, rows }: { cols: Col<T>[]; rows: T[] }) {
 export const card = 'rounded-xl border border-line-1 bg-white';
 export const th = 'px-4 py-2.5 text-left text-[0.6875rem] font-normal uppercase tracking-[0.08em] text-fg-3';
 export const td = 'px-4 py-3 text-[0.8125rem] text-fg-1';
+
+/** Barra das áreas no pé da tela (celular). Também aparece na Vistoria para gestor e administrador (`sempre`: inclusive no computador,
+ *  onde as telas de campo não têm o menu lateral). `pend`: contador já carregado; sem ele, a barra busca. */
+export function BarraAreas({ pend: pendDado, sempre = false }: { pend?: number | null; sempre?: boolean }) {
+  const { pathname } = useLocation();
+  const [pendBusca, setPendBusca] = useState<number | null>(null);
+  useEffect(() => { if (pendDado !== undefined) return; let vivo = true; void contarPendencias().then((n) => vivo && setPendBusca(n)); return () => { vivo = false; }; }, [pendDado, pathname]);
+  const pend = pendDado !== undefined ? pendDado : pendBusca;
+  const menu = menuDo(perfilAtual());
+  const area = areaDe(pathname);
+  const areas = (Object.keys(AREAS) as Area[]).filter((x) => x === 'vistoria' || menu.some((m) => GRUPOS[m.grupo].area === x));
+  return (
+    <nav aria-label="Áreas" className={`fixed inset-x-0 bottom-0 z-30 grid auto-cols-fr grid-flow-col border-t border-line-1 bg-white px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] print:hidden ${sempre ? 'lg:px-[max(1rem,calc(50%-18rem))]' : 'lg:hidden'}`}>
+        {areas.map((id) => {
+          const a = AREAS[id], atual = area === id;
+          return (
+            <Link key={id} to={a.to} aria-current={atual ? 'page' : undefined} aria-label={a.nome + (id === 'gestao' && pend ? `, ${pend} pendências` : '')}
+              className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[0.6875rem] ${atual ? 'font-semibold text-pine' : 'text-fg-3'}`}>
+              <span className={`flex h-7 w-12 items-center justify-center rounded-full ${atual ? 'bg-pine/10' : ''}`}><Icon icon={a.icon} width={20} aria-hidden="true" /></span>
+              <span className="max-w-full truncate px-0.5" aria-hidden="true">{a.curto}</span>
+              {id === 'gestao' && !!pend && <span className="absolute left-1/2 top-1 ml-2 min-w-[1.125rem] rounded-full bg-error px-1 text-center text-[0.625rem] font-semibold leading-[1.125rem] text-white">{pend}<span className="sr-only"> pendências</span></span>}
+            </Link>
+          );
+        })}
+      </nav>
+  );
+}

@@ -143,6 +143,10 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
       ok(new URL(page.url()).pathname === '/admin' && /Ambientes e itens/.test(cad) && !/Preços/.test(cad) && (perfil === 'ADMIN') === /Usuários/.test(cad)
         && await page.locator('header [data-area=admin]').isVisible(), `${perfil}: Administração lista só os cadastros do Inspect que o perfil pode usar`);
       ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').getAttribute('aria-current') === 'page', `${perfil}: a aba Administração fica marcada`);
+      await page.locator('nav[aria-label="Áreas"] a[href="/app/unidades"]').click(); await page.waitForTimeout(900);
+      ok(new URL(page.url()).pathname === '/app/unidades' ? await page.locator('nav[aria-label="Áreas"] a[href="/app/unidades"]').getAttribute('aria-current') === 'page' : new URL(page.url()).pathname === '/permissao-localizacao',
+        `${perfil}: em Vistoria a barra das áreas continua embaixo, com Vistoria marcada`);
+      await page.goto(BASE + '/admin'); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
       if (perfil === 'ADMIN') {
         await page.locator('nav[aria-label="Áreas"] a[href="/admin/site"]').click(); await page.waitForTimeout(700);
         const site = await page.locator('main').innerText();
@@ -182,9 +186,10 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
     await page.getByText('Casa do Mirante').first().waitFor({ timeout: 6000 }).catch(() => {});
     ok(new URL(page.url()).pathname === '/app/unidades', 'fica em Minhas unidades (sem voltar à T03 em laço)');
     if (process.env.DEPURAR) console.log(await page.evaluate(() => [localStorage.getItem('inspect.acesso'), [...document.querySelectorAll('[aria-label]')].map((x) => x.getAttribute('aria-label')).join('|'), location.pathname]));
-    await page.locator('a[aria-label="Voltar à gestão"]').click({ timeout: 8000 });
+    ok(await page.locator('nav[aria-label="Áreas"] a[href="/app/unidades"]').getAttribute('aria-current') === 'page', 'em Minhas unidades o gestor vê a barra das áreas com Vistoria marcada (também no computador)');
+    await page.locator('nav[aria-label="Áreas"] a[href="/gestao"]').click({ timeout: 8000 });
     await page.waitForURL((u) => u.pathname === '/gestao', { timeout: 6000 }).catch(() => {});
-    ok(new URL(page.url()).pathname === '/gestao' && !erros.length, 'de Minhas unidades o gestor volta à gestão' + (erros.length ? ' — ' + erros[0] : ''));
+    ok(new URL(page.url()).pathname === '/gestao' && !erros.length, 'pela barra, de Minhas unidades o gestor volta à Gestão' + (erros.length ? ' — ' + erros[0] : ''));
     await ctx.close();
   }
   await browser.close();
