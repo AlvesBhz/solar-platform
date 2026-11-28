@@ -2,6 +2,7 @@
 // Dados da administração (T28–T33). Real: Supabase com RLS (só ADMIN/gestão alteram) e Edge Functions para login e senha.
 // Demonstração: dados em memória, sem rede.
 import { MODO_DEMO, SUPABASE_URL, supabase } from './supabase';
+import { posTipo } from './ordemTipos';
 import type { Perfil } from './acesso';
 
 export const PERFIS: { valor: Perfil; label: string }[] = [
@@ -276,7 +277,7 @@ export async function listarTipos(): Promise<Tipo[]> {
     .select('ID_TIPO_VISTORIA, CD_TIPO_VISTORIA, NM_TIPO_VISTORIA, TP_COMPORTAMENTO, TP_PERIODICIDADE, SG_EXIGE_ENTRADA, SG_EXIGE_ASSINATURA, SG_ATIVO, DS_PERFIS').order('ID_TIPO_VISTORIA');
   if (error) throw new Error(error.message);
   return (data ?? []).map((t) => ({ id: Number(t.ID_TIPO_VISTORIA), codigo: t.CD_TIPO_VISTORIA, nome: t.NM_TIPO_VISTORIA, comportamento: t.TP_COMPORTAMENTO, periodicidade: t.TP_PERIODICIDADE,
-    exigeEntrada: t.SG_EXIGE_ENTRADA, exigeAssinatura: t.SG_EXIGE_ASSINATURA, ativo: t.SG_ATIVO, perfis: t.DS_PERFIS }));
+    exigeEntrada: t.SG_EXIGE_ENTRADA, exigeAssinatura: t.SG_EXIGE_ASSINATURA, ativo: t.SG_ATIVO, perfis: t.DS_PERFIS })).sort((a, b) => posTipo(a.codigo) - posTipo(b.codigo) || a.id - b.id);
 }
 export function validarTipo(t: Omit<Tipo, 'id'>, novo: boolean): string[] {
   const e: string[] = [];
