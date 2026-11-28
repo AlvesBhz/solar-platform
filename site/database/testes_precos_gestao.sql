@@ -96,7 +96,7 @@ select teste.ok((select count(*) = 2 and bool_and(vl_noite = 950 and qtde_min_no
 select "SE".prc_salvar_ajustes(:ua, array[current_date + 40], null, null, true, true, false, null);
 select teste.ok((select sg_fechado and sg_sem_chegada and not sg_sem_saida and vl_noite is null and qtde_min_noites is null and ds_observacao is null
                  from "SE".prc_ajustes(:ua, current_date + 40, current_date + 40)), 'salvar de novo substitui (fechado, sem chegada, valor e mínimo vazios)');
-select teste.erro(format($q$select "SE".prc_salvar_ajustes(%s, array[current_date - 1], 900, null, false, false, false, null)$q$, :ua), 'data_passada', 'noite que já passou não se ajusta');
+select teste.erro(format($q$select "SE".prc_salvar_ajustes(%s, array[(now() at time zone 'America/Sao_Paulo')::date - 1], 900, null, false, false, false, null)$q$, :ua), 'data_passada', 'noite que já passou não se ajusta');
 select teste.erro(format($q$select "SE".prc_salvar_ajustes(%s, array[current_date + 50], -5, null, false, false, false, null)$q$, :ua), 'ajuste_invalido', 'valor negativo é recusado');
 select teste.erro(format($q$select "SE".prc_salvar_ajustes(%s, array[current_date + 50], 900, 0, false, false, false, null)$q$, :ua), 'ajuste_invalido', 'mínimo de noites zero é recusado');
 select teste.erro(format($q$select "SE".prc_salvar_ajustes(%s, array[]::date[], 900, null, false, false, false, null)$q$, :ua), 'periodo_invalido', 'lista de datas vazia é recusada');
@@ -141,7 +141,7 @@ select teste.erro('select count(*) from "SE".vst_auditoria(current_date - 1, cur
 
 \echo '── 8. O que não pode mudar'
 :dono
-select teste.ok((select count(*) = 9 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and proname not in ('prc_auditar_autor', 'prc_exigir_admin')), '9 funções do app');
+select teste.ok((select count(*) = 9 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and proname not in ('prc_auditar_autor', 'prc_exigir_admin', 'prc_pacotes', 'prc_salvar_pacote')), '9 funções do app (as dos pacotes estão em testes_pacotes.sql)');
 select teste.ok((select count(*) = 0 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and has_function_privilege('anon', oid, 'execute')), 'nenhuma função prc_ liberada para anon');
 select teste.ok((select count(*) = 0 from pg_proc where pronamespace = '"SE"'::regnamespace and proname in ('prc_auditar_autor', 'prc_exigir_admin') and has_function_privilege('authenticated', oid, 'execute')), 'a guarda e o gatilho não são chamáveis pelo app');
 select teste.ok(not has_table_privilege('authenticated', '"SE"."SIT_TARIFA"', 'select') and not has_table_privilege('authenticated', '"SE"."SIT_AJUSTE_DIARIO"', 'update'), 'as tabelas de preço seguem sem acesso direto');
