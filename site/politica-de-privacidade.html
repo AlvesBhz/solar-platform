@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Política de Privacidade · Solar do Espinhaço</title>
+<meta name="robots" content="noindex,follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none'; object-src 'none'">
+<link rel="icon" href="assets/images/selo-se.webp" type="image/webp">
+<link rel="stylesheet" href="css/fonts.css">
+<style>
+/* Tema claro fixo, editorial de hotel boutique: barra com lockup, título centrado com fio, índice lateral discreto, coluna de leitura de ~66ch. Tokens do Solar Design System. */
+:root{color-scheme:light;
+  --c-pine:#2C3E35;--c-pine-deep:#1C2922;--c-pine-mid:#3D5547;--c-cream:#FAFAF9;--c-bone:#EAE5D9;--c-white:#FFFFFF;
+  --s200:#E7E5E4;--s300:#D6D3D1;--s400:#A8A29E;--s500:#78716C;--s600:#57534E;--s700:#44403C;--s900:#1C1917;
+  --c-warning:#B45309;--c-warning-bg:#FFFBEB;
+  --fg-1:var(--c-pine-deep);--fg-2:var(--s700);--fg-3:var(--s500);--line:var(--s300);--line-soft:var(--s200);
+  --font-serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;--font-sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--c-cream);color:var(--fg-2);font-family:var(--font-sans);font-size:15.5px;font-weight:300;line-height:1.8;-webkit-font-smoothing:antialiased}
+::selection{background:var(--s900);color:#fff}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+a{color:var(--c-pine);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible{outline:1px solid var(--c-pine);outline-offset:3px}
+
+/* marca no topo */
+.brand{display:inline-flex;align-items:center;justify-content:center;gap:14px;color:var(--fg-1);margin:0 auto 44px}
+.brand .logo{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.brand b{font-family:var(--font-serif);font-weight:500;font-size:1.5rem;line-height:1;letter-spacing:.01em}
+
+/* abertura */
+.hero{background:var(--c-bone);text-align:center;margin-top:calc(-1*env(safe-area-inset-top,0px));padding-top:calc(env(safe-area-inset-top,0px) + clamp(40px,6vw,64px));padding-bottom:clamp(48px,7vw,80px)}
+.eyebrow{font-size:10px;letter-spacing:.38em;text-transform:uppercase;color:var(--c-pine);margin:0 0 22px;font-weight:400}
+h1{font-family:var(--font-serif);font-weight:300;color:var(--fg-1);font-size:clamp(2.8rem,6vw,4.75rem);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:italic;font-weight:300}
+.rule{display:block;width:56px;height:1px;background:var(--c-pine);margin:30px auto 26px;opacity:.5}
+.lede{font-family:var(--font-serif);font-style:italic;font-size:clamp(1.15rem,2vw,1.35rem);line-height:1.5;color:var(--fg-2);max-width:40ch;margin:0 auto}
+.meta{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 28px;margin:28px 0 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3);font-weight:400}
+.draft{margin:14px auto 0;font-size:12px;color:var(--c-warning);font-weight:400}
+
+/* corpo */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(40px,7vw,96px);padding-block:clamp(48px,7vw,88px) clamp(64px,9vw,120px)}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 32px);align-self:start}
+nav.toc p{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;font-weight:400}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc a{display:block;padding:6px 0;font-size:13px;line-height:1.4;color:var(--fg-2);text-decoration:none;border-bottom:1px solid transparent;transition:color .3s ease-out}
+nav.toc a:hover{color:var(--c-pine)}
+nav.toc .part{padding:20px 0 6px;font-family:var(--font-serif);font-style:italic;font-size:15px;color:var(--c-pine)}
+nav.toc .part:first-child{padding-top:0}
+article{min-width:0;max-width:66ch}
+.summary{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:28px 0 22px;margin:0 0 16px}
+.summary h2{margin:0 0 10px!important;font-size:1.65rem!important;font-style:italic;font-weight:300!important}
+.summary ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.summary li{position:relative;padding-left:22px}
+.summary li::before{content:"";position:absolute;left:0;top:.85em;width:10px;height:1px;background:var(--c-pine)}
+h2{font-family:var(--font-serif);font-weight:400;color:var(--fg-1);font-size:clamp(1.75rem,3vw,2.15rem);line-height:1.15;letter-spacing:-.01em;margin:64px 0 16px;text-wrap:balance;scroll-margin-top:32px}
+h2 .n{display:block;font-family:var(--font-sans);font-size:10px;letter-spacing:.32em;color:var(--fg-3);margin-bottom:10px;font-weight:400;text-transform:uppercase}
+h2 .n::before{content:"Capítulo "}
+h3{font-family:var(--font-sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--fg-1);margin:32px 0 6px}
+.parttitle{margin:88px 0 -24px;text-align:center;font-family:var(--font-serif);font-style:italic;font-size:1.25rem;color:var(--c-pine);display:flex;align-items:center;gap:20px}
+.parttitle::before,.parttitle::after{content:"";flex:1;height:1px;background:var(--line)}
+p{margin:0 0 14px}
+ul,ol{padding-left:20px;margin:0 0 14px}
+li{margin:6px 0}
+li::marker{color:var(--s400)}
+strong{color:var(--fg-1);font-weight:500}
+.ph{color:var(--c-warning);background:linear-gradient(transparent 62%,var(--c-warning-bg) 62%);border-bottom:1px dotted var(--c-warning);font-weight:400;padding:0 1px}
+.callout{display:flex;gap:16px;background:var(--c-white);border:1px solid var(--line-soft);border-left:2px solid var(--c-pine);padding:20px 24px;margin:24px 0}
+.callout svg{flex:none;width:18px;height:18px;color:var(--c-pine);margin-top:4px}
+.callout p{margin:0}
+.callout .lbl{display:block;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--c-pine);font-weight:500;margin-bottom:4px}
+.tbl{overflow-x:auto;margin:20px 0 24px;border-top:1px solid var(--fg-1)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;line-height:1.6}
+th,td{text-align:left;vertical-align:top;padding:14px 16px 14px 0;border-bottom:1px solid var(--line-soft)}
+th{font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;color:var(--fg-1);padding-top:14px}
+td:first-child{color:var(--fg-1);font-weight:400}
+
+/* rodapé: fundo pine com o selo SE */
+footer{background:linear-gradient(160deg,#1C2922 0%,#2C3E35 60%,#3D5547 100%);text-align:center;color:rgba(255,255,255,.7)}
+.foot{padding-block:72px 56px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.foot .logo{width:120px;height:120px;border-radius:50%;box-shadow:0 24px 60px rgba(0,0,0,.35);margin-bottom:22px}
+.fname{display:flex;align-items:center;gap:18px;margin:0;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.85);font-weight:400}
+.fname::before,.fname::after{content:"";width:36px;height:1px;background:rgba(255,255,255,.3)}
+.faddr{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);margin:6px 0 24px;font-weight:400}
+.flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
+.flinks a{font-size:12px;color:rgba(255,255,255,.75);text-decoration:none}
+.flinks a:hover{color:#fff;text-decoration:underline}
+
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr);gap:8px}nav.toc{position:static;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0 18px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero" id="top"><div class="wrap">
+<div class="brand"><img class="logo" src="assets/images/selo-se.webp" alt="Monograma SE" width="52" height="52"><b>Solar do Espinhaço</b></div>
+<p class="eyebrow">Documentos legais</p>
+<h1>Política de <em>Privacidade</em></h1>
+<span class="rule" aria-hidden="true"></span>
+<p class="lede">Como o Solar do Espinhaço trata os dados de quem nos visita e se hospeda, incluindo cookies.</p>
+<p class="meta"><span>Versão 0.1</span><span>Atualizada em 27 de novembro de 2026</span></p>
+<p class="draft">Minuta em revisão jurídica. Trechos sublinhados aguardam informações da pousada.</p>
+</div></header>
+
+<div class="wrap layout">
+<nav class="toc" aria-label="Índice"><p>Nesta página</p><ol>
+<li><a href="#quem">1. Quem cuida dos seus dados</a></li>
+<li><a href="#jornada">2. O que coletamos em cada momento</a></li>
+<li><a href="#finalidades">3. Finalidades, bases legais e prazos</a></li>
+<li><a href="#sensiveis">4. Saúde, alimentação e acessibilidade</a></li>
+<li><a href="#criancas">5. Crianças e adolescentes</a></li>
+<li><a href="#compartilhamento">6. Com quem compartilhamos</a></li>
+<li><a href="#internacional">7. Dados fora do Brasil</a></li>
+<li><a href="#cookies">8. Cookies</a></li>
+<li><a href="#automacao">9. Atendimento automatizado</a></li>
+<li><a href="#imagem">10. Imagem e redes sociais</a></li>
+<li><a href="#seguranca">11. Segurança e incidentes</a></li>
+<li><a href="#direitos">12. Seus direitos</a></li>
+<li><a href="#alteracoes">13. Alterações</a></li>
+</ol></nav>
+
+<article>
+<section class="summary" aria-label="Resumo">
+<h2>Em poucas linhas</h2>
+<ul>
+<li>Pedimos só o que é preciso para receber você bem: reservar, cumprir a lei e cuidar da sua estadia.</li>
+<li>O registro de hóspedes (FNRH Digital) é exigência do Ministério do Turismo. Os demais dados seguem a finalidade informada aqui.</li>
+<li>Não vendemos dados. Comunicações de novidades e uso da sua imagem dependem de autorização sua, separada e revogável.</li>
+<li>Você pode pedir acesso, correção ou exclusão pelo canal <span class="ph">[PREENCHER: e-mail de privacidade]</span>.</li>
+</ul>
+</section>
+
+<h2 id="quem"><span class="n">1</span>Quem cuida dos seus dados</h2>
+<p>O controlador dos dados pessoais tratados nesta pousada e em seus canais é <strong><span class="ph">[PREENCHER: razão social]</span></strong>, nome fantasia Solar do Espinhaço, CNPJ <span class="ph">[PREENCHER]</span>, Cadastur <span class="ph">[PREENCHER]</span>, com endereço em <span class="ph">[PREENCHER: endereço completo, Lapinha da Serra, Santana do Riacho – MG, CEP]</span>.</p>
+<p>Canal de privacidade: <span class="ph">[PREENCHER: e-mail]</span> e WhatsApp <span class="ph">[PREENCHER]</span>. Encarregado pelo tratamento de dados: <span class="ph">[PREENCHER: nome do encarregado, ou indicação do canal se a pousada se enquadrar como agente de pequeno porte pela Resolução ANPD nº 2/2022]</span>.</p>
+
+<h2 id="jornada"><span class="n">2</span>O que coletamos em cada momento</h2>
+<h3>Ao visitar o site</h3>
+<p>Endereço IP, data e hora de acesso, tipo de navegador e páginas vistas. Cookies opcionais só após sua escolha (seção 8).</p>
+<h3>Ao reservar</h3>
+<p>Nome, e-mail, telefone, datas, número de hóspedes, preferências que você queira informar e dados de pagamento. Reservamos apenas por canais diretos: site, WhatsApp, e-mail e telefone. Os dados do cartão são processados pelo intermediador de pagamento <span class="ph">[PREENCHER: gateway]</span> e não ficam armazenados conosco.</p>
+<h3>No pré-check-in e na chegada</h3>
+<p>Os dados exigidos pela Ficha Nacional de Registro de Hóspedes, como nome, documento de identificação, data de nascimento, nacionalidade, endereço e contato de cada hóspede, inclusive acompanhantes e menores.</p>
+<h3>Durante a estadia</h3>
+<p>Pedidos ao concierge, consumo e preferências de serviço. <span class="ph">[CONFIRMAR o que está em operação: registros da fechadura eletrônica (data e hora de abertura), acesso ao Wi-Fi, guia do hóspede em web app, assistente de voz no quarto]</span>. Itens que não estiverem em operação devem ser removidos deste texto.</p>
+<h3>Depois da estadia</h3>
+<p>Histórico da reserva, avaliação que você nos enviar e, se autorizar, contato para novidades.</p>
+
+<h2 id="finalidades"><span class="n">3</span>Finalidades, bases legais e prazos</h2>
+<p>A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) exige uma base legal para cada uso. Consentimento é só uma delas.</p>
+<div class="tbl"><table>
+<thead><tr><th>Dado</th><th>Para quê</th><th>Base legal (LGPD)</th><th>Por quanto tempo</th></tr></thead>
+<tbody>
+<tr><td>Contato e dados da reserva</td><td>Reservar, confirmar, atender e prestar a hospedagem</td><td>Execução de contrato (art. 7º, V)</td><td>Durante a relação e por 5 anos após a estadia, para defesa em eventual reclamação (CDC, art. 27)</td></tr>
+<tr><td>Ficha de hóspede (FNRH)</td><td>Registro obrigatório junto ao Ministério do Turismo</td><td>Obrigação legal (art. 7º, II; Lei nº 11.771/2008)</td><td><span class="ph">[PREENCHER: prazo da Portaria MTur nº 41/2025]</span></td></tr>
+<tr><td>Pagamento e nota fiscal</td><td>Cobrança, emissão fiscal e contabilidade</td><td>Obrigação legal e execução de contrato</td><td>5 anos, conforme legislação tributária</td></tr>
+<tr><td>Registros de acesso ao site</td><td>Segurança e cumprimento do Marco Civil da Internet</td><td>Obrigação legal (Lei nº 12.965/2014, art. 15)</td><td>6 meses</td></tr>
+<tr><td>Preferências de estadia</td><td>Preparar a acomodação e personalizar o atendimento</td><td>Execução de contrato ou legítimo interesse</td><td>Até 2 anos após a última estadia, ou até você pedir a exclusão <span class="ph">[CONFIRMAR prazo]</span></td></tr>
+<tr><td>E-mail e WhatsApp para novidades</td><td>Ofertas e notícias do Solar</td><td>Consentimento (art. 7º, I)</td><td>Até você revogar</td></tr>
+<tr><td>Cookies de análise e marketing</td><td>Medir audiência e melhorar o site</td><td>Consentimento</td><td><span class="ph">[PREENCHER conforme inventário de cookies]</span></td></tr>
+</tbody></table></div>
+<p>Ao fim dos prazos, os dados são eliminados ou anonimizados, salvo quando a lei permitir guardá-los por mais tempo.</p>
+
+<h2 id="sensiveis"><span class="n">4</span>Saúde, alimentação e acessibilidade</h2>
+<p>Alergias, restrições alimentares e necessidades de acessibilidade são dados sensíveis. Só pedimos quando você quer que a pousada se prepare para isso, e usamos apenas para essa finalidade, com seu consentimento específico (art. 11, I). Em emergência, podemos usá-los para proteger sua vida ou integridade física (art. 11, II, "e"). Informar é sempre opcional.</p>
+
+<h2 id="criancas"><span class="n">5</span>Crianças e adolescentes</h2>
+<p>Tratamos dados de menores no melhor interesse deles (LGPD, art. 14). Coletamos o que a ficha de hóspede exige e o que confirma o vínculo com o adulto responsável, como determina o Estatuto da Criança e do Adolescente (art. 82). Nosso site e nossos canais não são dirigidos a crianças. Qualquer outro uso, como imagem, depende de autorização do responsável.</p>
+
+<h2 id="compartilhamento"><span class="n">6</span>Com quem compartilhamos</h2>
+<ul>
+<li><strong>Ministério do Turismo</strong>, pelo sistema FNRH Digital, por obrigação legal.</li>
+<li><strong>Intermediador de pagamento</strong> <span class="ph">[PREENCHER]</span>, para processar a cobrança.</li>
+<li><strong>Fornecedores de tecnologia</strong> que operam em nosso nome: hospedagem do site <span class="ph">[PREENCHER]</span>, banco de dados (Supabase), WhatsApp (Meta) e e-mail <span class="ph">[PREENCHER]</span>. Eles só podem usar os dados conforme nossas instruções.</li>
+<li><strong>Parceiros de passeios e experiências</strong>, apenas quando você contratar o serviço e só com os dados necessários.</li>
+<li><strong>Autoridades públicas</strong>, quando houver ordem judicial ou exigência legal.</li>
+</ul>
+<p>Não vendemos nem alugamos dados pessoais.</p>
+
+<h2 id="internacional"><span class="n">7</span>Dados fora do Brasil</h2>
+<p>Alguns fornecedores armazenam dados em servidores no exterior <span class="ph">[PREENCHER: países, por fornecedor]</span>. Nesses casos, adotamos os mecanismos do art. 33 da LGPD e da Resolução ANPD nº 19/2024, como cláusulas-padrão contratuais, ou transferimos para países reconhecidos pela ANPD como de proteção adequada.</p>
+
+<h2 id="cookies"><span class="n">8</span>Cookies</h2>
+<p>Cookies são pequenos arquivos que o site guarda no seu navegador.</p>
+<div class="tbl"><table>
+<thead><tr><th>Tipo</th><th>Função</th><th>Precisa da sua autorização?</th></tr></thead>
+<tbody>
+<tr><td>Necessários</td><td>Funcionamento, segurança e registro da sua escolha de cookies</td><td>Não</td></tr>
+<tr><td>Análise</td><td>Contar visitas e entender como o site é usado</td><td>Sim</td></tr>
+<tr><td>Marketing</td><td>Medir campanhas e redes sociais</td><td>Sim</td></tr>
+</tbody></table></div>
+<p>Na primeira visita, você escolhe. Recusar é tão simples quanto aceitar, e você pode mudar de ideia a qualquer momento pelo link "Preferências de cookies" no rodapé. <span class="ph">[PREENCHER: lista de cookies e ferramentas que o site realmente carrega, como fontes, mapas, vídeos e pixels]</span></p>
+
+<h2 id="automacao"><span class="n">9</span>Atendimento automatizado</h2>
+<p><span class="ph">[Manter só se estiver em operação]</span> Parte do atendimento pelo WhatsApp pode ser feita por um assistente automático. Avisamos no início da conversa quando for o caso. Você pode pedir para falar com uma pessoa da equipe a qualquer momento. Nenhuma decisão sobre sua reserva é tomada só pela automação.</p>
+
+<h2 id="imagem"><span class="n">10</span>Imagem e redes sociais</h2>
+<p>Só publicamos fotos ou vídeos em que você apareça, inclusive no Instagram, com sua autorização expressa, dada em termo próprio. Recusar não muda nada na sua estadia. Você pode revogar depois, e retiramos o conteúdo dos nossos canais.</p>
+
+<h2 id="seguranca"><span class="n">11</span>Segurança e incidentes</h2>
+<p>Usamos controle de acesso por pessoa, conexões criptografadas e acesso restrito à equipe que precisa dos dados. Se ocorrer um incidente que possa causar risco ou dano relevante, comunicaremos você e a ANPD nos prazos da Resolução ANPD nº 15/2024.</p>
+
+<h2 id="direitos"><span class="n">12</span>Seus direitos</h2>
+<p>Pelo art. 18 da LGPD, você pode pedir a qualquer momento:</p>
+<ul>
+<li>confirmação de que tratamos seus dados e acesso a eles;</li>
+<li>correção de dados incompletos ou desatualizados;</li>
+<li>anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+<li>portabilidade a outro fornecedor;</li>
+<li>informação sobre com quem compartilhamos;</li>
+<li>revogação do consentimento e eliminação dos dados tratados com base nele.</li>
+</ul>
+<p>Escreva para <span class="ph">[PREENCHER: e-mail de privacidade]</span>. Podemos pedir uma confirmação de identidade. Respondemos em até 15 dias (art. 19, II). Alguns dados precisam ser mantidos por obrigação legal, e nesse caso explicamos o motivo. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (gov.br/anpd).</p>
+
+<h2 id="alteracoes"><span class="n">13</span>Alterações</h2>
+<p>Esta política pode ser atualizada. A versão e a data ficam no topo da página. Mudanças relevantes serão comunicadas a quem tiver reserva ativa.</p>
+</article>
+</div>
+
+<footer><div class="wrap foot">
+<img class="logo" src="assets/images/selo-se.webp" alt="Solar do Espinhaço" width="120" height="120">
+<p class="fname"><span>Solar do Espinhaço</span></p>
+<p class="faddr">Lapinha da Serra · Santana do Riacho · Minas Gerais · Brasil</p>
+<nav class="flinks" aria-label="Documentos"><a href="politica-de-privacidade.html">Política de Privacidade</a><a href="termos-de-uso.html">Termos de Uso</a></nav>
+</div></footer>
+
+
+</body>
+</html>

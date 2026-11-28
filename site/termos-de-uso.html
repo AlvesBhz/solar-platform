@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Termos de Uso · Solar do Espinhaço</title>
+<meta name="robots" content="noindex,follow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none'; object-src 'none'">
+<link rel="icon" href="assets/images/selo-se.webp" type="image/webp">
+<link rel="stylesheet" href="css/fonts.css">
+<style>
+/* Tema claro fixo, editorial de hotel boutique: barra com lockup, título centrado com fio, índice lateral discreto, coluna de leitura de ~66ch. Tokens do Solar Design System. */
+:root{color-scheme:light;
+  --c-pine:#2C3E35;--c-pine-deep:#1C2922;--c-pine-mid:#3D5547;--c-cream:#FAFAF9;--c-bone:#EAE5D9;--c-white:#FFFFFF;
+  --s200:#E7E5E4;--s300:#D6D3D1;--s400:#A8A29E;--s500:#78716C;--s600:#57534E;--s700:#44403C;--s900:#1C1917;
+  --c-warning:#B45309;--c-warning-bg:#FFFBEB;
+  --fg-1:var(--c-pine-deep);--fg-2:var(--s700);--fg-3:var(--s500);--line:var(--s300);--line-soft:var(--s200);
+  --font-serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;--font-sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--c-cream);color:var(--fg-2);font-family:var(--font-sans);font-size:15.5px;font-weight:300;line-height:1.8;-webkit-font-smoothing:antialiased}
+::selection{background:var(--s900);color:#fff}
+.wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+a{color:var(--c-pine);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible{outline:1px solid var(--c-pine);outline-offset:3px}
+
+/* marca no topo */
+.brand{display:inline-flex;align-items:center;justify-content:center;gap:14px;color:var(--fg-1);margin:0 auto 44px}
+.brand .logo{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.brand b{font-family:var(--font-serif);font-weight:500;font-size:1.5rem;line-height:1;letter-spacing:.01em}
+
+/* abertura */
+.hero{background:var(--c-bone);text-align:center;margin-top:calc(-1*env(safe-area-inset-top,0px));padding-top:calc(env(safe-area-inset-top,0px) + clamp(40px,6vw,64px));padding-bottom:clamp(48px,7vw,80px)}
+.eyebrow{font-size:10px;letter-spacing:.38em;text-transform:uppercase;color:var(--c-pine);margin:0 0 22px;font-weight:400}
+h1{font-family:var(--font-serif);font-weight:300;color:var(--fg-1);font-size:clamp(2.8rem,6vw,4.75rem);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:italic;font-weight:300}
+.rule{display:block;width:56px;height:1px;background:var(--c-pine);margin:30px auto 26px;opacity:.5}
+.lede{font-family:var(--font-serif);font-style:italic;font-size:clamp(1.15rem,2vw,1.35rem);line-height:1.5;color:var(--fg-2);max-width:40ch;margin:0 auto}
+.meta{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 28px;margin:28px 0 0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3);font-weight:400}
+.draft{margin:14px auto 0;font-size:12px;color:var(--c-warning);font-weight:400}
+
+/* corpo */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:clamp(40px,7vw,96px);padding-block:clamp(48px,7vw,88px) clamp(64px,9vw,120px)}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 32px);align-self:start}
+nav.toc p{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;font-weight:400}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc a{display:block;padding:6px 0;font-size:13px;line-height:1.4;color:var(--fg-2);text-decoration:none;border-bottom:1px solid transparent;transition:color .3s ease-out}
+nav.toc a:hover{color:var(--c-pine)}
+nav.toc .part{padding:20px 0 6px;font-family:var(--font-serif);font-style:italic;font-size:15px;color:var(--c-pine)}
+nav.toc .part:first-child{padding-top:0}
+article{min-width:0;max-width:66ch}
+.summary{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:28px 0 22px;margin:0 0 16px}
+.summary h2{margin:0 0 10px!important;font-size:1.65rem!important;font-style:italic;font-weight:300!important}
+.summary ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.summary li{position:relative;padding-left:22px}
+.summary li::before{content:"";position:absolute;left:0;top:.85em;width:10px;height:1px;background:var(--c-pine)}
+h2{font-family:var(--font-serif);font-weight:400;color:var(--fg-1);font-size:clamp(1.75rem,3vw,2.15rem);line-height:1.15;letter-spacing:-.01em;margin:64px 0 16px;text-wrap:balance;scroll-margin-top:32px}
+h2 .n{display:block;font-family:var(--font-sans);font-size:10px;letter-spacing:.32em;color:var(--fg-3);margin-bottom:10px;font-weight:400;text-transform:uppercase}
+h2 .n::before{content:"Capítulo "}
+h3{font-family:var(--font-sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--fg-1);margin:32px 0 6px}
+.parttitle{margin:88px 0 -24px;text-align:center;font-family:var(--font-serif);font-style:italic;font-size:1.25rem;color:var(--c-pine);display:flex;align-items:center;gap:20px}
+.parttitle::before,.parttitle::after{content:"";flex:1;height:1px;background:var(--line)}
+p{margin:0 0 14px}
+ul,ol{padding-left:20px;margin:0 0 14px}
+li{margin:6px 0}
+li::marker{color:var(--s400)}
+strong{color:var(--fg-1);font-weight:500}
+.ph{color:var(--c-warning);background:linear-gradient(transparent 62%,var(--c-warning-bg) 62%);border-bottom:1px dotted var(--c-warning);font-weight:400;padding:0 1px}
+.callout{display:flex;gap:16px;background:var(--c-white);border:1px solid var(--line-soft);border-left:2px solid var(--c-pine);padding:20px 24px;margin:24px 0}
+.callout svg{flex:none;width:18px;height:18px;color:var(--c-pine);margin-top:4px}
+.callout p{margin:0}
+.callout .lbl{display:block;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--c-pine);font-weight:500;margin-bottom:4px}
+.tbl{overflow-x:auto;margin:20px 0 24px;border-top:1px solid var(--fg-1)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px;line-height:1.6}
+th,td{text-align:left;vertical-align:top;padding:14px 16px 14px 0;border-bottom:1px solid var(--line-soft)}
+th{font-size:10px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;color:var(--fg-1);padding-top:14px}
+td:first-child{color:var(--fg-1);font-weight:400}
+
+/* rodapé: fundo pine com o selo SE */
+footer{background:linear-gradient(160deg,#1C2922 0%,#2C3E35 60%,#3D5547 100%);text-align:center;color:rgba(255,255,255,.7)}
+.foot{padding-block:72px 56px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.foot .logo{width:120px;height:120px;border-radius:50%;box-shadow:0 24px 60px rgba(0,0,0,.35);margin-bottom:22px}
+.fname{display:flex;align-items:center;gap:18px;margin:0;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.85);font-weight:400}
+.fname::before,.fname::after{content:"";width:36px;height:1px;background:rgba(255,255,255,.3)}
+.faddr{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);margin:6px 0 24px;font-weight:400}
+.flinks{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08)}
+.flinks a{font-size:12px;color:rgba(255,255,255,.75);text-decoration:none}
+.flinks a:hover{color:#fff;text-decoration:underline}
+
+@media (max-width:880px){.layout{grid-template-columns:minmax(0,1fr);gap:8px}nav.toc{position:static;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0 18px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="hero" id="top"><div class="wrap">
+<div class="brand"><img class="logo" src="assets/images/selo-se.webp" alt="Monograma SE" width="52" height="52"><b>Solar do Espinhaço</b></div>
+<p class="eyebrow">Documentos legais</p>
+<h1>Termos de <em>Uso</em></h1>
+<span class="rule" aria-hidden="true"></span>
+<p class="lede">As condições para usar nossos canais, reservar e se hospedar no Solar do Espinhaço.</p>
+<p class="meta"><span>Versão 0.1</span><span>Atualizados em 27 de novembro de 2026</span></p>
+<p class="draft">Minuta em revisão jurídica. Trechos sublinhados aguardam informações da pousada.</p>
+</div></header>
+
+<div class="wrap layout">
+<nav class="toc" aria-label="Índice"><p>Nesta página</p><ol>
+<li class="part">Parte I · Site e canais</li>
+<li><a href="#identificacao">1. Identificação</a></li>
+<li><a href="#uso">2. Uso do site e dos apps</a></li>
+<li><a href="#propriedade">3. Marca, fotos e textos</a></li>
+<li><a href="#precos">4. Preços e disponibilidade</a></li>
+<li class="part">Parte II · Reserva e hospedagem</li>
+<li><a href="#reserva">5. Reserva e pagamento</a></li>
+<li><a href="#cancelamento">6. Cancelamento e remarcação</a></li>
+<li><a href="#diaria">7. Diária, check-in e check-out</a></li>
+<li><a href="#menores">8. Crianças e adolescentes</a></li>
+<li><a href="#casa">9. Convivência na casa</a></li>
+<li><a href="#natureza">10. Piscina, natureza e passeios</a></li>
+<li><a href="#bens">11. Seus pertences</a></li>
+<li class="part">Parte III · Acervo</li>
+<li><a href="#acervo">12. Acervo artesanal e mobiliário</a></li>
+<li class="part">Parte IV · Geral</li>
+<li><a href="#forca">13. Imprevistos e força maior</a></li>
+<li><a href="#geral">14. Lei, foro e atendimento</a></li>
+</ol></nav>
+
+<article>
+<section class="summary" aria-label="Resumo">
+<h2>Em poucas linhas</h2>
+<ul>
+<li>Reservas só por canais diretos do Solar. A reserva é confirmada com o pagamento de <span class="ph">[PREENCHER: % de sinal]</span>.</li>
+<li>Reserva feita a distância pode ser desistida em até 7 dias da contratação, com devolução integral.</li>
+<li>A diária tem 24 horas. Check-in a partir de <span class="ph">[PREENCHER]</span> e check-out até <span class="ph">[PREENCHER]</span>.</li>
+<li>A casa reúne peças artesanais únicas. Pedimos cuidado, e dano só é cobrado depois de registrado, comunicado e comprovado.</li>
+</ul>
+</section>
+
+<p class="parttitle">Parte I · Site e canais</p>
+
+<h2 id="identificacao"><span class="n">1</span>Identificação</h2>
+<p>Estes Termos regem o uso do site, dos canais de atendimento e a hospedagem no Solar do Espinhaço, operado por <strong><span class="ph">[PREENCHER: razão social]</span></strong>, CNPJ <span class="ph">[PREENCHER]</span>, Cadastur <span class="ph">[PREENCHER]</span>, <span class="ph">[PREENCHER: endereço completo, Lapinha da Serra, Santana do Riacho – MG]</span>. Atendimento: <span class="ph">[PREENCHER: e-mail, WhatsApp e horário]</span>.</p>
+<p>O uso dos seus dados está descrito na Política de Privacidade.</p>
+
+<h2 id="uso"><span class="n">2</span>Uso do site e dos apps</h2>
+<p>O site e o guia do hóspede <span class="ph">[CONFIRMAR se o web app está em operação]</span> servem para conhecer a pousada, reservar e aproveitar a estadia. Não é permitido usá-los para fins ilícitos, tentar acessar áreas restritas, coletar dados de forma automatizada ou prejudicar seu funcionamento.</p>
+<p>Links para sites de terceiros, como parceiros de passeios ou mapas, são oferecidos por conveniência. O conteúdo desses sites é de responsabilidade de quem os mantém.</p>
+
+<h2 id="propriedade"><span class="n">3</span>Marca, fotos e textos</h2>
+<p>A marca Solar do Espinhaço, o logotipo, as fotografias, os textos e o projeto visual pertencem ao Solar ou a seus autores licenciados. A reprodução depende de autorização por escrito. Compartilhar nossas publicações nas redes, com crédito, é bem-vindo.</p>
+
+<h2 id="precos"><span class="n">4</span>Preços e disponibilidade</h2>
+<p>Os valores exibidos estão em reais e incluem <span class="ph">[PREENCHER: o que está incluído, como café da manhã e taxas]</span>. O preço confirmado na sua reserva não muda depois da confirmação. Alterações de tarifa valem só para novas reservas. As fotos mostram as acomodações reais, e a disposição de móveis e peças pode variar.</p>
+
+<p class="parttitle">Parte II · Reserva e hospedagem</p>
+
+<h2 id="reserva"><span class="n">5</span>Reserva e pagamento</h2>
+<ul>
+<li>Reservas são feitas apenas pelos canais diretos do Solar: site, WhatsApp, e-mail ou telefone. Não trabalhamos com plataformas como Booking ou Airbnb.</li>
+<li>A reserva é confirmada após o pagamento de <span class="ph">[PREENCHER: % de sinal]</span>, e você recebe a confirmação por escrito com datas, valores e regras de cancelamento.</li>
+<li>O saldo é pago <span class="ph">[PREENCHER: até quando, e por quais meios: Pix, cartão, parcelamento]</span>.</li>
+<li>Se o sinal não for pago no prazo informado na proposta, a data é liberada, sem custo para você.</li>
+<li>Informe o nome completo de todos os hóspedes. A ocupação máxima de cada acomodação é <span class="ph">[PREENCHER]</span>.</li>
+</ul>
+
+<h2 id="cancelamento"><span class="n">6</span>Cancelamento e remarcação</h2>
+<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5" stroke-linecap="round"/></svg><p><span class="lbl">Direito de arrependimento</span>Reserva feita fora da pousada (site, WhatsApp, e-mail ou telefone) pode ser desistida em até 7 dias da contratação, com devolução integral do que foi pago, pelo mesmo meio de pagamento (Código de Defesa do Consumidor, art. 49).</p></div>
+<p>Depois desse prazo, vale a tabela abaixo, contada a partir da data de check-in:</p>
+<div class="tbl"><table>
+<thead><tr><th>Quando você cancela</th><th>O que acontece</th></tr></thead>
+<tbody>
+<tr><td><span class="ph">[PREENCHER: ex. 30 dias ou mais]</span></td><td><span class="ph">[PREENCHER: ex. reembolso integral ou crédito]</span></td></tr>
+<tr><td><span class="ph">[PREENCHER: faixa intermediária]</span></td><td><span class="ph">[PREENCHER: % retido, proporcional ao prejuízo]</span></td></tr>
+<tr><td><span class="ph">[PREENCHER: últimos dias]</span></td><td><span class="ph">[PREENCHER]</span></td></tr>
+</tbody></table></div>
+<p><strong>Remarcação.</strong> <span class="ph">[PREENCHER: antecedência, prazo para usar a nova data e se há diferença de tarifa]</span>.</p>
+<p><strong>Não comparecimento.</strong> Se você não chegar e não avisar até <span class="ph">[PREENCHER: horário]</span> do dia do check-in, a reserva é considerada não utilizada e aplica-se <span class="ph">[PREENCHER]</span>. O valor retido nunca ultrapassa o que foi pago e considera a possibilidade de revendermos a data.</p>
+<p><strong>Cancelamento pelo Solar.</strong> Se precisarmos cancelar, você escolhe entre reembolso integral e nova data, sem custo.</p>
+
+<h2 id="diaria"><span class="n">7</span>Diária, check-in e check-out</h2>
+<p>A diária corresponde a 24 horas de hospedagem, com até 3 horas reservadas para limpeza e arrumação da acomodação, sem custo extra (Portaria MTur nº 28/2025).</p>
+<div class="tbl"><table>
+<thead><tr><th>Momento</th><th>Horário</th></tr></thead>
+<tbody>
+<tr><td>Check-in</td><td><span class="ph">[PREENCHER]</span></td></tr>
+<tr><td>Check-out</td><td><span class="ph">[PREENCHER]</span></td></tr>
+<tr><td>Café da manhã</td><td><span class="ph">[PREENCHER]</span></td></tr>
+<tr><td>Chegada antecipada ou saída tardia</td><td>Sob consulta e conforme disponibilidade <span class="ph">[PREENCHER: se há cobrança]</span></td></tr>
+</tbody></table></div>
+<p>No pré-check-in ou na chegada, cada hóspede apresenta documento de identificação com foto, para o registro obrigatório na Ficha Nacional de Registro de Hóspedes.</p>
+
+<h2 id="menores"><span class="n">8</span>Crianças e adolescentes</h2>
+<p>Crianças e adolescentes só se hospedam acompanhados dos pais ou do responsável legal, ou com autorização expressa deles (ECA, art. 82). Leve documento que comprove o vínculo. <span class="ph">[PREENCHER: idade mínima, se houver, e exigências da autorização conforme orientação da comarca]</span>.</p>
+<p>Áreas com piscina, banheira, fogo, desníveis e peças frágeis pedem a supervisão constante de um adulto.</p>
+
+<h2 id="casa"><span class="n">9</span>Convivência na casa</h2>
+<ul>
+<li><strong>Silêncio:</strong> <span class="ph">[PREENCHER: ex. das 22h às 8h]</span>, para que todos aproveitem o som da serra.</li>
+<li><strong>Fumo:</strong> não é permitido fumar em ambientes fechados (Lei nº 12.546/2011). <span class="ph">[PREENCHER: áreas externas permitidas]</span>.</li>
+<li><strong>Animais:</strong> <span class="ph">[PREENCHER: aceitos ou não, e condições]</span>.</li>
+<li><strong>Visitantes:</strong> <span class="ph">[PREENCHER: permitidos ou não, horários e valores]</span>.</li>
+<li><strong>Eventos e fotografia profissional:</strong> dependem de combinação prévia.</li>
+<li><strong>Fogo:</strong> lareiras e fogueiras <span class="ph">[CONFIRMAR se existem]</span> só nos locais indicados, seguindo as orientações da equipe.</li>
+</ul>
+
+<h2 id="natureza"><span class="n">10</span>Piscina, natureza e passeios</h2>
+<p>A pousada está em área de serra, com trilhas, cachoeiras, mudanças rápidas de clima e animais silvestres. Informamos os cuidados de cada espaço e mantemos piscina e banheiras em boas condições de uso <span class="ph">[CONFIRMAR: piscina, banheiras, aquecimento]</span>. Pedimos que você siga as orientações de uso, avalie suas condições físicas e não use esses espaços após consumo de álcool.</p>
+<p>Passeios e experiências de terceiros, como guias e rituais do território, são contratados com o prestador, que responde pelo serviço. Indicamos parceiros com critério e informamos quem é o responsável antes da contratação.</p>
+
+<h2 id="bens"><span class="n">11</span>Seus pertences</h2>
+<p>Cuidamos da segurança da casa e respondemos pelos bens dos hóspedes nos termos do Código Civil (arts. 649 e 932, IV). Para objetos de valor, use o cofre <span class="ph">[CONFIRMAR se há cofre]</span> e mantenha a acomodação trancada.</p>
+<p>Objetos esquecidos ficam guardados por <span class="ph">[PREENCHER: prazo]</span>. Podemos enviá-los, com frete pago por você.</p>
+
+<p class="parttitle">Parte III · Acervo</p>
+
+<h2 id="acervo"><span class="n">12</span>Acervo artesanal e mobiliário</h2>
+<p>O Solar foi montado com peças de artesanato nacional e internacional em madeira, barro e outros materiais, muitas delas únicas. Elas fazem parte da experiência, e pedimos que sejam tratadas com o mesmo cuidado com que foram escolhidas.</p>
+<h3>Cuidados</h3>
+<ul>
+<li>Madeira: evite apoiar copos molhados, objetos quentes e produtos de limpeza.</li>
+<li>Barro e cerâmica: não mova peças pesadas ou apoiadas em nichos. Se precisar de espaço, chame a equipe.</li>
+<li>Não use as peças decorativas como utensílio.</li>
+<li>Com crianças, mantenha atenção perto de peças frágeis ou pesadas. A equipe também zela pela segurança dos espaços.</li>
+</ul>
+<h3>Se algo acontecer</h3>
+<ol>
+<li>Avise a equipe assim que possível. Acidentes acontecem, e avisar cedo facilita o reparo.</li>
+<li>Registramos o dano com fotos, comparando com a vistoria de entrada da acomodação <span class="ph">[CONFIRMAR se há vistoria de entrada e saída]</span>.</li>
+<li>Você recebe o registro e pode apresentar sua versão.</li>
+<li>Se o dano for causado pelo hóspede, cobramos o valor do reparo ou da reposição, comprovado por orçamento, sem multas fixas. Nenhuma cobrança é lançada no cartão sem que você seja informado antes.</li>
+</ol>
+<p>Desgaste natural do uso e defeitos que já existiam não são cobrados. Para peças únicas, o valor considera reparo por artesão ou peça equivalente, com orçamento apresentado a você.</p>
+<p><span class="ph">[CONFIRMAR se alguma peça está à venda. Se não houver venda, remover esta nota.]</span></p>
+
+<p class="parttitle">Parte IV · Geral</p>
+
+<h2 id="forca"><span class="n">13</span>Imprevistos e força maior</h2>
+<p>Chuvas fortes, quedas de energia ou de internet e bloqueio de estradas podem acontecer na serra. Nessas situações, buscamos alternativas e informamos você o quanto antes. Se a hospedagem ficar impossível por motivo alheio às duas partes, você escolhe entre nova data e reembolso dos valores pagos pelas diárias não usufruídas.</p>
+
+<h2 id="geral"><span class="n">14</span>Lei, foro e atendimento</h2>
+<p>Estes Termos seguem a lei brasileira, incluindo o Código de Defesa do Consumidor. Você pode propor ação no foro do seu domicílio (CDC, art. 101, I). Antes disso, convidamos você a falar conosco pelo <span class="ph">[PREENCHER: canal]</span>. Respondemos em até <span class="ph">[PREENCHER: prazo]</span>.</p>
+<p>Podemos atualizar estes Termos. Vale a versão aceita no momento da sua reserva, informada na confirmação.</p>
+</article>
+</div>
+
+<footer><div class="wrap foot">
+<img class="logo" src="assets/images/selo-se.webp" alt="Solar do Espinhaço" width="120" height="120">
+<p class="fname"><span>Solar do Espinhaço</span></p>
+<p class="faddr">Lapinha da Serra · Santana do Riacho · Minas Gerais · Brasil</p>
+<nav class="flinks" aria-label="Documentos"><a href="politica-de-privacidade.html">Política de Privacidade</a><a href="termos-de-uso.html">Termos de Uso</a></nav>
+</div></footer>
+
+
+</body>
+</html>
