@@ -1,6 +1,6 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy, useEffect, type ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
 import SimNav from './components/SimNav';
@@ -12,49 +12,102 @@ if (typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches) {
   document.addEventListener('focusout', () => setTimeout(() => { if (!ehTexto(document.activeElement)) document.body.classList.remove('teclado-aberto'); }, 50));
 }
 
+// Telas carregadas só quando a rota abre (o login e a entrada ficam no pacote inicial): a primeira visita baixa uma fração do código
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tela = <T extends Record<string, any>>(carregar: () => Promise<T>, nome: keyof T) => lazy(() => carregar().then((m) => ({ default: m[nome] as ComponentType<any> })));
+
 addCollection(solar);
 
 // No link publicado (artifact) não há rotas de URL: a navegação fica em memória.
 const Router = import.meta.env.MODE === 'artifact' ? MemoryRouter : BrowserRouter;
 import T01Inicializacao from './screens/T01Inicializacao';
 import T02Login from './screens/T02Login';
-import T03PermissaoLocalizacao from './screens/T03PermissaoLocalizacao';
+const T03PermissaoLocalizacao = lazy(() => import('./screens/T03PermissaoLocalizacao'));
 import T04AcessoIndisponivel from './screens/T04AcessoIndisponivel';
-import T05MinhasUnidades from './screens/T05MinhasUnidades';
-import T06DetalheUnidade from './screens/T06DetalheUnidade';
-import T07TipoVistoria from './screens/T07TipoVistoria';
-import T08ValidacaoPresenca from './screens/T08ValidacaoPresenca';
-import T09LeitorQr from './screens/T09LeitorQr';
-import T10Checklist from './screens/T10Checklist';
-import T11DetalheItem from './screens/T11DetalheItem';
-import T12CapturaEvidencia from './screens/T12CapturaEvidencia';
-import T13Comparacao from './screens/T13Comparacao';
-import T14Ocorrencia from './screens/T14Ocorrencia';
-import T15Resumo from './screens/T15Resumo';
-import T16Assinatura from './screens/T16Assinatura';
-import T17Confirmacao from './screens/T17Confirmacao';
-import T18Sincronizacao from './screens/T18Sincronizacao';
-import T19MeuHistorico from './screens/T19MeuHistorico';
-import { T20Dashboard, T42Pendencias, T43Cadastros, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
-import { T34Auditoria } from './screens/Admin';
-import { T31Tipos } from './screens/T31Tipos';
-import { T30Ambientes } from './screens/T30Ambientes';
-import { T33Presenca } from './screens/T33Presenca';
-import T35TrocarSenha from './screens/T35TrocarSenha';
-import { T36Ocorrencias, T37TratarOcorrencia } from './screens/T36Ocorrencias';
+const T05MinhasUnidades = lazy(() => import('./screens/T05MinhasUnidades'));
+const T06DetalheUnidade = lazy(() => import('./screens/T06DetalheUnidade'));
+const T07TipoVistoria = lazy(() => import('./screens/T07TipoVistoria'));
+const T08ValidacaoPresenca = lazy(() => import('./screens/T08ValidacaoPresenca'));
+const T09LeitorQr = lazy(() => import('./screens/T09LeitorQr'));
+const T10Checklist = lazy(() => import('./screens/T10Checklist'));
+const T11DetalheItem = lazy(() => import('./screens/T11DetalheItem'));
+const T12CapturaEvidencia = lazy(() => import('./screens/T12CapturaEvidencia'));
+const T13Comparacao = lazy(() => import('./screens/T13Comparacao'));
+const T14Ocorrencia = lazy(() => import('./screens/T14Ocorrencia'));
+const T15Resumo = lazy(() => import('./screens/T15Resumo'));
+const T16Assinatura = lazy(() => import('./screens/T16Assinatura'));
+const T17Confirmacao = lazy(() => import('./screens/T17Confirmacao'));
+const T18Sincronizacao = lazy(() => import('./screens/T18Sincronizacao'));
+const T19MeuHistorico = lazy(() => import('./screens/T19MeuHistorico'));
+const T20Dashboard = tela(() => import('./screens/Gestao'), 'T20Dashboard');
+const T42Pendencias = tela(() => import('./screens/Gestao'), 'T42Pendencias');
+const T43Cadastros = tela(() => import('./screens/Gestao'), 'T43Cadastros');
+const T21Unidades = tela(() => import('./screens/Gestao'), 'T21Unidades');
+const T22DetalheUnidade = tela(() => import('./screens/Gestao'), 'T22DetalheUnidade');
+const T23Vistorias = tela(() => import('./screens/Gestao'), 'T23Vistorias');
+const T24DetalheVistoria = tela(() => import('./screens/Gestao'), 'T24DetalheVistoria');
+const T25Ocorrencias = tela(() => import('./screens/Gestao'), 'T25Ocorrencias');
+const T26Tratamento = tela(() => import('./screens/Gestao'), 'T26Tratamento');
+const T27Relatorio = tela(() => import('./screens/Gestao'), 'T27Relatorio');
+const T34Auditoria = tela(() => import('./screens/Admin'), 'T34Auditoria');
+const T31Tipos = tela(() => import('./screens/T31Tipos'), 'T31Tipos');
+const T30Ambientes = tela(() => import('./screens/T30Ambientes'), 'T30Ambientes');
+const T33Presenca = tela(() => import('./screens/T33Presenca'), 'T33Presenca');
+const T35TrocarSenha = lazy(() => import('./screens/T35TrocarSenha'));
+const T36Ocorrencias = tela(() => import('./screens/T36Ocorrencias'), 'T36Ocorrencias');
+const T37TratarOcorrencia = tela(() => import('./screens/T36Ocorrencias'), 'T37TratarOcorrencia');
 import ProtegeCampo from './lib/ProtegeCampo';
 import type { Perfil } from './lib/acesso';
 const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
 const MANUTENCAO: Perfil[] = ['MANUTENCAO', 'GESTOR', 'ADMIN'];
-import { T32Usuarios } from './screens/T32Usuarios';
-import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
-import { T38Calendario, T40Simulador, T44Pacotes } from './screens/Precos';
-import { T39Tarifas, T41FormTarifa } from './screens/Tarifas';
+const T32Usuarios = tela(() => import('./screens/T32Usuarios'), 'T32Usuarios');
+const T28Propriedades = tela(() => import('./screens/T28Propriedades'), 'T28Propriedades');
+const T29FormPropriedade = tela(() => import('./screens/T28Propriedades'), 'T29FormPropriedade');
+const T38Calendario = tela(() => import('./screens/Precos'), 'T38Calendario');
+const T40Simulador = tela(() => import('./screens/Precos'), 'T40Simulador');
+const T44Pacotes = tela(() => import('./screens/Precos'), 'T44Pacotes');
+const T39Tarifas = tela(() => import('./screens/Tarifas'), 'T39Tarifas');
+const T41FormTarifa = tela(() => import('./screens/Tarifas'), 'T41FormTarifa');
+
+
+// O campo (vistoria) funciona sem internet: ao entrar numa tela do campo, as demais telas dele baixam em segundo plano,
+// para a sessão não depender da rede no meio de uma vistoria. Quem só usa a gestão não paga esse peso.
+const telasDoCampo = [
+  () => import('./screens/T03PermissaoLocalizacao'),
+  () => import('./screens/T05MinhasUnidades'),
+  () => import('./screens/T06DetalheUnidade'),
+  () => import('./screens/T07TipoVistoria'),
+  () => import('./screens/T08ValidacaoPresenca'),
+  () => import('./screens/T09LeitorQr'),
+  () => import('./screens/T10Checklist'),
+  () => import('./screens/T11DetalheItem'),
+  () => import('./screens/T12CapturaEvidencia'),
+  () => import('./screens/T13Comparacao'),
+  () => import('./screens/T14Ocorrencia'),
+  () => import('./screens/T15Resumo'),
+  () => import('./screens/T16Assinatura'),
+  () => import('./screens/T17Confirmacao'),
+  () => import('./screens/T18Sincronizacao'),
+  () => import('./screens/T19MeuHistorico'),
+  () => import('./screens/T36Ocorrencias'),
+];
+function PreCarregarCampo() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (!pathname.startsWith('/app') || (window as unknown as { __campoPronto?: boolean }).__campoPronto) return;
+    (window as unknown as { __campoPronto?: boolean }).__campoPronto = true;
+    const t = setTimeout(() => telasDoCampo.forEach((c) => c().catch(() => { (window as unknown as { __campoPronto?: boolean }).__campoPronto = false; })), 0);
+    return () => clearTimeout(t);
+  }, [pathname]);
+  return null;
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router basename={import.meta.env.MODE === 'artifact' ? undefined : import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       {import.meta.env.MODE === 'artifact' && <SimNav />}
+      <PreCarregarCampo />
+      <Suspense fallback={<div className="screen bg-cream" aria-busy="true" aria-label="Carregando" />}>
       <Routes>
         <Route path="/" element={<T01Inicializacao />} />
         <Route path="/login" element={<T02Login />} />
@@ -103,6 +156,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/conta/senha" element={<T35TrocarSenha />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </Router>
   </StrictMode>,
 );
