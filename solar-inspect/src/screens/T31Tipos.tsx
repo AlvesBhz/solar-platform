@@ -1,6 +1,7 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Seletor } from '../components/Filtros';
+import AvisoFixo from '../components/AvisoFixo';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import type { Perfil } from '../lib/acesso';
@@ -31,8 +32,6 @@ export function T31Tipos() {
   // Editar e Itens do checklist: leva a tela até o que abriu (no celular ficava fora da vista) e foca o primeiro campo
   useEffect(() => { const el = formRef.current; if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.querySelector<HTMLInputElement>('input:not([disabled])')?.focus({ preventScroll: true }); }, [f?.id, !!f]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { itensRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [sel?.id]);
-  // aviso de sucesso some sozinho
-  useEffect(() => { if (!aviso) return; const t = setTimeout(() => setAviso(''), 4500); return () => clearTimeout(t); }, [aviso]);
   const carregar = () => listarTipos().then(setTipos).catch(() => setErro('Não foi possível carregar os tipos.'));
   useEffect(() => { if (perfil) { carregar(); listarUnidadesPresenca().then((u) => { setUs(u); if (u[0]) setUid(String(u[0].id)); }).catch(() => {}); } }, [perfil]);
   useEffect(() => { if (sel && uid) Promise.all([listarAmbientes(Number(uid)), itensDoTipo(sel.id)]).then(([a, m]) => { setAmbs(a); setMarcados(m); }).catch(() => setErro('Não foi possível carregar os itens.')); }, [sel, uid]);
@@ -70,15 +69,7 @@ export function T31Tipos() {
     <GestaoShell eyebrow="Administração" titulo="Tipos de vistoria"
       acoes={<button type="button" className={`${btnPrimary} !min-h-10 !w-auto !px-4`} onClick={() => { setSel(null); setF({ id: null, t: novo() }); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo tipo</button>}>
       {/* mensagens fixas no pé da tela (acima da barra no celular): sempre à vista, onde quer que se tenha tocado */}
-      {(erro || aviso) && (
-        <p role={erro ? 'alert' : 'status'} data-aviso
-          className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-50 flex w-[min(92vw,28rem)] -translate-x-1/2 items-center gap-2 rounded-lg px-4 py-3 text-[0.8125rem] shadow-lg lg:bottom-6 ${erro ? 'border border-error bg-white text-error' : 'bg-pine-deep text-white'}`}>
-          <Icon icon={erro ? 'solar:danger-circle-linear' : 'solar:check-circle-linear'} width={18} className="shrink-0" aria-hidden="true" />{erro || aviso}
-          <button type="button" aria-label="Fechar aviso" title="Fechar aviso" className="-mr-2 ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full opacity-80 hover:opacity-100" onClick={() => { setErro(''); setAviso(''); }}>
-            <Icon icon="solar:close-circle-linear" width={18} aria-hidden="true" />
-          </button>
-        </p>
-      )}
+      {erro ? <AvisoFixo erro texto={erro} onFechar={() => setErro('')} /> : aviso && <AvisoFixo texto={aviso} onFechar={() => setAviso('')} />}
 
       {f && (
         <form ref={formRef} onSubmit={salvar} className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} noValidate aria-label="Tipo de vistoria">

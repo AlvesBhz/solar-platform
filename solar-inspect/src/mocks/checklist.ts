@@ -1,7 +1,7 @@
-import refCopa from '../assets/referencias/copa.webp';
-import refQuarto from '../assets/referencias/quarto.webp';
-import refSala from '../assets/referencias/sala.webp';
-import refVaranda from '../assets/referencias/varanda.webp';
+import refCopa from '../assets/referencias/copa.avif';
+import refQuarto from '../assets/referencias/quarto.avif';
+import refSala from '../assets/referencias/sala.avif';
+import refVaranda from '../assets/referencias/varanda.avif';
 // MOCKUP do checklist (ambientes → itens). Na versão real vem de ambientes/itens/tipo_vistoria_itens.
 import type { Unidade } from './unidades';
 

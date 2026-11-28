@@ -23,6 +23,8 @@ psql -v ON_ERROR_STOP=1 -q -d $DB -f "$AQUI/migracao_pacotes.sql" >/dev/null
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$AQUI/migracao_pacotes.sql" >/dev/null && echo "ok  migracao_pacotes.sql pode ser rodada de novo (idempotente)"
 rodar "$AQUI/testes_precos_gestao.sql"
 rodar "$AQUI/testes_pacotes.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$AQUI/migracao_auditoria_seguranca.sql" >/dev/null && echo "ok  migracao_auditoria_seguranca.sql"
+rodar "$AQUI/testes_permissoes_funcoes.sql"
 montar; psql -v ON_ERROR_STOP=1 -q -d $DB -f "$AQUI/migracao_pacotes.sql" >/dev/null
 rodar "$AQUI/testes.sql"
 echo "TUDO OK"

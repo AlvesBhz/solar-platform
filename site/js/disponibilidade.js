@@ -86,7 +86,7 @@ window.Disponibilidade = (function () {
   function mostrar(html, tipo) {
     var el = painel();
     el.className = 'glass-panel rounded-2xl is-on ' + (tipo || '');
-    el.innerHTML = '<button type="button" class="bkr-close" onclick="closeBkPopup()" aria-label="' + t('Fechar') + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' + html;
+    el.innerHTML = '<button type="button" class="bkr-close" data-acao="fechar" aria-label="' + t('Fechar') + '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' + html;
   }
 
   var MOTIVOS = {
@@ -201,7 +201,7 @@ window.Disponibilidade = (function () {
     var urlReserva = 'reserva.html?ci=' + iso(st.checkin) + '&co=' + iso(st.checkout) + '&a=' + st.adults + '&c=' + st.children + '&m=' + st.older + '&b=' + st.babies;
     mostrar(
       '<div class="bkr-head is-ok"><iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>' +
-      '<span>' + t('Disponível') + ' · ' + (pac ? t('Pacote {nome}').replace('{nome}', escHtml(pac)) : r.nm_unidade) + '</span></div>' +
+      '<span>' + t('Disponível') + ' · ' + (pac ? t('Pacote {nome}').replace('{nome}', escHtml(pac)) : escHtml(r.nm_unidade)) + '</span></div>' +
       (pac ? '<div id="bkOferta"></div>' : '') +
       '<details class="bkr-noites" open><summary>' + qtd + ' · ' + t('ver valor de cada noite') + '</summary><ul>' + noites + '</ul></details>' +
       '<dl class="bkr-valores">' +

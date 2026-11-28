@@ -51,7 +51,7 @@ export function criarHandler(banco: Banco, amb: Ambiente) {
     if (!LOGIN_VALIDO.test(login)) return R(req, 422, { erro: "login_invalido", mensagem: "Usuário: 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado, começando por letra." });
     if (cpfBruto && !cpfValido(cpfBruto)) return R(req, 422, { erro: "cpf_invalido", mensagem: "CPF inválido." });
     if (!PERFIS.includes(perfil)) return R(req, 422, { erro: "perfil_invalido", mensagem: "Perfil inválido." });
-    if (!senhaValida(senha)) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 8 a 72 caracteres, com letras e números." });
+    if (!senhaValida(senha)) return R(req, 422, { erro: "senha_invalida", mensagem: "A senha precisa ter de 10 a 72 caracteres, com letras e números." });
     if (!props.every((p) => Number.isInteger(p) && p > 0)) return R(req, 422, { erro: "propriedades_invalidas" });
 
     const criado = await amb.admin.criarLogin(`${login}@${dominio}`, senha);

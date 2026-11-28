@@ -5,6 +5,23 @@ import { addCollection } from '@iconify/react';
 import solar from './icons/solar-subset.json';
 import SimNav from './components/SimNav';
 import './index.css';
+import { marcarAtividade, sair, sessaoVencida } from './lib/acesso';
+
+// iPhone/iPad: o Safari dá zoom sozinho ao tocar num campo com texto menor que 16px. maximum-scale=1 desliga só esse zoom
+// automático; no iOS a pinça para ampliar continua funcionando (o Safari ignora o limite para o usuário). No Android não se aplica.
+if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+  document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover');
+}
+// o app não abre dentro de outra página (proteção contra clique enganado); a demonstração em arquivo único roda em quadro de propósito
+if (import.meta.env.MODE !== 'artifact' && window.top !== window.self) {
+  document.documentElement.style.display = 'none';
+  try { window.top!.location.href = window.location.href; } catch { /* outro domínio: a página fica em branco */ }
+}
+// validade da sessão: uso do app conta como atividade; ao voltar para o app depois do limite, pede login de novo
+['pointerdown', 'keydown'].forEach((ev) => addEventListener(ev, () => marcarAtividade(), { passive: true }));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && sessaoVencida()) void sair().then(() => location.replace(import.meta.env.BASE_URL + 'login'));
+});
 // teclado do celular aberto (foco num campo de texto, em tela de toque): marca o body para a barra das áreas sair da frente
 if (typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches) {
   const ehTexto = (el: EventTarget | null) => el instanceof HTMLElement && (el.matches('textarea, select, [contenteditable]') || (el instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'file', 'button', 'submit'].includes(el.type)));
@@ -160,3 +177,8 @@ createRoot(document.getElementById('root')!).render(
     </Router>
   </StrictMode>,
 );
+
+// service worker: guarda o app no aparelho (abre na hora e sem internet). Só no app publicado.
+if (import.meta.env.PROD && import.meta.env.MODE !== 'artifact' && 'serviceWorker' in navigator) {
+  addEventListener('load', () => { void navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js', { scope: import.meta.env.BASE_URL }).catch(() => undefined); });
+}

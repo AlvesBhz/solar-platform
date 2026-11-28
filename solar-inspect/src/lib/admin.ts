@@ -3,6 +3,7 @@
 // Demonstração: dados em memória, sem rede.
 import { MODO_DEMO, SUPABASE_URL, supabase } from './supabase';
 import { posTipo } from './ordemTipos';
+import { senhaVazada } from './acesso';
 import type { Perfil } from './acesso';
 
 export const PERFIS: { valor: Perfil; label: string }[] = [
@@ -23,7 +24,7 @@ const ERROS: Record<string, string> = {
   ultimo_admin: 'É preciso manter ao menos um administrador ativo.',
   login_em_uso: 'Esse usuário já existe.', cpf_em_uso: 'Esse CPF já está cadastrado.', cpf_invalido: 'CPF inválido.',
   login_invalido: 'Usuário: 3 a 40 letras minúsculas, números, ponto, hífen ou sublinhado, começando por letra.',
-  senha_invalida: 'A senha precisa ter de 8 a 72 caracteres.', nome_invalido: 'Informe o nome completo.',
+  senha_invalida: 'A senha precisa ter de 10 a 72 caracteres, com letras e números.', nome_invalido: 'Informe o nome completo.',
   propriedade_obrigatoria: 'Escolha ao menos uma pousada para este perfil.', sem_permissao: 'Só o administrador pode fazer isso.',
   usuario_inexistente: 'Usuário não encontrado.', tipo_do_site: 'Entrada e Saída são usadas pelo site: não mudam de código nem de comportamento e não podem ser desativadas.', perfil_sem_permissao: 'Seu perfil não pode fazer isso.',
   // preços (T38–T41)
@@ -86,6 +87,7 @@ async function funcao(nome: string, corpo: unknown): Promise<Resultado & { dados
   }
 }
 
+const VAZADA = 'Essa senha já apareceu em vazamentos de dados na internet. Gere outra.';
 export type NovoUsuario = { nome: string; login: string; cpf: string; perfil: Perfil; senha: string; props: number[] };
 export async function criarUsuario(n: NovoUsuario): Promise<Resultado> {
   if (MODO_DEMO || !supabase) {
@@ -93,11 +95,13 @@ export async function criarUsuario(n: NovoUsuario): Promise<Resultado> {
     demo.usuarios = [...demo.usuarios, { id: 'd' + Date.now(), nome: n.nome, login: n.login, cpf: n.cpf || null, perfil: n.perfil, ativo: true, props: n.props }];
     return { ok: true };
   }
+  if (await senhaVazada(n.senha)) return { ok: false, erro: VAZADA };
   return funcao('criar-usuario', { nm_usuario: n.nome, cd_login: n.login, cd_cpf: n.cpf || null, tp_perfil: n.perfil, senha: n.senha, ids_propriedade: n.perfil === 'ADMIN' ? [] : n.props });
 }
 
 export async function redefinirSenha(login: string, senha: string): Promise<Resultado> {
   if (MODO_DEMO || !supabase) return { ok: true };
+  if (await senhaVazada(senha)) return { ok: false, erro: VAZADA };
   return funcao('redefinir-senha', { cd_login: login, senha });
 }
 
