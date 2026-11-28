@@ -13,11 +13,11 @@
 <link rel="apple-touch-icon" href="assets/icons/icon.svg" />
 <title>Guia do Hóspede · Solar do Espinhaço</title>
 
-<script src="https://cdn.tailwindcss.com/3.4.17"></script>
-<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@200;300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<script src="js/vendor/iconify-icon.min.js"></script>
+<script src="js/vendor/solar-icons.js?v=20261128a"></script>
+<link rel="preload" href="assets/fonts/inter-normal-56724408.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="preload" href="assets/fonts/cormorant-garamond-normal-2fed1d1b.woff2" as="font" type="font/woff2" crossorigin />
+<link rel="stylesheet" href="css/fonts.css?v=20261128a" />
 <!-- Arquivos carregados diretamente (em vez de @import em cascata em
      css/app.css) para evitar o efeito de "flash" em que o layout
      aparece sem estilo por um instante e só depois salta para a
@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="css/components.css" />
 <link rel="stylesheet" href="css/layout.css" />
 <link rel="stylesheet" href="css/responsive.css" />
+<link rel="stylesheet" href="css/tailwind.css?v=20261128a" />
 </head>
 <body class="bg-stone-900 text-stone-100">
 
@@ -63,8 +64,8 @@
   "menu": [
     { "id": "wifi", "group": "01", "kind": "pinned", "icon": "solar:wi-fi-router-linear", "label": "Wi-Fi", "value": "Conectar", "foot": "Rede & senha →" },
     { "id": "checkin", "group": "01", "kind": "pinned", "icon": "solar:clock-circle-linear", "label": "Estadia", "value": "15h — 12h", "foot": "Check-in / out →" },
-    { "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear", "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/Suite.jpeg" },
-    { "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear", "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.webp" },
+    { "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear", "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/suite.avif" },
+    { "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear", "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/cozinha-2.avif" },
     { "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear", "num": "B · 01 — 1.686 metros", "title": "A serra <em>à porta</em>", "image": "assets/images/trilha.avif" },
     { "id": "restaurantes", "group": "02", "kind": "tile", "icon": "solar:chef-hat-minimalistic-linear", "num": "B · 02 — no vilarejo", "title": "Onde <em>comer</em>", "solid": true },
     { "id": "compras", "group": "02", "kind": "tile", "icon": "solar:cart-3-linear", "num": "B · 03 — mercado & farmácia", "title": "Compras", "solid": true },
@@ -73,7 +74,7 @@
     { "id": "transporte", "group": "03", "kind": "util", "icon": "solar:bus-linear", "label": "Como chegar" },
     { "id": "servicos", "group": "03", "kind": "util", "icon": "solar:bell-linear", "label": "Serviços" },
     { "id": "emergencia", "group": "03", "kind": "util", "icon": "solar:shield-warning-linear", "label": "Emergência" },
-    { "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear", "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/Piscina.jpeg" }
+    { "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear", "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/piscina.avif" }
   ],
   "groups": {
     "01": { "title": "Sua estadia", "tag": "essenciais" },
@@ -332,7 +333,7 @@
       <div class="flex-1 min-w-0"><div class="topbar-cr">Sua estadia · 02</div><h2 class="topbar-h2">Check-in &amp; out</h2></div>
       <div class="topbar-ic"><iconify-icon icon="solar:key-linear"></iconify-icon></div>
     </header>
-    <div class="s-hero" style="background-image:url('assets/images/Sala.jpeg');">
+    <div class="s-hero" style="background-image:url('assets/images/sala.avif');">
       <div class="s-hero-content">
         <div class="stamp">Chegada · Partida</div>
         <h1>Horários da <span class="it">casa</span></h1>
@@ -381,7 +382,7 @@
       <div class="flex-1 min-w-0"><div class="topbar-cr">A região · A · 01</div><h2 class="topbar-h2">O Chalé</h2></div>
       <div class="topbar-ic"><iconify-icon icon="solar:bed-linear"></iconify-icon></div>
     </header>
-    <div class="s-hero" style="background-image:url('assets/images/Suite.jpeg');">
+    <div class="s-hero" style="background-image:url('assets/images/suite.avif');">
       <div class="s-hero-content">
         <div class="stamp">Seu refúgio · até 4 pessoas</div>
         <h1>A casa de pedra<br><span class="it">e madeira</span></h1>
@@ -424,7 +425,7 @@
       <div class="flex-1 min-w-0"><div class="topbar-cr">A região · A · 02</div><h2 class="topbar-h2">Café da casa</h2></div>
       <div class="topbar-ic"><iconify-icon icon="solar:cup-hot-linear"></iconify-icon></div>
     </header>
-    <div class="s-hero" style="background-image:url('assets/images/Cozinha 2.webp');">
+    <div class="s-hero" style="background-image:url('assets/images/cozinha-2.avif');">
       <div class="s-hero-content">
         <div class="stamp">Manhã mineira · 7h às 10h</div>
         <h1>Pão de queijo<br><span class="it">e café coado</span></h1>
@@ -860,7 +861,7 @@
       <div class="flex-1 min-w-0"><div class="topbar-cr">Antes de partir · D · 01</div><h2 class="topbar-h2">Livro de visitas</h2></div>
       <div class="topbar-ic"><iconify-icon icon="solar:stars-linear"></iconify-icon></div>
     </header>
-    <div class="s-hero" style="background-image:url('assets/images/Piscina.jpeg');">
+    <div class="s-hero" style="background-image:url('assets/images/piscina.avif');">
       <div class="s-hero-content">
         <div class="stamp">Sua opinião</div>
         <h1>Deixe um <span class="it">recado</span></h1>
