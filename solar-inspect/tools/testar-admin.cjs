@@ -371,6 +371,13 @@ if (require.main === module) (async () => {
     await page.waitForSelector('[data-tipo="ROTINA_MENSAL"]');
     const pt = ultima(db, 'POST', 'VST_TIPO_VISTORIA');
     ok(pt && pt.corpo.CD_TIPO_VISTORIA === 'ROTINA_MENSAL' && pt.corpo.TP_PERIODICIDADE === 'MENSAL' && JSON.stringify(pt.corpo.DS_PERFIS) === '["LIMPEZA"]', 'cria o tipo com código, periodicidade e perfis');
+    // editar um tipo de rotina sem agenda (como Limpeza em produção): salva sem pedir periodicidade
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Editar")').first().click().catch(() => {});
+    if (await page.locator('form[aria-label="Tipo de vistoria"]').count()) {
+      await escolher(page, 'Periodicidade', 'Sem agenda (quando precisar)');
+      await page.click('button:has-text("Salvar tipo")'); await page.waitForTimeout(500);
+      ok(!(await texto(page, 'main')).includes('precisa de periodicidade') && db.tipos.find((x) => x.CD_TIPO_VISTORIA === 'ROTINA_MENSAL').TP_PERIODICIDADE === null, 'rotina sem agenda salva (periodicidade vazia)');
+    }
     await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Desativar")').click(); await page.waitForSelector('text=Tipo desativado');
     await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Ativar")').click();
     ok((await texto(page, '[role=alert]')).includes('ao menos um item'), 'não ativa tipo sem itens no checklist');
