@@ -31,7 +31,7 @@ function montarBanco() {
     insert into "SE"."SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO")
       select "ID_UNIDADE", (now() at time zone 'America/Sao_Paulo')::date + 3, (now() at time zone 'America/Sao_Paulo')::date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
 }
-const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::date[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
+const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::${typeof v[0] === 'number' ? 'smallint' : 'date'}[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
 const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes']);
 function chamarRpc(perfil, fn, corpo) {
   const args = Object.entries(corpo || {}).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
@@ -250,14 +250,19 @@ function servidor(page, perfil, perdidos, chamadas) {
   await p.getByPlaceholder(/Alta temporada de julho/).fill('Teste de sobreposição');
   const inputs = p.locator('input[type=date]');
   await inputs.nth(0).fill('2027-02-01'); await inputs.nth(1).fill('2027-02-10');
-  const prio = p.locator('label', { hasText: 'Prioridade' }).locator('input');
-  await prio.fill('0');
+  const prio = p.locator('label', { hasText: 'Prioridade' }).locator('select');
+  ok(await p.getByText('Data início').isVisible() && await p.getByText('Data fim').isVisible(), 'período com Data início e Data fim');
+  await prio.selectOption('0');
   ok(/se sobrepõe a “Tarifa padrão”/.test(await p.locator('main').innerText()) && await p.getByRole('button', { name: /Salvar tarifa/ }).isDisabled(), 'mesma prioridade e período: avisa a sobreposição e bloqueia salvar');
-  await prio.fill('3');
+  await prio.selectOption('3');
+  // dias da semana: quarta passa para o segundo valor (sexta, sábado e domingo já estão lá)
+  await p.locator('[role=group][aria-label="dias do valor 1"] label[title=quarta]').click();
+  ok(await p.locator('[role=group][aria-label="dias do valor 2"] input[aria-label^=quarta]').isChecked() && /seg, ter e qui/.test(await p.locator('form').innerText()), 'tocar num dia passa ele para o outro valor e os rótulos se ajustam');
   await p.getByRole('button', { name: /Salvar tarifa/ }).click();
   await p.waitForTimeout(700);
   ok(new URL(p.url()).pathname === '/admin/tarifas' && /Teste de sobreposição/.test(await p.locator('main').innerText()), 'tarifa salva no banco volta para a lista');
   ok(Number(sql(`select count(*) from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição' and "NO_PRIORIDADE" = 3`)) === 1, 'a tarifa existe em SIT_TARIFA');
+  ok(sql(`select "NO_DIAS_FDS"::text from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição'`) === '{3,5,6,7}', 'os dias do segundo valor ficam gravados (quarta, sexta, sábado e domingo)');
   ok(Number(sql(`select count(*) from "SE"."VST_AUDITORIA" where "NM_TABELA" = 'SIT_TARIFA' and "TP_OPERACAO" = 'INSERT' and "ID_USUARIO" = '${UIDS.ADMIN}'`)) === 1, 'a Auditoria do Inspect mostra quem criou a tarifa');
   // desativa e reativa pelo botão da lista
   await p.getByRole('row', { name: /Teste de sobreposição/ }).getByRole('button', { name: 'Desativar' }).click();
@@ -276,7 +281,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await foto(p, 'T41-desktop');
   // simula outra pessoa criando uma tarifa na mesma prioridade enquanto a tela estava aberta
   sql(`insert into "SE"."SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE") select "ID_UNIDADE", 'Criada por outra pessoa', '2027-02-01', '2027-02-10', 7, 900 from "SE"."SIT_UNIDADE" limit 1`);
-  await p.locator('label', { hasText: 'Prioridade' }).locator('input').fill('7');
+  await p.locator('label', { hasText: 'Prioridade' }).locator('select').selectOption('7');
   await p.getByRole('button', { name: /Salvar tarifa/ }).click();
   await p.waitForTimeout(700);
   ok(/se sobrepõe a outra tarifa ativa na mesma prioridade/.test(await p.locator('main').innerText()) && new URL(p.url()).pathname === `/admin/tarifas/${id}`, 'sobreposição criada por outra pessoa: o banco recusa e a tela mostra a mensagem');

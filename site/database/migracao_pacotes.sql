@@ -5,6 +5,8 @@
 --     adulto extra e crianças seguem por noite, como na tarifa; a taxa de limpeza não muda;
 --   • estadia que só toca o período de um pacote não é vendida: motivo 'pacote' (o site mostra as opções);
 --   • fora dos pacotes, nada muda.
+-- Dias da semana do segundo valor da tarifa (NO_DIAS_FDS): antes fixos em sexta, sábado e domingo; agora a tarifa diz quais
+-- dias (ISO: 1 = segunda … 7 = domingo) usam VL_NOITE_FDS. O padrão {5,6,7} mantém os preços de hoje.
 -- Idempotente e transacional. Pré-requisitos: schema.sql do site e migracao_precos_gestao.sql (prc_exigir_admin).
 -- Base: calcular_estadia e consultar_precos copiadas de produção em 28/11/2026, com as mudanças marcadas "2b" e 'pacote'.
 begin;
@@ -45,6 +47,15 @@ do $$ begin
     execute 'create trigger "TG_SIT_PACOTE_AUTOR" after insert or update or delete on "SE"."SIT_PACOTE" for each row execute function "SE".prc_auditar_autor()';
   end if;
 end $$;
+
+-- ── SIT_TARIFA: dias da semana que usam o segundo valor (VL_NOITE_FDS) ───────────────────────────────
+alter table "SIT_TARIFA" add column if not exists "NO_DIAS_FDS" smallint[] not null default '{5,6,7}';
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'CK_SIT_TARIFA_DIAS_FDS') then
+    alter table "SE"."SIT_TARIFA" add constraint "CK_SIT_TARIFA_DIAS_FDS" check ("NO_DIAS_FDS" <@ '{1,2,3,4,5,6,7}'::smallint[]);
+  end if;
+end $$;
+comment on column "SIT_TARIFA"."NO_DIAS_FDS" is 'Dias da semana (ISO: 1 = segunda … 7 = domingo) que usam VL_NOITE_FDS; os demais usam VL_NOITE';
 
 -- ── calcular_estadia: + pacote (passo 2b e motivo 'pacote') ────────────────────────────────────────
 CREATE OR REPLACE FUNCTION "SE".calcular_estadia(p_id_unidade bigint, p_checkin date, p_checkout date, p_adultos integer, p_criancas integer DEFAULT 0, p_bebes integer DEFAULT 0, p_criancas_maiores integer DEFAULT 0)
@@ -108,7 +119,7 @@ begin
            greatest(coalesce(a."QTDE_MIN_NOITES", t."QTDE_MIN_NOITES", 1), 1) as min_n,
            coalesce(
              a."VL_NOITE",
-             case when extract(isodow from n.data) in (5, 6, 7)       -- sexta, sábado e domingo
+             case when extract(isodow from n.data)::smallint = any(t."NO_DIAS_FDS")   -- dias do segundo valor (padrão: sexta a domingo)
                   then coalesce(t."VL_NOITE_FDS", t."VL_NOITE")
                   else t."VL_NOITE" end
            ) as valor_base,
@@ -299,5 +310,67 @@ revoke all on function prc_pacotes(bigint) from public, anon, authenticated;
 revoke all on function prc_salvar_pacote(bigint, bigint, text, date, int, numeric, boolean) from public, anon, authenticated;
 grant execute on function prc_pacotes(bigint) to authenticated;
 grant execute on function prc_salvar_pacote(bigint, bigint, text, date, int, numeric, boolean) to authenticated;
+
+-- ── tarifas no Inspect: + dias da semana do segundo valor (assinaturas mudam: recria) ─────────────────
+drop function if exists prc_tarifas(bigint);
+create function prc_tarifas(p_id_unidade bigint)
+returns table (id_tarifa bigint, nm_tarifa text, dt_ini date, dt_fim date, no_prioridade int, vl_noite numeric, vl_noite_fds numeric,
+               qtde_adultos_inclusos int, vl_adulto_extra numeric, pc_crianca numeric, pc_crianca_maior numeric, pc_bebe numeric,
+               qtde_min_noites int, sg_ativo boolean, no_dias_fds smallint[])
+language plpgsql stable security definer set search_path = "SE", extensions, pg_temp as $$
+begin
+  perform "SE".prc_exigir_admin();
+  return query
+  select t."ID_TARIFA", t."NM_TARIFA", t."DT_INI", t."DT_FIM", t."NO_PRIORIDADE"::int, t."VL_NOITE", t."VL_NOITE_FDS", t."QTDE_ADULTOS_INCLUSOS"::int,
+         t."VL_ADULTO_EXTRA", t."PC_CRIANCA", t."PC_CRIANCA_MAIOR", t."PC_BEBE", t."QTDE_MIN_NOITES"::int, t."SG_ATIVO", t."NO_DIAS_FDS"
+  from "SIT_TARIFA" t
+  where t."ID_UNIDADE" = p_id_unidade
+  order by t."NO_PRIORIDADE" desc, t."DT_INI", t."ID_TARIFA";
+end;
+$$;
+
+drop function if exists prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean);
+drop function if exists prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean, smallint[]);
+create function prc_salvar_tarifa(
+  p_id_tarifa bigint, p_id_unidade bigint, p_nm_tarifa text, p_dt_ini date, p_dt_fim date, p_no_prioridade int,
+  p_vl_noite numeric, p_vl_noite_fds numeric, p_qtde_adultos_inclusos int, p_vl_adulto_extra numeric,
+  p_pc_crianca numeric, p_pc_crianca_maior numeric, p_pc_bebe numeric, p_qtde_min_noites int, p_sg_ativo boolean,
+  p_no_dias_fds smallint[] default '{5,6,7}')
+returns bigint language plpgsql security definer set search_path = "SE", extensions, pg_temp as $$
+declare v_id bigint; v_dias smallint[];
+begin
+  perform "SE".prc_exigir_admin();
+  if not exists (select 1 from "SIT_UNIDADE" where "ID_UNIDADE" = p_id_unidade) then raise exception 'unidade_inexistente' using errcode = 'P0001'; end if;
+  if nullif(btrim(p_nm_tarifa), '') is null or length(p_nm_tarifa) > 80 then raise exception 'tarifa_invalida' using errcode = 'P0001'; end if;
+  if p_id_tarifa is not null and not exists (select 1 from "SIT_TARIFA" where "ID_TARIFA" = p_id_tarifa and "ID_UNIDADE" = p_id_unidade) then
+    raise exception 'tarifa_inexistente' using errcode = 'P0001';
+  end if;
+  select coalesce(array_agg(distinct d order by d), '{}') into v_dias from unnest(coalesce(p_no_dias_fds, '{5,6,7}')) d;   -- sem repetição, em ordem
+  begin
+    if p_id_tarifa is null then
+      insert into "SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE", "VL_NOITE_FDS", "QTDE_ADULTOS_INCLUSOS",
+                                "VL_ADULTO_EXTRA", "PC_CRIANCA", "PC_CRIANCA_MAIOR", "PC_BEBE", "QTDE_MIN_NOITES", "SG_ATIVO", "NO_DIAS_FDS")
+      values (p_id_unidade, btrim(p_nm_tarifa), p_dt_ini, p_dt_fim, p_no_prioridade, p_vl_noite, p_vl_noite_fds, p_qtde_adultos_inclusos,
+              p_vl_adulto_extra, p_pc_crianca, p_pc_crianca_maior, p_pc_bebe, p_qtde_min_noites, coalesce(p_sg_ativo, true), v_dias)
+      returning "ID_TARIFA" into v_id;
+    else
+      update "SIT_TARIFA" set "NM_TARIFA" = btrim(p_nm_tarifa), "DT_INI" = p_dt_ini, "DT_FIM" = p_dt_fim, "NO_PRIORIDADE" = p_no_prioridade,
+             "VL_NOITE" = p_vl_noite, "VL_NOITE_FDS" = p_vl_noite_fds, "QTDE_ADULTOS_INCLUSOS" = p_qtde_adultos_inclusos,
+             "VL_ADULTO_EXTRA" = p_vl_adulto_extra, "PC_CRIANCA" = p_pc_crianca, "PC_CRIANCA_MAIOR" = p_pc_crianca_maior, "PC_BEBE" = p_pc_bebe,
+             "QTDE_MIN_NOITES" = p_qtde_min_noites, "SG_ATIVO" = coalesce(p_sg_ativo, true), "NO_DIAS_FDS" = v_dias
+       where "ID_TARIFA" = p_id_tarifa
+      returning "ID_TARIFA" into v_id;
+    end if;
+  exception
+    when exclusion_violation then raise exception 'tarifa_sobreposta' using errcode = 'P0001';
+    when check_violation or not_null_violation or numeric_value_out_of_range then raise exception 'tarifa_invalida' using errcode = 'P0001';
+  end;
+  return v_id;
+end;
+$$;
+revoke all on function prc_tarifas(bigint) from public, anon, authenticated;
+revoke all on function prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean, smallint[]) from public, anon, authenticated;
+grant execute on function prc_tarifas(bigint) to authenticated;
+grant execute on function prc_salvar_tarifa(bigint, bigint, text, date, date, int, numeric, numeric, int, numeric, numeric, numeric, numeric, int, boolean, smallint[]) to authenticated;
 
 commit;

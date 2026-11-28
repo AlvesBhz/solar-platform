@@ -111,6 +111,16 @@ select teste.ok((select disponivel and vl_hospedagem <> 2900 and ds_detalhe -> 0
 select teste.ok((select count(*) = 2 from "SIT_PACOTE" where "ID_UNIDADE" = :ua and not "SG_ATIVO"), 'desativar não apaga (histórico)');
 select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_PACOTE'), 'mudanças nos pacotes ficam na auditoria');
 
+\echo '── Dias da semana do segundo valor (NO_DIAS_FDS)'
+:como_admin
+select teste.ok((select no_dias_fds = '{5,6,7}' from "SE".prc_tarifas(:ua) where id_tarifa = :tf), 'tarifa salva sem informar os dias: sexta, sábado e domingo (como antes)');
+select "SE".prc_salvar_tarifa(:tf, :ua, 'Fim de ano (teste)', date '2027-12-01', date '2028-01-15', 9, 800, 1000, 2, 0, 30, 100, 0, 2, true, '{3,3}');
+select teste.ok((select no_dias_fds = '{3}' from "SE".prc_tarifas(:ua) where id_tarifa = :tf), 'dias gravados sem repetição');
+:dono
+select teste.ok((select vl_hospedagem = 3400 from calcular_estadia(:ua, date '2028-01-10', date '2028-01-14', 2)), 'seg a qui com quarta no segundo valor: 800 + 800 + 1000 + 800 = 3400');
+select teste.ok((select vl_noite = 800 from consultar_precos(date '2028-01-08', date '2028-01-09', 2) where dt_ref = date '2028-01-08'), 'sábado fora dos dias marcados usa o primeiro valor (site)');
+:como_admin
+select teste.erro(format($q$select "SE".prc_salvar_tarifa(%s, %s, 'Fim de ano (teste)', date '2027-12-01', date '2028-01-15', 9, 800, 1000, 2, 0, 30, 100, 0, 2, true, '{8}')$q$, :tf, :ua), 'tarifa_invalida', 'dia da semana fora de 1 a 7 é recusado');
 :dono
 delete from "SIT_PACOTE" where "ID_UNIDADE" = :ua and "NM_PACOTE" = 'Natal (teste)';
 update "SIT_TARIFA" set "SG_ATIVO" = false where "ID_TARIFA" = :tf;
