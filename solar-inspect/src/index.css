@@ -1,9 +1,8 @@
 /* Design System do Solar — consumido sem alteração */
 @import '../../design-system/colors_and_type.css';
+/* Fontes dentro do app: sem Google Fonts (mais rápido e sem enviar o IP do visitante a terceiros) */
+@import './fonts.css';
 
-/* Fontes servidas pelo próprio app (antes do Google Fonts: um pedido a menos a outro domínio e sem atraso na primeira tela) */
-@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 300 600; font-display: swap; src: url('./assets/fonts/cormorant-garamond.woff2') format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 200 700; font-display: swap; src: url('./assets/fonts/inter.woff2') format('woff2'); }
 
 
 /* Fundo "bone" do sistema de logo (brand/logo/index.html). Uso restrito ao selo. */

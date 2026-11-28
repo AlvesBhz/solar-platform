@@ -337,6 +337,7 @@ if (require.main === module) (async () => {
     ok(await page.locator('button[aria-label="Ocultar Toalhas de banho"] svg').count() === 1, 'olho aberto: o item aparece nas vistorias');
     await page.click('button[aria-label="Ocultar Toalhas de banho"]');
     await page.waitForSelector('text=Item oculto');
+    await page.locator('button[aria-label="Mostrar Toalhas de banho"][aria-pressed=true] svg >> nth=1').waitFor({ timeout: 5000 }).catch(() => {});
     ok(await page.locator('button[aria-label="Mostrar Toalhas de banho"][aria-pressed=true] svg').count() === 2, 'oculto: o olho ganha um x e o botão passa a mostrar de novo');
     ok(ultima(db, 'PATCH', 'VST_ITEM').corpo.SG_ATIVO === false && !db.chamadas.some((c) => c.m === 'DELETE' && c.caminho.startsWith('VST_')), 'desativar não apaga (histórico das vistorias preservado)');
     await ctx.close();
