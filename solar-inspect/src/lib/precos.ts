@@ -230,7 +230,8 @@ export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= 
 export async function carregarMes(unidade: number, mes: string): Promise<void> {
   if (!REAL) return espera(undefined);
   const ini = primeiroDoMes(mes), fim = ultimoDoMes(mes);
-  const [t, a, o] = await Promise.all([listarTarifas(unidade).then(async (x) => { await listarPacotes(unidade); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
+  // pacotes: se o banco ainda não tiver a função (migração não aplicada), o calendário funciona igual, sem pacotes
+  const [t, a, o] = await Promise.all([listarTarifas(unidade).then(async (x) => { await listarPacotes(unidade).catch(() => { dados.pacotes = []; }); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
   void t;
   dados.ajustes = new Map((a as any[]).map((x): [string, Ajuste] => [x.dt_ref, {
     data: x.dt_ref, valor: x.vl_noite === null ? null : Number(x.vl_noite), minNoites: x.qtde_min_noites, fechado: x.sg_fechado, semChegada: x.sg_sem_chegada,
