@@ -4,7 +4,7 @@
    servido por HTTPS (ou localhost); em file:// o navegador não
    registra service workers, e o app funciona normalmente sem ele.
 ═══════════════════════════════════════════════════════════ */
-const CACHE_NAME = 'guia-hospede-v4';
+const CACHE_NAME = 'guia-hospede-v5';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,6 +14,10 @@ const APP_SHELL = [
   './css/components.css',
   './css/layout.css',
   './css/responsive.css',
+  './css/fonts.css',
+  './css/tailwind.css',
+  './js/vendor/iconify-icon.min.js',
+  './js/vendor/solar-icons.js',
   './js/app.js',
   './js/navigation.js',
   './js/components.js',

@@ -34,11 +34,11 @@
     },
     {
       "id": "chale", "group": "01", "kind": "tile", "icon": "solar:bed-linear",
-      "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/Suite.jpeg"
+      "num": "A · 01 — o lugar", "title": "O <em>Chalé</em>", "image": "assets/images/suite.avif"
     },
     {
       "id": "cafe", "group": "01", "kind": "tile", "icon": "solar:cup-hot-linear",
-      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/Cozinha 2.webp"
+      "num": "A · 02 — manhã mineira", "title": "Café da casa", "image": "assets/images/cozinha-2.avif"
     },
     {
       "id": "serra", "group": "02", "kind": "tile", "wide": true, "icon": "solar:flag-2-linear",
@@ -70,7 +70,7 @@
     },
     {
       "id": "avaliacao", "group": "04", "kind": "tile", "wide": true, "icon": "solar:stars-linear",
-      "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/Piscina.jpeg"
+      "num": "D · 01 — livro de visitas", "title": "Deixe um <em>recado</em>", "image": "assets/images/piscina.avif"
     }
   ],
   "groups": {
