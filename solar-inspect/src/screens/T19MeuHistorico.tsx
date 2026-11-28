@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import AppHeader from '../components/AppHeader';
+import { BarraAreas } from '../components/GestaoShell';
+import { ehGestao, perfilAtual } from '../lib/acesso';
 import { Seletor } from '../components/Filtros';
 import { historico, type Envio } from '../lib/fila';
 import { Aviso } from './T05MinhasUnidades';
@@ -19,7 +21,7 @@ export default function T19MeuHistorico() {
   return (
     <div className="screen flex flex-col bg-cream">
       <AppHeader back="/app/unidades" eyebrow="Vistorias" title="Meu histórico" />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6">
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 pb-28 pt-6">
         <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-3">
           <Seletor rotulo="Unidade" icone="solar:home-2-linear" valor={unidade} onChange={setUnidade} opcoes={[{ valor: '', label: 'Todas as unidades' }, ...opc('unidade').map((o) => ({ valor: o, label: o }))]} />
           <Seletor rotulo="Tipo" icone="solar:clipboard-list-linear" valor={tipo} onChange={setTipo} opcoes={[{ valor: '', label: 'Todos os tipos' }, ...opc('tipo').map((o) => ({ valor: o, label: o }))]} />
@@ -33,6 +35,7 @@ export default function T19MeuHistorico() {
           <ul className="divide-y divide-line-1 overflow-hidden rounded-xl border border-line-1 bg-white">{lista.map((e) => <LinhaEnvio key={e.id} e={e} />)}</ul>
         )}
       </main>
+      {(() => { const p = perfilAtual(); return !!p && ehGestao(p); })() && <BarraAreas sempre />}
     </div>
   );
 }

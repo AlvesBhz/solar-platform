@@ -2,6 +2,7 @@ import { Icon } from '@iconify/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
+import { BarraAreas } from '../components/GestaoShell';
 import { Seletor } from '../components/Filtros';
 import { useOnline } from '../components/NetworkBadge';
 import { btnSecondary } from '../components/ScreenShell';
@@ -40,6 +41,8 @@ export default function T05MinhasUnidades() {
   const lista = filtro === 'todos' ? base : base.filter((u) => u.estado === filtro);
   const contagem = (f: Filtro) => (f === 'todos' ? base.length : base.filter((u) => u.estado === f).length);
 
+  const p = perfilAtual();
+  const gestao = !!p && ehGestao(p);                     // gestor e administrador: a barra das áreas continua embaixo
   return (
     <div className="screen bg-cream">
       <AppHeader
@@ -58,11 +61,6 @@ export default function T05MinhasUnidades() {
               <Icon icon="solar:danger-triangle-linear" width={22} aria-hidden="true" />
             </Link>
           )}
-          {(() => { const p = perfilAtual(); return p && ehGestao(p); })() && (
-            <Link to="/gestao" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Voltar à gestão" title="Voltar à gestão">
-              <Icon icon="solar:widget-2-linear" width={22} aria-hidden="true" />
-            </Link>
-          )}
           <Link to="/conta/senha" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-fg-2 hover:bg-white" aria-label="Trocar senha" title="Trocar senha">
             <Icon icon="solar:lock-keyhole-linear" width={22} aria-hidden="true" />
           </Link>
@@ -78,7 +76,7 @@ export default function T05MinhasUnidades() {
         }
       />
 
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 pb-[max(env(safe-area-inset-bottom),2rem)] pt-5">
+      <main className={`mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 pt-5 ${gestao ? 'pb-28' : 'pb-[max(env(safe-area-inset-bottom),2rem)]'}`}>
         {!online && (
           <p className="flex items-start gap-2 rounded-md bg-warning-bg p-3 text-sm text-warning" role="status">
             <Icon icon="solar:cloud-cross-linear" width={20} className="shrink-0" aria-hidden="true" />
@@ -152,6 +150,7 @@ export default function T05MinhasUnidades() {
           </ul>
         )}
       </main>
+      {gestao && <BarraAreas sempre />}
     </div>
   );
 }
