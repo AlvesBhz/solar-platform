@@ -84,7 +84,7 @@ export function Seletor<T extends string>({ valor, onChange, opcoes, rotulo, ico
           <button type="button" aria-label="Fechar" tabIndex={-1} onClick={fechar} className="fixed inset-0 z-[60] cursor-default bg-[var(--scrim-top)] sm:bg-transparent" />
           <div className="fixed inset-x-0 bottom-0 z-[61] flex max-h-[70svh] flex-col overflow-hidden rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-xl normal-case tracking-normal sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-1.5 sm:max-h-72 sm:w-max sm:min-w-full sm:max-w-[22rem] sm:rounded-xl sm:border sm:border-line-1 sm:pb-0">
             <div className="flex items-center justify-between px-4 pb-1 pt-4 sm:hidden">
-              <span className="text-xs font-normal uppercase tracking-[0.08em] text-fg-3">{rotulo}</span>
+              <span className="ui-secao">{rotulo}</span>
               <button type="button" onClick={fechar} className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full text-fg-2" aria-label="Fechar" title="Fechar">
                 <Icon icon="solar:close-circle-linear" width={22} aria-hidden="true" />
               </button>

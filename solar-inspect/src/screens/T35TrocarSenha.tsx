@@ -20,7 +20,7 @@ function CampoSenha({ id, rotulo, valor, onChange, auto, erro, desc }: {
   const [ver, setVer] = useState(false);
   return (
     <label className="flex flex-col gap-2" htmlFor={id}>
-      <span className="text-xs uppercase tracking-[0.08em] text-fg-2">{rotulo}</span>
+      <span className="text-[0.8125rem] font-medium text-fg-2">{rotulo}</span>
       <div className="relative">
         <Icon icon="solar:lock-keyhole-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
         <input id={id} type={ver ? 'text' : 'password'} autoComplete={auto} autoCapitalize="none" autoCorrect="off" spellCheck={false} maxLength={72}

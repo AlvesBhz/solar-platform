@@ -154,7 +154,7 @@ export function TabelaResp<T>({ cols, rows }: { cols: Col<T>[]; rows: T[] }) {
 }
 
 export const card = 'rounded-xl border border-line-1 bg-white';
-export const th = 'px-4 py-2.5 text-left text-[0.6875rem] font-normal uppercase tracking-[0.08em] text-fg-3';
+export const th = 'px-4 py-2.5 text-left ui-secao';
 export const td = 'px-4 py-3 text-[0.8125rem] text-fg-1';
 
 /** Barra das áreas no pé da tela (celular). Também aparece na Vistoria para gestor e administrador (`sempre`: inclusive no computador,

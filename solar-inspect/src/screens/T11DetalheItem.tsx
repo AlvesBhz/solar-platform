@@ -74,7 +74,7 @@ export default function T11DetalheItem() {
             )}
 
             <section className="flex flex-col gap-2">
-              <h2 className="flex items-center justify-between font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">
+              <h2 className="flex items-center justify-between ui-secao">
                 {div ? 'Fotos do problema' : 'Evidências'} <span className="font-mono text-fg-3">{fotos.length}</span>
               </h2>
               <GradeEvidencias fotos={fotos} novaFoto={`${base}/item/${itemId}/foto`} onRemover={remover} />

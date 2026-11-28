@@ -48,7 +48,7 @@ export default function T18Sincronizacao() {
 function Grupo({ titulo, itens }: { titulo: string; itens: Envio[] }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="flex items-center justify-between font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">{titulo}<span className="font-mono text-fg-3">{itens.length}</span></h2>
+      <h2 className="flex items-center justify-between ui-secao">{titulo}<span className="font-mono text-fg-3">{itens.length}</span></h2>
       <ul className="divide-y divide-line-1 overflow-hidden rounded-xl border border-line-1 bg-white">
         {itens.map((e) => <LinhaEnvio key={e.id} e={e} />)}
       </ul>

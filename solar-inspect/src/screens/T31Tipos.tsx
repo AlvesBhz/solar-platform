@@ -7,8 +7,8 @@ import type { Perfil } from '../lib/acesso';
 import { DO_SITE, alternarItemNoTipo, itensDoTipo, listarAmbientes, listarTipos, listarUnidadesPresenca, salvarTipo, validarTipo, type Ambiente, type Comportamento, type Tipo, type UnidadePresenca } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
-const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
-const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+const campo = 'ui-campo';
+const rot = 'ui-rotulo';
 const link = 'min-h-11 px-1 text-[0.75rem] text-pine underline underline-offset-4';
 const COMP = [{ valor: 'ENTRADA', label: 'Entrada (check-in)' }, { valor: 'SAIDA', label: 'Saída (check-out)' }, { valor: 'ROTINA', label: 'Rotina' }, { valor: 'MANUTENCAO', label: 'Manutenção' }];
 const PER = [{ valor: 'DIARIA', label: 'Diária' }, { valor: 'SEMANAL', label: 'Semanal' }, { valor: 'MENSAL', label: 'Mensal' }];
@@ -72,13 +72,13 @@ export function T31Tipos() {
           <label className={rot}>Nome<input id="t-nome" className={campo} maxLength={60} value={f.t.nome} onChange={(e) => setF({ ...f, t: { ...f.t, nome: e.target.value } })} /></label>
           <Seletor rotulo="Comportamento" valor={f.t.comportamento} desabilitado={doSite(f.t) && f.id !== null} onChange={(v) => setF({ ...f, t: { ...f.t, comportamento: v as Comportamento } })} opcoes={COMP} />
           {f.t.comportamento === 'ROTINA' && <Seletor rotulo="Periodicidade" valor={f.t.periodicidade ?? 'SEMANAL'} onChange={(v) => setF({ ...f, t: { ...f.t, periodicidade: v as Tipo['periodicidade'] } })} opcoes={PER} />}
-          <fieldset className="flex flex-col gap-1 sm:col-span-2"><legend className="mb-1 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2">Quem da equipe de campo faz (gestão faz todos)</legend>
+          <fieldset className="flex flex-col gap-1 sm:col-span-2"><legend className="ui-rotulo mb-1">Quem da equipe de campo faz (gestão faz todos)</legend>
             <div className="flex flex-wrap gap-4">{CAMPO.map((p) => (
-              <label key={p.valor} className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={f.t.perfis.includes(p.valor)}
+              <label key={p.valor} className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={f.t.perfis.includes(p.valor)}
                 onChange={(e) => setF({ ...f, t: { ...f.t, perfis: e.target.checked ? [...f.t.perfis, p.valor] : f.t.perfis.filter((x) => x !== p.valor) } })} />{p.label}</label>))}</div>
           </fieldset>
-          <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={f.t.exigeEntrada} onChange={(e) => setF({ ...f, t: { ...f.t, exigeEntrada: e.target.checked } })} />Compara com a vistoria de Entrada</label>
-          <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={f.t.exigeAssinatura} onChange={(e) => setF({ ...f, t: { ...f.t, exigeAssinatura: e.target.checked } })} />Pede assinatura no fim</label>
+          <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={f.t.exigeEntrada} onChange={(e) => setF({ ...f, t: { ...f.t, exigeEntrada: e.target.checked } })} />Compara com a vistoria de Entrada</label>
+          <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={f.t.exigeAssinatura} onChange={(e) => setF({ ...f, t: { ...f.t, exigeAssinatura: e.target.checked } })} />Pede assinatura no fim</label>
           {erros.length > 0 && <ul role="alert" className="flex flex-col gap-1 text-[0.8125rem] text-warning sm:col-span-2">{erros.map((x) => <li key={x}>{x}</li>)}</ul>}
           <div className="flex flex-wrap gap-3 sm:col-span-2"><button type="button" className={`${btnSecondary} w-auto`} onClick={() => setF(null)}>Cancelar</button><button type="submit" className={`${btnPrimary} w-auto`} disabled={erros.length > 0}>Salvar tipo</button></div>
         </form>
@@ -107,9 +107,9 @@ export function T31Tipos() {
             <>
               <p className="text-[0.75rem] text-fg-3">{qtdeMarcadosNoChale} de {ativosNoChale.length} itens deste chalé entram neste tipo.</p>
               {ambs.filter((a) => a.ativo && a.itens.some((i) => i.ativo)).map((a) => (
-                <fieldset key={a.id} className="flex flex-col"><legend className="text-[0.75rem] uppercase tracking-[0.06em] text-fg-2">{a.nome}</legend>
+                <fieldset key={a.id} className="flex flex-col"><legend className="ui-rotulo">{a.nome}</legend>
                   {a.itens.filter((i) => i.ativo).map((i) => (
-                    <label key={i.id} className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={marcados.includes(i.id)} onChange={(e) => alternar(i.id, e.target.checked)} />{i.nome}{i.critico ? <span className="text-[0.6875rem] text-warning">crítico</span> : null}</label>))}
+                    <label key={i.id} className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={marcados.includes(i.id)} onChange={(e) => alternar(i.id, e.target.checked)} />{i.nome}{i.critico ? <span className="text-[0.6875rem] text-warning">crítico</span> : null}</label>))}
                 </fieldset>))}
             </>)}
           <button type="button" className={`${btnSecondary} w-auto self-start`} onClick={() => setSel(null)}>Fechar</button>
