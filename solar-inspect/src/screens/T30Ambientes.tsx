@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { Seletor } from '../components/Filtros';
+import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { definirTiposDoItem, incluirItensNosTipos, listarAmbientes, listarTipos, listarUnidadesPresenca, reordenar, salvarAmbiente, salvarItem, tiposDosItens, type Ambiente, type Item, type Resultado, type Tipo, type UnidadePresenca } from '../lib/admin';
@@ -62,6 +62,7 @@ export function T30Ambientes() {
   const [fa, setFa] = useState<{ id: number | null; nome: string; ordem: number; ativo: boolean } | null>(null);
   const [fi, setFi] = useState<FormItem | null>(null);
   const [tipos, setTipos] = useState<Tipo[]>([]);
+  const [filtro, setFiltro] = useState('');            // tipo de vistoria ('' = todos os itens)
   const [vinc, setVinc] = useState<Record<number, number[]>>({});
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
@@ -113,7 +114,7 @@ export function T30Ambientes() {
   const editarItem = (i: Item) => { setFa(null); setFi({ id: i.id, idAmbiente: i.idAmbiente, nome: i.nome, orientacao: i.orientacao ?? '', critico: i.critico, foto: i.fotoObrigatoria, qtde: i.qtdeEsperada?.toString() ?? '', ordem: i.ordem, ativo: i.ativo, tipos: vinc[i.id] ?? [] }); };
 
   const abrirAmbiente = (a: Ambiente) => { setErro(''); setFi(null); setFa({ id: a.id, nome: a.nome, ordem: a.ordem, ativo: a.ativo }); };
-  const abrirNovoItem = (a: Ambiente) => { setErro(''); setFa(null); setFi({ id: null, idAmbiente: a.id, nome: '', orientacao: '', critico: false, foto: false, qtde: '', ordem: proxOrdem(a.itens), ativo: true, tipos: tipos.map((t) => t.id) }); };
+  const abrirNovoItem = (a: Ambiente) => { setErro(''); setFa(null); setFi({ id: null, idAmbiente: a.id, nome: '', orientacao: '', critico: false, foto: false, qtde: '', ordem: proxOrdem(a.itens), ativo: true, tipos: filtro ? [Number(filtro)] : tipos.map((t) => t.id) }); };   // com filtro, o item novo já entra na vistoria filtrada
   const erroNoForm = erro && <p role="alert" className="rounded-md border border-error bg-white p-3 text-sm text-error sm:col-span-2">{erro}</p>;
   const formAmbiente = () => fa && (
     <form ref={formRef} onSubmit={enviarAmbiente} className={`${card} flex max-w-xl flex-col gap-3 border-pine p-4`} aria-label="Ambiente">
@@ -153,7 +154,19 @@ export function T30Ambientes() {
   return (
     <GestaoShell eyebrow="Administração" titulo="Ambientes e itens"
       acoes={uid ? <button type="button" className={`${btnPrimary} w-auto`} onClick={() => { setErro(''); setFi(null); setFa({ id: null, nome: '', ordem: proxOrdem(ambs), ativo: true }); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo ambiente</button> : undefined}>
-      <div className="max-w-sm"><Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: `${u.nome} · ${u.pousada}` }))} /></div>
+      <div className="flex flex-col gap-3">
+        <div className="max-w-sm"><Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: `${u.nome} · ${u.pousada}` }))} icone="solar:home-2-linear" /></div>
+        {tipos.length > 0 && (
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <span className="text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">Vistoria</span>
+            <Chips rotulo="Tipo de vistoria" valor={filtro} onChange={setFiltro} opcoes={[{ valor: '', label: 'Todas' }, ...tipos.map((t) => ({ valor: String(t.id), label: t.nome }))]} />
+          </div>
+        )}
+        {filtro && (() => {
+          const n = ambs.flatMap((a) => a.itens).filter((i) => (vinc[i.id] ?? []).includes(Number(filtro))).length;
+          return <p className="text-[0.75rem] text-fg-3">{n} {n === 1 ? 'item entra' : 'itens entram'} na vistoria de {tipos.find((t) => String(t.id) === filtro)?.nome}. Para mudar a ordem dos itens, volte para Todas.</p>;
+        })()}
+      </div>
       {erro && !fi && !fa && <p role="alert" className="rounded-md border border-error bg-white p-3 text-sm text-error">{erro}</p>}
       {/* aviso de sucesso: fixo no rodapé, sempre à vista, some sozinho */}
       {aviso && (
@@ -197,10 +210,10 @@ export function T30Ambientes() {
 
               {/* itens do ambiente: bloco recuado, fundo cream */}
               <ul className="mx-2 flex flex-col divide-y divide-line-1 rounded-lg border border-line-1 bg-cream" data-lista={`itens-${a.id}`}>
-                {a.itens.map((i, ii) => (
+                {a.itens.filter((i) => !filtro || (vinc[i.id] ?? []).includes(Number(filtro))).map((i, ii) => (
                   <li key={i.id} data-item={i.nome} data-arrastar className="bg-cream" style={estilo(`itens-${a.id}`, ii)}>
                     <div className={`flex items-center gap-2 py-2 pl-[3px] pr-[3px] sm:gap-3 ${fi?.id === i.id ? 'bg-white' : ''}`}>
-                      <Alca rotulo={i.nome} props={alca(`itens-${a.id}`, ii, a.itens.length)} />
+                      {filtro ? <span className="w-8 shrink-0" aria-hidden="true" /> : <Alca rotulo={i.nome} props={alca(`itens-${a.id}`, ii, a.itens.length)} />}
                       <button type="button" className={`min-w-0 flex-1 py-1 text-left ${i.ativo ? '' : 'opacity-60'}`} onClick={() => editarItem(i)} aria-label={`Editar ${i.nome}`}>
                         <span className="block text-[0.875rem] font-medium leading-snug text-fg-1 [overflow-wrap:anywhere]">{i.nome}</span>
                         <span className="mt-1 flex flex-wrap gap-1.5">
@@ -221,7 +234,8 @@ export function T30Ambientes() {
                     {fi?.id === i.id && <div className="bg-white p-3">{formItem(`Editando: ${i.nome} · ${a.nome}`)}</div>}
                   </li>
                 ))}
-                {a.itens.length === 0 && <li className="px-4 py-3 text-[0.8125rem] text-fg-3">Nenhum item ainda.</li>}
+                {a.itens.length === 0 ? <li className="px-4 py-3 text-[0.8125rem] text-fg-3">Nenhum item ainda.</li>
+                  : filtro && !a.itens.some((i) => (vinc[i.id] ?? []).includes(Number(filtro))) && <li className="px-4 py-3 text-[0.8125rem] text-fg-3">Nenhum item deste ambiente entra nesta vistoria.</li>}
                 {fi && fi.id === null && fi.idAmbiente === a.id && <li className="bg-white p-3">{formItem(`Novo item em ${a.nome}`)}</li>}
               </ul>
               <div className="p-2 pt-3">
