@@ -123,6 +123,18 @@ create table if not exists "VST_USUARIO_PROPRIEDADE" (
 );
 create index if not exists "IX_VST_USUARIO_PROPRIEDADE_ID_PROPRIEDADE" on "VST_USUARIO_PROPRIEDADE" ("ID_PROPRIEDADE");
 
+-- ── VST_USUARIO_UNIDADE: restringe o acesso a alguns chalés da pousada ──────
+-- Sem linha para uma pousada, o usuário vê todos os chalés dela (como antes). Com linhas, só os chalés marcados.
+create table if not exists "VST_USUARIO_UNIDADE" (
+  "ID_USUARIO"  uuid   not null,
+  "ID_UNIDADE"  bigint not null,
+  "DT_CRIACAO"  timestamptz not null default now(),
+  constraint "PK_VST_USUARIO_UNIDADE" primary key ("ID_USUARIO", "ID_UNIDADE"),
+  constraint "FK_VST_USUARIO_UNIDADE_VST_USUARIO" foreign key ("ID_USUARIO") references "VST_USUARIO" ("ID_USUARIO") on delete cascade,
+  constraint "FK_VST_USUARIO_UNIDADE_SIT_UNIDADE" foreign key ("ID_UNIDADE") references "SIT_UNIDADE" ("ID_UNIDADE") on delete cascade
+);
+create index if not exists "IX_VST_USUARIO_UNIDADE_ID_UNIDADE" on "VST_USUARIO_UNIDADE" ("ID_UNIDADE");
+
 -- ── VST_PROPRIEDADE: regras de presença da pousada (1 para 1 com SIT_PROPRIEDADE) ──
 create table if not exists "VST_PROPRIEDADE" (
   "ID_PROPRIEDADE"            bigint not null,
@@ -421,14 +433,28 @@ returns bigint language sql stable security definer set search_path = "SE", exte
   select "ID_PROPRIEDADE" from "SIT_UNIDADE" where "ID_UNIDADE" = p_id_unidade
 $$;
 
+-- o usuário alcança o chalé? ADMIN: todos. Demais: a pousada precisa estar vinculada e, se houver chalés marcados
+-- para ele nessa pousada (VST_USUARIO_UNIDADE), o chalé precisa ser um deles.
+create or replace function vst_alcanca_unidade(p_id_usuario uuid, p_id_unidade bigint)
+returns boolean language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
+  select exists (
+    select 1 from "VST_USUARIO" u join "SIT_UNIDADE" su on su."ID_UNIDADE" = p_id_unidade
+    where u."ID_USUARIO" = p_id_usuario and u."SG_ATIVO"
+      and (u."TP_PERFIL" = 'ADMIN'
+           or (exists (select 1 from "VST_USUARIO_PROPRIEDADE" up where up."ID_USUARIO" = u."ID_USUARIO" and up."ID_PROPRIEDADE" = su."ID_PROPRIEDADE")
+               and (not exists (select 1 from "VST_USUARIO_UNIDADE" uu join "SIT_UNIDADE" x on x."ID_UNIDADE" = uu."ID_UNIDADE"
+                                where uu."ID_USUARIO" = u."ID_USUARIO" and x."ID_PROPRIEDADE" = su."ID_PROPRIEDADE")
+                    or exists (select 1 from "VST_USUARIO_UNIDADE" uu where uu."ID_USUARIO" = u."ID_USUARIO" and uu."ID_UNIDADE" = p_id_unidade)))))
+$$;
+
 create or replace function vst_tem_acesso_unidade(p_id_unidade bigint)
 returns boolean language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
-  select "SE".vst_tem_acesso("SE".vst_propriedade_da_unidade(p_id_unidade))
+  select "SE".vst_alcanca_unidade((select auth.uid()), p_id_unidade)
 $$;
 
 create or replace function vst_pode_gerir_unidade(p_id_unidade bigint)
 returns boolean language sql stable security definer set search_path = "SE", extensions, pg_temp as $$
-  select "SE".vst_pode_gerir("SE".vst_propriedade_da_unidade(p_id_unidade))
+  select "SE".vst_pode_gerir("SE".vst_propriedade_da_unidade(p_id_unidade)) and "SE".vst_alcanca_unidade((select auth.uid()), p_id_unidade)
 $$;
 
 create or replace function vst_unidade_do_ambiente(p_id_ambiente bigint)
@@ -646,7 +672,7 @@ language sql stable security definer set search_path = "SE", extensions, pg_temp
   join "SIT_PROPRIEDADE" p on p."ID_PROPRIEDADE" = u."ID_PROPRIEDADE"
   left join "VST_UNIDADE" vu on vu."ID_UNIDADE" = u."ID_UNIDADE"
   cross join lateral "SE".vst_config_unidade(u."ID_UNIDADE") c
-  where "SE".vst_tem_acesso(u."ID_PROPRIEDADE")
+  where "SE".vst_tem_acesso_unidade(u."ID_UNIDADE")
   order by u."ID_PROPRIEDADE", u."NO_ORDEM", u."NM_UNIDADE"
 $$;
 
@@ -672,7 +698,7 @@ begin
   left join "SIT_RESERVA" r on r."ID_RESERVA" = v."ID_RESERVA"
   where v."DT_AGENDADA" >= p_dt_ini and v."DT_AGENDADA" < p_dt_fim
     and (p_id_unidade is null or v."ID_UNIDADE" = p_id_unidade)
-    and "SE".vst_tem_acesso(u."ID_PROPRIEDADE")
+    and "SE".vst_tem_acesso_unidade(u."ID_UNIDADE")
   order by v."DT_AGENDADA", u."NM_UNIDADE", t."CD_TIPO_VISTORIA";
 end;
 $$;
@@ -735,7 +761,7 @@ begin
   return query
   select u."ID_UNIDADE", u."CD_UNIDADE", u."NM_UNIDADE"
   from "VST_UNIDADE" vu join "SIT_UNIDADE" u on u."ID_UNIDADE" = vu."ID_UNIDADE"
-  where vu."CD_HASH_QR" = p_cd_hash_qr and "SE".vst_tem_acesso(u."ID_PROPRIEDADE");
+  where vu."CD_HASH_QR" = p_cd_hash_qr and "SE".vst_tem_acesso_unidade(u."ID_UNIDADE");
 end;
 $$;
 
@@ -787,9 +813,7 @@ begin
   if not "SE".vst_pode_gerir_unidade(v."ID_UNIDADE") then raise exception 'perfil_sem_permissao' using errcode = 'P0001'; end if;
   if v."TP_STATUS" <> 'AGENDADA' then raise exception 'vistoria_nao_agendada' using errcode = 'P0001'; end if;
   if p_id_usuario is not null and not exists (
-       select 1 from "VST_USUARIO" x where x."ID_USUARIO" = p_id_usuario and x."SG_ATIVO"
-         and (x."TP_PERFIL" = 'ADMIN' or exists (select 1 from "VST_USUARIO_PROPRIEDADE" up
-                                                 where up."ID_USUARIO" = x."ID_USUARIO" and up."ID_PROPRIEDADE" = "SE".vst_propriedade_da_unidade(v."ID_UNIDADE")))) then
+       select 1 from "VST_USUARIO" x where x."ID_USUARIO" = p_id_usuario and x."SG_ATIVO" and "SE".vst_alcanca_unidade(x."ID_USUARIO", v."ID_UNIDADE")) then
     raise exception 'responsavel_invalido' using errcode = 'P0001';
   end if;
   update "VST_VISTORIA"
@@ -1076,7 +1100,7 @@ begin
   join "VST_AMBIENTE" a on a."ID_AMBIENTE" = i."ID_AMBIENTE"
   left join "SIT_BLOQUEIO" b on b."ID_BLOQUEIO" = o."ID_BLOQUEIO"
   left join "VST_USUARIO" rs on rs."ID_USUARIO" = o."ID_RESPONSAVEL"
-  where "SE".vst_tem_acesso(u."ID_PROPRIEDADE")
+  where "SE".vst_tem_acesso_unidade(u."ID_UNIDADE")
     and (p_id_unidade is null or o."ID_UNIDADE" = p_id_unidade)
     and (p_id_vistoria is null or o."ID_VISTORIA" = p_id_vistoria)
   order by (o."TP_STATUS" in ('ABERTA', 'EM_TRATAMENTO')) desc,
@@ -1123,9 +1147,7 @@ begin
   if o."TP_STATUS" in ('RESOLVIDA', 'CANCELADA') then raise exception 'ocorrencia_encerrada' using errcode = 'P0001'; end if;
   if p_id_responsavel is not null then
     select x."NM_USUARIO" into v_nome from "VST_USUARIO" x
-    where x."ID_USUARIO" = p_id_responsavel and x."SG_ATIVO"
-      and (x."TP_PERFIL" = 'ADMIN' or exists (select 1 from "VST_USUARIO_PROPRIEDADE" up
-                                              where up."ID_USUARIO" = x."ID_USUARIO" and up."ID_PROPRIEDADE" = "SE".vst_propriedade_da_unidade(o."ID_UNIDADE")));
+    where x."ID_USUARIO" = p_id_responsavel and x."SG_ATIVO" and "SE".vst_alcanca_unidade(x."ID_USUARIO", o."ID_UNIDADE");
     if v_nome is null then raise exception 'responsavel_invalido' using errcode = 'P0001'; end if;
   end if;
   if p_dt_prazo is not null and p_dt_prazo < "SE".vst_hoje(o."ID_UNIDADE") then raise exception 'prazo_invalido' using errcode = 'P0001'; end if;
@@ -1292,6 +1314,7 @@ begin
           case tg_table_name
             when 'VST_RESPOSTA' then (v_reg ->> 'ID_VISTORIA') || '/' || (v_reg ->> 'ID_ITEM')
             when 'VST_USUARIO_PROPRIEDADE' then (v_reg ->> 'ID_USUARIO') || '/' || (v_reg ->> 'ID_PROPRIEDADE')
+            when 'VST_USUARIO_UNIDADE' then (v_reg ->> 'ID_USUARIO') || '/' || (v_reg ->> 'ID_UNIDADE')
             when 'VST_TIPO_VISTORIA_ITEM' then (v_reg ->> 'ID_TIPO_VISTORIA') || '/' || (v_reg ->> 'ID_ITEM')
             else v_reg ->> ('ID_' || substr(tg_table_name, 5)) end,
           (v_reg ->> 'ID_UNIDADE')::bigint, v_dif);
@@ -1304,7 +1327,7 @@ revoke all on "VST_AUDITORIA" from public, anon, authenticated;
 grant select on "VST_AUDITORIA" to service_role;
 
 do $$ declare t text; begin
-  foreach t in array array['VST_TIPO_VISTORIA', 'VST_USUARIO', 'VST_USUARIO_PROPRIEDADE', 'VST_PROPRIEDADE', 'VST_UNIDADE', 'VST_AMBIENTE',
+  foreach t in array array['VST_TIPO_VISTORIA', 'VST_USUARIO', 'VST_USUARIO_PROPRIEDADE', 'VST_USUARIO_UNIDADE', 'VST_PROPRIEDADE', 'VST_UNIDADE', 'VST_AMBIENTE',
                            'VST_ITEM', 'VST_TIPO_VISTORIA_ITEM', 'VST_VISTORIA', 'VST_RESPOSTA', 'VST_OCORRENCIA', 'VST_FOTO'] loop
     execute format('drop trigger if exists %I on "SE".%I', 'TG_' || t || '_AUTOR', t);
     execute format('create trigger %I after insert or update or delete on "SE".%I for each row execute function "SE".vst_auditar_autor()',
@@ -1321,13 +1344,13 @@ grant usage on schema "SE" to authenticated, service_role;      -- o site já co
 grant usage, select on all sequences in schema "SE" to service_role;
 
 -- o app (authenticated) lê o catálogo e os registros; escrever só pelas funções, exceto cadastros da gestão
-grant select on "VST_TIPO_VISTORIA", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_PROPRIEDADE", "VST_AMBIENTE", "VST_ITEM",
+grant select on "VST_TIPO_VISTORIA", "VST_USUARIO", "VST_USUARIO_PROPRIEDADE", "VST_USUARIO_UNIDADE", "VST_PROPRIEDADE", "VST_AMBIENTE", "VST_ITEM",
                 "VST_TIPO_VISTORIA_ITEM", "VST_VISTORIA", "VST_RESPOSTA", "VST_OCORRENCIA", "VST_FOTO" to authenticated;
 grant select ("ID_UNIDADE", "DS_ANDAR", "TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "TP_SITUACAO",
               "NO_VERSAO_QR", "DT_CRIACAO", "DT_ATUALIZACAO") on "VST_UNIDADE" to authenticated;      -- sem CD_HASH_QR
 grant insert, update, delete on "VST_AMBIENTE", "VST_ITEM", "VST_TIPO_VISTORIA_ITEM" to authenticated;
 grant insert, update on "VST_TIPO_VISTORIA", "VST_USUARIO" to authenticated;
-grant insert, delete on "VST_USUARIO_PROPRIEDADE" to authenticated;
+grant insert, delete on "VST_USUARIO_PROPRIEDADE", "VST_USUARIO_UNIDADE" to authenticated;
 grant insert ("ID_PROPRIEDADE", "TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "QTDE_PRECISAO_MAX_METROS", "QTDE_MINUTOS_MIN_VISTORIA"),
       update ("TP_VALIDACAO", "VL_LATITUDE", "VL_LONGITUDE", "QTDE_RAIO_METROS", "QTDE_PRECISAO_MAX_METROS", "QTDE_MINUTOS_MIN_VISTORIA", "DT_ATUALIZACAO")
   on "VST_PROPRIEDADE" to authenticated;
@@ -1355,6 +1378,10 @@ create policy "VST_USUARIO_PROPRIEDADE_SELECT" on "VST_USUARIO_PROPRIEDADE" for 
   using ("ID_USUARIO" = (select auth.uid()) or "SE".vst_pode_gerir("ID_PROPRIEDADE"));
 create policy "VST_USUARIO_PROPRIEDADE_INSERT" on "VST_USUARIO_PROPRIEDADE" for insert to authenticated with check ((select "SE".vst_perfil()) = 'ADMIN');
 create policy "VST_USUARIO_PROPRIEDADE_DELETE" on "VST_USUARIO_PROPRIEDADE" for delete to authenticated using ((select "SE".vst_perfil()) = 'ADMIN');
+create policy "VST_USUARIO_UNIDADE_SELECT" on "VST_USUARIO_UNIDADE" for select to authenticated
+  using ("ID_USUARIO" = (select auth.uid()) or "SE".vst_pode_gerir_unidade("ID_UNIDADE"));
+create policy "VST_USUARIO_UNIDADE_INSERT" on "VST_USUARIO_UNIDADE" for insert to authenticated with check ((select "SE".vst_perfil()) = 'ADMIN');
+create policy "VST_USUARIO_UNIDADE_DELETE" on "VST_USUARIO_UNIDADE" for delete to authenticated using ((select "SE".vst_perfil()) = 'ADMIN');
 
 -- configuração por propriedade e por chalé
 create policy "VST_PROPRIEDADE_SELECT" on "VST_PROPRIEDADE" for select to authenticated using ("SE".vst_tem_acesso("ID_PROPRIEDADE"));
