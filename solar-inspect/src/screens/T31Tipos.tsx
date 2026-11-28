@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Seletor } from '../components/Filtros';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
@@ -11,9 +11,8 @@ const campo = 'ui-campo';
 const rot = 'ui-rotulo';
 const link = 'min-h-11 px-1 text-[0.75rem] text-pine underline underline-offset-4';
 const COMP = [{ valor: 'ENTRADA', label: 'Entrada (check-in)' }, { valor: 'SAIDA', label: 'Saída (check-out)' }, { valor: 'ROTINA', label: 'Rotina' }, { valor: 'MANUTENCAO', label: 'Manutenção' }];
-const PER = [{ valor: '', label: 'Sem agenda (quando precisar)' }, { valor: 'DIARIA', label: 'Diária' }, { valor: 'SEMANAL', label: 'Semanal' }, { valor: 'MENSAL', label: 'Mensal' }];
 const CAMPO: { valor: Perfil; label: string }[] = [{ valor: 'ASSESSOR', label: 'Vistoria' }, { valor: 'LIMPEZA', label: 'Limpeza' }, { valor: 'MANUTENCAO', label: 'Manutenção' }];
-const novo = (): Omit<Tipo, 'id'> => ({ codigo: '', nome: '', comportamento: 'ROTINA', periodicidade: 'SEMANAL', exigeEntrada: false, exigeAssinatura: false, ativo: true, perfis: ['ASSESSOR'] });
+const novo = (): Omit<Tipo, 'id'> => ({ codigo: '', nome: '', comportamento: 'ROTINA', periodicidade: null, exigeEntrada: false, exigeAssinatura: false, ativo: true, perfis: ['ASSESSOR'] });
 
 /** T31 — Tipos de vistoria: regras de cada tipo, quem da equipe faz e quais itens entram no checklist. Entrada e Saída são do site. Só ADMIN. */
 export function T31Tipos() {
@@ -27,6 +26,13 @@ export function T31Tipos() {
   const [marcados, setMarcados] = useState<number[]>([]);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
+  const formRef = useRef<HTMLFormElement>(null);
+  const itensRef = useRef<HTMLElement>(null);
+  // Editar e Itens do checklist: leva a tela até o que abriu (no celular ficava fora da vista) e foca o primeiro campo
+  useEffect(() => { const el = formRef.current; if (!el) return; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); el.querySelector<HTMLInputElement>('input:not([disabled])')?.focus({ preventScroll: true }); }, [f?.id, !!f]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { itensRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, [sel?.id]);
+  // aviso de sucesso some sozinho
+  useEffect(() => { if (!aviso) return; const t = setTimeout(() => setAviso(''), 4500); return () => clearTimeout(t); }, [aviso]);
   const carregar = () => listarTipos().then(setTipos).catch(() => setErro('Não foi possível carregar os tipos.'));
   useEffect(() => { if (perfil) { carregar(); listarUnidadesPresenca().then((u) => { setUs(u); if (u[0]) setUid(String(u[0].id)); }).catch(() => {}); } }, [perfil]);
   useEffect(() => { if (sel && uid) Promise.all([listarAmbientes(Number(uid)), itensDoTipo(sel.id)]).then(([a, m]) => { setAmbs(a); setMarcados(m); }).catch(() => setErro('Não foi possível carregar os itens.')); }, [sel, uid]);
@@ -63,15 +69,22 @@ export function T31Tipos() {
   return (
     <GestaoShell eyebrow="Administração" titulo="Tipos de vistoria"
       acoes={<button type="button" className={`${btnPrimary} !min-h-10 !w-auto !px-4`} onClick={() => { setSel(null); setF({ id: null, t: novo() }); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo tipo</button>}>
-      {erro && <p role="alert" className="rounded-md border border-error bg-white p-3 text-sm text-error">{erro}</p>}
-      {aviso && <p className="rounded-md border border-line-1 bg-white p-3 text-sm text-available">{aviso}</p>}
+      {/* mensagens fixas no pé da tela (acima da barra no celular): sempre à vista, onde quer que se tenha tocado */}
+      {(erro || aviso) && (
+        <p role={erro ? 'alert' : 'status'} data-aviso
+          className={`fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 z-50 flex w-[min(92vw,28rem)] -translate-x-1/2 items-center gap-2 rounded-lg px-4 py-3 text-[0.8125rem] shadow-lg lg:bottom-6 ${erro ? 'border border-error bg-white text-error' : 'bg-pine-deep text-white'}`}>
+          <Icon icon={erro ? 'solar:danger-circle-linear' : 'solar:check-circle-linear'} width={18} className="shrink-0" aria-hidden="true" />{erro || aviso}
+          <button type="button" aria-label="Fechar aviso" title="Fechar aviso" className="-mr-2 ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full opacity-80 hover:opacity-100" onClick={() => { setErro(''); setAviso(''); }}>
+            <Icon icon="solar:close-circle-linear" width={18} aria-hidden="true" />
+          </button>
+        </p>
+      )}
 
       {f && (
-        <form onSubmit={salvar} className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} noValidate aria-label="Tipo de vistoria">
+        <form ref={formRef} onSubmit={salvar} className={`${card} grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`} noValidate aria-label="Tipo de vistoria">
           <label className={rot}>Código<input id="t-codigo" className={`${campo} font-mono`} maxLength={40} disabled={f.id !== null} value={f.t.codigo} onChange={(e) => setF({ ...f, t: { ...f.t, codigo: e.target.value.toUpperCase().replace(/\s/g, '_') } })} placeholder="ROTINA_MENSAL" /></label>
           <label className={rot}>Nome<input id="t-nome" className={campo} maxLength={60} value={f.t.nome} onChange={(e) => setF({ ...f, t: { ...f.t, nome: e.target.value } })} /></label>
           <div className="ui-rotulo">Comportamento<Seletor rotulo="Comportamento" valor={f.t.comportamento} desabilitado={doSite(f.t) && f.id !== null} onChange={(v) => setF({ ...f, t: { ...f.t, comportamento: v as Comportamento } })} opcoes={COMP} /></div>
-          {f.t.comportamento === 'ROTINA' && <div className="ui-rotulo">Periodicidade<Seletor rotulo="Periodicidade" valor={f.t.periodicidade ?? ''} onChange={(v) => setF({ ...f, t: { ...f.t, periodicidade: (v || null) as Tipo['periodicidade'] } })} opcoes={PER} /></div>}
           <fieldset className="flex flex-col gap-1 sm:col-span-2"><legend className="ui-rotulo mb-1">Quem da equipe de campo faz (gestão faz todos)</legend>
             <div className="flex flex-wrap gap-4">{CAMPO.map((p) => (
               <label key={p.valor} className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={f.t.perfis.includes(p.valor)}
@@ -89,7 +102,7 @@ export function T31Tipos() {
           <li key={t.id} className={`${card} flex flex-col gap-2 p-4 ${t.ativo ? '' : 'opacity-60'}`} data-tipo={t.codigo}>
             <div><p className="text-[0.9375rem] font-medium text-fg-1">{t.nome}{t.ativo ? '' : ' (desativado)'}</p>
               <p className="font-mono text-[0.6875rem] text-fg-3">{t.codigo}{doSite(t) ? ' · usado pelo site' : ''}</p></div>
-            <p className="text-[0.75rem] text-fg-2">{COMP.find((c) => c.valor === t.comportamento)?.label}{t.periodicidade ? ` · ${PER.find((p) => p.valor === t.periodicidade)?.label}` : ''} · {t.perfis.map((p) => CAMPO.find((c) => c.valor === p)?.label).join(', ')}</p>
+            <p className="text-[0.75rem] text-fg-2">{COMP.find((c) => c.valor === t.comportamento)?.label} · sob demanda · {t.perfis.map((p) => CAMPO.find((c) => c.valor === p)?.label).join(', ')}</p>
             <span className="flex flex-wrap gap-2">
               <button type="button" className={link} onClick={() => { setSel(null); setF({ id: t.id, t: { ...t } }); }}>Editar</button>
               <button type="button" className={link} onClick={() => { setF(null); setSel(t); }}>Itens do checklist</button>
@@ -100,7 +113,7 @@ export function T31Tipos() {
       </ul>
 
       {sel && (
-        <section className={`${card} flex flex-col gap-3 p-4`} aria-label="Itens do tipo">
+        <section ref={itensRef} className={`${card} flex flex-col gap-3 p-4`} aria-label="Itens do tipo">
           <p className="text-[0.9375rem] font-medium text-fg-1">Itens de “{sel.nome}”</p>
           <div className="max-w-sm"><Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: `${u.nome} · ${u.pousada}` }))} /></div>
           {ativosNoChale.length === 0 ? <p className="text-sm text-fg-3">Este chalé ainda não tem itens ativos. Cadastre em Ambientes e itens.</p> : (
