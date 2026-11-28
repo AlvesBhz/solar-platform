@@ -1,9 +1,9 @@
 import { Icon } from '@iconify/react';
 import QRCode from 'qrcode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Chips, Seletor } from '../components/Filtros';
-import GestaoShell, { GRUPO_NOME, TabelaResp, card, menuDo } from '../components/GestaoShell';
+import GestaoShell, { AREAS, TabelaResp, card, menuDo } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
 import { listarUsuarios, qrDaUnidade, rotuloPerfil } from '../lib/admin';
@@ -87,6 +87,10 @@ export function T42Pendencias() {
                 extra={<span className={`font-mono text-lg font-semibold tabular-nums ${NIVEL[p.nivel].num}`}>{p.qtd}</span>} />
             ))}
           </section>
+          <nav className="flex flex-col gap-2 lg:hidden" aria-label="Consultar">
+            <Titulo>Consultar</Titulo>
+            {menuDo(perfilAtual()).filter((m) => m.grupo === 'consultar').map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
+          </nav>
           {emDia.length > 0 && (
             <section className="flex flex-col gap-2" aria-label="Em dia">
               <Titulo>Em dia</Titulo>
@@ -101,19 +105,17 @@ export function T42Pendencias() {
   );
 }
 
-/** T43 — Cadastros: lista do que se configura, separada em Inspect e Site (o que aparece depende do perfil). */
+/** T43 — Início de uma área de cadastros: Administração (/admin, configura as vistorias) ou Site (/admin/site, dados do site de reservas). */
 export function T43Cadastros() {
-  const itens = menuDo(perfilAtual()).filter((m) => m.grupo === 'inspect' || m.grupo === 'site');
-  const grupos = (['inspect', 'site'] as const).map((g) => ({ g, l: itens.filter((m) => m.grupo === g) })).filter((x) => x.l.length);
+  const site = useLocation().pathname.startsWith('/admin/site');
+  const a = AREAS[site ? 'site' : 'admin'];
+  const itens = menuDo(perfilAtual()).filter((m) => m.grupo === (site ? 'site' : 'inspect'));
   return (
-    <GestaoShell eyebrow="Administração" titulo="Cadastros">
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:max-w-3xl">
-        {grupos.map(({ g, l }) => (
-          <section key={g} className="flex flex-col gap-2" aria-label={GRUPO_NOME(g)}>
-            <Titulo>{GRUPO_NOME(g)} <span className="normal-case tracking-normal text-fg-3">{g === 'inspect' ? 'configuram as vistorias' : 'dados do site de reservas'}</span></Titulo>
-            {l.map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
-          </section>
-        ))}
+    <GestaoShell titulo={a.nome}>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-2 lg:max-w-3xl">
+        <p className="text-[0.8125rem] text-fg-2">{a.desc}.</p>
+        {itens.map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
+        {itens.length === 0 && <p className={`${card} p-4 text-[0.8125rem] text-fg-2`}>Seu perfil não tem cadastros nesta área.</p>}
       </div>
     </GestaoShell>
   );

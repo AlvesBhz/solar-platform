@@ -50,9 +50,9 @@ function servidor(page, perfil, perdidos, est = { aceite: true }) {
 const ROTAS = {
   ASSESSOR: ['/', '/app/unidades', '/app/unidades/7', '/app/vistorias/nova/7', '/app/vistorias/nova/7/presenca', '/app/vistorias/nova/7/checklist', '/app/vistorias/nova/7/resumo',
     '/app/sincronizacao', '/app/historico', '/conta/senha', '/permissao-localizacao', '/rota-que-nao-existe'],
-  GESTOR: ['/', '/gestao', '/gestao/painel', '/admin', '/gestao/unidades', '/gestao/unidades/7', '/gestao/vistorias', `/gestao/vistorias/${V1}`, `/gestao/vistorias/${V1}/relatorio`, '/gestao/ocorrencias', '/gestao/ocorrencias/1',
+  GESTOR: ['/', '/gestao', '/gestao/painel', '/admin', '/admin/site', '/gestao/unidades', '/gestao/unidades/7', '/gestao/vistorias', `/gestao/vistorias/${V1}`, `/gestao/vistorias/${V1}/relatorio`, '/gestao/ocorrencias', '/gestao/ocorrencias/1',
     '/admin/checklists', '/admin/presenca', '/app/unidades', '/conta/senha'],
-  ADMIN: ['/', '/gestao', '/gestao/painel', '/admin', '/admin/pacotes', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria',
+  ADMIN: ['/', '/gestao', '/gestao/painel', '/admin', '/admin/site', '/admin/pacotes', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria',
     '/admin/precos', '/admin/tarifas', '/admin/tarifas/1', '/admin/simulador'],
 };
 // destino esperado quando a rota redireciona de propósito
@@ -105,7 +105,7 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
       await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {});
       await page.locator('nav[aria-label="Menu"] [data-grupo]').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
       const grupos = await page.locator('nav[aria-label="Menu"] [data-grupo]').evaluateAll((g) => g.map((x) => x.getAttribute('data-grupo')).join(','));
-      const esperado = perfil === 'ADMIN' ? 'consultar,vistoriar,inspect,site' : 'consultar,vistoriar,inspect';
+      const esperado = perfil === 'ADMIN' ? 'gestao,vistoria,admin,site' : 'gestao,vistoria,admin';
       ok(grupos === esperado, `${perfil}: menu agrupado em ${esperado.replace(/,/g, ' · ')} (grupo sem item visível não aparece)` + (grupos !== esperado ? ' — veio ' + grupos : ''));
       if (process.env.FOTO && perfil === 'ADMIN') await page.locator('aside').first().screenshot({ path: process.env.FOTO });
       // menu mais alto que a tela: a barra lateral rola por dentro e Sair/Trocar senha ficam dentro do fundo escuro
@@ -132,15 +132,24 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
       await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
       if (process.env.FOTO_CELULAR) await page.screenshot({ path: `${process.env.FOTO_CELULAR}/${perfil}-pendencias.png` });
       const abas = await page.locator('nav[aria-label="Áreas"] a').allInnerTexts();
-      ok(abas.map((x) => x.replace(/\d+|pendências/g, '').trim()).join('|') === 'Pendências|Consultar|Vistoriar|Cadastros' && !(await page.locator('nav[aria-label="Menu"]').isVisible()),
-        `${perfil}: no celular, barra embaixo com Pendências · Consultar · Vistoriar · Cadastros (veio ${abas.join('|').replace(/\n/g, ' ')})`);
+      const esperadas = perfil === 'ADMIN' ? 'Gestão|Vistoria|Admin|Site' : 'Gestão|Vistoria|Admin';
+      ok(abas.map((x) => x.replace(/\d+|pendências/g, '').trim()).join('|') === esperadas && !(await page.locator('nav[aria-label="Menu"]').isVisible()),
+        `${perfil}: no celular, barra embaixo com ${esperadas.replace(/\|/g, ' · ')} (veio ${abas.join('|').replace(/\n/g, ' ')})`);
+      ok(await page.locator('header [data-area=gestao]').isVisible(), `${perfil}: o topo da tela mostra a área (Gestão)`);
       const barra = await page.locator('nav[aria-label="Áreas"]').boundingBox();
       ok(barra && Math.abs(barra.y + barra.height - 720) < 2, `${perfil}: a barra fica presa no pé da tela`);
       await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').click(); await page.waitForTimeout(700);
       const cad = await page.locator('main').innerText();
-      ok(new URL(page.url()).pathname === '/admin' && /Ambientes e itens/.test(cad) && (perfil === 'ADMIN') === /Preços/.test(cad) && (perfil === 'ADMIN') === /Usuários/.test(cad),
-        `${perfil}: Cadastros lista só o que o perfil pode configurar`);
-      ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').getAttribute('aria-current') === 'page', `${perfil}: a aba Cadastros fica marcada`);
+      ok(new URL(page.url()).pathname === '/admin' && /Ambientes e itens/.test(cad) && !/Preços/.test(cad) && (perfil === 'ADMIN') === /Usuários/.test(cad)
+        && await page.locator('header [data-area=admin]').isVisible(), `${perfil}: Administração lista só os cadastros do Inspect que o perfil pode usar`);
+      ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').getAttribute('aria-current') === 'page', `${perfil}: a aba Administração fica marcada`);
+      if (perfil === 'ADMIN') {
+        await page.locator('nav[aria-label="Áreas"] a[href="/admin/site"]').click(); await page.waitForTimeout(700);
+        const site = await page.locator('main').innerText();
+        ok(/Propriedades/.test(site) && /Preços/.test(site) && await page.locator('header [data-area=site]').isVisible(), 'ADMIN: a área Site lista Propriedades e Preços');
+        await page.goto(BASE + '/admin/tarifas'); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
+        ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin/site"]').getAttribute('aria-current') === 'page', 'ADMIN: em Tarifas a aba Site fica marcada');
+      }
       if (process.env.FOTO_CELULAR) await page.screenshot({ path: `${process.env.FOTO_CELULAR}/${perfil}-cadastros.png` });
       for (const r of ['/gestao', '/gestao/ocorrencias/1', perfil === 'ADMIN' ? '/admin/auditoria' : '/gestao/unidades/7']) {
         await page.goto(BASE + r); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);

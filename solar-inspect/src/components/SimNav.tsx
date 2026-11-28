@@ -33,7 +33,8 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
   { titulo: 'Gestão', telas: [
     { id: 'T42', nome: 'Pendências', rota: '/gestao' },
     { id: 'T20', nome: 'Visão geral', rota: '/gestao/painel' },
-    { id: 'T43', nome: 'Cadastros', rota: '/admin' },
+    { id: 'T43', nome: 'Administração', rota: '/admin' },
+    { id: 'T45', nome: 'Site', rota: '/admin/site' },
     { id: 'T21', nome: 'Gestão de unidades', rota: '/gestao/unidades' },
     { id: 'T22', nome: 'Detalhe da unidade', rota: '/gestao/unidades/chale-sempre-viva' },
     { id: 'T23', nome: 'Lista de vistorias', rota: '/gestao/vistorias' },

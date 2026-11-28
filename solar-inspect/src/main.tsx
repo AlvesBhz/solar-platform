@@ -72,6 +72,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/gestao" element={<ProtegeCampo perfis={GESTAO}><T42Pendencias /></ProtegeCampo>} />
         <Route path="/gestao/painel" element={<ProtegeCampo perfis={GESTAO}><T20Dashboard /></ProtegeCampo>} />
         <Route path="/admin" element={<ProtegeCampo perfis={GESTAO}><T43Cadastros /></ProtegeCampo>} />
+        <Route path="/admin/site" element={<ProtegeCampo perfis={GESTAO}><T43Cadastros /></ProtegeCampo>} />
         <Route path="/admin/pacotes" element={<T44Pacotes />} />
         <Route path="/gestao/unidades" element={<ProtegeCampo perfis={GESTAO}><T21Unidades /></ProtegeCampo>} />
         <Route path="/gestao/unidades/:id" element={<ProtegeCampo perfis={GESTAO}><T22DetalheUnidade /></ProtegeCampo>} />

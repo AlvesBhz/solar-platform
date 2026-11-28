@@ -1,19 +1,27 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState, type ReactNode } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LockupHorizontal } from './Logo';
 import { MODO_DEMO, perfilAtual, sair } from '../lib/acesso';
 import NetworkBadge from './NetworkBadge';
 import { contarPendencias } from '../lib/pendencias';
 
-// Navegação por intenção: Pendências (o que pede ação), Consultar (só leitura), Vistoriar (campo) e Cadastros (configuração).
-// No computador é o menu lateral; no celular, uma barra fixa embaixo com as quatro áreas (Cadastros abre a lista em /admin).
+// Quatro áreas, sempre visíveis: Gestão (pendências e consultas), Vistoria (campo), Administração (cadastros que configuram
+// as vistorias) e Site (dados do site de reservas). A área atual aparece no topo de toda tela e fica marcada no menu.
+// No computador é o menu lateral; no celular, uma barra fixa embaixo com as áreas.
+export const AREAS = {
+  gestao: { nome: 'Gestão', curto: 'Gestão', desc: 'Pendências e consultas', icon: 'solar:widget-2-linear', to: '/gestao' },
+  vistoria: { nome: 'Vistoria', curto: 'Vistoria', desc: 'Fazer vistoria em campo', icon: 'solar:clipboard-list-linear', to: '/app/unidades' },
+  admin: { nome: 'Administração', curto: 'Admin', desc: 'Cadastros que configuram as vistorias', icon: 'solar:settings-linear', to: '/admin' },
+  site: { nome: 'Site', curto: 'Site', desc: 'Dados do site de reservas', icon: 'solar:buildings-2-linear', to: '/admin/site' },
+} as const;
+export type Area = keyof typeof AREAS;
 const GRUPOS = {
-  pendencias: { nome: '' },
-  consultar: { nome: 'Consultar' },
-  vistoriar: { nome: 'Vistoriar' },
-  inspect: { nome: 'Cadastros · Inspect' },
-  site: { nome: 'Cadastros · Site' },
+  pendencias: { nome: '', area: 'gestao' },
+  consultar: { nome: 'Consultar', area: 'gestao' },
+  vistoriar: { nome: '', area: 'vistoria' },
+  inspect: { nome: '', area: 'admin' },
+  site: { nome: '', area: 'site' },
 } as const;
 type Grupo = keyof typeof GRUPOS;
 export type ItemMenu = { to: string; icon: string; label: string; desc: string; grupo: Grupo; end?: boolean; so?: string; ativo?: string[] };
@@ -32,23 +40,28 @@ export const MENU: ItemMenu[] = [
   { to: '/admin/propriedades', icon: 'solar:buildings-2-linear', label: 'Propriedades', desc: 'Pousadas e unidades do site', grupo: 'site', so: 'ADMIN' },
   { to: '/admin/precos', icon: 'solar:tag-price-linear', label: 'Preços', desc: 'Calendário, tarifas, pacotes e simulador', grupo: 'site', so: 'ADMIN', ativo: ['/admin/precos', '/admin/pacotes', '/admin/tarifas', '/admin/simulador'] },
 ];
-export const GRUPO_NOME = (g: Grupo) => GRUPOS[g].nome;
+export const GRUPO_NOME = (g: Grupo) => GRUPOS[g].nome || AREAS[GRUPOS[g].area].nome;
 // o menu mostra só o que o perfil pode abrir (as telas e o banco conferem de novo)
 export const menuDo = (p?: string) => MENU.filter((m) => !m.so || m.so === p || (MODO_DEMO && !p));
 
-/** Área da barra do celular a que a rota pertence. */
-function areaDe(path: string) {
-  if (path === '/gestao') return 'pendencias';
-  if (path.startsWith('/app')) return 'vistoriar';
-  if (path.startsWith('/gestao') || path.startsWith('/admin/auditoria')) return 'consultar';
-  return 'cadastros';
+const SITE = ['/admin/site', '/admin/propriedades', '/admin/precos', '/admin/tarifas', '/admin/simulador', '/admin/pacotes'];
+/** Área a que a rota pertence. */
+export function areaDe(path: string): Area | null {
+  if (path.startsWith('/app')) return 'vistoria';
+  if (path.startsWith('/gestao') || path.startsWith('/admin/auditoria')) return 'gestao';
+  if (SITE.some((x) => path.startsWith(x))) return 'site';
+  if (path.startsWith('/admin')) return 'admin';
+  return null;
 }
-const ABAS = [
-  { id: 'pendencias', to: '/gestao', icon: 'solar:danger-triangle-linear', label: 'Pendências' },
-  { id: 'consultar', to: '/gestao/painel', icon: 'solar:magnifer-linear', label: 'Consultar' },
-  { id: 'vistoriar', to: '/app/unidades', icon: 'solar:clipboard-list-linear', label: 'Vistoriar' },
-  { id: 'cadastros', to: '/admin', icon: 'solar:settings-linear', label: 'Cadastros' },
-];
+/** Selo da área no topo da tela (ícone + nome): mostra onde você está. */
+export function SeloArea({ area }: { area: Area }) {
+  const a = AREAS[area];
+  return (
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-pine/25 bg-pine/[0.08] px-2.5 py-1 text-[0.625rem] font-medium uppercase tracking-[0.16em] text-pine" data-area={area}>
+      <Icon icon={a.icon} width={14} aria-hidden="true" />{a.nome}
+    </span>
+  );
+}
 
 /** Moldura de gestão/admin: menu lateral no computador e no tablet; barra fixa embaixo no celular. */
 export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titulo: string; eyebrow?: string; acoes?: ReactNode; children: ReactNode }) {
@@ -58,6 +71,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
   useEffect(() => { let vivo = true; void contarPendencias(pathname === '/gestao').then((n) => vivo && setPend(n)); return () => { vivo = false; }; }, [pathname]);
   const menu = menuDo(perfilAtual());
   const area = areaDe(pathname);
+  const areas = (Object.keys(AREAS) as Area[]).filter((x) => x === 'vistoria' || menu.some((m) => GRUPOS[m.grupo].area === x));
   const link = ({ isActive }: { isActive: boolean }) =>
     `flex min-h-11 shrink-0 items-center gap-2.5 rounded-md px-3 text-[0.8125rem] transition-colors duration-fast ${isActive ? 'bg-white/10 font-medium text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`;
   return (
@@ -69,9 +83,12 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         <nav className="flex flex-col gap-1" aria-label="Menu">
           {menu.map((m, k) => (
             <div key={m.to} className="contents">
-              {m.grupo !== menu[k - 1]?.grupo && GRUPOS[m.grupo].nome && (
-                <span className="px-3 pb-1 pt-4 text-[0.625rem] uppercase tracking-[0.24em] text-white/60" data-grupo={m.grupo}>{GRUPOS[m.grupo].nome}</span>
+              {GRUPOS[m.grupo].area !== (menu[k - 1] && GRUPOS[menu[k - 1].grupo].area) && (
+                <span className={`mt-3 flex items-center gap-2 rounded-md px-3 py-1.5 text-[0.625rem] uppercase tracking-[0.24em] first:mt-0 ${GRUPOS[m.grupo].area === area ? 'bg-white/10 text-white' : 'text-white/55'}`} data-grupo={GRUPOS[m.grupo].area}>
+                  <Icon icon={AREAS[GRUPOS[m.grupo].area].icon} width={14} aria-hidden="true" />{AREAS[GRUPOS[m.grupo].area].nome}
+                </span>
               )}
+              {GRUPOS[m.grupo].nome && m.grupo !== menu[k - 1]?.grupo && <span className="px-3 pt-2 text-[0.625rem] uppercase tracking-[0.16em] text-white/40">{GRUPOS[m.grupo].nome}</span>}
               <NavLink to={m.to} end={m.end} className={({ isActive }) => link({ isActive: isActive || !!m.ativo?.some((x) => pathname.startsWith(x)) })}>
                 <Icon icon={m.icon} width={18} aria-hidden="true" />{m.label}
                 {m.to === '/gestao' && !!pend && <span className="ml-auto rounded-full bg-error px-1.5 text-[0.6875rem] font-semibold text-white">{pend}<span className="sr-only"> pendências</span></span>}
@@ -89,7 +106,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
       <div className="flex min-w-0 flex-col">
         <header className="flex flex-wrap items-end justify-between gap-3 print:hidden px-[max(1rem,env(safe-area-inset-left))] pb-4 pt-6 lg:px-8">
           <div className="flex min-w-0 flex-col gap-1">
-            {eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
+            {area ? <SeloArea area={area} /> : eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>
           </div>
           <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge />
@@ -103,16 +120,16 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
         </header>
         <main className="flex flex-col gap-6 px-[max(1rem,env(safe-area-inset-left))] pb-28 lg:px-8 lg:pb-24">{children}</main>
       </div>
-      <nav aria-label="Áreas" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line-1 bg-white px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] print:hidden lg:hidden">
-        {ABAS.map((a) => {
-          const atual = area === a.id;
+      <nav aria-label="Áreas" className="fixed inset-x-0 bottom-0 z-30 grid auto-cols-fr grid-flow-col border-t border-line-1 bg-white px-1 pt-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] print:hidden lg:hidden">
+        {areas.map((id) => {
+          const a = AREAS[id], atual = area === id;
           return (
-            <NavLink key={a.id} to={a.to} aria-current={atual ? 'page' : undefined}
-              className={`relative flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-[0.6875rem] ${atual ? 'font-semibold text-pine' : 'text-fg-3'}`}>
+            <Link key={id} to={a.to} aria-current={atual ? 'page' : undefined} aria-label={a.nome + (id === 'gestao' && pend ? `, ${pend} pendências` : '')}
+              className={`relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg text-[0.6875rem] ${atual ? 'font-semibold text-pine' : 'text-fg-3'}`}>
               <span className={`flex h-7 w-12 items-center justify-center rounded-full ${atual ? 'bg-pine/10' : ''}`}><Icon icon={a.icon} width={20} aria-hidden="true" /></span>
-              {a.label}
-              {a.id === 'pendencias' && !!pend && <span className="absolute left-1/2 top-1 ml-2 min-w-[1.125rem] rounded-full bg-error px-1 text-center text-[0.625rem] font-semibold leading-[1.125rem] text-white">{pend}<span className="sr-only"> pendências</span></span>}
-            </NavLink>
+              <span className="max-w-full truncate px-0.5" aria-hidden="true">{a.curto}</span>
+              {id === 'gestao' && !!pend && <span className="absolute left-1/2 top-1 ml-2 min-w-[1.125rem] rounded-full bg-error px-1 text-center text-[0.625rem] font-semibold leading-[1.125rem] text-white">{pend}<span className="sr-only"> pendências</span></span>}
+            </Link>
           );
         })}
       </nav>

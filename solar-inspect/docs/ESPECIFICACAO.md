@@ -170,12 +170,12 @@ A propriedade define o modo padrão e a unidade pode sobrescrevê-lo; a configur
 
 ## 7. Gestão e administração
 
-Navegação por intenção, em quatro áreas: **Pendências** (o que pede ação), **Consultar** (só leitura: visão geral, unidades, vistorias, ocorrências e auditoria), **Vistoriar** (fazer vistoria) e **Cadastros** (Inspect: ambientes e itens, tipos, GPS e QR, usuários; Site: propriedades e preços). Menu lateral no computador e no tablet; no celular, barra fixa embaixo com as quatro áreas (Cadastros abre a lista T43). O menu mostra só o que o perfil pode abrir.
+Navegação em quatro áreas, sempre visíveis: **Gestão** (Pendências, a primeira tela, e Consultar: visão geral, unidades, vistorias, ocorrências e auditoria), **Vistoria** (fazer vistoria), **Administração** (cadastros que configuram as vistorias: ambientes e itens, tipos, GPS e QR, usuários) e **Site** (dados do site de reservas: propriedades e preços). Toda tela mostra no topo o selo da área (ícone + nome) e o menu marca a área atual. Menu lateral no computador e no tablet; no celular, barra fixa embaixo com as áreas do perfil (Administração e Site abrem a lista T43). O menu mostra só o que o perfil pode abrir.
 
 | Tela | Regras principais |
 |---|---|
 | T42 Pendências | Primeira tela da gestão. Lista só o que pede ação, com quantidade e link para resolver: críticas sem responsável, unidade fora da venda sem crítica aberta (conferir e liberar), ocorrências atrasadas, ocorrências sem responsável e vistorias com sinalização nos últimos 7 dias. O que está em dia aparece separado; o total vira o contador da barra. |
-| T43 Cadastros | Lista dos cadastros do perfil, separada em Inspect e Site, com uma linha explicando cada um. |
+| T43 Administração e Site | Início de cada área de cadastros (/admin e /admin/site), com uma linha explicando cada cadastro que o perfil pode usar. |
 | T44 Pacotes | Aba de Preços. Preço final por check-in e número de noites (`SIT_PACOTE`); nas noites do pacote o site vende só as opções cadastradas e oferece a mais longa. |
 | T20 Visão geral | Indicadores (unidades, liberadas, ocorrências abertas, vistorias do dia), barra com o estado das unidades, ocorrências prioritárias e filtro por propriedade. |
 | T21 Unidades | Busca e filtro por estado; tabela (cartões no celular). |
