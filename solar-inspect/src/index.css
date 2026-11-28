@@ -1,5 +1,7 @@
 /* Design System do Solar — consumido sem alteração */
 @import '../../design-system/colors_and_type.css';
+/* Fontes dentro do app: sem Google Fonts (mais rápido e sem enviar o IP do visitante a terceiros) */
+@import './fonts.css';
 
 /* Fundo "bone" do sistema de logo (brand/logo/index.html). Uso restrito ao selo. */
 :root { --c-bone: #EAE5D9; }
