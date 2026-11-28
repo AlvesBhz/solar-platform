@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { Chips, Seletor } from '../components/Filtros';
+import { Seletor } from '../components/Filtros';
 import GestaoShell, { card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { definirTiposDoItem, incluirItensNosTipos, listarAmbientes, listarTipos, listarUnidadesPresenca, reordenar, salvarAmbiente, salvarItem, tiposDosItens, type Ambiente, type Item, type Resultado, type Tipo, type UnidadePresenca } from '../lib/admin';
@@ -153,15 +153,16 @@ export function T30Ambientes() {
 
   return (
     <GestaoShell eyebrow="Administração" titulo="Ambientes e itens"
-      acoes={uid ? <button type="button" className={`${btnPrimary} w-auto`} onClick={() => { setErro(''); setFi(null); setFa({ id: null, nome: '', ordem: proxOrdem(ambs), ativo: true }); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo ambiente</button> : undefined}>
+      acoes={uid ? <button type="button" className={`${btnPrimary} !min-h-10 !w-auto !px-4`} onClick={() => { setErro(''); setFi(null); setFa({ id: null, nome: '', ordem: proxOrdem(ambs), ativo: true }); }}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Novo ambiente</button> : undefined}>
       <div className="flex flex-col gap-3">
-        <div className="max-w-sm"><Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: `${u.nome} · ${u.pousada}` }))} icone="solar:home-2-linear" /></div>
-        {tipos.length > 0 && (
-          <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="ui-secao">Vistoria</span>
-            <Chips rotulo="Tipo de vistoria" valor={filtro} onChange={setFiltro} opcoes={[{ valor: '', label: 'Todas' }, ...tipos.map((t) => ({ valor: String(t.id), label: t.nome }))]} />
-          </div>
-        )}
+        {/* filtros lado a lado: chalé (só o nome) e tipo de vistoria (todos à vista numa lista) */}
+        <div className="grid grid-cols-1 gap-3 sm:max-w-xl sm:grid-cols-2">
+          <div className="ui-rotulo">Chalé<Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: u.nome }))} icone="solar:home-2-linear" /></div>
+          {tipos.length > 0 && (
+            <div className="ui-rotulo">Vistoria<Seletor rotulo="Tipo de vistoria" valor={filtro} onChange={setFiltro} icone="solar:clipboard-list-linear"
+              opcoes={[{ valor: '', label: 'Todas' }, ...tipos.map((t) => ({ valor: String(t.id), label: t.nome }))]} /></div>
+          )}
+        </div>
         {filtro && (() => {
           const n = ambs.flatMap((a) => a.itens).filter((i) => (vinc[i.id] ?? []).includes(Number(filtro))).length;
           return <p className="text-[0.75rem] text-fg-3">{n} {n === 1 ? 'item entra' : 'itens entram'} na vistoria de {tipos.find((t) => String(t.id) === filtro)?.nome}. Para mudar a ordem dos itens, volte para Todas.</p>;
