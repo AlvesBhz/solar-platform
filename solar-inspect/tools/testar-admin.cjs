@@ -366,18 +366,20 @@ if (require.main === module) (async () => {
     ok(await page.inputValue('#t-codigo') === 'ROTINA_MENSAL', 'código vira MAIÚSCULAS com _ enquanto digita');
     await page.uncheck('form >> text=Vistoria');
     ok((await texto(page, 'form [role=alert]')).includes('ao menos um perfil') && await page.isDisabled('button:has-text("Salvar tipo")'), 'sem perfil: avisa e não salva');
-    await page.check('form >> text=Limpeza'); await escolher(page, 'Periodicidade', 'Mensal');
+    await page.check('form >> text=Limpeza');
+    ok(await page.locator('button[aria-label^="Periodicidade"]').count() === 0, 'sem periodicidade: todas as vistorias são sob demanda');
     await page.click('button:has-text("Salvar tipo")');
     await page.waitForSelector('[data-tipo="ROTINA_MENSAL"]');
     const pt = ultima(db, 'POST', 'VST_TIPO_VISTORIA');
-    ok(pt && pt.corpo.CD_TIPO_VISTORIA === 'ROTINA_MENSAL' && pt.corpo.TP_PERIODICIDADE === 'MENSAL' && JSON.stringify(pt.corpo.DS_PERFIS) === '["LIMPEZA"]', 'cria o tipo com código, periodicidade e perfis');
-    // editar um tipo de rotina sem agenda (como Limpeza em produção): salva sem pedir periodicidade
-    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Editar")').first().click().catch(() => {});
-    if (await page.locator('form[aria-label="Tipo de vistoria"]').count()) {
-      await escolher(page, 'Periodicidade', 'Sem agenda (quando precisar)');
-      await page.click('button:has-text("Salvar tipo")'); await page.waitForTimeout(500);
-      ok(!(await texto(page, 'main')).includes('precisa de periodicidade') && db.tipos.find((x) => x.CD_TIPO_VISTORIA === 'ROTINA_MENSAL').TP_PERIODICIDADE === null, 'rotina sem agenda salva (periodicidade vazia)');
-    }
+    ok(pt && pt.corpo.CD_TIPO_VISTORIA === 'ROTINA_MENSAL' && pt.corpo.TP_PERIODICIDADE === null && JSON.stringify(pt.corpo.DS_PERFIS) === '["LIMPEZA"]', 'cria o tipo com código e perfis, sob demanda');
+    // celular: Editar leva a tela até o formulário; Desativar funciona e o aviso aparece no pé da tela
+    await page.setViewportSize({ width: 390, height: 760 });
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Editar")').click(); await page.waitForTimeout(800);
+    const caixa = await page.locator('form[aria-label="Tipo de vistoria"]').boundingBox();
+    ok(caixa && caixa.y >= -2 && caixa.y < 760, 'celular: Editar posiciona a tela no formulário');
+    await page.click('form[aria-label="Tipo de vistoria"] button:has-text("Cancelar")').catch(() => {});
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Desativar")').click(); await page.waitForSelector('text=Tipo desativado');
     await page.locator('[data-tipo="ROTINA_MENSAL"] button:has-text("Ativar")').click();
     ok((await texto(page, '[role=alert]')).includes('ao menos um item'), 'não ativa tipo sem itens no checklist');

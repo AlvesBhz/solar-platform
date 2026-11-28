@@ -289,7 +289,7 @@ export function validarTipo(t: Omit<Tipo, 'id'>, novo: boolean): string[] {
 export async function salvarTipo(id: number | null, t: Omit<Tipo, 'id'>): Promise<Resultado> {
   const erros = validarTipo(t, id === null);
   if (erros.length) return { ok: false, erro: erros[0] };
-  const dados = { NM_TIPO_VISTORIA: t.nome.trim(), TP_COMPORTAMENTO: t.comportamento, TP_PERIODICIDADE: t.comportamento === 'ROTINA' ? t.periodicidade : null,
+  const dados = { NM_TIPO_VISTORIA: t.nome.trim(), TP_COMPORTAMENTO: t.comportamento, TP_PERIODICIDADE: null,   // todas as vistorias são sob demanda
     SG_EXIGE_ENTRADA: t.exigeEntrada, SG_EXIGE_ASSINATURA: t.exigeAssinatura, SG_ATIVO: t.ativo, DS_PERFIS: t.perfis };
   return gravar('VST_TIPO_VISTORIA', 'ID_TIPO_VISTORIA', id, id === null ? { ...dados, CD_TIPO_VISTORIA: t.codigo } : dados);
 }
