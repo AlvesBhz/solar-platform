@@ -4,153 +4,169 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Guia do Hóspede · Protótipo</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../../design-system/colors_and_type.css"/>
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{background:var(--c-s100);font-family:var(--font-sans);color:var(--fg-1);font-size:15px;line-height:1.5}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+body{background:var(--c-s100);font-family:var(--font-sans);font-size:15px;line-height:1.5;color:var(--fg-1)}
+button,input{font:inherit;color:inherit;background:none;border:0}
+button{cursor:pointer}
 a{color:inherit;text-decoration:none}
-.app{position:relative;max-width:430px;height:100dvh;margin:0 auto;background:var(--c-cream);display:flex;flex-direction:column;overflow:hidden}
-@media(min-width:500px){.app{height:min(900px,96dvh);margin-top:2dvh;border-radius:32px;box-shadow:var(--shadow-xl);border:1px solid var(--c-s200)}}
-/* header */
-.top{display:flex;align-items:center;gap:8px;padding:14px 16px 10px;background:var(--c-cream);min-height:60px}
-.top .ttl{flex:1;font-family:var(--font-serif);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.1}
-.ib{width:44px;height:44px;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--c-pine)}
-.ib:active{background:var(--c-s200)}
-.lang{display:flex;gap:2px;background:var(--c-s100);border-radius:var(--r-pill);padding:3px}
-.lang button{font-size:11px;font-weight:600;letter-spacing:.08em;padding:6px 9px;border-radius:var(--r-pill);color:var(--fg-3)}
-.lang button.on{background:var(--c-pine);color:#fff}
-/* main */
-main{flex:1;overflow-y:auto;padding:4px 16px 120px;scroll-behavior:smooth}
+/* temas: claro e escuro (tokens do Design System) */
+.app{--bg:var(--c-cream);--surf:#fff;--soft:var(--c-s100);--ink:var(--c-s900);--ink2:var(--c-s600);--ink3:var(--c-s500);--line:var(--c-s200);--line2:var(--c-s300);--brand:var(--c-pine);--onbrand:#fff;--alert-bg:#fef2f2;--alert-bd:#f0b8b8;--alert:var(--c-error)}
+.app.dark{--bg:var(--c-pine-deep);--surf:var(--c-pine);--soft:rgba(255,255,255,.08);--ink:#fff;--ink2:rgba(255,255,255,.78);--ink3:rgba(255,255,255,.58);--line:rgba(255,255,255,.14);--line2:rgba(255,255,255,.22);--brand:#fff;--onbrand:var(--c-pine-deep);--alert-bg:#fff;--alert-bd:#fff;--alert:var(--c-error)}
+.app{position:relative;max-width:430px;height:100dvh;margin:0 auto;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:500px){.app{height:min(900px,96dvh);margin-top:2dvh;border-radius:32px;box-shadow:var(--shadow-xl);border:1px solid var(--line)}}
+.top{display:flex;align-items:center;gap:2px;padding:12px 10px 8px 12px;min-height:60px}
+.top .ttl{flex:1;font-family:var(--font-serif);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1.1;padding-left:4px;min-width:0}
+.ib{width:44px;height:44px;flex:none;border-radius:var(--r-pill);display:grid;place-items:center;color:var(--brand)}
+.ib:active{background:var(--soft)}
+main{flex:1;overflow-y:auto;padding:4px 16px 120px;zoom:var(--z,1)}
 main::-webkit-scrollbar{width:0}
 .sec{margin-top:22px}
-.eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px}
+.eyebrow{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
 h2.h{font-family:var(--font-serif);font-weight:500;font-size:30px;line-height:1.05;letter-spacing:-.02em}
-h2.h em{font-family:var(--font-italic);font-style:italic;font-weight:400}
-p.sub{color:var(--fg-2);font-size:14px;margin-top:6px}
-/* cards */
-.card{background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);padding:16px;box-shadow:var(--shadow-sm)}
+p.sub{color:var(--ink2);font-size:14px;margin-top:6px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r-xl);padding:16px;box-shadow:var(--shadow-sm)}
 .card+.card{margin-top:10px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tile{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:112px;padding:16px;text-align:left;background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);box-shadow:var(--shadow-sm);transition:transform var(--dur-fast),box-shadow var(--dur-base)}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-height:112px;padding:16px;text-align:left;background:var(--surf);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--shadow-sm);transition:transform var(--dur-fast)}
 .tile:active{transform:scale(.98)}
-.tile .ic{width:44px;height:44px;border-radius:var(--r-lg);background:var(--c-s100);color:var(--c-pine);display:grid;place-items:center}
+.ic{flex:none;display:grid;place-items:center;background:var(--soft);color:var(--brand)}
+.tile .ic{width:44px;height:44px;border-radius:var(--r-lg)}
 .tile b{font-weight:600;font-size:15px;line-height:1.2}
-.tile small{display:block;font-weight:400;font-size:12px;color:var(--fg-3);margin-top:2px}
-.tile.dark{background:var(--c-pine);color:#fff;border-color:var(--c-pine)}
-.tile.dark .ic{background:rgba(255,255,255,.12);color:#fff}
-.tile.dark small{color:rgba(255,255,255,.7)}
-.row{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:#fff;border:1px solid var(--c-s200);border-radius:var(--r-xl);text-align:left;min-height:64px}
+.tile small{display:block;font-weight:400;font-size:13px;color:var(--ink3);margin-top:2px}
+.tile.alert{background:var(--c-error);border-color:var(--c-error);color:#fff}
+.tile.alert .ic{background:rgba(255,255,255,.16);color:#fff}
+.tile.alert small{color:rgba(255,255,255,.8)}
+.row{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;background:var(--surf);border:1px solid var(--line);border-radius:var(--r-xl);text-align:left;min-height:64px}
 .row+.row{margin-top:10px}
-.row .ic{flex:none;width:40px;height:40px;border-radius:var(--r-md);background:var(--c-s100);color:var(--c-pine);display:grid;place-items:center}
+.row .ic{width:40px;height:40px;border-radius:var(--r-md)}
 .row .tx{flex:1;min-width:0}
 .row .tx b{display:block;font-weight:600}
-.row .tx span{display:block;font-size:13px;color:var(--fg-3)}
-.row .go{color:var(--fg-4)}
-/* hero card */
-.hero{position:relative;border-radius:var(--r-2xl);overflow:hidden;padding:22px;color:#fff;background:linear-gradient(160deg,var(--c-pine-deep),var(--c-pine) 55%,var(--c-pine-mid))}
+.row .tx span{display:block;font-size:14px;color:var(--ink3)}
+.row .tx span.pend{display:inline-block;font-size:11px;color:var(--c-warning)}
+.row .go{color:var(--ink3)}
+.hero{border-radius:var(--r-2xl);padding:22px;color:#fff;background:linear-gradient(160deg,var(--c-pine-deep),var(--c-pine) 55%,var(--c-pine-mid));border:1px solid var(--line)}
 .hero .gr{font-family:var(--font-serif);font-size:32px;font-weight:500;line-height:1}
-.hero .gr em{font-family:var(--font-italic);font-weight:400}
-.hero p{color:rgba(255,255,255,.75);font-size:13px;margin-top:6px}
+.hero p{color:rgba(255,255,255,.78);font-size:14px;margin-top:6px}
 .hero .times{display:flex;gap:10px;margin-top:18px}
 .hero .t{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-lg);padding:10px 12px}
-.hero .t small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.hero .t small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.65)}
 .hero .t b{font-family:var(--font-mono);font-size:18px;font-weight:500}
-/* wifi */
-.wifi{display:flex;align-items:center;gap:14px}
-.wifi .big{font-family:var(--font-mono);font-size:19px;font-weight:600;letter-spacing:.02em;word-break:break-all}
-.lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:var(--r-pill);background:var(--c-pine);color:#fff;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;transition:transform var(--dur-base),background var(--dur-base)}
-.btn:active{transform:translateY(1px);background:var(--c-pine-deep)}
-.btn.out{background:#fff;color:var(--c-pine);border:1px solid var(--c-pine)}
-.btn.red{background:var(--c-error)}
+.lbl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3)}
+.mono{font-family:var(--font-mono);font-weight:600;word-break:break-all}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:var(--r-pill);background:var(--brand);color:var(--onbrand);font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;text-align:center;transition:transform var(--dur-base),opacity var(--dur-base)}
+.btn:active{transform:translateY(1px);opacity:.88}
+.btn.out{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+.btn.red{background:var(--c-error);color:#fff}
 .btn.full{width:100%}
 .btns{display:grid;gap:10px;margin-top:14px}
-/* chips + badges */
+.btns.two{grid-template-columns:1fr 1fr}
 .chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px}
 .chips::-webkit-scrollbar{height:0}
-.chip{flex:none;min-height:40px;padding:0 16px;border-radius:var(--r-pill);background:#fff;border:1px solid var(--c-s300);font-size:13px;font-weight:500;color:var(--fg-2)}
-.chip.on{background:var(--c-pine);border-color:var(--c-pine);color:#fff}
-.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);border:1px solid}
+.chip{flex:none;min-height:40px;padding:0 16px;border-radius:var(--r-pill);background:var(--surf);border:1px solid var(--line2);font-size:14px;font-weight:500;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:var(--onbrand)}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:var(--r-pill);padding:4px;margin-top:14px}
+.seg button{min-height:40px;border-radius:var(--r-pill);font-size:14px;font-weight:600;color:var(--ink3)}
+.seg button.on{background:var(--surf);color:var(--ink);box-shadow:var(--shadow-sm)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill);border:1px solid}
 .b-leve{color:var(--c-available);border-color:#a7d9c5;background:#ecfdf5}
 .b-media{color:var(--c-warning);border-color:#f3d9a6;background:var(--c-warning-bg)}
 .b-exig{color:var(--c-error);border-color:#f0b8b8;background:#fef2f2}
-.meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:13px;color:var(--fg-2)}
+.meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:14px;color:var(--ink2)}
 .meta span{display:inline-flex;align-items:center;gap:5px}
+.place{width:100%;text-align:left;display:block}
 .place h3{font-family:var(--font-serif);font-size:22px;font-weight:500;line-height:1.1;margin:8px 0 4px}
-.place p{font-size:14px;color:var(--fg-2)}
+.place p{font-size:14px;color:var(--ink2)}
 .pend{display:inline-block;font-size:11px;font-weight:600;color:var(--c-warning);background:var(--c-warning-bg);border:1px solid #f3d9a6;border-radius:var(--r-sm);padding:1px 7px}
-/* search */
-.search{display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;background:#fff;border:1px solid var(--c-s300);border-radius:var(--r-pill);color:var(--fg-3)}
-.search input{flex:1;border:0;outline:0;font:inherit;font-size:16px;background:none;color:var(--fg-1);min-width:0}
-.plan{margin-top:14px;aspect-ratio:16/10;border-radius:var(--r-xl);border:1.5px dashed var(--c-s300);background:var(--c-s100);display:grid;place-items:center;text-align:center;color:var(--fg-3);font-size:13px;padding:16px}
+.search{display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;background:var(--surf);border:1px solid var(--line2);border-radius:var(--r-pill);color:var(--ink3)}
+.search input{flex:1;outline:0;font-size:16px;color:var(--ink);min-width:0}
+.plan,.map{margin-top:14px;aspect-ratio:16/10;border-radius:var(--r-xl);border:1.5px dashed var(--line2);background:var(--soft);display:grid;place-items:center;text-align:center;color:var(--ink3);font-size:14px;padding:16px}
+.map{aspect-ratio:4/5}
+.photo{aspect-ratio:16/9;border-radius:var(--r-xl);background:var(--soft);border:1.5px dashed var(--line2);display:grid;place-items:center;color:var(--ink3);font-size:13px;margin-bottom:14px}
 .steps{counter-reset:s;list-style:none;margin-top:12px}
 .steps li{counter-increment:s;display:flex;gap:14px;align-items:flex-start;padding:10px 0;font-size:17px;line-height:1.35}
-.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:var(--r-pill);background:var(--c-pine);color:#fff;font-weight:600;font-size:14px;display:grid;place-items:center;margin-top:-1px}
-.call{background:#fef2f2;border:1px solid #f0b8b8;color:var(--c-error);border-radius:var(--r-lg);padding:12px 14px;font-weight:600;display:flex;gap:10px;align-items:flex-start;font-size:15px}
-.dont{background:#fff;border:1px solid var(--c-s200);border-left:4px solid var(--c-error);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px}
+.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:var(--r-pill);background:var(--brand);color:var(--onbrand);font-weight:600;font-size:14px;display:grid;place-items:center}
+.call{background:var(--alert-bg);border:1px solid var(--alert-bd);color:var(--alert);border-radius:var(--r-lg);padding:12px 14px;font-weight:600;display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.dont{background:var(--surf);border:1px solid var(--line);border-left:4px solid var(--c-error);border-radius:var(--r-lg);padding:14px 16px;margin-top:14px}
 .dont b{display:flex;align-items:center;gap:8px;color:var(--c-error);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.app.dark .dont b{color:#ffb4b4}
 .dont li{margin-left:18px;font-size:15px;line-height:1.4;margin-top:4px}
-.fixbar{position:absolute;left:0;right:0;bottom:78px;padding:10px 16px;background:linear-gradient(to top,var(--c-cream) 70%,transparent);display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sosgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.fixbar{position:absolute;left:0;right:0;bottom:78px;padding:10px 16px;background:linear-gradient(to top,var(--bg) 70%,transparent);display:grid;grid-template-columns:1fr 1fr;gap:10px;z-index:4}
 .call-row{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r-xl);background:var(--c-error);color:#fff;min-height:68px}
 .call-row+.call-row{margin-top:10px}
 .call-row.s{background:#fff;color:var(--c-error);border:1px solid #f0b8b8}
 .call-row b{display:block;font-size:20px;font-family:var(--font-mono)}
-.call-row span{font-size:13px;opacity:.9}
-.disc{margin-top:18px;font-size:12px;color:var(--fg-3);line-height:1.5;display:flex;gap:8px}
-/* tab bar + SOS */
-nav.tabs{position:absolute;left:0;right:0;bottom:0;height:78px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);background:rgba(250,250,249,.94);backdrop-filter:blur(14px);border-top:1px solid var(--c-s200)}
-.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--fg-3);font-size:11px;font-weight:500;border-radius:var(--r-lg)}
-.tab.on{color:var(--c-pine);font-weight:700}
-.tab.on iconify-icon{transform:translateY(-1px)}
+.call-row span{font-size:14px}
+.disc{margin-top:18px;font-size:13px;color:var(--ink3);line-height:1.5;display:flex;gap:8px}
+.check{display:flex;align-items:center;gap:14px;width:100%;min-height:56px;padding:12px 16px;background:var(--surf);border:1px solid var(--line);border-radius:var(--r-xl);text-align:left}
+.check+.check{margin-top:10px}
+.check .bx{flex:none;width:26px;height:26px;border-radius:var(--r-sm);border:2px solid var(--line2);display:grid;place-items:center;color:transparent}
+.check.on .bx{background:var(--c-available);border-color:var(--c-available);color:#fff}
+.check.on .nm{color:var(--ink3);text-decoration:line-through}
+.hint{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-xl);background:var(--surf);font-size:14px;color:var(--ink2);margin-top:12px}
+.hint button{margin-left:auto;color:var(--ink3);width:36px;height:36px}
+nav.tabs{position:absolute;left:0;right:0;bottom:0;height:78px;padding:6px 8px;display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg);border-top:1px solid var(--line);z-index:6}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink3);font-size:12px;font-weight:500;border-radius:var(--r-lg)}
+.tab.on{color:var(--brand);font-weight:700}
 .sos{position:absolute;right:16px;bottom:94px;z-index:5;display:flex;align-items:center;gap:8px;height:52px;padding:0 20px;border-radius:var(--r-pill);background:var(--c-error);color:#fff;font-weight:700;font-size:14px;letter-spacing:.12em;box-shadow:var(--shadow-lg)}
 .sos:active{transform:scale(.97)}
-.hasfix .sos{display:none}
-.toast{position:absolute;left:50%;bottom:150px;transform:translate(-50%,20px);opacity:0;background:var(--c-pine-deep);color:#fff;padding:12px 18px;border-radius:var(--r-pill);font-size:13px;pointer-events:none;transition:all var(--dur-base);z-index:20;white-space:nowrap}
+.hasfix .sos,.noSos .sos{display:none}
+.toast{position:absolute;left:50%;bottom:150px;transform:translate(-50%,20px);opacity:0;background:var(--c-pine-deep);color:#fff;padding:12px 18px;border-radius:var(--r-pill);font-size:14px;pointer-events:none;transition:all var(--dur-base);z-index:40;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-/* welcome */
-.welcome{position:absolute;inset:0;z-index:30;background:linear-gradient(170deg,var(--c-pine-deep),var(--c-pine) 60%,var(--c-pine-mid));color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 28px 36px;transition:opacity var(--dur-slow),visibility var(--dur-slow)}
+/* menu (idioma, texto, tema) */
+.sheetbg{position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:25;opacity:0;visibility:hidden;transition:opacity var(--dur-base)}
+.sheetbg.on{opacity:1;visibility:visible}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--bg);border-radius:var(--r-2xl) var(--r-2xl) 0 0;padding:20px 20px 28px;z-index:26;transform:translateY(105%);transition:transform 320ms var(--ease-spring)}
+.sheet.on{transform:none}
+.sheet h4{font-family:var(--font-serif);font-size:24px;font-weight:500;margin-bottom:6px}
+.opt{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px;margin-top:8px}
+.opt button{min-height:48px;border-radius:var(--r-lg);border:1px solid var(--line2);background:var(--surf);font-weight:600;font-size:14px}
+.opt button.on{background:var(--brand);color:var(--onbrand);border-color:var(--brand)}
+.welcome{position:absolute;inset:0;z-index:30;background:linear-gradient(170deg,var(--c-pine-deep),var(--c-pine) 60%,var(--c-pine-mid));color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:36px 26px 32px;transition:opacity var(--dur-slow),visibility var(--dur-slow);overflow-y:auto}
 .welcome.off{opacity:0;visibility:hidden}
 .welcome .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-serif);font-size:24px;font-weight:500}
-.welcome h1{font-family:var(--font-serif);font-weight:500;font-size:52px;line-height:.92;letter-spacing:-.03em}
+.welcome h1{font-family:var(--font-serif);font-weight:500;font-size:50px;line-height:.92;letter-spacing:-.03em;margin-top:30px}
 .welcome h1 em{font-family:var(--font-italic);font-weight:400}
-.welcome p{color:rgba(255,255,255,.75);margin-top:14px;max-width:30ch}
+.welcome p{color:rgba(255,255,255,.78);margin-top:12px;max-width:32ch}
+.welcome .fields{display:grid;gap:10px;margin-top:22px}
+.welcome input{height:52px;border-radius:var(--r-pill);padding:0 20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:16px;outline:0}
+.welcome input::placeholder{color:rgba(255,255,255,.6)}
 .welcome .btn{background:#fff;color:var(--c-pine-deep)}
-.welcome .lang{background:rgba(255,255,255,.12);align-self:flex-start;margin-bottom:22px}
-.welcome .lang button{color:rgba(255,255,255,.7)}
-.welcome .lang button.on{background:#fff;color:var(--c-pine-deep)}
+.welcome .skip{color:rgba(255,255,255,.75);min-height:44px;font-size:14px;margin-top:6px}
+.wl{display:flex;gap:6px}
+.wl button{font-size:12px;font-weight:600;letter-spacing:.08em;padding:8px 12px;border-radius:var(--r-pill);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.25)}
+.wl button.on{background:#fff;color:var(--c-pine-deep);border-color:#fff}
 .fade{animation:fadeUp var(--dur-slow) var(--ease-out) both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.fade{animation:none}}
-.proto{margin-top:26px;font-size:11px;color:var(--fg-4);text-align:center}
+.proto{margin-top:26px;font-size:12px;color:var(--ink3);text-align:center}
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <div class="welcome" id="welcome">
     <div>
-      <div class="lang" id="wlang"></div>
-      <div class="logo"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon>Solar do Espinhaço</div>
+      <div class="wl" id="wlang"></div>
+      <div class="logo" style="margin-top:26px"><iconify-icon icon="solar:leaf-linear" width="28"></iconify-icon>Solar do Espinhaço</div>
+      <h1 id="wh"></h1><p id="wp"></p>
+      <div class="fields"><input id="fn" autocomplete="given-name"/><input id="fc"/></div>
     </div>
-    <div class="fade">
-      <h1 id="wh"></h1>
-      <p id="wp"></p>
-    </div>
-    <button class="btn full" id="enter"></button>
+    <div style="margin-top:24px"><button class="btn full" id="enter"></button><button class="skip full" style="width:100%" id="skip"></button></div>
   </div>
   <header class="top" id="top"></header>
   <main id="main"></main>
   <button class="sos" id="sos"><iconify-icon icon="solar:danger-triangle-linear" width="22"></iconify-icon>SOS</button>
   <nav class="tabs" id="tabs"></nav>
+  <div class="sheetbg" id="sbg" onclick="menu(false)"></div>
+  <div class="sheet" id="sheet"></div>
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
-/* ───────── dados reais do guia atual (guide.json) ───────── */
 const GUIDE = {
   "property": {
     "name": "Solar do Espinhaço",
@@ -273,189 +289,307 @@ const GUIDE = {
   }
 };
 const P = GUIDE.property, PL = GUIDE.places;
+const tri=(a,b,c)=>({pt:a,en:b,es:c});
 
-/* ───────── textos da interface (PT · EN · ES) ───────── */
-const L = {
-pt:{welcomeH:'Sinta-se <em>em casa</em>',welcomeP:'Tudo o que você precisa para a sua estadia, na palma da mão.',enter:'Entrar',
- tHome:'Início',tCasa:'Casa',tSerra:'Serra',tSabores:'Sabores',tAjuda:'Ajuda',
- hi:'Boa estadia',hiSub:'Chalé [CONFIRMAR]',checkin:'Check-in',checkout:'Check-out',
- quick:'O que você precisa agora?',wifi:'Wi-Fi',network:'Rede',password:'Senha',copy:'Copiar senha',copied:'Senha copiada',
- cafe:'Café da casa',where:'Onde está tudo',emerg:'Emergência',digital:'Check-in digital',digitalSub:'Preencha antes de chegar',
- casaT:'A casa',casaSub:'Tudo sobre o seu chalé',whereSub:'Planta e busca',auto:'Automação',autoSub:'Luz, clima, água quente',equip:'Equipamentos',equipSub:'Cozinha, lareira, ofurô',conv:'Boa convivência',convSub:'Combinações da casa',
- search:'Buscar: cobertor, extintor…',plan:'Planta ilustrada do chalé\n(a ser desenhada)',noRes:'Nada encontrado',loc:'Local',
- serraT:'A serra à porta',all:'Todos',near:'Perto',kids:'Com crianças',rain:'Dia de chuva',easy:'Leve',mid:'Média',hard:'Exigente',
- eatT:'Sabores',now:'Agora',eatSub:'Café da casa e restaurantes',
- ajudaT:'Ajuda',ajudaSub:'Estamos aqui para você',fa:'Primeiros socorros',faSub:'O que fazer, passo a passo',talk:'Falar com a casa',talkSub:'WhatsApp e telefone',svc:'Serviços e saída',svcSub:'Lavanderia, transporte, saída',
- emT:'Emergência',emSub:'Ligue primeiro. Depois siga os passos.',call:'Ligar',myAddr:'Meu endereço',addrHint:'Diga este endereço ao atendente',copyAddr:'Copiar endereço',addrCopied:'Endereço copiado',nearHelp:'Atendimento mais próximo',
- faT:'Primeiros socorros',faPick:'O que aconteceu?',soon:'Em preparação',
- callIf:'Ligue 192 agora se',dont:'Não faça',draft:'Rascunho de conteúdo. Será validado por profissional de saúde antes da publicação.',
- disc:'Este guia orienta, não substitui atendimento médico.',
- ckT:'Check-in digital',ckSub:'Em 3 passos, antes de chegar.',ck1:'Seus dados',ck2:'Documento',ck3:'Confirmação',ckStart:'Começar',ckProto:'Disponível na fase do app',
- back:'Voltar',proto:'Protótipo de navegação · textos [CONFIRMAR] são provisórios · conteúdo dos passeios e restaurantes ainda em português',
- fall:'Queda',cut:'Corte',bite:'Picada',burn:'Queimadura',heat:'Calor',choke:'Engasgo',drown:'Afogamento',lost:'Perdido'},
-en:{welcomeH:'Feel <em>at home</em>',welcomeP:'Everything you need for your stay, in the palm of your hand.',enter:'Enter',
- tHome:'Home',tCasa:'House',tSerra:'Nature',tSabores:'Dining',tAjuda:'Help',
- hi:'Enjoy your stay',hiSub:'Chalet [TO CONFIRM]',checkin:'Check-in',checkout:'Check-out',
- quick:'What do you need now?',wifi:'Wi-Fi',network:'Network',password:'Password',copy:'Copy password',copied:'Password copied',
- cafe:'House breakfast',where:'Where is everything',emerg:'Emergency',digital:'Digital check-in',digitalSub:'Fill in before you arrive',
- casaT:'The house',casaSub:'Everything about your chalet',whereSub:'Floor plan and search',auto:'Automation',autoSub:'Lights, climate, hot water',equip:'Equipment',equipSub:'Kitchen, fireplace, hot tub',conv:'House etiquette',convSub:'Our house rules',
- search:'Search: blanket, extinguisher…',plan:'Illustrated chalet floor plan\n(to be drawn)',noRes:'Nothing found',loc:'Location',
- serraT:'The mountains outside',all:'All',near:'Nearby',kids:'With kids',rain:'Rainy day',easy:'Easy',mid:'Moderate',hard:'Demanding',
- eatT:'Dining',now:'Now',eatSub:'House breakfast and restaurants',
- ajudaT:'Help',ajudaSub:'We are here for you',fa:'First aid',faSub:'What to do, step by step',talk:'Contact the house',talkSub:'WhatsApp and phone',svc:'Services and checkout',svcSub:'Laundry, transport, departure',
- emT:'Emergency',emSub:'Call first. Then follow the steps.',call:'Call',myAddr:'My address',addrHint:'Give this address to the operator',copyAddr:'Copy address',addrCopied:'Address copied',nearHelp:'Nearest care',
- faT:'First aid',faPick:'What happened?',soon:'In preparation',
- callIf:'Call 192 now if',dont:"Don't",draft:'Draft content. It will be validated by a health professional before publication.',
- disc:'This guide gives guidance and does not replace medical care.',
- ckT:'Digital check-in',ckSub:'3 steps, before you arrive.',ck1:'Your details',ck2:'ID document',ck3:'Confirmation',ckStart:'Start',ckProto:'Available in the app phase',
- back:'Back',proto:'Navigation prototype · [TO CONFIRM] texts are placeholders · tour and restaurant content still in Portuguese',
- fall:'Fall',cut:'Cut',bite:'Bite / sting',burn:'Burn',heat:'Heat',choke:'Choking',drown:'Drowning',lost:'Lost'},
-es:{welcomeH:'Siéntete <em>como en casa</em>',welcomeP:'Todo lo que necesitas para tu estancia, en la palma de tu mano.',enter:'Entrar',
- tHome:'Inicio',tCasa:'Casa',tSerra:'Sierra',tSabores:'Sabores',tAjuda:'Ayuda',
- hi:'Buena estancia',hiSub:'Cabaña [POR CONFIRMAR]',checkin:'Check-in',checkout:'Check-out',
- quick:'¿Qué necesitas ahora?',wifi:'Wi-Fi',network:'Red',password:'Contraseña',copy:'Copiar contraseña',copied:'Contraseña copiada',
- cafe:'Desayuno de la casa',where:'Dónde está todo',emerg:'Emergencia',digital:'Check-in digital',digitalSub:'Complétalo antes de llegar',
- casaT:'La casa',casaSub:'Todo sobre tu cabaña',whereSub:'Plano y búsqueda',auto:'Automatización',autoSub:'Luz, clima, agua caliente',equip:'Equipos',equipSub:'Cocina, chimenea, jacuzzi',conv:'Convivencia',convSub:'Normas de la casa',
- search:'Buscar: manta, extintor…',plan:'Plano ilustrado de la cabaña\n(por dibujar)',noRes:'Sin resultados',loc:'Lugar',
- serraT:'La sierra a tu puerta',all:'Todos',near:'Cerca',kids:'Con niños',rain:'Día de lluvia',easy:'Fácil',mid:'Media',hard:'Exigente',
- eatT:'Sabores',now:'Ahora',eatSub:'Desayuno y restaurantes',
- ajudaT:'Ayuda',ajudaSub:'Estamos aquí para ti',fa:'Primeros auxilios',faSub:'Qué hacer, paso a paso',talk:'Hablar con la casa',talkSub:'WhatsApp y teléfono',svc:'Servicios y salida',svcSub:'Lavandería, transporte, salida',
- emT:'Emergencia',emSub:'Llama primero. Luego sigue los pasos.',call:'Llamar',myAddr:'Mi dirección',addrHint:'Dile esta dirección al operador',copyAddr:'Copiar dirección',addrCopied:'Dirección copiada',nearHelp:'Atención más cercana',
- faT:'Primeros auxilios',faPick:'¿Qué ocurrió?',soon:'En preparación',
- callIf:'Llama al 192 ahora si',dont:'No hagas',draft:'Contenido en borrador. Será validado por un profesional de la salud antes de publicarse.',
- disc:'Esta guía orienta, no sustituye la atención médica.',
- ckT:'Check-in digital',ckSub:'En 3 pasos, antes de llegar.',ck1:'Tus datos',ck2:'Documento',ck3:'Confirmación',ckStart:'Empezar',ckProto:'Disponible en la fase de la app',
- back:'Volver',proto:'Prototipo de navegación · textos [POR CONFIRMAR] son provisionales · contenido de paseos y restaurantes aún en portugués',
- fall:'Caída',cut:'Corte',bite:'Picadura',burn:'Quemadura',heat:'Calor',choke:'Atragantamiento',drown:'Ahogamiento',lost:'Perdido'}
+/* ───────── interface em 3 idiomas ───────── */
+const L={
+pt:{wH:'Sinta-se <em>em casa</em>',wP:'Tudo o que você precisa para a sua estadia, na palma da mão.',nm:'Seu nome (opcional)',ch:'Seu chalé (opcional)',enter:'Entrar',skip:'Pular',
+ tHome:'Início',tCasa:'Casa',tSerra:'Serra',tSab:'Sabores',tAj:'Ajuda',
+ gm:'Bom dia',gt:'Boa tarde',gn:'Boa noite',chalet:'Chalé',checkin:'Check-in',checkout:'Check-out',
+ quick:'O que você precisa agora?',wifi:'Wi-Fi',net:'Rede',pw:'Senha',cpw:'Copiar senha',cpwd:'Senha copiada',
+ cafe:'Café da casa',where:'Onde está tudo',whereS:'Planta e busca',emerg:'Emergência',
+ digital:'Check-in digital',digitalS:'Preencha antes de chegar',today:'Hoje',weather:'Clima e pôr do sol',sugg:'Sugestão do dia',
+ addHome:'Adicione à tela inicial e baixe para usar offline',
+ casaS:'Tudo sobre o seu chalé',auto:'Automação',autoS:'Luz, clima, água quente',equip:'Equipamentos',equipS:'Cozinha, lareira, ofurô',conv:'Boa convivência',convS:'Combinações da casa',
+ q:'Buscar: cobertor, extintor…',plan:'Planta ilustrada do chalé<br>(a ser desenhada)',noRes:'Nada encontrado',loc:'Local',photo:'Foto do local',
+ cSeg:'Segurança',cConf:'Conforto',cCoz:'Cozinha',cLaz:'Lazer',
+ howto:'Como usar',notwork:'Não funcionou?',talkHouse:'Falar com a casa',
+ serraT:'A serra à porta',all:'Todos',near:'Perto',kids:'Com crianças',pet:'Com pet',rain:'Dia de chuva',eve:'Fim de tarde',easy:'Leve',mid:'Média',hard:'Exigente',
+ list:'Lista',map:'Mapa',mapPh:'Mapa offline com os pontos e trilhas<br>(a ser produzido)',noTag:'Ainda sem passeios marcados neste filtro',
+ how:'Como chegar',time:'Tempo',bring:'O que levar',best:'Melhor horário',guide:'Guia obrigatório?',alerts:'Alertas',route:'Abrir rota',talkGuide:'Falar com guia',
+ sabT:'Sabores',nowL:'Agora',nowS:'Horários de funcionamento',rest:'Restaurantes',shop:'Compras',reserve:'Reservar',routeS:'Rota',
+ ajT:'Ajuda',ajS:'Estamos aqui para você',fa:'Primeiros socorros',faS:'O que fazer, passo a passo',talk:'Falar com a casa',talkS:'WhatsApp e telefone',svc:'Serviços e saída',svcS:'Lavanderia, transporte, saída',
+ call:'Ligar',phone:'Telefone',emT:'Emergência',emS:'Ligue primeiro. Depois siga os passos.',myAddr:'Meu endereço',addrH:'Diga este endereço ao atendente',cAddr:'Copiar endereço',addrC:'Endereço copiado',nearHelp:'Atendimento mais próximo',
+ faPick:'O que aconteceu?',which:'Qual animal?',snake:'Cobra',scorp:'Escorpião',spider:'Aranha',bee:'Abelha ou vespa',unsure:'Na dúvida, o caminho é o mesmo: ligue 192 e siga os passos.',
+ callIf:'Ligue agora se',dont:'Não faça',draft:'Rascunho de conteúdo. Será validado por profissional de saúde antes da publicação.',disc:'Este guia orienta, não substitui atendimento médico.',
+ svcT:'Serviços',outT:'Checklist de saída',ckT:'Check-in digital',ckS:'Em 3 passos, antes de chegar.',ck1:'Seus dados',ck2:'Documento',ck3:'Confirmação',ckGo:'Começar',ckSoon:'Disponível na fase do app',
+ srch:'Buscar',menuT:'Preferências',lang:'Idioma',txt:'Tamanho do texto',theme:'Tema',light:'Claro',dark:'Escuro',close:'Fechar',back:'Voltar',
+ laun:'Lavanderia',trans:'Transporte',maint:'Manutenção',clean:'Limpeza extra',
+ o1:'Fechar janelas e portas',o2:'Desligar luzes e ar-condicionado',o3:'Conferir pertences e carregadores',o4:'Deixar a chave conforme combinado',
+ r1:'Silêncio',r2:'Visitantes',r3:'Animais de estimação',r4:'Fogo e fogueira',r5:'Piscina e ofurô',r6:'Lixo, água e energia',
+ e1:'Cozinha',e2:'Lareira',e3:'Churrasqueira',e4:'Ofurô',
+ a1:'Iluminação',a2:'Ar-condicionado',a3:'TV e som',a4:'Fechadura digital',
+ proto:'Protótipo de navegação · textos marcados são provisórios · conteúdo de passeios e restaurantes ainda em português',
+ fall:'Queda',cut:'Corte',bite:'Picada',burn:'Queimadura',heat:'Calor',choke:'Engasgo',drown:'Afogamento',lost:'Perdido',
+ i1:'Extintor',i2:'Kit de primeiros socorros',i3:'Quadro de luz',i4:'Cobertor extra',i5:'Cabides e roupão',i6:'Cafeteira',i7:'Lenha',i8:'Churrasqueira'},
+en:{wH:'Feel <em>at home</em>',wP:'Everything you need for your stay, in the palm of your hand.',nm:'Your name (optional)',ch:'Your chalet (optional)',enter:'Enter',skip:'Skip',
+ tHome:'Home',tCasa:'House',tSerra:'Nature',tSab:'Dining',tAj:'Help',
+ gm:'Good morning',gt:'Good afternoon',gn:'Good evening',chalet:'Chalet',checkin:'Check-in',checkout:'Check-out',
+ quick:'What do you need now?',wifi:'Wi-Fi',net:'Network',pw:'Password',cpw:'Copy password',cpwd:'Password copied',
+ cafe:'House breakfast',where:'Where is everything',whereS:'Floor plan and search',emerg:'Emergency',
+ digital:'Digital check-in',digitalS:'Fill in before you arrive',today:'Today',weather:'Weather and sunset',sugg:'Suggestion of the day',
+ addHome:'Add to home screen and download for offline use',
+ casaS:'Everything about your chalet',auto:'Automation',autoS:'Lights, climate, hot water',equip:'Equipment',equipS:'Kitchen, fireplace, hot tub',conv:'House etiquette',convS:'Our house rules',
+ q:'Search: blanket, extinguisher…',plan:'Illustrated chalet floor plan<br>(to be drawn)',noRes:'Nothing found',loc:'Location',photo:'Photo of the spot',
+ cSeg:'Safety',cConf:'Comfort',cCoz:'Kitchen',cLaz:'Leisure',
+ howto:'How to use',notwork:'Did not work?',talkHouse:'Contact the house',
+ serraT:'The mountains outside',all:'All',near:'Nearby',kids:'With kids',pet:'With pets',rain:'Rainy day',eve:'Late afternoon',easy:'Easy',mid:'Moderate',hard:'Demanding',
+ list:'List',map:'Map',mapPh:'Offline map with spots and trails<br>(to be produced)',noTag:'No tours tagged for this filter yet',
+ how:'Getting there',time:'Duration',bring:'What to bring',best:'Best time',guide:'Guide required?',alerts:'Alerts',route:'Open route',talkGuide:'Contact a guide',
+ sabT:'Dining',nowL:'Now',nowS:'Opening hours',rest:'Restaurants',shop:'Shopping',reserve:'Book',routeS:'Route',
+ ajT:'Help',ajS:'We are here for you',fa:'First aid',faS:'What to do, step by step',talk:'Contact the house',talkS:'WhatsApp and phone',svc:'Services and checkout',svcS:'Laundry, transport, departure',
+ call:'Call',phone:'Phone',emT:'Emergency',emS:'Call first. Then follow the steps.',myAddr:'My address',addrH:'Give this address to the operator',cAddr:'Copy address',addrC:'Address copied',nearHelp:'Nearest care',
+ faPick:'What happened?',which:'Which animal?',snake:'Snake',scorp:'Scorpion',spider:'Spider',bee:'Bee or wasp',unsure:'When in doubt, the path is the same: call 192 and follow the steps.',
+ callIf:'Call now if',dont:"Don't",draft:'Draft content. It will be validated by a health professional before publication.',disc:'This guide gives guidance and does not replace medical care.',
+ svcT:'Services',outT:'Checkout checklist',ckT:'Digital check-in',ckS:'3 steps, before you arrive.',ck1:'Your details',ck2:'ID document',ck3:'Confirmation',ckGo:'Start',ckSoon:'Available in the app phase',
+ srch:'Search',menuT:'Preferences',lang:'Language',txt:'Text size',theme:'Theme',light:'Light',dark:'Dark',close:'Close',back:'Back',
+ laun:'Laundry',trans:'Transport',maint:'Maintenance',clean:'Extra cleaning',
+ o1:'Close windows and doors',o2:'Turn off lights and air conditioning',o3:'Check belongings and chargers',o4:'Leave the key as agreed',
+ r1:'Quiet hours',r2:'Visitors',r3:'Pets',r4:'Fire and bonfires',r5:'Pool and hot tub',r6:'Waste, water and energy',
+ e1:'Kitchen',e2:'Fireplace',e3:'Barbecue',e4:'Hot tub',
+ a1:'Lighting',a2:'Air conditioning',a3:'TV and sound',a4:'Digital lock',
+ proto:'Navigation prototype · marked texts are placeholders · tour and restaurant content still in Portuguese',
+ fall:'Fall',cut:'Cut',bite:'Bite / sting',burn:'Burn',heat:'Heat',choke:'Choking',drown:'Drowning',lost:'Lost',
+ i1:'Fire extinguisher',i2:'First-aid kit',i3:'Fuse box',i4:'Extra blanket',i5:'Hangers and robe',i6:'Coffee maker',i7:'Firewood',i8:'Barbecue'},
+es:{wH:'Siéntete <em>como en casa</em>',wP:'Todo lo que necesitas para tu estancia, en la palma de tu mano.',nm:'Tu nombre (opcional)',ch:'Tu cabaña (opcional)',enter:'Entrar',skip:'Omitir',
+ tHome:'Inicio',tCasa:'Casa',tSerra:'Sierra',tSab:'Sabores',tAj:'Ayuda',
+ gm:'Buenos días',gt:'Buenas tardes',gn:'Buenas noches',chalet:'Cabaña',checkin:'Check-in',checkout:'Check-out',
+ quick:'¿Qué necesitas ahora?',wifi:'Wi-Fi',net:'Red',pw:'Contraseña',cpw:'Copiar contraseña',cpwd:'Contraseña copiada',
+ cafe:'Desayuno de la casa',where:'Dónde está todo',whereS:'Plano y búsqueda',emerg:'Emergencia',
+ digital:'Check-in digital',digitalS:'Complétalo antes de llegar',today:'Hoy',weather:'Clima y puesta de sol',sugg:'Sugerencia del día',
+ addHome:'Añade a la pantalla de inicio y descarga para usar sin conexión',
+ casaS:'Todo sobre tu cabaña',auto:'Automatización',autoS:'Luz, clima, agua caliente',equip:'Equipos',equipS:'Cocina, chimenea, jacuzzi',conv:'Convivencia',convS:'Normas de la casa',
+ q:'Buscar: manta, extintor…',plan:'Plano ilustrado de la cabaña<br>(por dibujar)',noRes:'Sin resultados',loc:'Lugar',photo:'Foto del lugar',
+ cSeg:'Seguridad',cConf:'Confort',cCoz:'Cocina',cLaz:'Ocio',
+ howto:'Cómo usar',notwork:'¿No funcionó?',talkHouse:'Hablar con la casa',
+ serraT:'La sierra a tu puerta',all:'Todos',near:'Cerca',kids:'Con niños',pet:'Con mascota',rain:'Día de lluvia',eve:'Atardecer',easy:'Fácil',mid:'Media',hard:'Exigente',
+ list:'Lista',map:'Mapa',mapPh:'Mapa sin conexión con puntos y senderos<br>(por producir)',noTag:'Aún no hay paseos marcados para este filtro',
+ how:'Cómo llegar',time:'Duración',bring:'Qué llevar',best:'Mejor horario',guide:'¿Guía obligatorio?',alerts:'Alertas',route:'Abrir ruta',talkGuide:'Hablar con guía',
+ sabT:'Sabores',nowL:'Ahora',nowS:'Horarios de atención',rest:'Restaurantes',shop:'Compras',reserve:'Reservar',routeS:'Ruta',
+ ajT:'Ayuda',ajS:'Estamos aquí para ti',fa:'Primeros auxilios',faS:'Qué hacer, paso a paso',talk:'Hablar con la casa',talkS:'WhatsApp y teléfono',svc:'Servicios y salida',svcS:'Lavandería, transporte, salida',
+ call:'Llamar',phone:'Teléfono',emT:'Emergencia',emS:'Llama primero. Luego sigue los pasos.',myAddr:'Mi dirección',addrH:'Dile esta dirección al operador',cAddr:'Copiar dirección',addrC:'Dirección copiada',nearHelp:'Atención más cercana',
+ faPick:'¿Qué ocurrió?',which:'¿Qué animal?',snake:'Serpiente',scorp:'Escorpión',spider:'Araña',bee:'Abeja o avispa',unsure:'En caso de duda, el camino es el mismo: llama al 192 y sigue los pasos.',
+ callIf:'Llama ahora si',dont:'No hagas',draft:'Contenido en borrador. Será validado por un profesional de la salud antes de publicarse.',disc:'Esta guía orienta, no sustituye la atención médica.',
+ svcT:'Servicios',outT:'Checklist de salida',ckT:'Check-in digital',ckS:'En 3 pasos, antes de llegar.',ck1:'Tus datos',ck2:'Documento',ck3:'Confirmación',ckGo:'Empezar',ckSoon:'Disponible en la fase de la app',
+ srch:'Buscar',menuT:'Preferencias',lang:'Idioma',txt:'Tamaño del texto',theme:'Tema',light:'Claro',dark:'Oscuro',close:'Cerrar',back:'Volver',
+ laun:'Lavandería',trans:'Transporte',maint:'Mantenimiento',clean:'Limpieza extra',
+ o1:'Cerrar ventanas y puertas',o2:'Apagar luces y aire acondicionado',o3:'Revisar pertenencias y cargadores',o4:'Dejar la llave según lo acordado',
+ r1:'Silencio',r2:'Visitas',r3:'Mascotas',r4:'Fuego y fogata',r5:'Piscina y jacuzzi',r6:'Basura, agua y energía',
+ e1:'Cocina',e2:'Chimenea',e3:'Parrilla',e4:'Jacuzzi',
+ a1:'Iluminación',a2:'Aire acondicionado',a3:'TV y sonido',a4:'Cerradura digital',
+ proto:'Prototipo de navegación · textos marcados son provisionales · contenido de paseos y restaurantes aún en portugués',
+ fall:'Caída',cut:'Corte',bite:'Picadura',burn:'Quemadura',heat:'Calor',choke:'Atragantamiento',drown:'Ahogamiento',lost:'Perdido',
+ i1:'Extintor',i2:'Botiquín',i3:'Cuadro eléctrico',i4:'Manta extra',i5:'Perchas y bata',i6:'Cafetera',i7:'Leña',i8:'Parrilla'}
 };
 
-/* primeiros socorros: rascunho, a validar por profissional de saúde */
-const FA = {
- fall:{ic:'solar:accessibility-linear',
-  pt:{call:'não consegue se mexer, dor intensa, deformidade, bateu a cabeça, desmaiou ou vomitou',steps:['Não mova a pessoa se houver dor no pescoço ou nas costas.','Mantenha-a calma e imóvel, sem remover o calçado.','Se houver sangramento, pressione com pano limpo.','Proteja do frio e do sol até a ajuda chegar.'],dont:['Não tente "colocar o osso no lugar".','Não dê comida ou bebida se estiver sonolenta.']},
-  en:{call:'cannot move, severe pain, deformity, hit the head, fainted or vomited',steps:['Do not move the person if there is neck or back pain.','Keep them calm and still, shoes on.','If bleeding, press with a clean cloth.','Protect from cold and sun until help arrives.'],dont:['Do not try to "set the bone".','Do not give food or drink if drowsy.']},
-  es:{call:'no puede moverse, dolor intenso, deformidad, golpe en la cabeza, desmayo o vómito',steps:['No muevas a la persona si hay dolor de cuello o espalda.','Mantenla tranquila e inmóvil, sin quitar el calzado.','Si sangra, presiona con un paño limpio.','Protege del frío y del sol hasta que llegue la ayuda.'],dont:['No intentes "acomodar el hueso".','No des comida ni bebida si está somnolienta.']}},
- bite:{ic:'solar:bug-linear',
-  pt:{call:'qualquer picada de cobra, escorpião ou aranha, ou reação forte (inchaço, falta de ar)',steps:['Afaste-se do animal e acalme a pessoa.','Mantenha-a deitada e a parte picada em repouso.','Retire anéis, pulseiras e relógio perto do local.','Anote horário e, se possível, fotografe o animal de longe.','Leve ao atendimento: UPA Santana do Riacho.'],dont:['Não faça torniquete nem corte o local.','Não chupe o veneno nem use álcool, fumo ou ervas.']},
-  en:{call:'any snake, scorpion or spider bite, or a strong reaction (swelling, breathlessness)',steps:['Move away from the animal and calm the person.','Keep them lying down, bitten area at rest.','Remove rings, bracelets and watch near the site.','Note the time and, if possible, photograph the animal from a distance.','Get to care: UPA Santana do Riacho.'],dont:['Do not use a tourniquet or cut the area.','Do not suck out venom or apply alcohol, tobacco or herbs.']},
-  es:{call:'cualquier picadura de serpiente, escorpión o araña, o reacción fuerte (hinchazón, falta de aire)',steps:['Aléjate del animal y calma a la persona.','Mantenla acostada y la zona picada en reposo.','Quita anillos, pulseras y reloj cerca del lugar.','Anota la hora y, si es posible, fotografía el animal de lejos.','Ve a atención: UPA Santana do Riacho.'],dont:['No hagas torniquete ni cortes la zona.','No chupes el veneno ni uses alcohol, tabaco o hierbas.']}}
+/* ───────── primeiros socorros (RASCUNHO · validar com profissional de saúde) ───────── */
+const FA={
+fall:{ic:'solar:accessibility-linear',tel:'192',
+ call:tri('não consegue se mexer, dor intensa, deformidade, bateu a cabeça, desmaiou ou vomitou','cannot move, severe pain, deformity, hit the head, fainted or vomited','no puede moverse, dolor intenso, deformidad, golpe en la cabeza, desmayo o vómito'),
+ steps:[tri('Não mova a pessoa se houver dor no pescoço ou nas costas.','Do not move the person if there is neck or back pain.','No muevas a la persona si hay dolor de cuello o espalda.'),tri('Mantenha-a calma e imóvel, sem remover o calçado.','Keep them calm and still, shoes on.','Mantenla tranquila e inmóvil, sin quitar el calzado.'),tri('Se houver sangramento, pressione com pano limpo.','If bleeding, press with a clean cloth.','Si sangra, presiona con un paño limpio.'),tri('Proteja do frio e do sol até a ajuda chegar.','Protect from cold and sun until help arrives.','Protege del frío y del sol hasta que llegue la ayuda.')],
+ dont:[tri('Não tente "colocar o osso no lugar".','Do not try to "set the bone".','No intentes "acomodar el hueso".'),tri('Não dê comida ou bebida se estiver sonolenta.','Do not give food or drink if drowsy.','No des comida ni bebida si está somnolienta.')]},
+cut:{ic:'solar:bandage-linear',tel:'192',
+ call:tri('o sangramento não para após 10 minutos de pressão, o corte é profundo ou há objeto cravado','bleeding does not stop after 10 minutes of pressure, the cut is deep or an object is embedded','el sangrado no cede tras 10 minutos de presión, el corte es profundo o hay un objeto clavado'),
+ steps:[tri('Pressione firme com pano limpo por 10 minutos, sem levantar para olhar.','Press firmly with a clean cloth for 10 minutes, without lifting to check.','Presiona firme con un paño limpio durante 10 minutos, sin levantarlo para mirar.'),tri('Se o pano encharcar, coloque outro por cima.','If the cloth soaks through, add another on top.','Si el paño se empapa, pon otro encima.'),tri('Mantenha a parte ferida elevada.','Keep the injured part raised.','Mantén elevada la parte herida.'),tri('Com o sangramento controlado, lave com água e sabão e cubra.','Once controlled, wash with soap and water and cover.','Con el sangrado controlado, lava con agua y jabón y cubre.')],
+ dont:[tri('Não retire objeto cravado.','Do not remove an embedded object.','No retires un objeto clavado.'),tri('Não use pó de café, álcool ou ervas no corte.','Do not put coffee grounds, alcohol or herbs on the cut.','No uses café, alcohol ni hierbas en el corte.')]},
+bite:{ic:'solar:bug-linear',tel:'192',
+ call:tri('qualquer picada de cobra, escorpião ou aranha, ou reação forte (inchaço, falta de ar)','any snake, scorpion or spider bite, or a strong reaction (swelling, breathlessness)','cualquier picadura de serpiente, escorpión o araña, o reacción fuerte (hinchazón, falta de aire)'),
+ steps:[tri('Afaste-se do animal e acalme a pessoa.','Move away from the animal and calm the person.','Aléjate del animal y calma a la persona.'),tri('Mantenha-a deitada e a parte picada em repouso.','Keep them lying down, bitten area at rest.','Mantenla acostada y la zona picada en reposo.'),tri('Retire anéis, pulseiras e relógio perto do local.','Remove rings, bracelets and watch near the site.','Quita anillos, pulseras y reloj cerca del lugar.'),tri('Anote o horário e, se possível, fotografe o animal de longe.','Note the time and, if possible, photograph the animal from a distance.','Anota la hora y, si es posible, fotografía el animal de lejos.'),tri('Leve ao atendimento: UPA Santana do Riacho.','Get to care: UPA Santana do Riacho.','Ve a atención: UPA Santana do Riacho.')],
+ dont:[tri('Não faça torniquete nem corte o local.','Do not use a tourniquet or cut the area.','No hagas torniquete ni cortes la zona.'),tri('Não chupe o veneno nem use álcool, fumo ou ervas.','Do not suck out venom or apply alcohol, tobacco or herbs.','No chupes el veneno ni uses alcohol, tabaco o hierbas.')]},
+burn:{ic:'solar:fire-linear',tel:'192',
+ call:tri('a queimadura é grande, no rosto, mãos ou genitais, com muitas bolhas, ou a vítima é criança','the burn is large, on the face, hands or genitals, with many blisters, or the victim is a child','la quemadura es grande, en cara, manos o genitales, con muchas ampollas, o la víctima es un niño'),
+ steps:[tri('Resfrie com água corrente fria por 10 a 20 minutos.','Cool with cold running water for 10 to 20 minutes.','Enfría con agua corriente fría durante 10 a 20 minutos.'),tri('Retire anéis e roupas que não estejam grudadas na pele.','Remove rings and clothing that is not stuck to the skin.','Quita anillos y ropa que no esté pegada a la piel.'),tri('Cubra com pano limpo e úmido ou filme plástico.','Cover with a clean damp cloth or plastic wrap.','Cubre con un paño limpio y húmedo o film plástico.'),tri('Ofereça água em goles se a pessoa estiver consciente.','Offer sips of water if the person is conscious.','Ofrece agua en sorbos si la persona está consciente.')],
+ dont:[tri('Não use gelo, pasta de dente, manteiga ou óleo.','Do not use ice, toothpaste, butter or oil.','No uses hielo, pasta de dientes, mantequilla ni aceite.'),tri('Não estoure as bolhas.','Do not pop the blisters.','No revientes las ampollas.')]},
+heat:{ic:'solar:sun-2-linear',tel:'192',
+ call:tri('há confusão, desmaio, vômitos, febre alta ou a pessoa para de suar','there is confusion, fainting, vomiting, high fever or the person stops sweating','hay confusión, desmayo, vómitos, fiebre alta o la persona deja de sudar'),
+ steps:[tri('Leve a pessoa para a sombra ou um lugar fresco.','Take the person to shade or a cool place.','Lleva a la persona a la sombra o a un lugar fresco.'),tri('Deite-a com as pernas elevadas.','Lay them down with legs raised.','Acuéstala con las piernas elevadas.'),tri('Refresque com panos úmidos no pescoço e nas axilas.','Cool with damp cloths on the neck and armpits.','Refresca con paños húmedos en cuello y axilas.'),tri('Se estiver consciente, ofereça água em goles.','If conscious, offer sips of water.','Si está consciente, ofrece agua en sorbos.')],
+ dont:[tri('Não dê bebida alcoólica.','Do not give alcohol.','No des alcohol.'),tri('Não force líquido se estiver confusa ou sonolenta.','Do not force fluids if confused or drowsy.','No fuerces líquidos si está confusa o somnolienta.')]},
+choke:{ic:'solar:lungs-linear',tel:'192',
+ call:tri('a pessoa não consegue tossir ou respirar, fica arroxeada ou perde a consciência (bebê ou gestante: ligue sempre)','the person cannot cough or breathe, turns blue or loses consciousness (baby or pregnant: always call)','la persona no puede toser ni respirar, se pone morada o pierde el conocimiento (bebé o embarazada: llama siempre)'),
+ steps:[tri('Pergunte "você está engasgado?". Se consegue tossir, deixe tossir.','Ask "are you choking?". If they can cough, let them cough.','Pregunta "¿te estás atragantando?". Si puede toser, déjala toser.'),tri('Se não consegue, incline-a para a frente e dê 5 tapas firmes nas costas.','If not, lean them forward and give 5 firm back blows.','Si no puede, inclínala hacia delante y da 5 palmadas firmes en la espalda.'),tri('Se persistir: abrace por trás, punho acima do umbigo, 5 compressões para dentro e para cima.','If it persists: hug from behind, fist above the navel, 5 thrusts inward and upward.','Si persiste: abraza por detrás, puño sobre el ombligo, 5 compresiones hacia dentro y arriba.'),tri('Alterne tapas e compressões até soltar ou a ajuda chegar.','Alternate blows and thrusts until clear or help arrives.','Alterna palmadas y compresiones hasta que salga o llegue la ayuda.')],
+ dont:[tri('Não dê tapas se a pessoa consegue tossir.','Do not strike the back if they can cough.','No des palmadas si la persona puede toser.'),tri('Não faça compressões em bebê: ligue 192 e siga a orientação.','Do not do abdominal thrusts on a baby: call 192 and follow instructions.','No hagas compresiones a un bebé: llama al 192 y sigue las indicaciones.')]},
+drown:{ic:'solar:waterdrop-linear',tel:'193',
+ call:tri('em qualquer afogamento (ligue 193 e 192)','in any drowning (call 193 and 192)','en cualquier ahogamiento (llama al 193 y 192)'),
+ steps:[tri('Peça ajuda e ligue 193. Quem estiver perto liga 192.','Shout for help and call 193. Someone nearby calls 192.','Pide ayuda y llama al 193. Alguien cerca llama al 192.'),tri('Resgate sem se arriscar: jogue corda, boia ou galho.','Rescue without risk: throw a rope, float or branch.','Rescata sin arriesgarte: lanza cuerda, flotador o rama.'),tri('Retire da água e deite de costas em local firme.','Take out of the water and lay on the back on firm ground.','Sácala del agua y acuéstala boca arriba en suelo firme.'),tri('Se não respira, faça compressões fortes e rápidas no meio do peito até a ajuda chegar.','If not breathing, give strong, fast chest compressions until help arrives.','Si no respira, haz compresiones fuertes y rápidas en el centro del pecho hasta que llegue la ayuda.')],
+ dont:[tri('Não entre na água se não for treinado.','Do not enter the water if untrained.','No entres al agua si no estás entrenado.'),tri('Não tente "tirar a água" apertando a barriga.','Do not try to "drain the water" by pressing the belly.','No intentes "sacar el agua" presionando el abdomen.')]},
+lost:{ic:'solar:map-point-linear',tel:'193',
+ call:tri('está anoitecendo, há ferido, falta água ou não há condições de voltar (Bombeiros 193)','night is falling, someone is hurt, water is short or you cannot return (Fire Dept 193)','está anocheciendo, hay un herido, falta agua o no se puede volver (Bomberos 193)'),
+ steps:[tri('Pare, respire e não se separe do grupo.','Stop, breathe and stay with the group.','Detente, respira y no te separes del grupo.'),tri('Ligue 193 se houver sinal, ou envie sua localização.','Call 193 if there is signal, or send your location.','Llama al 193 si hay señal, o envía tu ubicación.'),tri('Volte pelo caminho conhecido só se tiver certeza.','Go back the known way only if sure.','Vuelve por el camino conocido solo si estás seguro.'),tri('Fique em lugar visível e agasalhado; economize água e bateria.','Stay somewhere visible and warm; save water and battery.','Quédate en un lugar visible y abrigado; ahorra agua y batería.')],
+ dont:[tri('Não desça por rios ou pedras molhadas.','Do not go down rivers or wet rocks.','No bajes por ríos ni rocas mojadas.'),tri('Não siga adiante à noite.','Do not keep going at night.','No sigas adelante de noche.')]}
 };
 const FA_ORDER=['fall','cut','bite','burn','heat','choke','drown','lost'];
-const FA_ICON={cut:'solar:bandage-linear',burn:'solar:fire-linear',heat:'solar:sun-2-linear',choke:'solar:lungs-linear',drown:'solar:waterdrop-linear',lost:'solar:map-point-linear'};
+const ANIMALS=[['snake','solar:danger-triangle-linear'],['scorp','solar:bug-linear'],['spider','solar:bug-minimalistic-linear'],['bee','solar:bug-linear']];
 
-/* itens da casa e automação: estrutura de exemplo, dados reais a confirmar */
-const ITEMS=[['solar:fire-minimalistic-linear',{pt:'Extintor',en:'Fire extinguisher',es:'Extintor'}],['solar:layers-minimalistic-linear',{pt:'Cobertor extra',en:'Extra blanket',es:'Manta extra'}],['solar:fire-linear',{pt:'Lenha',en:'Firewood',es:'Leña'}],['solar:medical-kit-linear',{pt:'Kit de primeiros socorros',en:'First-aid kit',es:'Botiquín'}],['solar:bolt-linear',{pt:'Quadro de luz',en:'Fuse box',es:'Cuadro eléctrico'}],['solar:hanger-linear',{pt:'Cabides e roupão',en:'Hangers and robe',es:'Perchas y bata'}]];
-const AUTO=[['solar:lightbulb-linear',{pt:'Iluminação',en:'Lighting',es:'Iluminación'}],['solar:snowflake-linear',{pt:'Ar-condicionado',en:'Air conditioning',es:'Aire acondicionado'}],['solar:tv-linear',{pt:'TV e som',en:'TV and sound',es:'TV y sonido'}],['solar:lock-linear',{pt:'Fechadura digital',en:'Digital lock',es:'Cerradura digital'}]];
+/* itens, automação, equipamentos, convivência: estrutura da proposta, dados reais a confirmar */
+const ITEMS=[['i1','solar:fire-minimalistic-linear','cSeg'],['i2','solar:medical-kit-linear','cSeg'],['i3','solar:bolt-linear','cSeg'],['i4','solar:layers-minimalistic-linear','cConf'],['i5','solar:hanger-linear','cConf'],['i6','solar:cup-hot-bold','cCoz'],['i7','solar:fire-linear','cLaz'],['i8','solar:fire-linear','cLaz']];
+const AUTO=[['a1','solar:lightbulb-linear'],['a2','solar:snowflake-linear'],['a3','solar:tv-linear'],['a4','solar:lock-linear']];
+const EQUIP=[['e1','solar:chef-hat-linear'],['e2','solar:fire-linear'],['e3','solar:fire-linear'],['e4','solar:bath-linear']];
+const CONV=[['r1','solar:moon-stars-linear'],['r2','solar:users-group-rounded-linear'],['r3','solar:paw-linear'],['r4','solar:fire-linear'],['r5','solar:waterdrop-linear'],['r6','solar:leaf-linear']];
+const OUT=['o1','o2','o3','o4'];
+const SERV=[['laun','solar:washing-machine-linear'],['trans','solar:bus-linear'],['maint','solar:settings-linear'],['clean','solar:sparkles-linear']];
+const PASS=[...PL.serraPerto,...PL.serraLonge];
+const REST=[...PL.restaurantesEspeciais,...PL.restaurantesSelfService,...PL.restaurantesLeve];
 
-/* ───────── estado e utilidades ───────── */
-let lang=(localStorage.getItem('gl')||'pt'), stack=['home'];
-const $=s=>document.querySelector(s), t=k=>L[lang][k]??k;
+/* ───────── estado ───────── */
+const S={lang:'pt',z:1,dark:false,name:'',chalet:'',stack:['home'],filt:'all',cat:'all',mapTab:false,out:{},hint:true};
+try{Object.assign(S,JSON.parse(localStorage.getItem('gp')||'{}'))}catch(e){}
+S.stack=['home'];S.mapTab=false;
+const save=()=>{try{localStorage.setItem('gp',JSON.stringify({lang:S.lang,z:S.z,dark:S.dark,name:S.name,chalet:S.chalet,hint:S.hint}))}catch(e){}};
+const $=s=>document.querySelector(s),t=k=>L[S.lang][k]??k;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ico=(n,w=24)=>`<iconify-icon icon="${n}" width="${w}"></iconify-icon>`;
-const TABS=[['home','tHome','solar:home-2-linear'],['casa','tCasa','solar:key-minimalistic-linear'],['serra','tSerra','solar:mountains-linear'],['sabores','tSabores','solar:cup-hot-linear'],['ajuda','tAjuda','solar:lifebuoy-linear']];
-const PARENT={wifi:'home',digital:'home',where:'casa',auto:'casa',serra:'serra',sabores:'sabores',emerg:'ajuda',fa:'ajuda',fadet:'ajuda'};
-const pend=()=>`<span class="pend">[${lang==='pt'?'CONFIRMAR':lang==='en'?'TO CONFIRM':'POR CONFIRMAR'}]</span>`;
+const pend=()=>`<span class="pend">[${S.lang==='en'?'TO CONFIRM':S.lang==='es'?'POR CONFIRMAR':'CONFIRMAR'}]</span>`;
+const chev=`<span class="go">${ico('solar:alt-arrow-right-linear',20)}</span>`;
 function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800)}
-function copy(txt,msg){try{navigator.clipboard.writeText(txt)}catch(e){};toast(msg)}
-function go(s,arg){stack.push(arg?s+':'+arg:s);render()}
-function back(){if(stack.length>1)stack.pop();render()}
-function tab(x){stack=[x];render()}
+function copy(x,m){try{navigator.clipboard.writeText(x)}catch(e){};toast(m)}
+function go(id,arg){S.stack.push(arg!==undefined?id+':'+arg:id);render()}
+function back(){if(S.stack.length>1)S.stack.pop();render()}
+function tab(x){S.stack=[x];render()}
+const wa=m=>`https://wa.me/${P.whatsapp}${m?'?text='+encodeURIComponent(m):''}`;
+const mapsUrl=q=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q+' Lapinha da Serra');
+const metaH=p=>`<div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${esc(m.text)}</span>`).join('')}</div>`;
+const diffB=p=>{const m={leve:['b-leve','solar:check-circle-linear','easy'],media:['b-media','solar:danger-circle-linear','mid'],exigente:['b-exig','solar:danger-triangle-linear','hard']}[p.diff];return m?`<span class="badge ${m[0]}">${ico(m[1],14)}${t(m[2])}</span>`:''};
 
 /* ───────── telas ───────── */
 const V={};
-V.home=()=>`
- <div class="hero fade"><div class="gr">${t('hi')}</div><p>${t('hiSub')}</p>
-  <div class="times"><div class="t"><small>${t('checkin')}</small><b>${P.checkin}</b></div><div class="t"><small>${t('checkout')}</small><b>${P.checkout}</b></div></div></div>
- <div class="sec"><div class="eyebrow">${t('quick')}</div>
-  <div class="grid2">
-   <button class="tile" onclick="go('wifi')"><span class="ic">${ico('solar:wi-fi-router-linear')}</span><b>${t('wifi')}<small>${GUIDE.wifi.network}</small></b></button>
-   <button class="tile" onclick="go('sabores')"><span class="ic">${ico('solar:cup-hot-linear')}</span><b>${t('cafe')}<small>${t('tSabores')}</small></b></button>
-   <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereSub')}</small></b></button>
-   <button class="tile dark" onclick="go('emerg')"><span class="ic">${ico('solar:danger-triangle-linear')}</span><b>${t('emerg')}<small>192 · 193 · 190</small></b></button>
-  </div></div>
- <div class="sec"><button class="row" onclick="go('digital')"><span class="ic">${ico('solar:documents-linear')}</span><span class="tx"><b>${t('digital')}</b><span>${t('digitalSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button></div>
- <p class="proto">${t('proto')}</p>`;
+V.home=()=>{const h=new Date().getHours(),g=h<12?'gm':h<18?'gt':'gn',sug=PL.serraPerto[0];
+ return `<div class="hero fade"><div class="gr">${t(g)}${S.name?', '+esc(S.name):''}</div><p>${t('chalet')} ${S.chalet?esc(S.chalet):pend()}</p>
+ <div class="times"><div class="t"><small>${t('checkin')}</small><b>${P.checkin}</b></div><div class="t"><small>${t('checkout')}</small><b>${P.checkout}</b></div></div></div>
+ <div class="sec"><div class="eyebrow">${t('quick')}</div><div class="grid2">
+  <button class="tile" onclick="go('wifi')"><span class="ic">${ico('solar:wi-fi-router-linear')}</span><b>${t('wifi')}<small>${GUIDE.wifi.network}</small></b></button>
+  <button class="tile" onclick="go('sabores')"><span class="ic">${ico('solar:cup-hot-linear')}</span><b>${t('cafe')}<small>${t('tSab')}</small></b></button>
+  <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereS')}</small></b></button>
+  <button class="tile alert" onclick="go('emerg')"><span class="ic">${ico('solar:danger-triangle-linear')}</span><b>${t('emerg')}<small>192 · 193 · 190</small></b></button></div></div>
+ <div class="sec"><div class="eyebrow">${t('today')}</div>
+  <div class="card"><div style="display:flex;gap:12px;align-items:center">${ico('solar:sun-2-linear',28)}<div><b>${t('weather')}</b><div class="sub" style="margin:0">${pend()}</div></div></div></div>
+  <button class="row" style="margin-top:10px" onclick="go('serrad',${PASS.indexOf(sug)})"><span class="ic">${ico('solar:mountains-linear')}</span><span class="tx"><span>${t('sugg')}</span><b>${esc(sug.title)}</b></span>${chev}</button>
+  <button class="row" onclick="go('digital')"><span class="ic">${ico('solar:documents-linear')}</span><span class="tx"><b>${t('digital')}</b><span>${t('digitalS')}</span></span>${chev}</button></div>
+ ${S.hint?`<div class="hint">${ico('solar:download-minimalistic-linear',24)}<span>${t('addHome')}</span><button onclick="S.hint=false;save();render()" aria-label="${t('close')}">${ico('solar:close-circle-linear',22)}</button></div>`:''}
+ <p class="proto">${t('proto')}</p>`};
 
-V.wifi=()=>`<div class="card fade"><div class="lbl">${t('network')}</div><div class="wifi"><div class="big" style="flex:1">${GUIDE.wifi.network}</div></div>
- <div class="lbl" style="margin-top:18px">${t('password')}</div><div class="big" style="font-family:var(--font-mono);font-size:26px;font-weight:600;margin-top:2px">${GUIDE.wifi.password}</div>
- <div class="btns"><button class="btn full" onclick="copy('${GUIDE.wifi.password}',t('copied'))">${ico('solar:copy-linear',20)}${t('copy')}</button></div>
+V.wifi=()=>`<div class="card fade"><div class="lbl">${t('net')}</div><div class="mono" style="font-size:20px;margin-top:2px">${GUIDE.wifi.network}</div>
+ <div class="lbl" style="margin-top:18px">${t('pw')}</div><div class="mono" style="font-size:28px;margin-top:2px">${GUIDE.wifi.password}</div>
+ <div class="btns"><button class="btn full" onclick="copy('${GUIDE.wifi.password}',t('cpwd'))">${ico('solar:copy-linear',20)}${t('cpw')}</button></div>
  <p class="sub" style="margin-top:14px">${GUIDE.wifi.band}</p></div>`;
 
-V.digital=()=>`<p class="sub" style="margin-top:0">${t('ckSub')}</p><div class="sec" style="margin-top:14px">
+V.digital=()=>`<p class="sub" style="margin-top:0">${t('ckS')}</p><div class="sec" style="margin-top:14px">
  ${[['solar:user-linear','ck1'],['solar:documents-linear','ck2'],['solar:check-circle-linear','ck3']].map((x,i)=>`<div class="row"><span class="ic">${ico(x[0])}</span><span class="tx"><b>${i+1}. ${t(x[1])}</b></span></div>`).join('')}
- <div class="btns"><button class="btn full" onclick="toast(t('ckProto'))">${t('ckStart')}</button></div></div>`;
+ <div class="btns"><button class="btn full" onclick="toast(t('ckSoon'))">${t('ckGo')}</button></div></div>`;
 
-V.casa=()=>`<h2 class="h">${t('casaT')}</h2><p class="sub">${t('casaSub')}</p>
- <div class="grid2 sec" style="margin-top:18px">
-  <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereSub')}</small></b></button>
-  <button class="tile" onclick="go('auto')"><span class="ic">${ico('solar:smart-home-linear')}</span><b>${t('auto')}<small>${t('autoSub')}</small></b></button>
-  <button class="tile" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:chef-hat-linear')}</span><b>${t('equip')}<small>${t('equipSub')}</small></b></button>
-  <button class="tile" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:heart-linear')}</span><b>${t('conv')}<small>${t('convSub')}</small></b></button>
- </div>`;
+V.casa=()=>`<h2 class="h">${t('tCasa')}</h2><p class="sub">${t('casaS')}</p><div class="grid2 sec" style="margin-top:18px">
+ <button class="tile" onclick="go('where')"><span class="ic">${ico('solar:map-point-search-linear')}</span><b>${t('where')}<small>${t('whereS')}</small></b></button>
+ <button class="tile" onclick="go('auto')"><span class="ic">${ico('solar:smart-home-linear')}</span><b>${t('auto')}<small>${t('autoS')}</small></b></button>
+ <button class="tile" onclick="go('equip')"><span class="ic">${ico('solar:chef-hat-linear')}</span><b>${t('equip')}<small>${t('equipS')}</small></b></button>
+ <button class="tile" onclick="go('conv')"><span class="ic">${ico('solar:heart-linear')}</span><b>${t('conv')}<small>${t('convS')}</small></b></button></div>`;
 
-V.where=()=>`<label class="search">${ico('solar:magnifer-linear',22)}<input id="q" type="search" placeholder="${t('search')}" oninput="fill()"/></label>
- <div class="plan">${t('plan').replace('\n','<br>')}</div><div class="sec" id="res" style="margin-top:14px"></div>`;
-function fill(){const q=($('#q')?.value||'').toLowerCase();const r=ITEMS.filter(i=>i[1][lang].toLowerCase().includes(q));
- $('#res').innerHTML=r.length?r.map(i=>`<div class="row"><span class="ic">${ico(i[0])}</span><span class="tx"><b>${i[1][lang]}</b><span>${t('loc')}: ${pend()}</span></span></div>`).join(''):`<p class="sub">${t('noRes')}</p>`}
+V.where=()=>{const cats=['all','cSeg','cConf','cCoz','cLaz'];
+ return `<label class="search">${ico('solar:magnifer-linear',22)}<input id="q" type="search" placeholder="${t('q')}" oninput="fillWhere()"/></label>
+ <div class="chips" style="margin-top:12px">${cats.map(c=>`<button class="chip ${S.cat===c?'on':''}" onclick="S.cat='${c}';render()">${c==='all'?t('all'):t(c)}</button>`).join('')}</div>
+ <div class="plan">${t('plan')}</div><div class="sec" id="res" style="margin-top:14px"></div>`};
+function fillWhere(){const q=($('#q')?.value||'').toLowerCase();
+ const r=ITEMS.map((x,i)=>[x,i]).filter(([x])=>(S.cat==='all'||x[2]===S.cat)&&t(x[0]).toLowerCase().includes(q));
+ $('#res').innerHTML=r.length?r.map(([x,i])=>`<button class="row" onclick="go('item',${i})"><span class="ic">${ico(x[1])}</span><span class="tx"><b>${t(x[0])}</b><span>${t('loc')}: ${pend()}</span></span>${chev}</button>`).join(''):`<p class="sub">${t('noRes')}</p>`}
+V.item=a=>{const x=ITEMS[a];return `<div class="photo">${t('photo')} ${pend()}</div><div class="card"><div style="display:flex;gap:12px;align-items:center"><span class="ic" style="width:44px;height:44px;border-radius:var(--r-lg)">${ico(x[1])}</span><b style="font-size:18px">${t(x[0])}</b></div><p class="sub" style="margin-top:12px">${t('loc')}: ${pend()}</p></div>`};
 
-V.auto=()=>AUTO.map(a=>`<div class="row"><span class="ic">${ico(a[0])}</span><span class="tx"><b>${a[1][lang]}</b><span>${pend()}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></div>`).join('');
+V.auto=()=>AUTO.map((x,i)=>`<button class="row" onclick="go('autod',${i})"><span class="ic">${ico(x[1])}</span><span class="tx"><b>${t(x[0])}</b><span>${pend()}</span></span>${chev}</button>`).join('');
+V.autod=a=>{const x=AUTO[a];return `<div class="photo">${t('photo')} ${pend()}</div><div class="eyebrow">${t('howto')}</div>
+ <ol class="steps">${[1,2,3].map(()=>`<li>${pend()}</li>`).join('')}</ol>
+ <div class="card sec"><b>${t('notwork')}</b><div class="btns"><a class="btn out full" href="${wa()}" target="_blank" rel="noopener">${ico('mdi:whatsapp',20)}${t('talkHouse')}</a></div></div>`};
+const stepsPage=l=>l.map(x=>`<div class="card"><div style="display:flex;gap:12px;align-items:center"><span class="ic" style="width:44px;height:44px;border-radius:var(--r-lg)">${ico(x[1])}</span><b style="font-size:17px">${t(x[0])}</b></div><ol class="steps">${[1,2,3].map(()=>`<li style="font-size:16px">${pend()}</li>`).join('')}</ol></div>`).join('');
+V.equip=()=>stepsPage(EQUIP);
+V.conv=()=>CONV.map(x=>`<div class="row"><span class="ic">${ico(x[1])}</span><span class="tx"><b>${t(x[0])}</b><span>${pend()}</span></span></div>`).join('');
 
-let serraFilter='all';
-V.serra=()=>{const list=[...PL.serraPerto,...PL.serraLonge].filter(p=>serraFilter==='all'||(serraFilter==='kids'&&p.diff==='leve')||(serraFilter==='near'&&PL.serraPerto.includes(p)));
- const chip=(k,l)=>`<button class="chip ${serraFilter===k?'on':''}" onclick="serraFilter='${k}';render()">${l}</button>`;
+V.serra=()=>{const F=S.filt;let list=PASS.map((p,i)=>[p,i]);
+ if(F==='near')list=list.filter(([p])=>PL.serraPerto.includes(p));else if(F==='kids')list=list.filter(([p])=>p.diff==='leve');else if(F!=='all')list=[];
+ const chip=(k,l)=>`<button class="chip ${F===k?'on':''}" onclick="S.filt='${k}';render()">${l}</button>`;
  return `<h2 class="h">${t('serraT')}</h2>
- <div class="chips sec" style="margin-top:16px">${chip('all',t('all'))}${chip('near',t('near'))}${chip('kids',t('kids'))}</div>
- <div class="sec" style="margin-top:12px">${list.map(p=>{const b={leve:['b-leve','solar:check-circle-linear',t('easy')],media:['b-media','solar:danger-circle-linear',t('mid')],exigente:['b-exig','solar:danger-triangle-linear',t('hard')]}[p.diff]||['b-media','solar:danger-circle-linear',p.diffLabel||''];
-  return `<div class="card place"><span class="badge ${b[0]}">${ico(b[1],14)}${b[2]}</span><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`}).join('')}</div>`};
+ <div class="seg"><button class="${S.mapTab?'':'on'}" onclick="S.mapTab=false;render()">${t('list')}</button><button class="${S.mapTab?'on':''}" onclick="S.mapTab=true;render()">${t('map')}</button></div>
+ ${S.mapTab?`<div class="map">${t('mapPh')}</div>`:`<div class="chips" style="margin-top:14px">${chip('all',t('all'))}${chip('near',t('near'))}${chip('kids',t('kids'))}${chip('pet',t('pet'))}${chip('rain',t('rain'))}${chip('eve',t('eve'))}</div>
+ <div class="sec" style="margin-top:12px">${list.length?list.map(([p,i])=>`<button class="card place" onclick="go('serrad',${i})">${diffB(p)}<h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>${metaH(p)}</button>`).join(''):`<p class="sub">${t('noTag')} ${pend()}</p>`}</div>`}`};
+V.serrad=a=>{const p=PASS[a];const rows=[['solar:map-point-linear','how'],['solar:clock-circle-linear','time'],['solar:backpack-linear','bring'],['solar:sun-2-linear','best'],['solar:user-speak-linear','guide'],['solar:danger-triangle-linear','alerts']];
+ return `<div class="card">${diffB(p)}<h3 style="font-family:var(--font-serif);font-size:26px;font-weight:500;line-height:1.1;margin:8px 0 4px">${esc(p.title)}</h3><p class="sub" style="margin-top:0">${esc(p.text)}</p>${metaH(p)}</div>
+ <div class="sec" style="margin-top:14px">${rows.map(r=>`<div class="row"><span class="ic">${ico(r[0])}</span><span class="tx"><span>${t(r[1])}</span><b>${pend()}</b></span></div>`).join('')}</div>
+ <div class="btns two"><a class="btn" href="${mapsUrl(p.title)}" target="_blank" rel="noopener">${ico('solar:map-arrow-right-linear',20)}${t('route')}</a><a class="btn out" href="${wa('Passeio: '+p.title)}" target="_blank" rel="noopener">${ico('mdi:whatsapp',20)}${t('talkGuide')}</a></div>`};
 
-V.sabores=()=>`<h2 class="h">${t('eatT')}</h2><p class="sub">${t('eatSub')}</p>
- <div class="sec" style="margin-top:16px">${[...PL.restaurantesEspeciais,...PL.restaurantesSelfService].slice(0,5).map(p=>`<div class="card place"><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`).join('')}</div>`;
+const restCard=p=>`<div class="card place"><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>${metaH(p)}<div class="btns two"><a class="btn out" href="${mapsUrl(p.title)}" target="_blank" rel="noopener">${t('routeS')}</a><a class="btn" href="${wa('Reserva: '+p.title)}" target="_blank" rel="noopener">${t('reserve')}</a></div></div>`;
+V.sabores=()=>`<h2 class="h">${t('tSab')}</h2>
+ <div class="card sec" style="margin-top:16px"><div style="display:flex;gap:12px;align-items:center">${ico('solar:clock-circle-linear',28)}<div><b>${t('nowL')}</b><div class="sub" style="margin:0">${t('nowS')} ${pend()}</div></div></div></div>
+ <div class="sec"><div class="eyebrow">${t('cafe')}</div><div class="card"><b>${t('cafe')}</b><p class="sub">${pend()}</p></div></div>
+ <div class="sec"><div class="eyebrow">${t('rest')}</div>${REST.slice(0,4).map(restCard).join('')}</div>
+ <div class="sec"><div class="eyebrow">${t('shop')}</div>${(PL.comprasVilarejo||[]).slice(0,3).map(p=>`<div class="card place"><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>${metaH(p)}</div>`).join('')}</div>`;
 
-V.ajuda=()=>`<h2 class="h">${t('ajudaT')}</h2><p class="sub">${t('ajudaSub')}</p>
- <div class="sec" style="margin-top:16px">
-  <button class="row" onclick="go('emerg')" style="border-color:#f0b8b8"><span class="ic" style="background:#fef2f2;color:var(--c-error)">${ico('solar:danger-triangle-linear')}</span><span class="tx"><b>${t('emerg')}</b><span>192 · 193 · 190 · 199</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
-  <button class="row" onclick="go('fa')"><span class="ic">${ico('solar:medical-kit-linear')}</span><span class="tx"><b>${t('fa')}</b><span>${t('faSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
-  <a class="row" href="https://wa.me/${P.whatsapp}" target="_blank" rel="noopener"><span class="ic">${ico('mdi:whatsapp')}</span><span class="tx"><b>${t('talk')}</b><span>${P.phoneDisplay}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></a>
-  <button class="row" onclick="toast('${t('soon')}')"><span class="ic">${ico('solar:suitcase-linear')}</span><span class="tx"><b>${t('svc')}</b><span>${t('svcSub')}</span></span><span class="go">${ico('solar:alt-arrow-right-linear',20)}</span></button>
- </div>`;
+V.ajuda=()=>`<h2 class="h">${t('ajT')}</h2><p class="sub">${t('ajS')}</p><div class="sec" style="margin-top:16px">
+ <button class="row" onclick="go('emerg')" style="border-color:var(--c-error)"><span class="ic" style="background:#fef2f2;color:var(--c-error)">${ico('solar:danger-triangle-linear')}</span><span class="tx"><b>${t('emerg')}</b><span>192 · 193 · 190 · 199</span></span>${chev}</button>
+ <button class="row" onclick="go('fa')"><span class="ic">${ico('solar:medical-kit-linear')}</span><span class="tx"><b>${t('fa')}</b><span>${t('faS')}</span></span>${chev}</button>
+ <button class="row" onclick="go('talk')"><span class="ic">${ico('mdi:whatsapp')}</span><span class="tx"><b>${t('talk')}</b><span>${t('talkS')}</span></span>${chev}</button>
+ <button class="row" onclick="go('svc')"><span class="ic">${ico('solar:suitcase-linear')}</span><span class="tx"><b>${t('svc')}</b><span>${t('svcS')}</span></span>${chev}</button></div>`;
 
-V.emerg=()=>`<p class="sub" style="margin-top:0">${t('emSub')}</p>
- <div class="sec" style="margin-top:14px">
-  ${GUIDE.emergencyNational.map((e,i)=>`<a class="call-row ${i?'s':''}" href="tel:${e.tel}">${ico(e.icon,28)}<div style="flex:1"><b>${e.tel}</b><span>${e.label}</span></div>${ico('solar:phone-calling-linear',24)}</a>`).join('')}
- </div>
- <div class="card sec" style="margin-top:18px"><div class="lbl">${t('myAddr')}</div><p style="font-size:17px;font-weight:600;margin-top:4px;line-height:1.35">${P.address}</p><p class="sub">${t('addrHint')}</p>
-  <div class="btns"><button class="btn out full" onclick="copy('${P.address.replace(/'/g,"\\'")}',t('addrCopied'))">${ico('solar:copy-linear',20)}${t('copyAddr')}</button></div></div>
- <div class="sec"><div class="eyebrow">${t('nearHelp')}</div>${PL.saude.slice(0,2).map(p=>`<div class="card place"><h3>${p.title}</h3><p>${p.text}</p><div class="meta">${(p.meta||[]).map(m=>`<span>${ico(m.icon,16)}${m.text}</span>`).join('')}</div></div>`).join('')}</div>`;
+V.talk=()=>`<div class="card"><div class="lbl">${t('phone')}</div><div class="mono" style="font-size:22px;margin-top:2px">${P.phoneDisplay}</div>
+ <div class="btns"><a class="btn full" href="${wa()}" target="_blank" rel="noopener">${ico('mdi:whatsapp',20)}WhatsApp</a><a class="btn out full" href="tel:${P.phone}">${ico('solar:phone-calling-linear',20)}${t('call')}</a></div></div>`;
 
-V.fa=()=>`<p class="sub" style="margin-top:0">${t('faPick')}</p><div class="sosgrid sec" style="margin-top:14px">
- ${FA_ORDER.map(k=>`<button class="tile" onclick="${FA[k]?`go('fadet','${k}')`:`toast('${t('soon')}')`}" style="min-height:104px"><span class="ic">${ico((FA[k]||{}).ic||FA_ICON[k])}</span><b>${t(k)}</b></button>`).join('')}</div>
+V.svc=()=>`<div class="eyebrow">${t('svcT')}</div>${SERV.map(x=>`<div class="row"><span class="ic">${ico(x[1])}</span><span class="tx"><b>${t(x[0])}</b><span>${pend()}</span></span></div>`).join('')}
+ <div class="sec"><div class="eyebrow">${t('outT')}</div>${OUT.map(k=>`<button class="check ${S.out[k]?'on':''}" onclick="S.out['${k}']=!S.out['${k}'];render()"><span class="bx">${ico('solar:check-read-linear',18)}</span><span class="nm">${t(k)}</span></button>`).join('')}<p class="sub">${pend()}</p></div>`;
+
+V.emerg=()=>`<p class="sub" style="margin-top:0">${t('emS')}</p><div class="sec" style="margin-top:14px">
+ ${GUIDE.emergencyNational.map((e,i)=>`<a class="call-row ${i?'s':''}" href="tel:${e.tel}">${ico(e.icon,28)}<div style="flex:1"><b>${e.tel}</b><span>${e.label}</span></div>${ico('solar:phone-calling-linear',24)}</a>`).join('')}</div>
+ <div class="card sec" style="margin-top:18px"><div class="lbl">${t('myAddr')}</div><p style="font-size:17px;font-weight:600;margin-top:4px;line-height:1.35">${esc(P.address)}</p><p class="sub">${t('addrH')}</p>
+ <div class="btns"><button class="btn out full" onclick="copy(P.address,t('addrC'))">${ico('solar:copy-linear',20)}${t('cAddr')}</button></div></div>
+ <div class="sec"><div class="eyebrow">${t('nearHelp')}</div>${PL.saude.slice(0,2).map(p=>`<div class="card place"><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p>${metaH(p)}</div>`).join('')}</div>`;
+
+V.fa=()=>`<p class="sub" style="margin-top:0">${t('faPick')}</p><div class="grid2 sec" style="margin-top:14px">
+ ${FA_ORDER.map(k=>`<button class="tile" onclick="${k==='bite'?`go('animal')`:`go('fadet','${k}')`}" style="min-height:104px"><span class="ic">${ico(FA[k].ic)}</span><b>${t(k)}</b></button>`).join('')}</div>
  <p class="disc">${ico('solar:info-circle-linear',18)}<span>${t('disc')}</span></p>`;
-
-function fadet(k){const d=FA[k][lang];return `<div class="call">${ico('solar:phone-calling-linear',22)}<span>${t('callIf')}: ${d.call}</span></div>
- <ol class="steps">${d.steps.map(s=>`<li>${s}</li>`).join('')}</ol>
- <div class="dont"><b>${ico('solar:close-circle-linear',18)}${t('dont')}</b><ul>${d.dont.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+V.animal=()=>`<p class="sub" style="margin-top:0">${t('which')}</p><div class="grid2 sec" style="margin-top:14px">${ANIMALS.map(a=>`<button class="tile" onclick="go('fadet','bite')" style="min-height:104px"><span class="ic">${ico(a[1])}</span><b>${t(a[0])}</b></button>`).join('')}</div><p class="disc">${ico('solar:info-circle-linear',18)}<span>${t('unsure')}</span></p>`;
+V.fadet=k=>{const d=FA[k],l=S.lang;return `<div class="call">${ico('solar:phone-calling-linear',22)}<span>${t('callIf')}: ${d.call[l]}</span></div>
+ <ol class="steps">${d.steps.map(s=>`<li>${s[l]}</li>`).join('')}</ol>
+ <div class="dont"><b>${ico('solar:close-circle-linear',18)}${t('dont')}</b><ul>${d.dont.map(s=>`<li>${s[l]}</li>`).join('')}</ul></div>
  <p class="disc">${ico('solar:info-circle-linear',18)}<span>${t('draft')}</span></p>
- <div class="fixbar"><a class="btn red" href="tel:192">${ico('solar:phone-calling-linear',20)}${t('call')} 192</a><button class="btn out" onclick="go('emerg')">${t('myAddr')}</button></div>`}
+ <div class="fixbar"><a class="btn red" href="tel:${d.tel}">${ico('solar:phone-calling-linear',20)}${t('call')} ${d.tel}</a><button class="btn out" style="background:var(--bg)" onclick="go('emerg')">${t('myAddr')}</button></div>`};
 
-/* ───────── render ───────── */
-const TITLES={home:null,casa:'tCasa',serra:'tSerra',sabores:'tSabores',ajuda:'tAjuda',wifi:'wifi',digital:'ckT',where:'where',auto:'auto',emerg:'emT',fa:'faT'};
+/* busca global */
+V.search=()=>`<label class="search">${ico('solar:magnifer-linear',22)}<input id="gq" type="search" placeholder="${t('srch')}…" oninput="fillSearch()" autofocus/></label><div id="gres" class="sec" style="margin-top:14px"></div>`;
+function fillSearch(){const q=($('#gq').value||'').toLowerCase().trim();const out=[];
+ const add=(sec,ic,name,fn)=>{if(name.toLowerCase().includes(q))out.push([sec,ic,name,fn])};
+ add('tHome','solar:wi-fi-router-linear',t('wifi')+' · '+t('pw'),"go('wifi')");
+ add('tHome','solar:documents-linear',t('digital'),"go('digital')");
+ ITEMS.forEach((x,i)=>add('tCasa',x[1],t(x[0]),`go('item',${i})`));
+ AUTO.forEach((x,i)=>add('tCasa',x[1],t(x[0]),`go('autod',${i})`));
+ PASS.forEach((p,i)=>add('tSerra','solar:mountains-linear',p.title,`go('serrad',${i})`));
+ REST.forEach(p=>add('tSab','solar:chef-hat-minimalistic-linear',p.title,"go('sabores')"));
+ FA_ORDER.forEach(k=>add('tAj',FA[k].ic,t('fa')+' · '+t(k),k==='bite'?"go('animal')":`go('fadet','${k}')`));
+ const q2=out.slice(0,40);const secs=['tHome','tCasa','tSerra','tSab','tAj'];
+ $('#gres').innerHTML=q?(q2.length?secs.map(s=>{const g=q2.filter(r=>r[0]===s);return g.length?`<div class="eyebrow" style="margin-top:14px">${t(s)}</div>`+g.map(r=>`<button class="row" onclick="${r[3]}"><span class="ic">${ico(r[1])}</span><span class="tx"><b>${esc(r[2])}</b></span>${chev}</button>`).join(''):''}).join(''):`<p class="sub">${t('noRes')}</p>`):''}
+
+/* ───────── cabeçalho, menu e render ───────── */
+const TABS=[['home','tHome','solar:home-2-linear'],['casa','tCasa','solar:key-minimalistic-linear'],['serra','tSerra','solar:mountains-linear'],['sabores','tSab','solar:cup-hot-linear'],['ajuda','tAj','solar:lifebuoy-linear']];
+const PARENT={wifi:'home',digital:'home',search:'home',where:'casa',item:'casa',auto:'casa',autod:'casa',equip:'casa',conv:'casa',serrad:'serra',emerg:'ajuda',fa:'ajuda',animal:'ajuda',fadet:'ajuda',talk:'ajuda',svc:'ajuda'};
+const TT={casa:'tCasa',serra:'tSerra',sabores:'tSab',ajuda:'tAj',wifi:'wifi',digital:'ckT',where:'where',auto:'auto',autod:'auto',equip:'equip',conv:'conv',emerg:'emT',fa:'fa',animal:'bite',talk:'talk',svc:'svc',search:'srch'};
 function render(){
-  const cur=stack[stack.length-1],[id,arg]=cur.split(':'),isSub=stack.length>1;
-  const active=PARENT[id]||id;
-  const title=id==='fadet'?t(arg):id==='home'?null:t(TITLES[id]);
-  $('#top').innerHTML=(isSub?`<button class="ib" onclick="back()" aria-label="${t('back')}">${ico('solar:alt-arrow-left-linear',26)}</button>`:`<span class="ib">${ico('solar:leaf-linear',26)}</span>`)
-   +`<div class="ttl">${title||'Solar do Espinhaço'}</div><div class="lang">${['pt','en','es'].map(l=>`<button class="${l===lang?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}</div>`;
-  $('#main').innerHTML=id==='fadet'?fadet(arg):V[id]();
-  $('#main').scrollTop=0;
-  if(id==='where')fill();
-  $('#tabs').innerHTML=TABS.map(x=>`<button class="tab ${x[0]===active?'on':''}" onclick="tab('${x[0]}')">${ico(x[2],26)}<span>${t(x[1])}</span></button>`).join('');
-  $('#app').classList.toggle('hasfix',id==='fadet');
-  document.documentElement.lang={pt:'pt-BR',en:'en',es:'es'}[lang];
+  const cur=S.stack[S.stack.length-1],[id,arg]=cur.split(':'),sub=S.stack.length>1;
+  const title=id==='fadet'?t(arg):id==='item'?t(ITEMS[arg][0]):id==='serrad'?PASS[arg].title:id==='home'?'Solar do Espinhaço':t(TT[id]);
+  $('#top').innerHTML=(sub?`<button class="ib" onclick="back()" aria-label="${t('back')}">${ico('solar:alt-arrow-left-linear',26)}</button>`:`<span class="ib">${ico('solar:leaf-linear',26)}</span>`)
+   +`<div class="ttl">${esc(title)}</div>`+(id==='search'?'':`<button class="ib" onclick="go('search')" aria-label="${t('srch')}">${ico('solar:magnifer-linear',24)}</button>`)+`<button class="ib" onclick="menu(true)" aria-label="${t('menuT')}">${ico('solar:menu-dots-linear',26)}</button>`;
+  $('#main').innerHTML=V[id](arg);$('#main').scrollTop=0;
+  if(id==='where')fillWhere();
+  const act=PARENT[id]||id;
+  $('#tabs').innerHTML=TABS.map(x=>`<button class="tab ${x[0]===act?'on':''}" onclick="tab('${x[0]}')">${ico(x[2],26)}<span>${t(x[1])}</span></button>`).join('');
+  $('#app').classList.toggle('hasfix',id==='fadet');$('#app').classList.toggle('dark',S.dark);
+  $('#main').style.setProperty('--z',S.z);document.documentElement.lang={pt:'pt-BR',en:'en',es:'es'}[S.lang];
 }
-function setLang(l){lang=l;try{localStorage.setItem('gl',l)}catch(e){};welcomeText();render()}
-function welcomeText(){$('#wh').innerHTML=t('welcomeH');$('#wp').textContent=t('welcomeP');$('#enter').textContent=t('enter');
- $('#wlang').innerHTML=['pt','en','es'].map(l=>`<button class="${l===lang?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}
+function menu(on){const sh=$('#sheet');
+ sh.innerHTML=`<h4>${t('menuT')}</h4><div class="lbl" style="margin-top:14px">${t('lang')}</div><div class="opt">${['pt','en','es'].map(l=>`<button class="${S.lang===l?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}</div>
+ <div class="lbl" style="margin-top:16px">${t('txt')}</div><div class="opt">${[[.92,'A−'],[1,'A'],[1.12,'A+'],[1.25,'A++']].map(z=>`<button class="${S.z===z[0]?'on':''}" onclick="S.z=${z[0]};save();render();menu(true)">${z[1]}</button>`).join('')}</div>
+ <div class="lbl" style="margin-top:16px">${t('theme')}</div><div class="opt"><button class="${S.dark?'':'on'}" onclick="S.dark=false;save();render();menu(true)">${ico('solar:sun-2-linear',20)} ${t('light')}</button><button class="${S.dark?'on':''}" onclick="S.dark=true;save();render();menu(true)">${ico('solar:moon-stars-linear',20)} ${t('dark')}</button></div>
+ <div class="btns"><button class="btn full" onclick="menu(false)">${t('close')}</button></div>`;
+ sh.classList.toggle('on',on);$('#sbg').classList.toggle('on',on)}
+function setLang(l){S.lang=l;save();welcomeText();render();if($('#sheet').classList.contains('on'))menu(true)}
+function welcomeText(){$('#wh').innerHTML=t('wH');$('#wp').textContent=t('wP');$('#enter').textContent=t('enter');$('#skip').textContent=t('skip');
+ $('#fn').placeholder=t('nm');$('#fc').placeholder=t('ch');
+ $('#wlang').innerHTML=['pt','en','es'].map(l=>`<button class="${l===S.lang?'on':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`).join('')}
+function enter(save_){if(save_){S.name=$('#fn').value.trim().slice(0,30);S.chalet=$('#fc').value.trim().slice(0,30);save()}$('#welcome').classList.add('off');render()}
 $('#sos').onclick=()=>go('emerg');
-$('#enter').onclick=()=>$('#welcome').classList.add('off');
+$('#enter').onclick=()=>enter(true);$('#skip').onclick=()=>enter(false);
+$('#fn').value=S.name;$('#fc').value=S.chalet;
 welcomeText();render();
 </script>
 </body>
