@@ -19,6 +19,7 @@ function novoBanco(eu = 'ADMIN') {
       { ID_USUARIO: 'u-ana', NM_USUARIO: 'Ana Souza', CD_LOGIN: 'ana.souza', CD_CPF: '52998224725', TP_PERFIL: 'ASSESSOR', SG_ATIVO: true, DT_ACEITE_LGPD: null },
     ],
     up: [{ ID_USUARIO: 'u-ana', ID_PROPRIEDADE: 1 }],
+    uu: [],
     props: [{ id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', qtde_unidades: 1, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100, qtde_precisao_max_metros: 50, qtde_minutos_min_vistoria: 10 },
             { id_propriedade: 2, nm_propriedade: 'Hotel Lapinha', qtde_unidades: 0, tp_validacao: 'QR', vl_latitude: null, vl_longitude: null, qtde_raio_metros: 100, qtde_precisao_max_metros: 50, qtde_minutos_min_vistoria: 10 }],
     unidades: [{ id_unidade: 1, cd_unidade: 'casa-do-mirante', nm_unidade: 'Casa do Mirante', id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', tp_situacao: 'LIBERADO', ds_andar: null, tp_validacao: 'QR_E_GPS', vl_latitude: -19.08, vl_longitude: -43.59, qtde_raio_metros: 100 },
@@ -50,6 +51,9 @@ function rotas(page, db) {
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'GET') return json(200, db.up);
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'POST') { db.up.push(...corpo); return json(201); }
     if (caminho === 'VST_USUARIO_PROPRIEDADE' && m === 'DELETE') { return json(204); }
+    if (caminho === 'VST_USUARIO_UNIDADE' && m === 'GET') return json(200, db.uu);
+    if (caminho === 'VST_USUARIO_UNIDADE' && m === 'POST') { db.uu.push(...corpo); return json(201); }
+    if (caminho === 'VST_USUARIO_UNIDADE' && m === 'DELETE') { db.uu = []; return json(204); }
     if (caminho === 'rpc/vst_propriedades') return json(200, db.props);
     if (caminho === 'rpc/vst_unidades') return json(200, db.unidades);
     if (caminho === 'VST_TIPO_VISTORIA_ITEM') {
@@ -170,6 +174,27 @@ if (require.main === module) (async () => {
     delete db.respostas['PATCH VST_USUARIO'];
     await page.click('button:has-text("Cancelar")');
 
+    // chalés por usuário: na pousada marcada, "Escolher chalés" restringe o acesso aos chalés marcados
+    await page.locator('tr:has-text("Ana Souza") button:has-text("Editar")').click();
+    await page.check('text=Solar do Espinhaço');
+    ok(await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Todos os chalés').isChecked(), 'pousada marcada: padrão é atender todos os chalés');
+    await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Escolher chalés').check();
+    await page.click('button[type=submit]:has-text("Salvar")');
+    ok((await texto(page, '[role=alert]')).includes('marque ao menos um chalé'), 'escolher chalés sem marcar nenhum: avisa');
+    await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Casa do Mirante').check();
+    await page.click('button[type=submit]:has-text("Salvar")');
+    await page.waitForSelector('text=Alterações salvas', { timeout: 6000 });
+    const pu = ultima(db, 'POST', 'VST_USUARIO_UNIDADE');
+    ok(pu && pu.corpo[0].ID_USUARIO === 'u-ana' && pu.corpo[0].ID_UNIDADE === 1, 'grava o chalé escolhido para o usuário');
+    await page.waitForTimeout(400);
+    ok((await texto(page, 'tr:has-text("Ana Souza")')).includes('Solar do Espinhaço (Casa do Mirante)'), 'a lista mostra a pousada com o chalé escolhido');
+    await page.locator('tr:has-text("Ana Souza") button:has-text("Editar")').click();
+    ok(await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Escolher chalés').isChecked() && await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Casa do Mirante').isChecked(), 'ao editar de novo, a escolha aparece marcada');
+    await page.locator('[data-pousada="Solar do Espinhaço"]').getByLabel('Todos os chalés').check();
+    await page.click('button[type=submit]:has-text("Salvar")');
+    await page.waitForSelector('text=Alterações salvas', { timeout: 6000 });
+    ok(ultima(db, 'DELETE', 'VST_USUARIO_UNIDADE')?.busca.includes('ID_UNIDADE=in.%281%29'), 'voltar para Todos os chalés retira a restrição');
+
     await page.locator('tr:has-text("Ana Souza") button:has-text("Redefinir senha")').click();
     const nova = await page.inputValue('#u-nova-senha');
     await page.click('button[type=submit]:has-text("Redefinir senha")');
@@ -260,12 +285,14 @@ if (require.main === module) (async () => {
     ok((await texto(page, '[role=alert]')).includes('Já existe'), 'nome repetido no chalé: o banco recusa e a tela explica');
     await page.fill('#a-nome', 'Sala'); await page.click('form[aria-label=Ambiente] button[type=submit]');
     await page.waitForSelector('[data-ambiente="Sala"]');
+    { const [b1, b2] = await Promise.all([page.locator('[data-ambiente="Banheiro"]').boundingBox(), page.locator('[data-ambiente="Sala"]').boundingBox()]);
+      ok(b1 && b2 && Math.abs(b1.y - b2.y) < 4 && b2.x > b1.x + b1.width - 4, 'no computador os ambientes ficam em dois blocos lado a lado'); }
     ok(await page.locator('button[aria-label^="Subir"], button[aria-label^="Descer"]').count() === 0, 'sem botões de subir e descer: a ordem muda arrastando');
     // arrastar Banheiro (1º) para baixo de Sala (2º) pela alça
     const h = await page.locator('[data-ambiente="Banheiro"] [data-alca]').first().boundingBox();
     const alvo = await page.locator('[data-ambiente="Sala"]').boundingBox();
     await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down();
-    await page.mouse.move(h.x + h.width / 2, alvo.y + alvo.height * 0.8, { steps: 8 }); await page.mouse.up();
+    await page.mouse.move(alvo.x + alvo.width / 2, alvo.y + alvo.height / 2, { steps: 8 }); await page.mouse.up();   // no computador os ambientes ficam em 2 colunas
     await page.waitForSelector('text=Ordem salva');
     let patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
     ok(patches.length === 2 && patches.some((x) => x.corpo.NO_ORDEM === 1) && patches.some((x) => x.corpo.NO_ORDEM === 2)

@@ -16,7 +16,8 @@ export type Propriedade = {
   id_propriedade: number; nm_propriedade: string; qtde_unidades: number; tp_validacao: 'QR' | 'GPS' | 'QR_E_GPS';
   vl_latitude: number | null; vl_longitude: number | null; qtde_raio_metros: number; qtde_precisao_max_metros: number; qtde_minutos_min_vistoria: number;
 };
-export type Usuario = { id: string; nome: string; login: string; cpf: string | null; perfil: Perfil; ativo: boolean; props: number[] };
+/** unidades: chalés marcados (VST_USUARIO_UNIDADE). Numa pousada sem chalé marcado, o usuário atende todos os chalés dela. */
+export type Usuario = { id: string; nome: string; login: string; cpf: string | null; perfil: Perfil; ativo: boolean; props: number[]; unidades: number[] };
 export type Resultado = { ok: true; id?: number } | { ok: false; erro: string };
 
 // mensagens para os erros do banco e das funções
@@ -46,9 +47,9 @@ const demo = {
     { id_propriedade: 1, nm_propriedade: 'Solar do Espinhaço', qtde_unidades: 1, tp_validacao: 'QR_E_GPS', vl_latitude: -19.0847, vl_longitude: -43.5967, qtde_raio_metros: 100, qtde_precisao_max_metros: 50, qtde_minutos_min_vistoria: 10 },
   ] as Propriedade[],
   usuarios: [
-    { id: 'd1', nome: 'Ana Souza', login: 'ana', cpf: '52998224725', perfil: 'ASSESSOR', ativo: true, props: [1] },
-    { id: 'd2', nome: 'Gestor Demo', login: 'gestor', cpf: null, perfil: 'GESTOR', ativo: true, props: [1] },
-    { id: 'd3', nome: 'Admin Demo', login: 'admin', cpf: null, perfil: 'ADMIN', ativo: true, props: [] },
+    { id: 'd1', nome: 'Ana Souza', login: 'ana', cpf: '52998224725', perfil: 'ASSESSOR', ativo: true, props: [1], unidades: [] },
+    { id: 'd2', nome: 'Gestor Demo', login: 'gestor', cpf: null, perfil: 'GESTOR', ativo: true, props: [1], unidades: [] },
+    { id: 'd3', nome: 'Admin Demo', login: 'admin', cpf: null, perfil: 'ADMIN', ativo: true, props: [], unidades: [] },
   ] as Usuario[],
 };
 
@@ -59,16 +60,22 @@ export async function listarPropriedades(): Promise<Propriedade[]> {
   return data as Propriedade[];
 }
 
+/** O banco já tem a tabela de chalés por usuário (VST_USUARIO_UNIDADE)? Enquanto não tiver, a tela não oferece a escolha de chalés. */
+export let chalesPorUsuario = true;
 export async function listarUsuarios(): Promise<Usuario[]> {
   if (MODO_DEMO || !supabase) return demo.usuarios;
-  const [u, up] = await Promise.all([
+  const [u, up, uu] = await Promise.all([
     supabase.from('VST_USUARIO').select('ID_USUARIO, NM_USUARIO, CD_LOGIN, CD_CPF, TP_PERFIL, SG_ATIVO').order('NM_USUARIO'),
     supabase.from('VST_USUARIO_PROPRIEDADE').select('ID_USUARIO, ID_PROPRIEDADE'),
+    supabase.from('VST_USUARIO_UNIDADE').select('ID_USUARIO, ID_UNIDADE'),
   ]);
   if (u.error || up.error) throw new Error((u.error ?? up.error)!.message);
+  chalesPorUsuario = !uu.error;
+  const chales = uu.error ? [] : uu.data ?? [];                     // banco ainda sem a tabela: todos os chalés, como antes
   return (u.data ?? []).map((r) => ({
     id: r.ID_USUARIO, nome: r.NM_USUARIO, login: r.CD_LOGIN, cpf: r.CD_CPF, perfil: r.TP_PERFIL, ativo: r.SG_ATIVO,
     props: (up.data ?? []).filter((x) => x.ID_USUARIO === r.ID_USUARIO).map((x) => Number(x.ID_PROPRIEDADE)),
+    unidades: chales.filter((x) => x.ID_USUARIO === r.ID_USUARIO).map((x) => Number(x.ID_UNIDADE)),
   }));
 }
 
@@ -88,15 +95,19 @@ async function funcao(nome: string, corpo: unknown): Promise<Resultado & { dados
 }
 
 const VAZADA = 'Essa senha já apareceu em vazamentos de dados na internet. Gere outra.';
-export type NovoUsuario = { nome: string; login: string; cpf: string; perfil: Perfil; senha: string; props: number[] };
+export type NovoUsuario = { nome: string; login: string; cpf: string; perfil: Perfil; senha: string; props: number[]; unidades: number[] };
 export async function criarUsuario(n: NovoUsuario): Promise<Resultado> {
   if (MODO_DEMO || !supabase) {
     if (demo.usuarios.some((u) => u.login === n.login)) return { ok: false, erro: mensagem('login_em_uso') };
-    demo.usuarios = [...demo.usuarios, { id: 'd' + Date.now(), nome: n.nome, login: n.login, cpf: n.cpf || null, perfil: n.perfil, ativo: true, props: n.props }];
+    demo.usuarios = [...demo.usuarios, { id: 'd' + Date.now(), nome: n.nome, login: n.login, cpf: n.cpf || null, perfil: n.perfil, ativo: true, props: n.props, unidades: n.unidades }];
     return { ok: true };
   }
   if (await senhaVazada(n.senha)) return { ok: false, erro: VAZADA };
-  return funcao('criar-usuario', { nm_usuario: n.nome, cd_login: n.login, cd_cpf: n.cpf || null, tp_perfil: n.perfil, senha: n.senha, ids_propriedade: n.perfil === 'ADMIN' ? [] : n.props });
+  const r = await funcao('criar-usuario', { nm_usuario: n.nome, cd_login: n.login, cd_cpf: n.cpf || null, tp_perfil: n.perfil, senha: n.senha, ids_propriedade: n.perfil === 'ADMIN' ? [] : n.props });
+  const id = (r.dados as { id_usuario?: string } | undefined)?.id_usuario;
+  if (!r.ok || !id || n.perfil === 'ADMIN' || !n.unidades.length) return r;
+  const c = await supabase.from('VST_USUARIO_UNIDADE').insert(n.unidades.map((u) => ({ ID_USUARIO: id, ID_UNIDADE: u })));
+  return c.error ? { ok: false, erro: `Usuário criado, mas os chalés não foram gravados: ${mensagem(c.error.message)}. Edite o usuário para marcar de novo.` } : r;
 }
 
 export async function redefinirSenha(login: string, senha: string): Promise<Resultado> {
@@ -106,12 +117,12 @@ export async function redefinirSenha(login: string, senha: string): Promise<Resu
 }
 
 /** Salva perfil, status, nome e pousadas. As pousadas mudam só o necessário (inclui as novas, retira as removidas). */
-export async function salvarUsuario(antes: Usuario, depois: Pick<Usuario, 'nome' | 'perfil' | 'ativo' | 'props'>): Promise<Resultado> {
+export async function salvarUsuario(antes: Usuario, depois: Pick<Usuario, 'nome' | 'perfil' | 'ativo' | 'props' | 'unidades'>): Promise<Resultado> {
   const props = depois.perfil === 'ADMIN' ? antes.props : depois.props;
   if (depois.perfil !== 'ADMIN' && props.length === 0) return { ok: false, erro: mensagem('propriedade_obrigatoria') };
   if (depois.nome.trim().length < 3) return { ok: false, erro: mensagem('nome_invalido') };
   if (MODO_DEMO || !supabase) {
-    demo.usuarios = demo.usuarios.map((u) => (u.id === antes.id ? { ...u, ...depois, nome: depois.nome.trim(), props } : u));
+    demo.usuarios = demo.usuarios.map((u) => (u.id === antes.id ? { ...u, ...depois, nome: depois.nome.trim(), props, unidades: depois.perfil === 'ADMIN' ? [] : depois.unidades } : u));
     return { ok: true };
   }
   const { error } = await supabase.from('VST_USUARIO')
@@ -124,6 +135,17 @@ export async function salvarUsuario(antes: Usuario, depois: Pick<Usuario, 'nome'
   }
   if (saem.length) {
     const r = await supabase.from('VST_USUARIO_PROPRIEDADE').delete().eq('ID_USUARIO', antes.id).in('ID_PROPRIEDADE', saem);
+    if (r.error) return { ok: false, erro: mensagem(r.error.message) };
+  }
+  // chalés: só muda o necessário (ADMIN não tem restrição)
+  const un = depois.perfil === 'ADMIN' ? [] : depois.unidades;
+  const entram = un.filter((x) => !antes.unidades.includes(x)), saemU = antes.unidades.filter((x) => !un.includes(x));
+  if (entram.length) {
+    const r = await supabase.from('VST_USUARIO_UNIDADE').insert(entram.map((x) => ({ ID_USUARIO: antes.id, ID_UNIDADE: x })));
+    if (r.error) return { ok: false, erro: mensagem(r.error.message) };
+  }
+  if (saemU.length) {
+    const r = await supabase.from('VST_USUARIO_UNIDADE').delete().eq('ID_USUARIO', antes.id).in('ID_UNIDADE', saemU);
     if (r.error) return { ok: false, erro: mensagem(r.error.message) };
   }
   return { ok: true };

@@ -48,8 +48,8 @@ grant execute on all functions in schema teste to public;
 
 \echo '── 1. Estrutura'
 :dono
-select teste.ok((select count(*) = 13 from pg_class c join pg_namespace n on n.oid = c.relnamespace
-                 where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%'), '13 tabelas VST_ em MAIÚSCULAS no schema "SE" (12 de dados + VST_AUDITORIA)');
+select teste.ok((select count(*) = 14 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                 where n.nspname = 'SE' and c.relkind = 'r' and c.relname like 'VST\_%'), '14 tabelas VST_ em MAIÚSCULAS no schema "SE" (13 de dados + VST_AUDITORIA)');
 select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
                             where n.nspname = 'public' and c.relkind = 'r' and upper(c.relname) like 'VST\_%'), 'nenhuma tabela VST_ em public');
 select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -67,9 +67,9 @@ select teste.ok(not exists (select 1 from pg_class c join pg_namespace n on n.oi
                               and c.relname !~ '^(PK_|UQ_)' and exists (select 1 from pg_index i join pg_class t on t.oid = i.indrelid
                                                                        where i.indexrelid = c.oid and t.relname like 'VST\_%')),
                 'índices IX_/UQ_/PK_');
-select teste.ok((select count(*) = 12 from pg_trigger tg join pg_class c on c.oid = tg.tgrelid
+select teste.ok((select count(*) = 13 from pg_trigger tg join pg_class c on c.oid = tg.tgrelid
                  where c.relname like 'VST\_%' and tg.tgname = 'TG_' || c.relname || '_AUDITORIA' and not tg.tgisinternal),
-                'gatilho TG_<TABELA>_AUDITORIA nas 12 tabelas');
+                'gatilho TG_<TABELA>_AUDITORIA nas 13 tabelas');
 select teste.ok((select count(*) = 2 from "VST_TIPO_VISTORIA" where "CD_TIPO_VISTORIA" in ('ENTRADA', 'SAIDA')), 'tipos ENTRADA e SAIDA cadastrados pela migração');
 select teste.ok((select count(*) from "VST_UNIDADE") = (select count(*) from "SIT_UNIDADE"), 'uma linha VST_UNIDADE para cada chalé do site');
 select teste.ok(not exists (
@@ -641,6 +641,30 @@ select teste.erro($q$select * from "SE".vst_auditoria(current_date, current_date
 select teste.ok((select count(distinct "NM_TABELA") >= 6 from "SIT_AUDITORIA" where "NM_TABELA" like 'VST\_%'), 'as tabelas VST_ gravam em SIT_AUDITORIA');
 select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'VST_VISTORIA' and "TP_OPERACAO" = 'UPDATE' and "DS_ANTES" is not null), 'UPDATE em VST_VISTORIA guarda o valor anterior');
 select teste.ok((select count(*) > 0 from "SIT_AUDITORIA" where "NM_TABELA" = 'SIT_BLOQUEIO' and "TP_OPERACAO" = 'INSERT'), 'o bloqueio criado pela vistoria também é auditado');
+
+\echo '── 7b. Chalés por usuário (VST_USUARIO_UNIDADE)'
+:dono
+insert into "SIT_UNIDADE" ("ID_PROPRIEDADE", "CD_UNIDADE", "NM_UNIDADE", "QTDE_MAX_HOSPEDES", "QTDE_MAX_ADULTOS")
+select "ID_PROPRIEDADE", 'chale-restrito', 'Chalé (teste de restrição)', 2, 2 from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';
+select "ID_UNIDADE" as u2 from "SIT_UNIDADE" where "CD_UNIDADE" = 'chale-restrito' \gset
+select "ID_UNIDADE" as u1 from "SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante' \gset
+:como_ana
+select teste.ok((select count(*) = 2 from "SE".vst_unidades() where id_unidade in (:u1, :u2)), 'sem chalés marcados, o assessor vê todos os chalés da pousada');
+:como_admin
+insert into "SE"."VST_USUARIO_UNIDADE" ("ID_USUARIO", "ID_UNIDADE") values ('00000000-0000-4000-8000-0000000000a1', :u1);
+:como_ana
+select teste.ok((select array_agg(id_unidade) = array[:u1]::bigint[] from "SE".vst_unidades() where id_unidade in (:u1, :u2)), 'com um chalé marcado, o assessor vê só esse chalé');
+select teste.ok((select not "SE".vst_tem_acesso_unidade(:u2)) and (select "SE".vst_tem_acesso_unidade(:u1)), 'o acesso aos dados segue a mesma regra (RLS)');
+select teste.erro(format($q$insert into "SE"."VST_USUARIO_UNIDADE" ("ID_USUARIO", "ID_UNIDADE") values ('00000000-0000-4000-8000-0000000000a1', %s)$q$, :u2), 'new row violates row-level security policy for table "VST_USUARIO_UNIDADE"', 'só o administrador marca os chalés');
+:como_admin
+select teste.ok((select count(*) = 2 from "SE".vst_unidades() where id_unidade in (:u1, :u2)), 'o administrador continua vendo todos');
+delete from "SE"."VST_USUARIO_UNIDADE" where "ID_USUARIO" = '00000000-0000-4000-8000-0000000000a1';
+:dono
+select teste.ok((select count(*) >= 2 from "VST_AUDITORIA" where "NM_TABELA" = 'VST_USUARIO_UNIDADE'), 'marcar e desmarcar chalé ficam na auditoria');
+:como_ana
+select teste.ok((select count(*) = 2 from "SE".vst_unidades() where id_unidade in (:u1, :u2)), 'sem a marcação, volta a ver a pousada toda');
+:dono
+delete from "SIT_UNIDADE" where "ID_UNIDADE" = :u2;
 
 \echo '── 8. Limpeza dos ajudantes'
 drop schema teste cascade;

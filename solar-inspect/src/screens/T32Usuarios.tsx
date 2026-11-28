@@ -6,7 +6,7 @@ import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { cpfValido, formatarCpf } from '../lib/cpf';
 import { problemaSenha, type Perfil } from '../lib/acesso';
-import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenha, rotuloPerfil, salvarUsuario, type Propriedade, type Usuario } from '../lib/admin';
+import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenha, rotuloPerfil, salvarUsuario, type Propriedade, type Usuario, listarUnidadesPresenca, type UnidadePresenca, chalesPorUsuario } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
 const LOGIN_VALIDO = /^[a-z][a-z0-9._-]{2,39}$/;
@@ -33,27 +33,35 @@ function sugerirLogin(nome: string, existentes: string[]): string {
   return login;
 }
 
-type Form = { modo: 'novo' | 'editar'; base?: Usuario; nome: string; login: string; loginManual?: boolean; cpf: string; perfil: Perfil; senha: string; props: number[]; ativo: boolean };
-const vazio = (): Form => ({ modo: 'novo', nome: '', login: '', cpf: '', perfil: 'ASSESSOR', senha: gerarSenha(), props: [], ativo: true });
+// escolher[idPropriedade] = true: só os chalés marcados em `unidades`; senão, todos os chalés da pousada
+type Form = { modo: 'novo' | 'editar'; base?: Usuario; nome: string; login: string; loginManual?: boolean; cpf: string; perfil: Perfil; senha: string; props: number[]; unidades: number[]; escolher: Record<number, boolean>; ativo: boolean };
+const vazio = (): Form => ({ modo: 'novo', nome: '', login: '', cpf: '', perfil: 'ASSESSOR', senha: gerarSenha(), props: [], unidades: [], escolher: {}, ativo: true });
 
 /** T32 — Usuários e permissões: cadastro (Edge Function criar-usuario), perfil, pousadas, status e redefinição de senha. Só ADMIN. */
 export function T32Usuarios() {
   const perfil = usePerfilPermitido(['ADMIN']);
   const [us, setUs] = useState<Usuario[]>([]);
   const [props, setProps] = useState<Propriedade[]>([]);
+  const [chales, setChales] = useState<UnidadePresenca[]>([]);
   const [form, setForm] = useState<Form | null>(null);
   const [senhaDe, setSenhaDe] = useState<{ u: Usuario; senha: string } | null>(null);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const carregar = () => Promise.all([listarUsuarios(), listarPropriedades()]).then(([u, p]) => { setUs(u); setProps(p); })
+  const carregar = () => Promise.all([listarUsuarios(), listarPropriedades(), listarUnidadesPresenca().catch(() => [])]).then(([u, p, c]) => { setUs(u); setProps(p); setChales(chalesPorUsuario ? c : []); })
     .catch(() => setErro('Não foi possível carregar a equipe.'));
   useEffect(() => { if (perfil) carregar(); }, [perfil]);
   if (!perfil) return null;
 
-  const nomeProps = (u: Usuario) => (u.perfil === 'ADMIN' ? 'Todas' : props.filter((p) => u.props.includes(p.id_propriedade)).map((p) => p.nm_propriedade).join(', ') || '—');
-  const editar = (u: Usuario) => { setErro(''); setAviso(''); setSenhaDe(null); setForm({ modo: 'editar', base: u, nome: u.nome, login: u.login, cpf: u.cpf ?? '', perfil: u.perfil, senha: '', props: u.props, ativo: u.ativo }); };
+  const chalesDe = (idProp: number) => chales.filter((c) => c.idPropriedade === idProp);
+  // "Solar do Espinhaço (Casa do Mirante)" quando há chalés escolhidos; só o nome da pousada quando atende todos
+  const nomeProps = (u: Usuario) => (u.perfil === 'ADMIN' ? 'Todas' : props.filter((p) => u.props.includes(p.id_propriedade)).map((p) => {
+    const marc = chalesDe(p.id_propriedade).filter((c) => u.unidades.includes(c.id)).map((c) => c.nome);
+    return marc.length ? `${p.nm_propriedade} (${marc.join(', ')})` : p.nm_propriedade;
+  }).join(', ') || '—');
+  const editar = (u: Usuario) => { setErro(''); setAviso(''); setSenhaDe(null); setForm({ modo: 'editar', base: u, nome: u.nome, login: u.login, cpf: u.cpf ?? '', perfil: u.perfil, senha: '', props: u.props, unidades: u.unidades,
+    escolher: Object.fromEntries(u.props.map((p) => [p, chalesDe(p).some((c) => u.unidades.includes(c.id))])), ativo: u.ativo }); };
 
   async function salvar(e: FormEvent) {
     e.preventDefault();
@@ -62,6 +70,10 @@ export function T32Usuarios() {
     // integridade antes de ir ao servidor (o banco confere de novo)
     if (form.nome.trim().length < 3) return setErro('Informe o nome completo.');
     if (form.perfil !== 'ADMIN' && form.props.length === 0) return setErro('Escolha ao menos uma pousada para este perfil.');
+    // chalés: só os das pousadas marcadas com "Escolher chalés"
+    const unidades = form.perfil === 'ADMIN' ? [] : form.props.filter((p) => form.escolher[p]).flatMap((p) => chalesDe(p).filter((c) => form.unidades.includes(c.id)).map((c) => c.id));
+    const semChale = form.perfil === 'ADMIN' ? undefined : props.find((p) => form.props.includes(p.id_propriedade) && form.escolher[p.id_propriedade] && !chalesDe(p.id_propriedade).some((c) => unidades.includes(c.id)));
+    if (semChale) return setErro(`${semChale.nm_propriedade}: marque ao menos um chalé ou escolha "Todos os chalés".`);
     if (form.modo === 'novo') {
       if (!LOGIN_VALIDO.test(form.login)) return setErro('Usuário: use ao menos 3 letras (ex.: maria.silva).');
       if (us.some((u) => u.login === form.login)) return setErro(`O usuário ${form.login} já existe. Escolha outro (ex.: ${sugerirLogin(form.nome, us.map((u) => u.login))}).`);
@@ -71,8 +83,8 @@ export function T32Usuarios() {
     }
     setSalvando(true);
     const r = form.modo === 'novo'
-      ? await criarUsuario({ nome: form.nome.trim(), login: form.login, cpf: form.cpf.replace(/\D/g, ''), perfil: form.perfil, senha: form.senha, props: form.props })
-      : await salvarUsuario(form.base!, { nome: form.nome, perfil: form.perfil, ativo: form.ativo, props: form.props });
+      ? await criarUsuario({ nome: form.nome.trim(), login: form.login, cpf: form.cpf.replace(/\D/g, ''), perfil: form.perfil, senha: form.senha, props: form.props, unidades })
+      : await salvarUsuario(form.base!, { nome: form.nome, perfil: form.perfil, ativo: form.ativo, props: form.props, unidades });
     setSalvando(false);
     if (!r.ok) return setErro(r.erro);
     setAviso(form.modo === 'novo' ? `Usuário ${form.login} criado. Senha provisória: ${form.senha} — passe ao funcionário; no primeiro acesso ele cria a própria senha.${form.cpf ? ' Ele também entra pelo CPF.' : ''}` : 'Alterações salvas.');
@@ -124,11 +136,37 @@ export function T32Usuarios() {
           </div>
           {form.perfil === 'ADMIN' ? <p className="text-[0.8125rem] text-fg-3">Administrador vê todas as pousadas.</p> : (
             <fieldset className="flex flex-col gap-2"><legend className="ui-rotulo mb-1">Pousadas</legend>
-              {props.map((p) => (
-                <label key={p.id_propriedade} className="ui-marcar text-fg-1">
-                  <input type="checkbox" className="ui-caixa" checked={form.props.includes(p.id_propriedade)}
-                    onChange={(e) => setForm({ ...form, props: e.target.checked ? [...form.props, p.id_propriedade] : form.props.filter((x) => x !== p.id_propriedade) })} />{p.nm_propriedade}
-                </label>))}
+              {props.map((p) => {
+                const marcada = form.props.includes(p.id_propriedade), cs = chalesDe(p.id_propriedade), escolher = !!form.escolher[p.id_propriedade];
+                return (
+                  <div key={p.id_propriedade} className="flex flex-col" data-pousada={p.nm_propriedade}>
+                    <label className="ui-marcar text-fg-1">
+                      <input type="checkbox" className="ui-caixa" checked={marcada}
+                        onChange={(e) => setForm({ ...form, props: e.target.checked ? [...form.props, p.id_propriedade] : form.props.filter((x) => x !== p.id_propriedade) })} />{p.nm_propriedade}
+                    </label>
+                    {/* chalés da pousada: todos (padrão) ou só os escolhidos */}
+                    {marcada && cs.length > 0 && (
+                      <div className="ml-7 flex flex-col gap-0.5 border-l border-line-1 pl-3" role="group" aria-label={`Chalés de ${p.nm_propriedade}`}>
+                        <label className="ui-marcar text-fg-1"><input type="radio" name={`ch-${p.id_propriedade}`} className="ui-caixa" checked={!escolher}
+                          onChange={() => setForm({ ...form, escolher: { ...form.escolher, [p.id_propriedade]: false } })} />Todos os chalés</label>
+                        <label className="ui-marcar text-fg-1"><input type="radio" name={`ch-${p.id_propriedade}`} className="ui-caixa" checked={escolher}
+                          onChange={() => setForm({ ...form, escolher: { ...form.escolher, [p.id_propriedade]: true } })} />Escolher chalés</label>
+                        {escolher && (
+                          <div className="ml-7 flex flex-col">
+                            {cs.map((c) => (
+                              <label key={c.id} className="ui-marcar text-fg-1">
+                                <input type="checkbox" className="ui-caixa" checked={form.unidades.includes(c.id)}
+                                  onChange={(e) => setForm({ ...form, unidades: e.target.checked ? [...form.unidades, c.id] : form.unidades.filter((x) => x !== c.id) })} />{c.nome}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <p className="ui-ajuda">Quem tem chalés escolhidos vê e faz vistoria só nesses chalés.</p>
             </fieldset>)}
           {form.modo === 'editar' && (
             <label className="ui-marcar text-fg-1"><input type="checkbox" className="ui-caixa" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />Ativo (desmarcar bloqueia o acesso na hora)</label>
