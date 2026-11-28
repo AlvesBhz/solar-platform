@@ -100,7 +100,63 @@ window.Disponibilidade = (function () {
     ocupado:         'Essas datas já estão reservadas. Tente outras datas.'
   };
 
+  /* ── Pacotes de datas especiais (ex.: Natal 24/12 · 3 noites R$ 2.400 · 4 noites R$ 2.900).
+     Nas noites de um pacote só se vende uma das opções; o preço é sempre o do banco (calcular_estadia). */
+  var cachePac = {}, pacotes = {};                    /* pacotes: "checkin|noites" → pacote, dos meses já consultados */
+  function rpcPacotes(ini, fim) {
+    var k = iso(ini) + '|' + iso(fim);
+    if (!cachePac[k]) {
+      var guardados = doNavegador('pac|' + k);                          // mesma validade (2 min) dos preços
+      if (guardados) { guardados.forEach(function (p) { pacotes[p.dt_checkin + '|' + p.qtde_noites] = p; }); return (cachePac[k] = Promise.resolve(guardados)); }
+      cachePac[k] = fetch(CONFIG.url + '/rest/v1/rpc/consultar_pacotes', {
+        method: 'POST',
+        headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema },
+        body: JSON.stringify({ p_inicio: iso(ini), p_fim: iso(fim) })
+      }).then(function (r) { if (r.status === 404) return []; if (!r.ok) throw new Error(); return r.json(); })  // 404: banco ainda sem pacotes
+        .then(function (l) { l.forEach(function (p) { pacotes[p.dt_checkin + '|' + p.qtde_noites] = p; }); paraNavegador('pac|' + k, l); return l; })
+        .catch(function () { delete cachePac[k]; return []; });
+    }
+    return cachePac[k];
+  }
+  function listaPacotes() { return Object.keys(pacotes).map(function (k) { return pacotes[k]; }); }
+  /* opções (do mesmo check-in) do pacote que toca a estadia [ini, fim) */
+  function opcoesQueTocam(ini, fim) {
+    var a = iso(ini), b = iso(fim);
+    var toca = listaPacotes().filter(function (p) { return p.dt_checkin < b && a < p.dt_checkout; })[0];
+    if (!toca) return [];
+    return listaPacotes().filter(function (p) { return p.dt_checkin === toca.dt_checkin; })
+      .sort(function (x, y) { return x.qtde_noites - y.qtde_noites; });
+  }
+  function dataBr(s) { return I18N.date(deIso(s)); }
+  function escolherDatas(ci, co) {
+    var st = Booking.getState();
+    st.checkin = deIso(ci); st.checkout = deIso(co); st.selecting = false; st.start = null;
+    Booking.updateDisplays(); consultar();
+  }
+  function botoesPacote(ops) {
+    return '<ul class="bkr-pacotes">' + ops.map(function (p) {
+      return '<li><span>' + p.qtde_noites + ' ' + t('noites') + ' · ' + dataBr(p.dt_checkin) + ' → ' + dataBr(p.dt_checkout) + '</span>' +
+        '<button type="button" class="bkr-op" data-ci="' + p.dt_checkin + '" data-co="' + p.dt_checkout + '">' + moeda(p.vl_total) + '</button></li>';
+    }).join('') + '</ul>';
+  }
+  function ligarBotoes() {
+    document.querySelectorAll('#bkResult [data-ci]').forEach(function (b) {
+      b.onclick = function (e) { e.stopPropagation(); escolherDatas(b.getAttribute('data-ci'), b.getAttribute('data-co')); };
+    });
+  }
+
   function renderizar(r) {
+    var st0 = Booking.getState();
+    if (!r.disponivel && r.motivo === 'pacote') {
+      var ops = opcoesQueTocam(st0.checkin, st0.checkout);
+      mostrar(
+        '<div class="bkr-head"><iconify-icon icon="solar:ticket-linear" width="16"></iconify-icon>' +
+        '<span>' + (ops[0] ? t('Pacote {nome}').replace('{nome}', ops[0].nm_pacote) : t('Pacote')) + '</span></div>' +
+        '<p class="bkr-msg">' + t('Nessas datas vendemos só pacotes. Escolha uma das opções:') + '</p>' + botoesPacote(ops), 'is-off');
+      ligarBotoes();
+      colapsar();
+      return;
+    }
     if (!r.disponivel) {
       var msg = r.motivo === 'min_noites'
         ? t('Para essas datas, a estadia mínima é de {n} noites.').replace('{n}', r.qtde_min_noites)
@@ -118,10 +174,12 @@ window.Disponibilidade = (function () {
     var saldo = Number(r.vl_total) - Number(r.vl_sinal);
     var qtd = r.qtde_noites + ' ' + t(r.qtde_noites === 1 ? 'noite' : 'noites');
     var st = Booking.getState();
+    var pac = r.ds_detalhe && r.ds_detalhe[0] && r.ds_detalhe[0].nm_pacote;
     var urlReserva = 'reserva.html?ci=' + iso(st.checkin) + '&co=' + iso(st.checkout) + '&a=' + st.adults + '&c=' + st.children + '&m=' + st.older + '&b=' + st.babies;
     mostrar(
       '<div class="bkr-head is-ok"><iconify-icon icon="solar:check-circle-linear" width="16"></iconify-icon>' +
-      '<span>' + t('Disponível') + ' · ' + r.nm_unidade + '</span></div>' +
+      '<span>' + t('Disponível') + ' · ' + (pac ? t('Pacote {nome}').replace('{nome}', pac) : r.nm_unidade) + '</span></div>' +
+      (pac ? '<div id="bkOferta"></div>' : '') +
       '<details class="bkr-noites" open><summary>' + qtd + ' · ' + t('ver valor de cada noite') + '</summary><ul>' + noites + '</ul></details>' +
       '<dl class="bkr-valores">' +
         '<div class="bkr-total"><dt>' + t('Total da estadia') + '</dt><dd>' + moeda(r.vl_total) + '</dd></div>' +
@@ -132,6 +190,27 @@ window.Disponibilidade = (function () {
       '<a class="bkr-cta" href="' + urlReserva + '">' + t('Realizar reserva') +
       ' <iconify-icon icon="solar:arrow-right-linear" width="12"></iconify-icon></a>', 'is-ok');
     colapsar();
+    if (pac) ofertaMaisNoites(r, st);
+  }
+
+  /* Pacote escolhido e há opção mais longa no mesmo check-in: "Por mais R$ 500, fique até 28/12" + "Fico 4 noites".
+     A diferença vem do banco (consulta da opção longa com os mesmos hóspedes), então já inclui crianças e extras. */
+  function ofertaMaisNoites(r, st) {
+    var ci = iso(st.checkin), chave = chaveDe(st);
+    rpcPacotes(st.checkin, soma(st.checkin, 1)).then(function () {
+      var maior = listaPacotes().filter(function (p) { return p.dt_checkin === ci && p.qtde_noites > r.qtde_noites; })
+        .sort(function (x, y) { return x.qtde_noites - y.qtde_noites; })[0];
+      if (!maior) return null;
+      return rpcDisp(st.checkin, deIso(maior.dt_checkout), st).then(function (r2) { return r2 && r2.disponivel ? { p: maior, r: r2 } : null; });
+    }).then(function (o) {
+      var el = document.getElementById('bkOferta');
+      if (!o || !el || chave !== chaveDe(Booking.getState())) return;
+      var dif = Number(o.r.vl_total) - Number(r.vl_total);
+      el.className = 'bkr-oferta';
+      el.innerHTML = '<p>' + t('Por mais {v}, fique até {d}.').replace('{v}', moeda(dif)).replace('{d}', dataBr(o.p.dt_checkout)) + '</p>' +
+        '<button type="button" class="bkr-op" data-ci="' + o.p.dt_checkin + '" data-co="' + o.p.dt_checkout + '">' + t('Fico {n} noites').replace('{n}', o.p.qtde_noites) + '</button>';
+      ligarBotoes();
+    }).catch(function () {});
   }
 
   function consultar() {
@@ -166,6 +245,7 @@ window.Disponibilidade = (function () {
         var r = lista && lista[0];
         if (!r) throw new Error('sem resposta');
         ultimo = { chave: chave, resposta: r };
+        if (r.motivo === 'pacote') return rpcPacotes(soma(s.checkin, -31), soma(s.checkout, 31)).then(function () { if (meu === pedido) renderizar(r); });
         renderizar(r);
       })
       .catch(function () {
@@ -223,7 +303,10 @@ window.Disponibilidade = (function () {
   /* Em segundo plano, quando a página fica ociosa: o calendário já abre com os valores na mão. */
   function aquecer() {
     var h = new Date();
-    try { precosDoMes(h.getFullYear(), h.getMonth()); } catch (e) { /* o calendário pede de novo quando abrir */ }
+    try {
+      precosDoMes(h.getFullYear(), h.getMonth());
+      rpcPacotes(new Date(h.getFullYear(), h.getMonth(), 1), new Date(h.getFullYear(), h.getMonth() + 2, 1));   // pacotes de datas especiais dos mesmos 2 meses
+    } catch (e) { /* o calendário pede de novo quando abrir */ }
   }
   (window.requestIdleCallback || function (f) { setTimeout(f, 1500); })(aquecer, { timeout: 4000 });
   /* Alternativa enquanto consultar_precos não existe no banco: usa consultar_disponibilidade em blocos de
@@ -268,6 +351,9 @@ window.Disponibilidade = (function () {
   function noiteOcupada(d) { var x = noites[iso(d)]; return !!x && (!x.livre || x.vl_noite == null); }
   function saidaValida(ini, fim) {
     var min = 2, n = Math.round((fim - ini) / 864e5);
+    if (pacotes[iso(ini) + '|' + n]) return { ok: true, min: n };          // é exatamente um dos pacotes
+    var ops = opcoesQueTocam(ini, fim);
+    if (ops.length) return { ok: false, motivo: 'pacote', opcoes: ops };    // toca um pacote sem ser um deles
     for (var d = new Date(ini); d < fim; d.setDate(d.getDate() + 1)) {
       var x = noites[iso(d)];
       if (!x) continue;                                    // ainda não consultada: o banco confere ao reservar
@@ -293,6 +379,7 @@ window.Disponibilidade = (function () {
     nota.textContent = t('Carregando valores…'); cal.appendChild(nota);
     var atual = precosDoMes(ano, mes0);                                                   // traz este mês e o seguinte numa consulta só
     precosDoMes(mes0 + 1 > 11 ? ano + 1 : ano, (mes0 + 1) % 12).then(registrar);          // mês seguinte: estadias que viram o mês (já está na memória)
+    rpcPacotes(new Date(ano, mes0, 1), new Date(ano, mes0 + 2, 1)).then(function () { marcarSelecao(cal); });                                         // pacotes de datas especiais (valem para a seleção de saída)
     atual.then(function (m) {
       if (cal._pmes !== meuMes) return;
       nota.classList.remove('cal-pcarrega');
@@ -305,6 +392,8 @@ window.Disponibilidade = (function () {
         if (x.livre && x.vl_noite != null) {
           var p = document.createElement('span'); p.className = 'cal-p'; p.textContent = curto(Number(x.vl_noite));
           c.title = moeda(x.vl_noite) + ' / ' + t('noite'); c.appendChild(p); achou = true;
+          var pk = opcoesQueTocam(c._date, soma(c._date, 1))[0];
+          if (pk) { c.classList.add('cal-pac'); c.title = t('Pacote {nome}').replace('{nome}', pk.nm_pacote); }
         } else c.classList.add('cal-ocu');
       });
       if (achou) nota.textContent = t('Valor por noite') + ' · ' + document.getElementById('guestsDisplay').textContent;
