@@ -108,6 +108,15 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
       const esperado = perfil === 'ADMIN' ? 'gestao,campo,inspect,site' : 'gestao,campo,inspect';
       ok(grupos === esperado, `${perfil}: menu agrupado em ${esperado.replace(/,/g, ' · ')} (grupo sem item visível não aparece)` + (grupos !== esperado ? ' — veio ' + grupos : ''));
       if (process.env.FOTO && perfil === 'ADMIN') await page.locator('aside').first().screenshot({ path: process.env.FOTO });
+      // menu mais alto que a tela: a barra lateral rola por dentro e Sair/Trocar senha ficam dentro do fundo escuro
+      const alcancaveis = await page.evaluate(() => {
+        const a = document.querySelector('aside'); if (!a) return false;
+        return [...a.querySelectorAll('a, button')].filter((x) => /Sair|Trocar senha/.test(x.textContent || '') && getComputedStyle(x).display !== 'none').every((x) => {
+          x.scrollIntoView({ block: 'nearest' }); const ra = a.getBoundingClientRect(), rb = x.getBoundingClientRect();
+          return rb.top >= ra.top - 1 && rb.bottom <= ra.bottom + 1;
+        });
+      });
+      ok(alcancaveis, `${perfil}: em 1280×720, Trocar senha e Sair ficam dentro da barra lateral (rolando por dentro)`);
       const links = await page.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
       const ruins = [];
       for (const l of links) {
