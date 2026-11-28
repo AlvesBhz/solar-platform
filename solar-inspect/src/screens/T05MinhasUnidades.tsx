@@ -166,7 +166,7 @@ function CartaoUnidade({ u }: { u: Unidade }) {
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="truncate text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">{u.tipo}{u.andar ? ` · ${u.andar}` : ''}</span>
+            <span className="truncate ui-secao">{u.tipo}{u.andar ? ` · ${u.andar}` : ''}</span>
             <span className="truncate text-base font-medium text-fg-1">{u.nome}</span>
             <span className="truncate text-[0.8125rem] text-fg-2">{u.propriedade}</span>
           </div>

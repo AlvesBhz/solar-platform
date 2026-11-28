@@ -54,7 +54,7 @@ export function SeletorResposta({ opcoes, valor, onChange, rotulo }: { opcoes: s
 export function CampoObservacao({ valor, onChange, obrigatoria }: { valor: string; onChange: (v: string) => void; obrigatoria: boolean }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="flex items-center justify-between text-xs uppercase tracking-[0.08em] text-fg-2">
+      <span className="flex items-center justify-between ui-secao">
         Observação {obrigatoria && <span className="normal-case tracking-normal text-warning">obrigatória</span>}
       </span>
       <textarea
@@ -140,7 +140,7 @@ const GRAVIDADES: { id: Gravidade; label: string; icon: string; desc: string; cl
 export function SeletorGravidade({ valor, onChange, travado }: { valor: Gravidade; onChange: (g: Gravidade) => void; travado?: boolean }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-xs uppercase tracking-[0.08em] text-fg-2">Gravidade da ocorrência</legend>
+      <legend className="mb-2 ui-secao">Gravidade da ocorrência</legend>
       {travado && <p className="-mt-1 text-[0.75rem] text-fg-3">Item crítico: a ocorrência é sempre crítica e tira a unidade da venda até ser resolvida.</p>}
       {GRAVIDADES.filter((o) => !travado || o.id === 'critica').map((o) => {
         const sel = valor === o.id;

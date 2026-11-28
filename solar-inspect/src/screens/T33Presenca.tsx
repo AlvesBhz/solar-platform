@@ -7,8 +7,8 @@ import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { VALIDACOES, listarPropriedades, listarUnidadesPresenca, qrDaUnidade, salvarPresencaUnidade, validarPresencaUnidade, type Herdavel, type Propriedade, type UnidadePresenca } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
-const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
-const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+const campo = 'ui-campo';
+const rot = 'ui-rotulo';
 const OPCOES = [{ valor: 'HERDAR', label: 'Igual à pousada' }, ...VALIDACOES] as { valor: string; label: string }[];
 const rotulo = (v: string) => VALIDACOES.find((x) => x.valor === v)?.label ?? v;
 const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(',', '.')));

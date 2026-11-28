@@ -83,7 +83,7 @@ export default function T13Comparacao() {
             )}
 
             <section className="flex flex-col gap-2">
-              <h2 className="text-xs uppercase tracking-[0.08em] text-fg-2">Comparado à entrada, o item está</h2>
+              <h2 className="ui-secao">Comparado à entrada, o item está</h2>
               <SeletorResposta opcoes={tipo.respostas} valor={resposta} onChange={responder} rotulo={`Estado de ${ctx.item.nome} na saída`} />
             </section>
 
@@ -94,7 +94,7 @@ export default function T13Comparacao() {
 
             {fotos.length > 0 && (
               <section className="flex flex-col gap-2">
-                <h2 className="flex items-center justify-between text-xs uppercase tracking-[0.08em] text-fg-2">
+                <h2 className="flex items-center justify-between ui-secao">
                   Evidências da saída <span className="font-mono text-fg-3">{fotos.length}</span>
                 </h2>
                 <GradeEvidencias fotos={fotos} novaFoto={`${base}/item/${itemId}/foto`} onRemover={remover} />

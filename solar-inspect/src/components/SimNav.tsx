@@ -100,7 +100,7 @@ export default function SimNav() {
             </div>
             {GRUPOS.map((g) => (
               <section key={g.titulo} className="flex flex-col border-t border-line-1 py-2">
-                <h2 className="px-4 py-2 font-sans text-[0.6875rem] font-normal uppercase tracking-[0.08em] text-fg-3">{g.titulo}</h2>
+                <h2 className="px-4 py-2 ui-secao">{g.titulo}</h2>
                 {g.telas.map((t) => {
                   const atual = pathname === t.rota.split('?')[0];
                   return (

@@ -8,8 +8,8 @@ import { VALIDACOES, listarPropriedades, salvarConfigPropriedade, validarPresenc
 import { usePerfilPermitido } from '../lib/useAdmin';
 
 const rotuloValidacao = (v: string) => VALIDACOES.find((x) => x.valor === v)?.label ?? v;
-const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
-const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+const campo = 'ui-campo';
+const rot = 'ui-rotulo';
 
 /** T28 — Pousadas: as do site (o app não cria nem apaga), com a configuração de presença de cada uma. */
 export function T28Propriedades() {

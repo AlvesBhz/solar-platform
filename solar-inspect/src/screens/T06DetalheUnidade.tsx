@@ -52,7 +52,7 @@ export default function T06DetalheUnidade() {
 
             {/* Ocorrências abertas */}
             <section className="flex flex-col gap-3" aria-labelledby="oc-titulo">
-              <h2 id="oc-titulo" className="flex items-center justify-between text-xs font-medium uppercase tracking-[0.08em] text-fg-2">
+              <h2 id="oc-titulo" className="flex items-center justify-between ui-secao">
                 Ocorrências abertas
                 <span className="font-mono text-fg-3">{ocorrencias.length}</span>
               </h2>
@@ -85,7 +85,7 @@ export default function T06DetalheUnidade() {
 
             {/* Última vistoria */}
             <section className="flex flex-col gap-3" aria-labelledby="uv-titulo">
-              <h2 id="uv-titulo" className="text-xs font-medium uppercase tracking-[0.08em] text-fg-2">Última vistoria</h2>
+              <h2 id="uv-titulo" className="ui-secao">Última vistoria</h2>
               {u.ultima ? (
                 <div className="flex items-start gap-3 rounded-xl border border-line-1 bg-white p-4">
                   <Icon icon="solar:clipboard-check-linear" width={24} className="mt-0.5 shrink-0 text-pine" aria-hidden="true" />
@@ -134,7 +134,7 @@ function Info({ icon, label, value }: { icon: string; label: string; value: stri
     <div className="flex items-center gap-3 rounded-xl border border-line-1 bg-white p-3">
       <Icon icon={icon} width={20} className="shrink-0 text-pine" aria-hidden="true" />
       <div className="flex min-w-0 flex-col">
-        <dt className="text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">{label}</dt>
+        <dt className="ui-secao">{label}</dt>
         <dd className="truncate text-sm font-medium text-fg-1">{value}</dd>
       </div>
     </div>

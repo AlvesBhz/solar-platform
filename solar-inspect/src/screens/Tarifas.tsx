@@ -93,9 +93,9 @@ const PRIORIDADES = [
   { v: 0, l: '0 · Base (o ano todo)' }, { v: 1, l: '1 · Temporada' }, { v: 2, l: '2 · Feriado ou evento' },
   ...[3, 4, 5, 6, 7, 8, 9].map((v) => ({ v, l: String(v) })),
 ];
-const curto = 'min-h-10 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 placeholder:text-fg-4 focus:border-pine focus:outline-none disabled:bg-cream disabled:text-fg-4';
-const rotC = 'flex min-w-0 flex-col gap-1 text-[0.6875rem] uppercase tracking-[0.06em] text-fg-2';
-const secao = 'font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2';
+const curto = 'ui-campo';
+const rotC = 'ui-rotulo';
+const secao = 'ui-secao';
 
 /** Dias da semana (domingo a sábado) como caixinhas de marcar. */
 function Dias({ marcados, onTrocar, rotulo }: { marcados: number[]; onTrocar: (iso: number) => void; rotulo: string }) {
@@ -240,7 +240,7 @@ export function T41FormTarifa() {
               {mudouIdades && <p role="note" className="flex items-start gap-1.5 text-[0.75rem] text-warning"><Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />Ao salvar, as novas faixas valem para todas as tarifas e para o site.</p>}
             </fieldset>
 
-            <label className="flex min-h-11 items-center gap-2 border-t border-line-1 pt-4 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={t.ativo} onChange={(e) => setT({ ...t, ativo: e.target.checked })} />Tarifa ativa (à venda no site)</label>
+            <label className="flex min-h-11 items-center gap-2 border-t border-line-1 pt-4 text-[0.875rem]"><input type="checkbox" className="ui-caixa" checked={t.ativo} onChange={(e) => setT({ ...t, ativo: e.target.checked })} />Tarifa ativa (à venda no site)</label>
 
             {erros.length > 0 && <ul className="flex flex-col gap-1 text-[0.8125rem] text-warning" role="alert">{erros.map((x) => <li key={x} className="flex items-start gap-1.5"><Icon icon="solar:danger-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />{x}</li>)}</ul>}
             <div className="flex flex-wrap gap-3">

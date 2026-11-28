@@ -9,8 +9,8 @@ import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenh
 import { usePerfilPermitido } from '../lib/useAdmin';
 
 const LOGIN_VALIDO = /^[a-z][a-z0-9._-]{2,39}$/;
-const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
-const rotulo = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+const campo = 'ui-campo';
+const rotulo = 'ui-rotulo';
 const mascaraCpf = (c: string | null) => (c ? `•••.${c.slice(3, 6)}.${c.slice(6, 9)}-••` : '—');
 /** Senha provisória forte: 12 caracteres sem os que se confundem (0/O, 1/l/I), sempre com maiúscula, minúscula e número. */
 function gerarSenha(): string {
@@ -122,15 +122,15 @@ export function T32Usuarios() {
             <Seletor rotulo="Perfil" valor={form.perfil} onChange={(v) => setForm({ ...form, perfil: v })} opcoes={PERFIS} />
           </div>
           {form.perfil === 'ADMIN' ? <p className="text-[0.8125rem] text-fg-3">Administrador vê todas as pousadas.</p> : (
-            <fieldset className="flex flex-col gap-2"><legend className="mb-1 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2">Pousadas</legend>
+            <fieldset className="flex flex-col gap-2"><legend className="ui-rotulo mb-1">Pousadas</legend>
               {props.map((p) => (
-                <label key={p.id_propriedade} className="flex min-h-11 items-center gap-2 text-[0.875rem] text-fg-1">
-                  <input type="checkbox" className="h-5 w-5 accent-pine" checked={form.props.includes(p.id_propriedade)}
+                <label key={p.id_propriedade} className="ui-marcar text-fg-1">
+                  <input type="checkbox" className="ui-caixa" checked={form.props.includes(p.id_propriedade)}
                     onChange={(e) => setForm({ ...form, props: e.target.checked ? [...form.props, p.id_propriedade] : form.props.filter((x) => x !== p.id_propriedade) })} />{p.nm_propriedade}
                 </label>))}
             </fieldset>)}
           {form.modo === 'editar' && (
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem] text-fg-1"><input type="checkbox" className="h-5 w-5 accent-pine" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />Ativo (desmarcar bloqueia o acesso na hora)</label>
+            <label className="ui-marcar text-fg-1"><input type="checkbox" className="ui-caixa" checked={form.ativo} onChange={(e) => setForm({ ...form, ativo: e.target.checked })} />Ativo (desmarcar bloqueia o acesso na hora)</label>
           )}
           <div className="flex flex-wrap gap-2">
             <button type="submit" className={`${btnPrimary} w-auto`} disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</button>

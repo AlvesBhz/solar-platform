@@ -110,7 +110,7 @@ export function T37TratarOcorrencia() {
             </section>
             {msg && <p role={msg.erro ? 'alert' : 'status'} className={`rounded-md border bg-white p-3 text-[0.8125rem] ${msg.erro ? 'border-error text-error' : 'border-line-1 text-available'}`}>{msg.t}</p>}
             <section className="flex flex-col gap-2">
-              <h2 className="text-xs uppercase tracking-[0.08em] text-fg-2">Histórico</h2>
+              <h2 className="ui-secao">Histórico</h2>
               <ol className="flex flex-col gap-3 rounded-xl border border-line-1 bg-white p-4">
                 {o.historico.map((h, i) => (
                   <li key={i} className="flex gap-3 text-[0.8125rem]"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-pine" /><div className="min-w-0"><p className="text-fg-1 [overflow-wrap:anywhere]">{h.texto}</p>{h.quando && <p className="text-[0.75rem] text-fg-3">{h.quando}</p>}</div></li>
@@ -118,7 +118,7 @@ export function T37TratarOcorrencia() {
               </ol>
             </section>
             {aberta && (
-              <label className="flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2">O que foi feito
+              <label className="ui-rotulo">O que foi feito
                 <textarea rows={3} maxLength={1000} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Ex.: troquei o reparo da torneira"
                   className="rounded-md border border-line-2 bg-white p-3 text-[0.875rem] normal-case tracking-normal text-fg-1 focus:border-pine focus:outline-none" aria-label="O que foi feito" />
               </label>

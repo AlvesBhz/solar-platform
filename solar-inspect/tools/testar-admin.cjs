@@ -82,8 +82,8 @@ function rotas(page, db) {
     return json(404, { message: 'não esperado ' + m + ' ' + caminho });
   });
 }
-async function abrir(browser, db, rota) {
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+async function abrir(browser, db, rota, opcoes = { viewport: { width: 1280, height: 900 } }) {
+  const ctx = await browser.newContext(opcoes);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => errosJS.push(e.message));
   await rotas(page, db);
@@ -290,6 +290,12 @@ if (require.main === module) (async () => {
     await page.click('button[aria-label="Editar Toalhas de banho"]');
     ok(await page.locator('[data-item="Toalhas de banho"] form[aria-label=Item]').count() === 1 && (await texto(page, 'form[aria-label=Item]')).includes('Editando: Toalhas de banho · Banheiro'), 'editar abre o formulário junto do item, dizendo o que está sendo editado');
     await page.click('form[aria-label=Item] button:has-text("Cancelar")');
+    if (process.env.FOTO_TOQUE) {   // celular de verdade (toque): campos em 16px, como no iPhone
+      const t = await abrir(browser, db, '/admin/checklists', { ...require('playwright').devices['iPhone 13'] });
+      await t.page.locator('button[aria-label="Editar Toalhas de banho"]').first().click(); await t.page.waitForTimeout(600);
+      await t.page.locator('form[aria-label=Item]').scrollIntoViewIfNeeded();
+      await t.page.screenshot({ path: process.env.FOTO_TOQUE }); await t.ctx.close();
+    }
     await page.click('button[aria-label="Renomear Banheiro"]');
     ok(await page.locator('[data-ambiente="Banheiro"] form[aria-label=Ambiente]').count() === 1 && (await texto(page, 'form[aria-label=Ambiente]')).includes('Renomeando: Banheiro'), 'renomear abre o formulário dentro do próprio ambiente');
     await page.click('form[aria-label=Ambiente] button:has-text("Cancelar")');

@@ -8,6 +8,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Escala de formulário (uma só em todo o app): rótulo 13px médio em caixa normal; valor do campo 16px no toque (o iOS não dá zoom)
+   e 14px no computador; opção de marcar 14px; título de seção 11px em caixa alta, a única voz em maiúsculas. */
+@layer components {
+  .ui-rotulo { @apply flex min-w-0 flex-col gap-1.5 text-[0.8125rem] font-medium normal-case leading-snug tracking-normal text-fg-2; }
+  .ui-campo { @apply min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-fg-1 placeholder:text-fg-4 focus:border-pine focus:outline-none disabled:bg-cream disabled:text-fg-4; }
+  .ui-marcar { @apply flex min-h-11 items-center gap-2.5 text-[0.875rem] leading-snug text-fg-1; }
+  .ui-caixa { @apply h-[1.125rem] w-[1.125rem] shrink-0 accent-pine; }
+  .ui-secao { @apply text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-fg-3; }
+  .ui-ajuda { @apply text-[0.75rem] font-normal normal-case leading-snug tracking-normal text-fg-3; }
+}
+
 /* [RESPONSIVO] fundação — box-sizing, sem scroll lateral, altura móvel real */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; overflow-x: clip; }
@@ -57,7 +68,7 @@ input, select, textarea { font-size: max(16px, 1rem); }
 }
 @media (pointer: fine) {
   :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea, button[aria-haspopup="listbox"]):not(.font-mono) {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
   }
   :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, button[aria-haspopup="listbox"]):not(.font-mono) {
     min-height: 2.5rem;

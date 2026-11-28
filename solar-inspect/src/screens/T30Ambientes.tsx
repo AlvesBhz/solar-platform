@@ -7,8 +7,8 @@ import { definirTiposDoItem, incluirItensNosTipos, listarAmbientes, listarTipos,
 import { usePerfilPermitido } from '../lib/useAdmin';
 import { mover, useReordenar } from '../lib/useReordenar';
 
-const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 focus:border-pine focus:outline-none';
-const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+const campo = 'ui-campo';
+const rot = 'ui-rotulo';
 /** Ícone do cômodo, pelo mapa do design system (o mesmo do app de campo). */
 function iconeAmbiente(nome: string) {
   const n = nome.toLowerCase();
@@ -129,18 +129,18 @@ export function T30Ambientes() {
       <p className="text-[0.8125rem] font-medium text-pine sm:col-span-2">{titulo}</p>
       {erroNoForm}
       <label className={`${rot} sm:col-span-2`}>Nome do item<input id="i-nome" className={campo} maxLength={80} value={fi.nome} onChange={(e) => setFi({ ...fi, nome: e.target.value })} placeholder="Ex.: Toalhas de banho" /></label>
-      <label className={`${rot} sm:col-span-2`}>Como conferir (opcional)<input id="i-orientacao" className={campo} maxLength={300} value={fi.orientacao} onChange={(e) => setFi({ ...fi, orientacao: e.target.value })} /></label>
+      <label className={`${rot} sm:col-span-2`}>Como conferir (opcional)<textarea id="i-orientacao" rows={2} className={`${campo} resize-y py-2.5 leading-snug`} maxLength={300} value={fi.orientacao} onChange={(e) => setFi({ ...fi, orientacao: e.target.value })} /></label>
       <label className={rot}>Quantidade esperada (opcional)<input id="i-qtde" inputMode="numeric" className={campo} value={fi.qtde} onChange={(e) => setFi({ ...fi, qtde: e.target.value })} /></label>
       <div className="flex flex-col justify-end gap-1">
-        <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={fi.critico} onChange={(e) => setFi({ ...fi, critico: e.target.checked })} />Item crítico (problema tira o chalé da venda)</label>
-        <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={fi.foto} onChange={(e) => setFi({ ...fi, foto: e.target.checked })} />Foto obrigatória</label>
+        <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={fi.critico} onChange={(e) => setFi({ ...fi, critico: e.target.checked })} />Item crítico (problema tira o chalé da venda)</label>
+        <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={fi.foto} onChange={(e) => setFi({ ...fi, foto: e.target.checked })} />Foto obrigatória</label>
       </div>
       <fieldset className="flex flex-col gap-1 sm:col-span-2">
-        <legend className="text-[0.75rem] uppercase tracking-[0.06em] text-fg-2">Usar nas vistorias</legend>
+        <legend className="ui-rotulo">Usar nas vistorias</legend>
         <div className="flex flex-wrap gap-x-5">
           {tipos.map((t) => (
-            <label key={t.id} className="flex min-h-11 items-center gap-2 text-[0.875rem]">
-              <input type="checkbox" className="h-5 w-5 accent-pine" checked={fi.tipos.includes(t.id)}
+            <label key={t.id} className="ui-marcar">
+              <input type="checkbox" className="ui-caixa" checked={fi.tipos.includes(t.id)}
                 onChange={(e) => setFi({ ...fi, tipos: e.target.checked ? [...fi.tipos, t.id] : fi.tipos.filter((x) => x !== t.id) })} />{t.nome}
             </label>
           ))}
@@ -158,7 +158,7 @@ export function T30Ambientes() {
         <div className="max-w-sm"><Seletor rotulo="Chalé" valor={uid} onChange={setUid} opcoes={us.map((u) => ({ valor: String(u.id), label: `${u.nome} · ${u.pousada}` }))} icone="solar:home-2-linear" /></div>
         {tipos.length > 0 && (
           <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">Vistoria</span>
+            <span className="ui-secao">Vistoria</span>
             <Chips rotulo="Tipo de vistoria" valor={filtro} onChange={setFiltro} opcoes={[{ valor: '', label: 'Todas' }, ...tipos.map((t) => ({ valor: String(t.id), label: t.nome }))]} />
           </div>
         )}

@@ -45,13 +45,13 @@ export default function T14Ocorrencia() {
         <SeletorGravidade valor={g} onChange={setGrav} travado={ctx?.item.critico} />
 
         <label className="flex flex-col gap-2">
-          <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Descrição (opcional)</span>
+          <span className="ui-secao">Descrição (opcional)</span>
           <textarea rows={4} maxLength={500} value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="O que aconteceu, onde e o que precisa ser feito."
             className={`w-full rounded-md border bg-white p-3 text-fg-1 shadow-sm placeholder:text-fg-4 focus:border-pine focus:outline-none border-line-2`} />
         </label>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-xs uppercase tracking-[0.08em] text-fg-2">Fotos da ocorrência</h2>
+          <h2 className="ui-secao">Fotos da ocorrência</h2>
           <GradeEvidencias fotos={fotos} novaFoto={`${base}/item/${itemId}/foto`} onRemover={remover} />
         </section>
       </main>

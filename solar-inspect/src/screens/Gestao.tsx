@@ -43,7 +43,7 @@ const Falha = ({ tentar }: { tentar: () => void }) => (
   </div>
 );
 const Aviso = ({ msg, erro }: { msg: string; erro?: boolean }) => <p role={erro ? 'alert' : 'status'} className={`rounded-md border bg-white p-3 text-[0.8125rem] ${erro ? 'border-error text-error' : 'border-line-1 text-available'}`}>{msg}</p>;
-const Titulo = ({ children }: { children: React.ReactNode }) => <h2 className="flex items-center justify-between font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">{children}</h2>;
+const Titulo = ({ children }: { children: React.ReactNode }) => <h2 className="flex items-center justify-between ui-secao">{children}</h2>;
 
 /** Carrega dados do banco com estado de erro e recarga. */
 function useCarga<T>(f: () => Promise<T>, deps: unknown[] = []) {
@@ -147,11 +147,11 @@ export function T20Dashboard() {
               ['Ocorrências abertas', ocsF.length, ocsF.some((o) => o.gravidade === 'critica') ? 'text-error' : ocsF.length ? 'text-warning' : ''],
               ['Vistorias hoje', `${vHoje.filter((v) => v.status === 'concluida').length}/${vHoje.length}`, ''],
             ].map(([l, v, cl]) => (
-              <div key={l as string} className={`${card} p-4`}><dt className="text-[0.6875rem] uppercase tracking-[0.08em] text-fg-3">{l}</dt><dd className={`font-mono text-2xl font-medium tabular-nums ${cl || 'text-fg-1'}`}>{v}</dd></div>
+              <div key={l as string} className={`${card} p-4`}><dt className="ui-secao">{l}</dt><dd className={`font-mono text-2xl font-medium tabular-nums ${cl || 'text-fg-1'}`}>{v}</dd></div>
             ))}
           </dl>
           <section className={`${card} p-4`}>
-            <h2 className="mb-3 font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Situação das unidades</h2>
+            <h2 className="mb-3 ui-secao">Situação das unidades</h2>
             <div className="flex h-3 overflow-hidden rounded-full bg-line-1" aria-hidden="true">
               {(Object.keys(ESTADOS) as EstadoUnidade[]).map((e) => { const n = lista.filter((u) => u.estado === e).length; return n ? <span key={e} className={ESTADOS[e].cls.includes('available') ? 'bg-available' : ESTADOS[e].cls.includes('error') ? 'bg-error' : ESTADOS[e].cls.includes('warning') ? 'bg-warning' : e === 'em_limpeza' ? 'bg-pine' : 'bg-line-2'} style={{ flex: n }} /> : null; })}
             </div>
@@ -232,7 +232,7 @@ function PainelQr({ u }: { u: UnidadeCampo }) {
   }
   return (
     <div className={`${card} flex flex-col gap-3 p-4`}>
-      <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">QR Code da porta</h2>
+      <h2 className="ui-secao">QR Code da porta</h2>
       {msg && <Aviso msg={msg.t} erro={msg.erro} />}
       {qr ? (
         <figure className="flex flex-col items-center gap-2">
@@ -305,7 +305,7 @@ export function T22DetalheUnidade() {
               ))}
             </dl>
             <div className={`${card} flex flex-col gap-3 p-4 print:hidden`}>
-              <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Alterar situação</h2>
+              <h2 className="ui-secao">Alterar situação</h2>
               {msg && <Aviso msg={msg.t} erro={msg.erro} />}
               <Seletor rotulo="Nova situação" placeholder="Selecione a nova situação" valor={novo} onChange={(v) => { setNovo(v as EstadoUnidade | ''); setConfirmar(false); setMsg(null); }}
                 opcoes={(Object.keys(ESTADOS) as EstadoUnidade[]).filter((e) => e !== u.estado).map((e) => ({ valor: e, label: ESTADOS[e].label, icone: ESTADOS[e].icon }))} />
@@ -396,7 +396,7 @@ function Respostas({ v, fotosGrandes }: { v: DetalheV; fotosGrandes?: boolean })
     <div className="flex flex-col gap-4">
       {ambs.map((a) => (
         <section key={a} className="flex flex-col gap-2 [break-inside:avoid]">
-          <h3 className="text-xs uppercase tracking-[0.08em] text-fg-2">{a}</h3>
+          <h3 className="ui-secao">{a}</h3>
           <ul className={`${card} divide-y divide-line-1`}>
             {v.respostas.filter((r) => r.ambiente === a).map((r) => (
               <li key={r.item} className="flex flex-col gap-2 px-4 py-3 text-[0.8125rem]">
@@ -467,10 +467,10 @@ export function T27Relatorio() {
           </header>
           <Metadados v={v} />
           <section className="flex flex-col gap-2">
-            <h3 className="text-xs uppercase tracking-[0.08em] text-fg-2">Ocorrências ({v.ocorrencias.length})</h3>
+            <h3 className="ui-secao">Ocorrências ({v.ocorrencias.length})</h3>
             {v.ocorrencias.length ? <ul className="divide-y divide-line-1 text-[0.8125rem]">{v.ocorrencias.map((o) => <li key={o.id} className="flex items-center justify-between gap-3 py-2"><span>{o.ambiente} · {o.item}: {o.descricao}</span><GravidadeTag g={o.gravidade} /></li>)}</ul> : <p className="text-[0.8125rem] text-fg-2">Nenhuma.</p>}
           </section>
-          <section className="flex flex-col gap-2"><h3 className="text-xs uppercase tracking-[0.08em] text-fg-2">Checklist</h3><Respostas v={v} fotosGrandes /></section>
+          <section className="flex flex-col gap-2"><h3 className="ui-secao">Checklist</h3><Respostas v={v} fotosGrandes /></section>
           <footer className="flex flex-wrap items-end justify-between gap-4 border-t border-line-1 pt-4 text-[0.75rem] text-fg-3">
             <span>Código {v.id}</span>
             {v.assinatura ? <span className="flex flex-col items-end gap-1"><img src={v.assinatura} alt="Assinatura do vistoriador" className="h-16 w-auto" />Assinatura do vistoriador</span> : <span>Sem assinatura</span>}
@@ -539,7 +539,7 @@ export function T26Tratamento() {
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <section className="flex flex-col gap-3">
             {msg && <Aviso msg={msg.t} erro={msg.erro} />}
-            <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Histórico</h2>
+            <h2 className="ui-secao">Histórico</h2>
             <ol className={`${card} flex flex-col gap-4 p-4`}>
               {o.historico.map((h, i) => (
                 <li key={i} className="flex gap-3 text-[0.8125rem]"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-pine" /><div className="min-w-0"><p className="text-fg-1 [overflow-wrap:anywhere]">{h.texto}</p>{h.quando && <p className="text-[0.75rem] text-fg-3">{h.quando}</p>}</div></li>

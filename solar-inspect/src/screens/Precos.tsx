@@ -12,8 +12,8 @@ import {
 import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
-export const campo = 'min-h-11 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 placeholder:text-fg-4 focus:border-pine focus:outline-none';
-export const rot = 'flex flex-col gap-1.5 text-[0.75rem] uppercase tracking-[0.06em] text-fg-2';
+export const campo = 'ui-campo';
+export const rot = 'ui-rotulo';
 export const num = (v: string) => (v.trim() === '' ? null : Number(v.replace(/\./g, '').replace(',', '.')));
 export const PERFIS_PRECO: 'ADMIN'[] = ['ADMIN']; // preços são dados do site: só o administrador, como as Propriedades
 
@@ -193,7 +193,7 @@ export function T38Calendario() {
           aria-label="Ajuste dos dias">
           {!sel.length ? (
             <>
-              <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">{ucf(mesAno(mes))}</h2>
+              <h2 className="ui-secao">{ucf(mesAno(mes))}</h2>
               <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[0.8125rem]">
                 <dt className="text-fg-3">Faixa de preço</dt><dd className="text-right font-mono text-fg-1">{resumo.faixa}</dd>
                 <dt className="text-fg-3">Noites com ajuste</dt><dd className="text-right font-mono text-fg-1">{resumo.ajustadas || '—'}</dd>
@@ -289,9 +289,9 @@ function PainelAjuste({ unidade, noites: ns, aguardaFim, onFechar, onSalvo }: { 
         </button>
         {mais && (
           <div className="flex flex-col gap-1 rounded-md bg-cream px-3 py-2">
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={fechado} onChange={(e) => mexeu(setFechado)(e.target.checked)} />Fechar para venda</label>
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={semChegada} onChange={(e) => mexeu(setSemChegada)(e.target.checked)} />Não aceitar chegada nestes dias</label>
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={semSaida} onChange={(e) => mexeu(setSemSaida)(e.target.checked)} />Não aceitar saída nestes dias</label>
+            <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={fechado} onChange={(e) => mexeu(setFechado)(e.target.checked)} />Fechar para venda</label>
+            <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={semChegada} onChange={(e) => mexeu(setSemChegada)(e.target.checked)} />Não aceitar chegada nestes dias</label>
+            <label className="ui-marcar"><input type="checkbox" className="ui-caixa" checked={semSaida} onChange={(e) => mexeu(setSemSaida)(e.target.checked)} />Não aceitar saída nestes dias</label>
             <label className={`${rot} pb-1`}>Observação
               <input className={campo} value={obs} onChange={(e) => mexeu(setObs)(e.target.value)} placeholder="ex.: Natal 2026" maxLength={80} />
             </label>

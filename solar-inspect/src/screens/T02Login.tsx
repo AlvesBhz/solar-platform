@@ -87,7 +87,7 @@ export default function T02Login() {
 
               <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
                 <label className="flex flex-col gap-2">
-                  <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Usuário ou CPF</span>
+                  <span className="text-[0.8125rem] font-medium text-fg-2">Usuário ou CPF</span>
                   <div className="relative">
                     <Icon icon="solar:user-rounded-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
                     <input
@@ -111,7 +111,7 @@ export default function T02Login() {
                 </label>
 
                 <label className="flex flex-col gap-2">
-                  <span className="text-xs uppercase tracking-[0.08em] text-fg-2">Senha</span>
+                  <span className="text-[0.8125rem] font-medium text-fg-2">Senha</span>
                   <div className="relative">
                     <Icon icon="solar:lock-keyhole-linear" width={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" aria-hidden="true" />
                     <input
