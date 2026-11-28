@@ -8,7 +8,7 @@ import { hoje } from '../lib/campo';
 import { alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
 import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
-import { AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
+import { AbasPrecos, AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
 
 type Filtro = 'todas' | 'ativas' | 'inativas';
 const ultimaNoite = (t: Tarifa) => somar(t.fim, -1);
@@ -40,8 +40,9 @@ export function T39Tarifas() {
   }
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Tarifas"
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços"
       acoes={<Link to="/admin/tarifas/nova" className={`${btnPrimary} !w-auto`}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Nova tarifa</Link>}>
+      <AbasPrecos />
       <AvisoPrototipo />
       <p className="max-w-3xl text-[0.8125rem] text-fg-3">
         Cada tarifa vale para um período e define o valor da noite para o casal. Quando duas tarifas cobrem a mesma noite, vale a de <strong className="font-medium text-fg-2">maior prioridade</strong>.

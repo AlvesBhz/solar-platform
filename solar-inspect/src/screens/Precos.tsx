@@ -1,6 +1,6 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
@@ -25,6 +25,24 @@ export function AvisoPrototipo() {
       <Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
       <span><strong className="font-medium text-fg-1">Protótipo.</strong> Os valores abaixo são de exemplo e nada do que for alterado aqui chega ao site de reservas.</span>
     </p>
+  );
+}
+
+/** Abas de Preços (Calendário · Tarifas · Pacotes · Simulador): uma entrada só no menu, as telas continuam as mesmas. */
+const ABAS_PRECOS = [
+  { to: '/admin/precos', label: 'Calendário', icon: 'solar:calendar-linear' }, { to: '/admin/tarifas', label: 'Tarifas', icon: 'solar:tag-price-linear' },
+  { to: '/admin/pacotes', label: 'Pacotes', icon: 'solar:ticket-linear' }, { to: '/admin/simulador', label: 'Simulador', icon: 'solar:magnifer-linear' },
+];
+export function AbasPrecos() {
+  return (
+    <nav aria-label="Preços" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+      {ABAS_PRECOS.map((a) => (
+        <NavLink key={a.to} to={a.to} end={a.to !== '/admin/tarifas'}
+          className={({ isActive }) => `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] sm:px-4 transition-colors duration-fast ${isActive ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2 hover:border-fg-3'}`}>
+          <Icon icon={a.icon} width={16} className="max-sm:hidden" aria-hidden="true" />{a.label}
+        </NavLink>
+      ))}
+    </nav>
   );
 }
 
@@ -103,7 +121,8 @@ export function T38Calendario() {
   }
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Calendário de preços">
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
       <AvisoPrototipo />
       {un.erro || carga === 'erro' ? <Falha tentar={() => { un.erro ? un.tentarDeNovo() : void carregar(); }} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
       <div className="flex flex-wrap items-center gap-3">
@@ -192,7 +211,6 @@ export function T38Calendario() {
         </aside>
       </div>
 
-      <Pacotes unidade={un.atual.id} onMudou={carregar} />
       </>)}
     </GestaoShell>
   );
@@ -291,6 +309,23 @@ function PainelAjuste({ unidade, noites: ns, aguardaFim, onFechar, onSalvo }: { 
         </div>
       </form>
     </>
+  );
+}
+
+/** T44 — Pacotes (aba de Preços): preço final por check-in e número de noites. */
+export function T44Pacotes() {
+  const perfil = usePerfilPermitido(PERFIS_PRECO);
+  const un = useUnidades(!!perfil);
+  if (!perfil) return null;
+  return (
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
+      <AvisoPrototipo />
+      {un.erro ? <Falha tentar={un.tentarDeNovo} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
+        {un.lista.length > 1 && <Seletor rotulo="Chalé" valor={String(un.atual.id)} onChange={un.escolher} opcoes={un.opcoes} icone="solar:home-2-linear" className="min-w-0 sm:w-64" />}
+        <Pacotes unidade={un.atual.id} onMudou={() => undefined} />
+      </>)}
+    </GestaoShell>
   );
 }
 
@@ -426,7 +461,8 @@ export function T40Simulador() {
   const mudarEntrada = (v: string) => { setEntrada(v); if (v && (!saida || saida <= v)) setSaida(somar(v, 2)); };
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Simulador de preço">
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
       <AvisoPrototipo />
       {un.erro ? <Falha tentar={un.tentarDeNovo} /> : !un.lista ? <Carregando /> : !u ? <SemChale /> : (
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">

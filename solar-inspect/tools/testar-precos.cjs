@@ -104,8 +104,8 @@ function servidor(page, perfil, perdidos, chamadas) {
   const A = await novo('ADMIN');
   const p = A.page;
   await abrir(p, '/gestao');
-  const links = await p.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  ok(['/admin/precos', '/admin/tarifas', '/admin/simulador'].every((l) => links.includes(l)), 'ADMIN vê Calendário de preços, Tarifas e Simulador no menu');
+  const links = await p.locator('nav[aria-label="Menu"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+  ok(links.includes('/admin/precos') && !links.includes('/admin/tarifas'), 'ADMIN vê uma entrada só, Preços, no menu');
 
   // ── T38 · calendário (dados do banco)
   console.log('── T38 Calendário de preços');
@@ -114,7 +114,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await abrir(p, `/admin/precos?mes=${mes}`);
   const celula = () => p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${dia}")`) }).first();
   const rotulo = async () => (await celula().getAttribute('aria-label')) || '';
-  ok((await p.locator('h1').innerText()).includes('Calendário de preços'), 'título da tela');
+  ok((await p.locator('h1').innerText()).includes('Preços') && (await p.locator('nav[aria-label="Preços"] a').allInnerTexts()).join('|') === 'Calendário|Tarifas|Pacotes|Simulador', 'Preços com abas Calendário · Tarifas · Pacotes · Simulador');
   ok(!(await p.getByText('Protótipo.').isVisible().catch(() => false)), 'ligado ao banco: a faixa "Protótipo" não aparece');
   ok(A.chamadas.includes('prc_unidades') && A.chamadas.includes('prc_tarifas') && A.chamadas.includes('prc_ajustes') && A.chamadas.includes('prc_ocupacao'), 'o calendário lê unidades, tarifas, ajustes e ocupação do banco');
   const antes = await rotulo();
@@ -202,7 +202,7 @@ function servidor(page, perfil, perdidos, chamadas) {
 
   // ── Pacotes: Natal 2027 com check-in 24/12, 3 noites R$ 2.400 e 4 noites R$ 2.900
   console.log('── Pacotes');
-  await abrir(p, '/admin/precos?mes=2027-12');
+  await abrir(p, '/admin/pacotes');
   for (const [n, v] of [['3', '2400'], ['4', '2900']]) {
     await p.getByRole('button', { name: 'Novo pacote' }).click();
     const f = p.locator('form[aria-label="Novo pacote"]');
@@ -215,7 +215,9 @@ function servidor(page, perfil, perdidos, chamadas) {
   ok(/Pacote salvo/.test(await p.locator('section[aria-label=Pacotes] [role=status]').innerText()), 'mensagem "Pacote salvo"');
   const lista = await p.locator('section[aria-label=Pacotes]').innerText();
   ok(/Natal 2027/.test(lista) && /R\$\s?2\.400/.test(lista) && /R\$\s?2\.900/.test(lista) && /\+ R\$\s?500/.test(lista), 'a lista mostra as duas opções e a diferença de R$ 500');
+  await abrir(p, '/admin/precos?mes=2027-12');
   ok(/só pacote Natal 2027/.test(await natal.getAttribute('aria-label')), 'as noites do pacote ficam marcadas no calendário');
+  await abrir(p, '/admin/pacotes');
   await p.getByRole('button', { name: 'Novo pacote' }).click();
   { const f = p.locator('form[aria-label="Novo pacote"]');
     await f.getByLabel('Nome').fill('Repetido'); await f.getByLabel('Check-in').fill('2027-12-24'); await f.getByLabel('Noites').fill('3'); await f.getByLabel('Valor total (R$)').fill('100');
@@ -233,7 +235,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await datas.nth(0).fill('2027-12-25');
   txt = await resultado();
   ok(/não vende/.test(txt) && /só em pacote/.test(txt), 'simulador: estadia que não é um dos pacotes não é vendida');
-  await abrir(p, '/admin/precos?mes=2027-12');
+  await abrir(p, '/admin/pacotes');
   for (let i = 0; i < 2; i++) { await p.locator('section[aria-label=Pacotes]').getByRole('button', { name: 'Desativar' }).first().click(); await p.waitForTimeout(600); }
   ok(Number(sql(`select count(*) from "SE"."SIT_PACOTE" where "SG_ATIVO"`)) === 0, 'Desativar tira os pacotes da venda');
 

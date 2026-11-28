@@ -170,11 +170,14 @@ A propriedade define o modo padrão e a unidade pode sobrescrevê-lo; a configur
 
 ## 7. Gestão e administração
 
-Telas responsivas: menu lateral no computador e no tablet; barra superior rolável no celular.
+Navegação por intenção, em quatro áreas: **Pendências** (o que pede ação), **Consultar** (só leitura: visão geral, unidades, vistorias, ocorrências e auditoria), **Vistoriar** (fazer vistoria) e **Cadastros** (Inspect: ambientes e itens, tipos, GPS e QR, usuários; Site: propriedades e preços). Menu lateral no computador e no tablet; no celular, barra fixa embaixo com as quatro áreas (Cadastros abre a lista T43). O menu mostra só o que o perfil pode abrir.
 
 | Tela | Regras principais |
 |---|---|
-| T20 Dashboard | Indicadores (unidades, liberadas, ocorrências abertas, vistorias do dia), barra com o estado das unidades, ocorrências prioritárias e filtro por propriedade. |
+| T42 Pendências | Primeira tela da gestão. Lista só o que pede ação, com quantidade e link para resolver: críticas sem responsável, unidade fora da venda sem crítica aberta (conferir e liberar), ocorrências atrasadas, ocorrências sem responsável e vistorias com sinalização nos últimos 7 dias. O que está em dia aparece separado; o total vira o contador da barra. |
+| T43 Cadastros | Lista dos cadastros do perfil, separada em Inspect e Site, com uma linha explicando cada um. |
+| T44 Pacotes | Aba de Preços. Preço final por check-in e número de noites (`SIT_PACOTE`); nas noites do pacote o site vende só as opções cadastradas e oferece a mais longa. |
+| T20 Visão geral | Indicadores (unidades, liberadas, ocorrências abertas, vistorias do dia), barra com o estado das unidades, ocorrências prioritárias e filtro por propriedade. |
 | T21 Unidades | Busca e filtro por estado; tabela (cartões no celular). |
 | T22 Detalhe da unidade | Cadastro, ocorrências, vistorias e **alteração manual de estado com justificativa** (mín. 5 caracteres), registrada na auditoria. |
 | T23 Vistorias | Filtro por status, paginação de 10 registros e exportação em CSV (no protótipo, copia para a área de transferência). |
@@ -189,7 +192,7 @@ Telas responsivas: menu lateral no computador e no tablet; barra superior roláv
 | T32 Usuários e permissões | Usuário e CPF (parcialmente oculto), perfil, propriedades e status ativo; menor privilégio e RLS. |
 | T33 Configuração GPS/QR | Modo, raio (10 a 500 m) e **rotação do segredo** (invalida os códigos anteriores; o segredo não é exibido). |
 | T34 Auditoria | Eventos por usuário, ação e detalhe, somente leitura, com filtro. |
-| T38 Calendário de preços | Só Admin. Mês no formato do calendário do site, para a unidade escolhida: valor da noite (1,7k), mínimo de noites, noite ocupada ou fechada e dia com ajuste. Seleciona um dia ou um intervalo e ajusta valor, mínimo, fechar a venda, sem chegada e sem saída (`SIT_AJUSTE_DIARIO`). Dias passados não se ajustam; reservas já feitas não mudam de valor. Lê e grava pelas funções `prc_*` do banco (`site/database/migracao_precos_gestao.sql`); no link de demonstração, sem banco, usa dados de exemplo e avisa. |
+| T38 Calendário de preços | Só Admin. Preços tem uma entrada só no menu, com abas Calendário · Tarifas · Pacotes · Simulador. Mês no formato do calendário do site, para a unidade escolhida: valor da noite (1,7k), mínimo de noites, noite ocupada ou fechada e dia com ajuste. Seleciona um dia ou um intervalo e ajusta valor, mínimo, fechar a venda, sem chegada e sem saída (`SIT_AJUSTE_DIARIO`). Dias passados não se ajustam; reservas já feitas não mudam de valor. Lê e grava pelas funções `prc_*` do banco (`site/database/migracao_precos_gestao.sql`); no link de demonstração, sem banco, usa dados de exemplo e avisa. |
 | T39 Tarifas por período | Só Admin. Lista de tarifas (`SIT_TARIFA`) com período, valor de domingo a quinta e de sexta a domingo, mínimo, prioridade e situação; "vale hoje" marca a tarifa em vigor. Ativar e desativar sem apagar. |
 | T41 Formulário de tarifa | Só Admin. Nome, primeira e última noite, prioridade, valores, adultos inclusos e adulto extra, percentuais das crianças (até 4, 5 a 8 e 9 a 13 anos), mínimo de noites e situação. Bloqueia período sobreposto na mesma prioridade (regra do banco) e mostra um exemplo de conta. |
 | T40 Simulador de preço | Só Admin. Entrada, saída e hóspedes: mostra noite a noite a mesma conta do site (`calcular_estadia`, calculada no banco por `prc_calcular`), total, sinal de 50% e, se o site não vende, o motivo com atalho para o calendário ou para as tarifas. Não grava nada. |
