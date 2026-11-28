@@ -108,7 +108,7 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
             {area ? <SeloArea area={area} /> : eyebrow && <span className="text-[0.6875rem] uppercase tracking-[0.32em] text-fg-3">{eyebrow}</span>}
             <h1 className="screen-title">{titulo}</h1>
           </div>
-          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<NetworkBadge />
+          <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">{acoes}<span className="hidden lg:contents"><NetworkBadge /></span><span className="contents lg:hidden"><NetworkBadge soOffline /></span>
             <NavLink to="/conta/senha" aria-label="Trocar senha" title="Trocar senha" className="flex h-11 w-11 items-center justify-center rounded-full text-fg-2 hover:bg-white lg:hidden">
               <Icon icon="solar:lock-keyhole-linear" width={20} aria-hidden="true" />
             </NavLink>

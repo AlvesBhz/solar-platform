@@ -292,6 +292,8 @@ if (require.main === module) (async () => {
     await page.click('form[aria-label=Item] button:has-text("Cancelar")');
     {   // iPhone (toque): campos em 14px sem o zoom automático do Safari, pinça preservada; teclado aberto esconde a barra das áreas
       const t = await abrir(browser, db, '/admin/checklists', { ...require('playwright').devices['iPhone 13'] });
+      await t.page.waitForTimeout(700);
+      if (process.env.FOTO_TOPO) await t.page.screenshot({ path: process.env.FOTO_TOPO });
       await t.page.locator('button[aria-label="Editar Toalhas de banho"]').first().click(); await t.page.waitForTimeout(600);
       const vp = await t.page.locator('meta[name=viewport]').getAttribute('content');
       ok(/maximum-scale=1/.test(vp) && !/user-scalable=no/.test(vp), 'iPhone: sem zoom automático ao tocar no campo (a pinça continua)');
@@ -322,12 +324,13 @@ if (require.main === module) (async () => {
     const idSofa = db.itens.find((x) => x.NM_ITEM === 'Sofá').ID_ITEM;
     ok(!db.tipoItens.some((x) => x.ID_ITEM === idSofa), 'item sem tipo marcado não é ligado a nenhum tipo');
     // filtro por tipo de vistoria: só os itens que entram nela; sem alça (a ordem muda só em Todas)
-    await page.getByRole('radio', { name: 'Entrada' }).click(); await page.waitForTimeout(300);
+    await page.locator('button[aria-label^="Tipo de vistoria:"]').click(); await page.getByRole('option', { name: 'Entrada' }).click(); await page.waitForTimeout(300);
     ok(await page.locator('[data-item="Toalhas de banho"]').count() === 1 && await page.locator('[data-item="Sofá"]').count() === 0
       && (await texto(page, 'main')).includes('1 item entra na vistoria de Entrada') && await page.locator('[data-item] [data-alca]').count() === 0, 'filtro Entrada mostra só os itens dessa vistoria');
     ok((await texto(page, '[data-ambiente="Sala"]')).includes('Nenhum item deste ambiente entra nesta vistoria'), 'ambiente sem itens no filtro explica');
-    await page.getByRole('radio', { name: 'Todas' }).click(); await page.waitForTimeout(300);
+    await page.locator('button[aria-label^="Tipo de vistoria:"]').click(); await page.getByRole('option', { name: 'Todas' }).click(); await page.waitForTimeout(300);
     ok(await page.locator('[data-item="Sofá"]').count() === 1, 'Todas volta a mostrar todos os itens');
+    ok(/Chalé: Casa do Mirante$/.test(await page.locator('button[aria-label^="Chalé:"]').getAttribute('aria-label')), 'filtro do chalé mostra só o nome do chalé');
     await page.click('button:has-text("Incluir em todas as vistorias")');
     await page.waitForSelector('text=1 item incluído em todas as vistorias');
     ok(ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idSofa && x.ID_TIPO_VISTORIA === t)) && await page.locator('text=ainda não está em nenhuma vistoria').count() === 0, 'um clique liga o item solto a todas as vistorias e a faixa de alerta some');
