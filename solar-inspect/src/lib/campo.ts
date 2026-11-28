@@ -1,6 +1,7 @@
 // Dados das telas de campo (T05–T14): unidades, tipos, checklist, presença e início da vistoria.
 // Real: Supabase (funções vst_* e tabelas VST_ com RLS), com cópia no aparelho para abrir sem internet.
 // Demonstração (MODO_DEMO): os dados de exemplo de src/mocks.
+import { posTipo } from './ordemTipos';
 import { MODO_DEMO, supabase } from './supabase';
 import * as mc from '../mocks/checklist';
 import * as ms from '../mocks/servidor';
@@ -130,6 +131,7 @@ const RESPOSTAS: Record<string, string[]> = {
 const DESCRICAO: Record<string, string> = {
   ENTRADA: 'Limpeza, enxoval e funcionamento antes da chegada do hóspede.',
   SAIDA: 'Compara o estado atual com a vistoria de entrada da estadia.',
+  LIMPEZA: 'Controle da limpeza do chalé: o que foi limpo e o que precisa refazer.',
   ROTINA: 'Verificação recorrente, sem depender de estadia.',
   MANUTENCAO: 'Equipamentos e instalações: o que precisa de intervenção.',
 };
@@ -145,12 +147,13 @@ export async function listarTipos(unidadeId: string): Promise<TipoVistoria[]> {
         ? (t.tp_status === 'EM_ANDAMENTO' ? ' Em andamento com você: continue de onde parou.' : ` Agendada para ${dia(t.dt_agendada)}${t.cd_reserva ? ` · reserva ${t.cd_reserva}` : ''}.`)
         : '';
       return {
-        id: String(t.cd_tipo_vistoria).toLowerCase(), nome: t.nm_tipo_vistoria, descricao: (DESCRICAO[t.tp_comportamento] ?? '') + agenda,
+        id: String(t.cd_tipo_vistoria).toLowerCase(), nome: t.nm_tipo_vistoria, descricao: (DESCRICAO[t.cd_tipo_vistoria] ?? DESCRICAO[t.tp_comportamento] ?? '') + agenda,
         respostas: RESPOSTAS[t.tp_comportamento] ?? RESPOSTAS.ROTINA, itens: t.qtde_itens, ativo: true, exigeEntrada: t.sg_exige_entrada,
         idTipo: t.id_tipo_vistoria, cd: t.cd_tipo_vistoria, comportamento: t.tp_comportamento, exigeAssinatura: t.sg_exige_assinatura,
         idVistoria: t.id_vistoria ?? undefined, statusVistoria: t.tp_status ?? undefined, dtAgendada: t.dt_agendada ?? undefined,
       };
     });
+    tipos.sort((a: TipoVistoria, b: TipoVistoria) => posTipo(a.cd ?? '') - posTipo(b.cd ?? ''));
     gravarCache('tipos.' + unidadeId, tipos);
     // deixa os checklists no aparelho: a vistoria pode começar sem internet
     for (const t of tipos) if (t.itens > 0) carregarChecklist({ id: unidadeId } as Unidade, { idTipo: t.idTipo } as Rascunho).catch(() => undefined);

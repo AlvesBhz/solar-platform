@@ -60,6 +60,7 @@ alter table "VST_TIPO_VISTORIA" add column if not exists "DS_PERFIS" text[];
 insert into "VST_TIPO_VISTORIA" ("CD_TIPO_VISTORIA", "NM_TIPO_VISTORIA", "TP_COMPORTAMENTO", "SG_EXIGE_ENTRADA", "SG_EXIGE_ASSINATURA", "DS_PERFIS") values
   ('ENTRADA',    'Entrada',    'ENTRADA',    false, false, array['ASSESSOR']),
   ('SAIDA',      'Saída',      'SAIDA',      true,  true,  array['ASSESSOR', 'LIMPEZA']),
+  ('LIMPEZA',    'Limpeza',    'ROTINA',     false, false, array['ASSESSOR', 'LIMPEZA']),       -- controle das limpezas
   ('ROTINA',     'Rotina',     'ROTINA',     false, false, array['ASSESSOR', 'LIMPEZA', 'MANUTENCAO']),
   ('MANUTENCAO', 'Manutenção', 'MANUTENCAO', false, false, array['ASSESSOR', 'MANUTENCAO'])
 on conflict ("CD_TIPO_VISTORIA") do nothing;
