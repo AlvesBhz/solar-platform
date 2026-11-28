@@ -6,7 +6,7 @@ import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { cpfValido, formatarCpf } from '../lib/cpf';
 import { problemaSenha, type Perfil } from '../lib/acesso';
-import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenha, rotuloPerfil, salvarUsuario, type Propriedade, type Usuario, listarUnidadesPresenca, type UnidadePresenca } from '../lib/admin';
+import { PERFIS, criarUsuario, listarPropriedades, listarUsuarios, redefinirSenha, rotuloPerfil, salvarUsuario, type Propriedade, type Usuario, listarUnidadesPresenca, type UnidadePresenca, chalesPorUsuario } from '../lib/admin';
 import { usePerfilPermitido } from '../lib/useAdmin';
 
 const LOGIN_VALIDO = /^[a-z][a-z0-9._-]{2,39}$/;
@@ -49,7 +49,7 @@ export function T32Usuarios() {
   const [aviso, setAviso] = useState('');
   const [salvando, setSalvando] = useState(false);
 
-  const carregar = () => Promise.all([listarUsuarios(), listarPropriedades(), listarUnidadesPresenca().catch(() => [])]).then(([u, p, c]) => { setUs(u); setProps(p); setChales(c); })
+  const carregar = () => Promise.all([listarUsuarios(), listarPropriedades(), listarUnidadesPresenca().catch(() => [])]).then(([u, p, c]) => { setUs(u); setProps(p); setChales(chalesPorUsuario ? c : []); })
     .catch(() => setErro('Não foi possível carregar a equipe.'));
   useEffect(() => { if (perfil) carregar(); }, [perfil]);
   if (!perfil) return null;

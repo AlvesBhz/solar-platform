@@ -285,12 +285,14 @@ if (require.main === module) (async () => {
     ok((await texto(page, '[role=alert]')).includes('Já existe'), 'nome repetido no chalé: o banco recusa e a tela explica');
     await page.fill('#a-nome', 'Sala'); await page.click('form[aria-label=Ambiente] button[type=submit]');
     await page.waitForSelector('[data-ambiente="Sala"]');
+    { const [b1, b2] = await Promise.all([page.locator('[data-ambiente="Banheiro"]').boundingBox(), page.locator('[data-ambiente="Sala"]').boundingBox()]);
+      ok(b1 && b2 && Math.abs(b1.y - b2.y) < 4 && b2.x > b1.x + b1.width - 4, 'no computador os ambientes ficam em dois blocos lado a lado'); }
     ok(await page.locator('button[aria-label^="Subir"], button[aria-label^="Descer"]').count() === 0, 'sem botões de subir e descer: a ordem muda arrastando');
     // arrastar Banheiro (1º) para baixo de Sala (2º) pela alça
     const h = await page.locator('[data-ambiente="Banheiro"] [data-alca]').first().boundingBox();
     const alvo = await page.locator('[data-ambiente="Sala"]').boundingBox();
     await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2); await page.mouse.down();
-    await page.mouse.move(h.x + h.width / 2, alvo.y + alvo.height * 0.8, { steps: 8 }); await page.mouse.up();
+    await page.mouse.move(alvo.x + alvo.width / 2, alvo.y + alvo.height / 2, { steps: 8 }); await page.mouse.up();   // no computador os ambientes ficam em 2 colunas
     await page.waitForSelector('text=Ordem salva');
     let patches = db.chamadas.filter((c) => c.m === 'PATCH' && c.caminho === 'VST_AMBIENTE');
     ok(patches.length === 2 && patches.some((x) => x.corpo.NO_ORDEM === 1) && patches.some((x) => x.corpo.NO_ORDEM === 2)

@@ -60,6 +60,8 @@ export async function listarPropriedades(): Promise<Propriedade[]> {
   return data as Propriedade[];
 }
 
+/** O banco já tem a tabela de chalés por usuário (VST_USUARIO_UNIDADE)? Enquanto não tiver, a tela não oferece a escolha de chalés. */
+export let chalesPorUsuario = true;
 export async function listarUsuarios(): Promise<Usuario[]> {
   if (MODO_DEMO || !supabase) return demo.usuarios;
   const [u, up, uu] = await Promise.all([
@@ -68,6 +70,7 @@ export async function listarUsuarios(): Promise<Usuario[]> {
     supabase.from('VST_USUARIO_UNIDADE').select('ID_USUARIO, ID_UNIDADE'),
   ]);
   if (u.error || up.error) throw new Error((u.error ?? up.error)!.message);
+  chalesPorUsuario = !uu.error;
   const chales = uu.error ? [] : uu.data ?? [];                     // banco ainda sem a tabela: todos os chalés, como antes
   return (u.data ?? []).map((r) => ({
     id: r.ID_USUARIO, nome: r.NM_USUARIO, login: r.CD_LOGIN, cpf: r.CD_CPF, perfil: r.TP_PERFIL, ativo: r.SG_ATIVO,

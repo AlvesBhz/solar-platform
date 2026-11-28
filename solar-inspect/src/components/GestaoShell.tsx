@@ -83,11 +83,12 @@ export default function GestaoShell({ titulo, eyebrow, acoes, children }: { titu
           {menu.map((m, k) => (
             <div key={m.to} className="contents">
               {GRUPOS[m.grupo].area !== (menu[k - 1] && GRUPOS[menu[k - 1].grupo].area) && (
-                <span className={`mt-3 flex items-center gap-2 rounded-md px-3 py-1.5 text-[0.625rem] uppercase tracking-[0.24em] first:mt-0 ${GRUPOS[m.grupo].area === area ? 'bg-white/10 text-white' : 'text-white/55'}`} data-grupo={GRUPOS[m.grupo].area}>
-                  <Icon icon={AREAS[GRUPOS[m.grupo].area].icon} width={14} aria-hidden="true" />{AREAS[GRUPOS[m.grupo].area].nome}
+                // título da área: mais alto, claro e em negrito, com linha de separação; a área atual ganha fundo e barra de destaque
+                <span className={`mt-5 flex items-center gap-2.5 rounded-md border-t border-white/15 px-3 pb-2 pt-3.5 text-[0.75rem] font-semibold uppercase tracking-[0.2em] first:mt-0 first:border-t-0 first:pt-2 ${GRUPOS[m.grupo].area === area ? 'bg-white/10 text-white shadow-[inset_3px_0_0_0_var(--c-cream)]' : 'text-white/90'}`} data-grupo={GRUPOS[m.grupo].area}>
+                  <Icon icon={AREAS[GRUPOS[m.grupo].area].icon} width={18} aria-hidden="true" />{AREAS[GRUPOS[m.grupo].area].nome}
                 </span>
               )}
-              {GRUPOS[m.grupo].nome && m.grupo !== menu[k - 1]?.grupo && <span className="px-3 pt-2 text-[0.625rem] uppercase tracking-[0.16em] text-white/40">{GRUPOS[m.grupo].nome}</span>}
+              {GRUPOS[m.grupo].nome && m.grupo !== menu[k - 1]?.grupo && <span className="px-3 pt-2 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-white/60">{GRUPOS[m.grupo].nome}</span>}
               <NavLink to={m.to} end={m.end} className={({ isActive }) => link({ isActive: isActive || !!m.ativo?.some((x) => pathname.startsWith(x)) })}>
                 <Icon icon={m.icon} width={18} aria-hidden="true" />{m.label}
                 {m.to === '/gestao' && !!pend && <span className="ml-auto rounded-full bg-error px-1.5 text-[0.6875rem] font-semibold text-white">{pend}<span className="sr-only"> pendências</span></span>}

@@ -190,7 +190,7 @@ export function T30Ambientes() {
 
       {fa && fa.id === null && formAmbiente()}
 
-      <ul className="flex flex-col gap-4" data-lista="amb">
+      <ul className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2" data-lista="amb">
         {ambs.map((a, ai) => {
           return (
             <li key={a.id} className={`${card} overflow-hidden bg-white`} data-ambiente={a.nome} data-arrastar style={estilo('amb', ai)}>
