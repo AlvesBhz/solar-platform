@@ -286,7 +286,7 @@ if (require.main === module) (async () => {
     ok(ativos.length >= 2 && ativos.every((t) => db.tipoItens.some((x) => x.ID_ITEM === idToalhas && x.ID_TIPO_VISTORIA === t)), 'item novo já entra em todas as vistorias ativas (um passo só, sem ir à T31)');
     ok((await texto(page, '[data-aviso]')).includes('incluído e usado em'), 'avisa em quais vistorias o item passou a valer');
     const banheiro = await texto(page, '[data-ambiente="Banheiro"]');
-    ok(banheiro.includes('1 item · 1 crítico') && ['Crítico', 'Foto', '4', 'Entrada'].every((t) => banheiro.includes(t)), 'ambiente mostra o resumo e o item mostra etiquetas (crítico, foto, quantidade, vistorias)');
+    ok(!/\d+ ite(m|ns)\b/.test(banheiro) && ['Crítico', 'Foto', '4', 'Entrada'].every((t) => banheiro.includes(t)), 'ambiente sem a contagem de itens; o item mostra etiquetas (crítico, foto, quantidade, vistorias)');
     await page.click('button[aria-label="Editar Toalhas de banho"]');
     ok(await page.locator('[data-item="Toalhas de banho"] form[aria-label=Item]').count() === 1 && (await texto(page, 'form[aria-label=Item]')).includes('Editando: Toalhas de banho · Banheiro'), 'editar abre o formulário junto do item, dizendo o que está sendo editado');
     await page.click('form[aria-label=Item] button:has-text("Cancelar")');
