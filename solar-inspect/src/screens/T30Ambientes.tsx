@@ -220,7 +220,6 @@ export function T30Ambientes() {
                           {!i.ativo && <Etiqueta icone="solar:eye-closed-linear" texto="Oculto" />}
                           {i.critico && <Etiqueta icone="solar:danger-triangle-linear" texto="Crítico" tom="text-error" />}
                           {i.fotoObrigatoria && <Etiqueta icone="solar:camera-linear" texto="Foto" />}
-                          {i.qtdeEsperada !== null && <Etiqueta icone="solar:hashtag-linear" texto={String(i.qtdeEsperada)} />}
                           {(vinc[i.id] ?? []).length === 0 && i.ativo
                             ? <Etiqueta icone="solar:danger-circle-linear" texto="Fora das vistorias" tom="text-warning" />
                             : tipos.filter((t) => (vinc[i.id] ?? []).includes(t.id)).map((t) => <span key={t.id} className="rounded-full border border-line-2 bg-white px-2 py-0.5 text-[0.6875rem] text-fg-2">{t.nome}</span>)}
