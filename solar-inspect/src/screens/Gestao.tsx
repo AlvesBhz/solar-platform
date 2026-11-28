@@ -1,9 +1,9 @@
 import { Icon } from '@iconify/react';
 import QRCode from 'qrcode';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Chips, Seletor } from '../components/Filtros';
-import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
+import GestaoShell, { AREAS, TabelaResp, card, menuDo } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { ESTADOS, EstadoBadge, GravidadeTag, VALIDACAO, formatarData } from '../components/Status';
 import { listarUsuarios, qrDaUnidade, rotuloPerfil } from '../lib/admin';
@@ -13,6 +13,8 @@ import {
   type DetalheV, type FiltroV, type OcorrenciaG, type Resposta, type StatusOc, type StatusV, type VistoriaG,
 } from '../lib/gestao';
 import type { EstadoUnidade } from '../mocks/unidades';
+import { perfilAtual } from '../lib/acesso';
+import { listarPendencias, resumoPendencias, type Pendencia } from '../lib/pendencias';
 
 const ORD = { critica: 0, media: 1, baixa: 2 };
 const STATUS_OC: Record<StatusOc, { label: string; icon: string; cls: string }> = {
@@ -52,7 +54,74 @@ function useCarga<T>(f: () => Promise<T>, deps: unknown[] = []) {
   return { dados, erro, carregar };
 }
 
-/** T20 — Painel: situação das unidades, ocorrências em aberto e vistorias de hoje. */
+const NIVEL: Record<Pendencia['nivel'], { borda: string; num: string }> = {
+  urgente: { borda: 'border-l-error', num: 'text-error' }, atencao: { borda: 'border-l-warning', num: 'text-warning' }, conferir: { borda: 'border-l-pine', num: 'text-fg-1' },
+};
+/** Linha de navegação (ícone, título, explicação e seta), usada nas listas das áreas. */
+function LinhaNav({ to, icon, titulo, desc, extra, cls = '' }: { to: string; icon: string; titulo: string; desc: string; extra?: React.ReactNode; cls?: string }) {
+  return (
+    <Link to={to} className={`${card} flex min-h-16 items-center gap-3 p-4 transition-shadow duration-fast hover:shadow-md ${cls}`}>
+      <Icon icon={icon} width={22} className="shrink-0 text-fg-2" aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5"><span className="text-[0.875rem] font-medium text-fg-1">{titulo}</span><span className="text-[0.75rem] text-fg-3 [overflow-wrap:anywhere]">{desc}</span></span>
+      {extra}
+      <Icon icon="solar:alt-arrow-right-linear" width={18} className="shrink-0 text-fg-3" aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** T42 — Pendências: primeira tela da gestão. Só o que pede ação, com quantidade; um toque leva à tela de resolver. */
+export function T42Pendencias() {
+  const c = useCarga(() => listarPendencias());
+  const l = c.dados ?? [];
+  const acao = l.filter((p) => p.qtd > 0), emDia = l.filter((p) => p.qtd === 0);
+  const total = acao.reduce((s, p) => s + p.qtd, 0);
+  return (
+    <GestaoShell eyebrow="Gestão" titulo="Pendências">
+      {c.erro ? <Falha tentar={c.carregar} /> : !c.dados ? <Carregando /> : (
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:max-w-3xl">
+          <section className="flex flex-col gap-2" aria-label="Pedem sua ação">
+            <Titulo>{total ? `${resumoPendencias(total)} ${total === 1 ? 'pede' : 'pedem'} sua ação` : 'Nada pendente'}</Titulo>
+            {acao.length === 0 && <p className={`${card} flex items-center gap-2 p-4 text-[0.875rem] text-available`}><Icon icon="solar:check-circle-linear" width={20} aria-hidden="true" />Tudo em dia. Quando algo precisar de você, aparece aqui.</p>}
+            {acao.map((p) => (
+              <LinhaNav key={p.chave} to={p.link} icon={p.icone} titulo={p.titulo} desc={p.detalhe} cls={`border-l-[3px] ${NIVEL[p.nivel].borda}`}
+                extra={<span className={`font-mono text-lg font-semibold tabular-nums ${NIVEL[p.nivel].num}`}>{p.qtd}</span>} />
+            ))}
+          </section>
+          <nav className="flex flex-col gap-2 lg:hidden" aria-label="Consultar">
+            <Titulo>Consultar</Titulo>
+            {menuDo(perfilAtual()).filter((m) => m.grupo === 'consultar').map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
+          </nav>
+          {emDia.length > 0 && (
+            <section className="flex flex-col gap-2" aria-label="Em dia">
+              <Titulo>Em dia</Titulo>
+              <ul className={`${card} divide-y divide-line-1`}>
+                {emDia.map((p) => <li key={p.chave} className="flex items-center gap-2 px-4 py-3 text-[0.8125rem] text-fg-2"><Icon icon="solar:check-circle-linear" width={18} className="shrink-0 text-available" aria-hidden="true" /><span><span className="text-fg-1">{p.titulo}:</span> {p.detalhe.toLowerCase()}</span></li>)}
+              </ul>
+            </section>
+          )}
+        </div>
+      )}
+    </GestaoShell>
+  );
+}
+
+/** T43 — Início de uma área de cadastros: Administração (/admin, configura as vistorias) ou Site (/admin/site, dados do site de reservas). */
+export function T43Cadastros() {
+  const site = useLocation().pathname.startsWith('/admin/site');
+  const a = AREAS[site ? 'site' : 'admin'];
+  const itens = menuDo(perfilAtual()).filter((m) => m.grupo === (site ? 'site' : 'inspect'));
+  return (
+    <GestaoShell titulo={a.nome}>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-2 lg:max-w-3xl">
+        <p className="text-[0.8125rem] text-fg-2">{a.desc}.</p>
+        {itens.map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
+        {itens.length === 0 && <p className={`${card} p-4 text-[0.8125rem] text-fg-2`}>Seu perfil não tem cadastros nesta área.</p>}
+      </div>
+    </GestaoShell>
+  );
+}
+
+/** T20 — Visão geral (Consultar): situação das unidades, ocorrências em aberto e vistorias de hoje. */
 export function T20Dashboard() {
   const c = useCarga(() => Promise.all([unidadesGestao(), listarOcorrencias(), vistoriasDeHoje()]));
   const [prop, setProp] = useState('');
@@ -64,7 +133,10 @@ export function T20Dashboard() {
   const vHoje = hojeV.filter((v) => ids.has(v.unidadeId) && v.status !== 'cancelada');
 
   return (
-    <GestaoShell eyebrow="Gestão" titulo="Visão operacional">
+    <GestaoShell eyebrow="Consultar" titulo="Visão geral">
+      <nav className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2 lg:hidden" aria-label="Consultar">
+        {menuDo(perfilAtual()).filter((m) => m.grupo === 'consultar' && m.to !== '/gestao/painel').map((m) => <LinhaNav key={m.to} to={m.to} icon={m.icon} titulo={m.label} desc={m.desc} />)}
+      </nav>
       {props.length > 1 && <Chips rotulo="Propriedade" valor={prop} onChange={setProp} opcoes={[{ valor: '', label: 'Todas' }, ...props.map((p) => ({ valor: p, label: p, icone: 'solar:buildings-2-linear' }))]} />}
       {c.erro ? <Falha tentar={c.carregar} /> : !c.dados ? <Carregando /> : (
         <>
@@ -260,7 +332,7 @@ export function T22DetalheUnidade() {
 /** T23 — Vistorias: filtros por situação, unidade e período; paginação no servidor; exportação CSV. */
 export function T23Vistorias() {
   const q = new URLSearchParams(location.search);
-  const [f, setF] = useState<FiltroV>({ status: '', unidadeId: q.get('unidade') ?? '', de: q.get('de') ?? '', ate: q.get('ate') ?? '' });
+  const [f, setF] = useState<FiltroV>({ status: (q.get('status') as FiltroV['status']) ?? '', unidadeId: q.get('unidade') ?? '', de: q.get('de') ?? '', ate: q.get('ate') ?? '' });
   const [pag, setPag] = useState(0);
   const POR = 20;
   const us = useCarga(() => unidadesGestao());

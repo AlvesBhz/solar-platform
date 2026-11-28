@@ -99,10 +99,20 @@ const ver = (page, t, o = {}) => page.getByText(t, o).first().waitFor({ timeout:
     await ctx.close();
   });
 
-  console.log('── T20 Painel');
+  console.log('── T42 Pendências');
+  await T('t42', async () => {
+    const { ctx, page } = await abrir(browser, {}, '/gestao');
+    await ver(page, 'sua ação', { exact: false });
+    const txt = await page.locator('main').innerText();
+    ok(/Pendências/.test(await page.locator('h1').innerText()) && /Crítica sem responsável|Críticas sem responsável|Ocorrências sem responsável|Ocorrências atrasadas|fora da venda/.test(txt), 'primeira tela da gestão mostra o que pede ação');
+    ok(await page.locator('main a[href^="/gestao/"]').count() >= 1, 'cada pendência leva à tela de resolver');
+    await ctx.close();
+  });
+
+  console.log('── T20 Visão geral');
   await T('t20', async () => {
     const cen = {};
-    const { ctx, page } = await abrir(browser, cen, '/gestao');
+    const { ctx, page } = await abrir(browser, cen, '/gestao/painel');
     await ver(page, 'Ocorrências prioritárias');
     const ind = await page.locator('dl dd').allInnerTexts();
     ok(ind.slice(0, 4).join('|') === '2|1|2|1/2', 'indicadores do banco: 2 unidades, 1 liberada, 2 ocorrências abertas, 1 de 2 vistorias de hoje concluída');

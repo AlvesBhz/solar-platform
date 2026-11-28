@@ -141,7 +141,7 @@ select teste.erro('select count(*) from "SE".vst_auditoria(current_date - 1, cur
 
 \echo '── 8. O que não pode mudar'
 :dono
-select teste.ok((select count(*) = 9 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and proname not in ('prc_auditar_autor', 'prc_exigir_admin', 'prc_pacotes', 'prc_salvar_pacote')), '9 funções do app (as dos pacotes estão em testes_pacotes.sql)');
+select teste.ok((select count(*) = 9 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and proname not in ('prc_auditar_autor', 'prc_exigir_admin', 'prc_pacotes', 'prc_salvar_pacote', 'prc_idades', 'prc_salvar_idades')), '9 funções do app (as dos pacotes estão em testes_pacotes.sql)');
 select teste.ok((select count(*) = 0 from pg_proc where pronamespace = '"SE"'::regnamespace and proname like 'prc\_%' and has_function_privilege('anon', oid, 'execute')), 'nenhuma função prc_ liberada para anon');
 select teste.ok((select count(*) = 0 from pg_proc where pronamespace = '"SE"'::regnamespace and proname in ('prc_auditar_autor', 'prc_exigir_admin') and has_function_privilege('authenticated', oid, 'execute')), 'a guarda e o gatilho não são chamáveis pelo app');
 select teste.ok(not has_table_privilege('authenticated', '"SE"."SIT_TARIFA"', 'select') and not has_table_privilege('authenticated', '"SE"."SIT_AJUSTE_DIARIO"', 'update'), 'as tabelas de preço seguem sem acesso direto');

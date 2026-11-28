@@ -1,12 +1,12 @@
 import { Icon } from '@iconify/react';
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, NavLink, useSearchParams } from 'react-router-dom';
 import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
 import {
-  MOTIVOS, REAL, ajusteDe, brl, brlCurto, calcularEstadia, carregarMes, dataCurta, dataLonga, diaDe, diaSemana, fimPacote, listarPacotes, mesAno, noites, noon, pacotesDe, removerAjustes, salvarAjustes, salvarPacote, somar, tarifaDe,
+  IDADES_PADRAO, carregarIdades, faixas, type Idades, MOTIVOS, REAL, ajusteDe, brl, brlCurto, calcularEstadia, carregarMes, dataCurta, dataLonga, diaDe, diaSemana, fimPacote, listarPacotes, mesAno, noites, noon, pacotesDe, removerAjustes, salvarAjustes, salvarPacote, somar, tarifaDe,
   type Dia, type Estadia, type Hospedes, type Noite, type Pacote, type Unidade,
 } from '../lib/precos';
 import { useUnidades } from '../lib/usePrecos';
@@ -25,6 +25,24 @@ export function AvisoPrototipo() {
       <Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
       <span><strong className="font-medium text-fg-1">Protótipo.</strong> Os valores abaixo são de exemplo e nada do que for alterado aqui chega ao site de reservas.</span>
     </p>
+  );
+}
+
+/** Abas de Preços (Calendário · Tarifas · Pacotes · Simulador): uma entrada só no menu, as telas continuam as mesmas. */
+const ABAS_PRECOS = [
+  { to: '/admin/precos', label: 'Calendário', icon: 'solar:calendar-linear' }, { to: '/admin/tarifas', label: 'Tarifas', icon: 'solar:tag-price-linear' },
+  { to: '/admin/pacotes', label: 'Pacotes', icon: 'solar:ticket-linear' }, { to: '/admin/simulador', label: 'Simulador', icon: 'solar:magnifer-linear' },
+];
+export function AbasPrecos() {
+  return (
+    <nav aria-label="Preços" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:px-0 [&::-webkit-scrollbar]:hidden">
+      {ABAS_PRECOS.map((a) => (
+        <NavLink key={a.to} to={a.to} end={a.to !== '/admin/tarifas'}
+          className={({ isActive }) => `inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] sm:px-4 transition-colors duration-fast ${isActive ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-2 hover:border-fg-3'}`}>
+          <Icon icon={a.icon} width={16} className="max-sm:hidden" aria-hidden="true" />{a.label}
+        </NavLink>
+      ))}
+    </nav>
   );
 }
 
@@ -103,7 +121,8 @@ export function T38Calendario() {
   }
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Calendário de preços">
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
       <AvisoPrototipo />
       {un.erro || carga === 'erro' ? <Falha tentar={() => { un.erro ? un.tentarDeNovo() : void carregar(); }} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
       <div className="flex flex-wrap items-center gap-3">
@@ -192,7 +211,6 @@ export function T38Calendario() {
         </aside>
       </div>
 
-      <Pacotes unidade={un.atual.id} onMudou={carregar} />
       </>)}
     </GestaoShell>
   );
@@ -291,6 +309,23 @@ function PainelAjuste({ unidade, noites: ns, aguardaFim, onFechar, onSalvo }: { 
         </div>
       </form>
     </>
+  );
+}
+
+/** T44 — Pacotes (aba de Preços): preço final por check-in e número de noites. */
+export function T44Pacotes() {
+  const perfil = usePerfilPermitido(PERFIS_PRECO);
+  const un = useUnidades(!!perfil);
+  if (!perfil) return null;
+  return (
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
+      <AvisoPrototipo />
+      {un.erro ? <Falha tentar={un.tentarDeNovo} /> : !un.lista ? <Carregando /> : !un.atual ? <SemChale /> : (<>
+        {un.lista.length > 1 && <Seletor rotulo="Chalé" valor={String(un.atual.id)} onChange={un.escolher} opcoes={un.opcoes} icone="solar:home-2-linear" className="min-w-0 sm:w-64" />}
+        <Pacotes unidade={un.atual.id} onMudou={() => undefined} />
+      </>)}
+    </GestaoShell>
   );
 }
 
@@ -414,6 +449,9 @@ export function T40Simulador() {
   const [r, setR] = useState<Estadia | null>(null);
   const [erro, setErro] = useState(false);
   const [vez, setVez] = useState(0);
+  const [idades, setIdades] = useState<Idades>(IDADES_PADRAO);
+  useEffect(() => { if (u) void carregarIdades(u.id).then((r) => setIdades(r.idades)); }, [u]);
+  const fx = faixas(idades);
   useEffect(() => {
     if (!u) return;
     let vivo = true; setErro(false);
@@ -426,7 +464,8 @@ export function T40Simulador() {
   const mudarEntrada = (v: string) => { setEntrada(v); if (v && (!saida || saida <= v)) setSaida(somar(v, 2)); };
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Simulador de preço">
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços">
+      <AbasPrecos />
       <AvisoPrototipo />
       {un.erro ? <Falha tentar={un.tentarDeNovo} /> : !un.lista ? <Carregando /> : !u ? <SemChale /> : (
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
@@ -438,9 +477,9 @@ export function T40Simulador() {
           </div>
           <div className="flex flex-col gap-3 border-t border-line-1 pt-3">
             <Contador rotulo="Adultos" dica={`até ${u.maxAdultos}`} valor={h.adultos} min={1} max={u.maxAdultos} onChange={set('adultos')} />
-            <Contador rotulo="Crianças de 5 a 8 anos" valor={h.criancas} min={0} max={h.criancas + Math.max(outros, 0)} onChange={set('criancas')} />
-            <Contador rotulo="Crianças de 9 a 13 anos" valor={h.criancasMaiores} min={0} max={h.criancasMaiores + Math.max(outros, 0)} onChange={set('criancasMaiores')} />
-            <Contador rotulo="Até 4 anos" dica="não pagam, mas ocupam vaga" valor={h.bebes} min={0} max={h.bebes + Math.max(outros, 0)} onChange={set('bebes')} />
+            <Contador rotulo={`Crianças de ${fx.menor}`} valor={h.criancas} min={0} max={h.criancas + Math.max(outros, 0)} onChange={set('criancas')} />
+            <Contador rotulo={`Crianças de ${fx.crianca}`} valor={h.criancasMaiores} min={0} max={h.criancasMaiores + Math.max(outros, 0)} onChange={set('criancasMaiores')} />
+            <Contador rotulo={ucf(fx.bebe)} dica="não pagam, mas ocupam vaga" valor={h.bebes} min={0} max={h.bebes + Math.max(outros, 0)} onChange={set('bebes')} />
           </div>
           <p className="text-[0.75rem] text-fg-3">O chalé comporta {u.maxHospedes} hóspedes: {u.maxAdultos} adultos e até {u.maxCriancas} crianças ou bebês. Estadia de 1 a {u.maxNoites} noites.</p>
         </form>

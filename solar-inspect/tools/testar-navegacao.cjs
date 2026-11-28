@@ -50,9 +50,9 @@ function servidor(page, perfil, perdidos, est = { aceite: true }) {
 const ROTAS = {
   ASSESSOR: ['/', '/app/unidades', '/app/unidades/7', '/app/vistorias/nova/7', '/app/vistorias/nova/7/presenca', '/app/vistorias/nova/7/checklist', '/app/vistorias/nova/7/resumo',
     '/app/sincronizacao', '/app/historico', '/conta/senha', '/permissao-localizacao', '/rota-que-nao-existe'],
-  GESTOR: ['/', '/gestao', '/gestao/unidades', '/gestao/unidades/7', '/gestao/vistorias', `/gestao/vistorias/${V1}`, `/gestao/vistorias/${V1}/relatorio`, '/gestao/ocorrencias', '/gestao/ocorrencias/1',
+  GESTOR: ['/', '/gestao', '/gestao/painel', '/admin', '/admin/site', '/gestao/unidades', '/gestao/unidades/7', '/gestao/vistorias', `/gestao/vistorias/${V1}`, `/gestao/vistorias/${V1}/relatorio`, '/gestao/ocorrencias', '/gestao/ocorrencias/1',
     '/admin/checklists', '/admin/presenca', '/app/unidades', '/conta/senha'],
-  ADMIN: ['/', '/gestao', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria',
+  ADMIN: ['/', '/gestao', '/gestao/painel', '/admin', '/admin/site', '/admin/pacotes', '/admin/propriedades', '/admin/propriedades/1', '/admin/checklists', '/admin/tipos', '/admin/presenca', '/admin/usuarios', '/admin/auditoria',
     '/admin/precos', '/admin/tarifas', '/admin/tarifas/1', '/admin/simulador'],
 };
 // destino esperado quando a rota redireciona de propósito
@@ -61,7 +61,7 @@ const ESPERADO = {
   '/app/vistorias/nova/7/presenca': '/app/vistorias/nova/7', '/app/vistorias/nova/7/checklist': '/app/vistorias/nova/7', '/app/vistorias/nova/7/resumo': '/app/vistorias/nova/7',
   '/rota-que-nao-existe': '/app/unidades',
 };
-const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria', '/admin/precos', '/admin/tarifas', '/admin/simulador'] };
+const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'], GESTOR: ['/admin/propriedades', '/admin/tipos', '/admin/usuarios', '/admin/auditoria', '/admin/precos', '/admin/tarifas', '/admin/simulador', '/admin/pacotes'] };
 
 (async () => {
   const browser = await chromium.launch();
@@ -103,9 +103,9 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
     // menu da gestão: todo link visível abre a tela (nunca "sem permissão")
     if (perfil !== 'ASSESSOR') {
       await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {});
-      await page.locator('nav[aria-label="Gestão"] [data-grupo]').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
-      const grupos = await page.locator('nav[aria-label="Gestão"] [data-grupo]').evaluateAll((g) => g.map((x) => x.getAttribute('data-grupo')).join(','));
-      const esperado = perfil === 'ADMIN' ? 'gestao,campo,inspect,site' : 'gestao,campo,inspect';
+      await page.locator('nav[aria-label="Menu"] [data-grupo]').first().waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+      const grupos = await page.locator('nav[aria-label="Menu"] [data-grupo]').evaluateAll((g) => g.map((x) => x.getAttribute('data-grupo')).join(','));
+      const esperado = perfil === 'ADMIN' ? 'gestao,vistoria,admin,site' : 'gestao,vistoria,admin';
       ok(grupos === esperado, `${perfil}: menu agrupado em ${esperado.replace(/,/g, ' · ')} (grupo sem item visível não aparece)` + (grupos !== esperado ? ' — veio ' + grupos : ''));
       if (process.env.FOTO && perfil === 'ADMIN') await page.locator('aside').first().screenshot({ path: process.env.FOTO });
       // menu mais alto que a tela: a barra lateral rola por dentro e Sair/Trocar senha ficam dentro do fundo escuro
@@ -117,10 +117,10 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
         });
       });
       ok(alcancaveis, `${perfil}: em 1280×720, Trocar senha e Sair ficam dentro da barra lateral (rolando por dentro)`);
-      const links = await page.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+      const links = await page.locator('nav[aria-label="Menu"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
       const ruins = [];
       for (const l of links) {
-        await page.locator(`nav[aria-label="Gestão"] a[href="${l}"]`).first().click();
+        await page.locator(`nav[aria-label="Menu"] a[href="${l}"]`).first().click();
         await page.waitForTimeout(900);
         const p = new URL(page.url()).pathname;
         if (p.startsWith('/acesso-indisponivel') || p !== l) ruins.push(l + (p !== l ? ` (foi para ${p})` : ''));
@@ -128,6 +128,29 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
       }
       ok(links.length > 3 && !ruins.length, `${perfil}: menu da gestão com ${links.length} links, todos abrem a tela certa${ruins.length ? ' — quebrados: ' + ruins.join(', ') : ''}`);
       await page.setViewportSize({ width: 320, height: 720 });
+      // celular: barra fixa embaixo com as quatro áreas; Cadastros abre a lista do que o perfil configura
+      await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
+      if (process.env.FOTO_CELULAR) await page.screenshot({ path: `${process.env.FOTO_CELULAR}/${perfil}-pendencias.png` });
+      const abas = await page.locator('nav[aria-label="Áreas"] a').allInnerTexts();
+      const esperadas = perfil === 'ADMIN' ? 'Gestão|Vistoria|Admin|Site' : 'Gestão|Vistoria|Admin';
+      ok(abas.map((x) => x.replace(/\d+|pendências/g, '').trim()).join('|') === esperadas && !(await page.locator('nav[aria-label="Menu"]').isVisible()),
+        `${perfil}: no celular, barra embaixo com ${esperadas.replace(/\|/g, ' · ')} (veio ${abas.join('|').replace(/\n/g, ' ')})`);
+      ok(await page.locator('header [data-area=gestao]').isVisible(), `${perfil}: o topo da tela mostra a área (Gestão)`);
+      const barra = await page.locator('nav[aria-label="Áreas"]').boundingBox();
+      ok(barra && Math.abs(barra.y + barra.height - 720) < 2, `${perfil}: a barra fica presa no pé da tela`);
+      await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').click(); await page.waitForTimeout(700);
+      const cad = await page.locator('main').innerText();
+      ok(new URL(page.url()).pathname === '/admin' && /Ambientes e itens/.test(cad) && !/Preços/.test(cad) && (perfil === 'ADMIN') === /Usuários/.test(cad)
+        && await page.locator('header [data-area=admin]').isVisible(), `${perfil}: Administração lista só os cadastros do Inspect que o perfil pode usar`);
+      ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin"]').getAttribute('aria-current') === 'page', `${perfil}: a aba Administração fica marcada`);
+      if (perfil === 'ADMIN') {
+        await page.locator('nav[aria-label="Áreas"] a[href="/admin/site"]').click(); await page.waitForTimeout(700);
+        const site = await page.locator('main').innerText();
+        ok(/Propriedades/.test(site) && /Preços/.test(site) && await page.locator('header [data-area=site]').isVisible(), 'ADMIN: a área Site lista Propriedades e Preços');
+        await page.goto(BASE + '/admin/tarifas'); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
+        ok(await page.locator('nav[aria-label="Áreas"] a[href="/admin/site"]').getAttribute('aria-current') === 'page', 'ADMIN: em Tarifas a aba Site fica marcada');
+      }
+      if (process.env.FOTO_CELULAR) await page.screenshot({ path: `${process.env.FOTO_CELULAR}/${perfil}-cadastros.png` });
       for (const r of ['/gestao', '/gestao/ocorrencias/1', perfil === 'ADMIN' ? '/admin/auditoria' : '/gestao/unidades/7']) {
         await page.goto(BASE + r); await page.waitForLoadState('networkidle').catch(() => {}); await page.waitForTimeout(400);
         ok(await page.evaluate(() => document.documentElement.scrollWidth <= 320), `${perfil} ${r} cabe em 320 px`);
@@ -150,7 +173,7 @@ const NEGADAS = { ASSESSOR: ['/gestao', '/admin/auditoria', '/app/ocorrencias'],
     await page.goto(BASE + '/__vazio__');
     await page.evaluate((s) => { localStorage.clear(); localStorage.setItem('inspect.sessao', JSON.stringify(s)); }, sessao(UIDS.GESTOR));
     await page.goto(BASE + '/gestao'); await page.waitForLoadState('networkidle').catch(() => {});
-    await page.locator('nav[aria-label="Gestão"] a[href="/app/unidades"]').first().click();
+    await page.locator('nav[aria-label="Menu"] a[href="/app/unidades"]').first().click();
     await page.waitForURL((u) => u.pathname === '/permissao-localizacao', { timeout: 6000 }).catch(() => {});
     ok(new URL(page.url()).searchParams.get('volta') === '/app/unidades', 'menu "Fazer vistoria" pede o aceite de localização (T03) guardando a volta');
     await page.getByRole('button', { name: /Continuar/ }).click();

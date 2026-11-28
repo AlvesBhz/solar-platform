@@ -41,7 +41,7 @@ input, select, textarea { font-size: max(16px, 1rem); }
 /* Título de tela: escala H2 do DS sem o tracking apertado do h1 global */
 .screen-title {
   font-family: var(--font-serif); font-weight: 500; color: var(--fg-1);
-  font-size: clamp(1.625rem, 1.5rem + 0.6vw, 2rem); line-height: 1.15; letter-spacing: -0.015em;
+  font-size: clamp(1.375rem, 1.3rem + 0.3vw, 1.625rem); line-height: 1.2; letter-spacing: -0.01em;   /* 22 → 26px: título compacto de app */
 }
 @media (prefers-reduced-motion: reduce) {
   .progress-indeterminate { animation: none; width: 100%; opacity: 0.5; }
@@ -49,3 +49,17 @@ input, select, textarea { font-size: max(16px, 1rem); }
 
 /* [RESPONSIVO] Leitor QR: vídeo da câmera cobre a área, sem distorcer */
 .qr-area video { width: 100%; height: 100%; object-fit: cover; }
+
+/* [RESPONSIVO] Densidade dos campos — no computador (ponteiro fino) texto de 13px e altura de 40px;
+   no toque mantém 16px (abaixo disso o iOS dá zoom ao tocar no campo) e a altura de 44px das classes. */
+:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea, button[aria-haspopup="listbox"]):not(.font-mono) {
+  font-size: max(16px, 1rem);
+}
+@media (pointer: fine) {
+  :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea, button[aria-haspopup="listbox"]):not(.font-mono) {
+    font-size: 0.8125rem;
+  }
+  :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, button[aria-haspopup="listbox"]):not(.font-mono) {
+    min-height: 2.5rem;
+  }
+}

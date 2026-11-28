@@ -29,6 +29,7 @@ const ERROS: Record<string, string> = {
   tarifa_sobreposta: 'O período se sobrepõe a outra tarifa ativa na mesma prioridade. Mude a prioridade ou as datas.',
   tarifa_invalida: 'Confira a tarifa: nome, datas (a última noite não pode ser antes da primeira), valores, percentuais de 0 a 100 e mínimo de noites.',
   tarifa_inexistente: 'Tarifa não encontrada.', unidade_inexistente: 'Chalé não encontrado.', data_passada: 'Noites que já passaram não podem ser ajustadas.',
+  idades_invalidas: 'As faixas de idade precisam crescer (ex.: até 4, até 8, até 13) e ir no máximo até 17 anos.',
   pacote_repetido: 'Já existe um pacote ativo com esse check-in e esse número de noites.',
   pacote_sobreposto: 'As noites se sobrepõem a outro pacote com check-in diferente. Opções do mesmo pacote precisam ter o mesmo check-in.',
   pacote_inexistente: 'Pacote não encontrado.', noites_invalidas: 'O pacote tem de 1 a 30 noites.', valor_invalido: 'Informe o valor total do pacote.', data_invalida: 'Informe a data de check-in.',

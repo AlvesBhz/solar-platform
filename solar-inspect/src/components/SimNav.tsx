@@ -31,7 +31,10 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
     { id: 'T19', nome: 'Meu histórico', rota: '/app/historico' },
   ] },
   { titulo: 'Gestão', telas: [
-    { id: 'T20', nome: 'Painel', rota: '/gestao' },
+    { id: 'T42', nome: 'Pendências', rota: '/gestao' },
+    { id: 'T20', nome: 'Visão geral', rota: '/gestao/painel' },
+    { id: 'T43', nome: 'Administração', rota: '/admin' },
+    { id: 'T45', nome: 'Site', rota: '/admin/site' },
     { id: 'T21', nome: 'Gestão de unidades', rota: '/gestao/unidades' },
     { id: 'T22', nome: 'Detalhe da unidade', rota: '/gestao/unidades/chale-sempre-viva' },
     { id: 'T23', nome: 'Lista de vistorias', rota: '/gestao/vistorias' },
@@ -53,6 +56,7 @@ const GRUPOS: { titulo: string; telas: Tela[] }[] = [
     { id: 'T39', nome: 'Tarifas por período', rota: '/admin/tarifas' },
     { id: 'T41', nome: 'Formulário de tarifa', rota: '/admin/tarifas/1' },
     { id: 'T40', nome: 'Simulador de preço', rota: '/admin/simulador' },
+    { id: 'T44', nome: 'Pacotes', rota: '/admin/pacotes' },
   ] },
 ];
 

@@ -100,6 +100,27 @@ window.Disponibilidade = (function () {
     ocupado:         'Essas datas já estão reservadas. Tente outras datas.'
   };
 
+  /* ── Faixas de idade das crianças e percentuais (definidos no Inspect, por pousada): rótulos do seletor de hóspedes.
+     Enquanto o banco não responde (ou não tem a função), valem as faixas de sempre. */
+  var REGRAS = { b: 4, m: 8, c: 13, pcB: 0, pcC: 30, pcM: 100 };
+  fetch(CONFIG.url + '/rest/v1/rpc/consultar_regras_hospedes', {
+    method: 'POST', headers: { apikey: CONFIG.chave, 'Content-Type': 'application/json', 'Content-Profile': CONFIG.schema }, body: '{}'
+  }).then(function (r) { return r.ok ? r.json() : []; }).then(function (l) {
+    var x = l && l[0]; if (!x) return;
+    REGRAS = { b: x.no_idade_max_bebe, m: x.no_idade_max_crianca_menor, c: x.no_idade_max_crianca,
+      pcB: x.pc_bebe == null ? REGRAS.pcB : Number(x.pc_bebe), pcC: x.pc_crianca == null ? REGRAS.pcC : Number(x.pc_crianca), pcM: x.pc_crianca_maior == null ? REGRAS.pcM : Number(x.pc_crianca_maior) };
+  }).catch(function () {});
+  function tpl(s, o) { var r = t(s); Object.keys(o).forEach(function (k) { r = r.split('{' + k + '}').join(o[k]); }); return r; }
+  function pct(v) { return String(Math.round(v * 100) / 100).replace('.', I18N.lang() === 'en' ? '.' : ','); }
+  /* rótulo da faixa no seletor de hóspedes: adults · older (crianças maiores) · children · babies */
+  function rotuloFaixa(k) {
+    var R = REGRAS;
+    if (k === 'adults') return tpl('{n}+ anos', { n: R.c + 1 });
+    if (k === 'older') return tpl('{a} a {b} anos · {pc}%', { a: R.m + 1, b: R.c, pc: pct(R.pcM) });
+    if (k === 'children') return tpl('{a} a {b} anos · {pc}%', { a: R.b + 1, b: R.m, pc: pct(R.pcC) });
+    return R.pcB ? tpl('até {n} anos · {pc}%', { n: R.b, pc: pct(R.pcB) }) : tpl('até {n} anos · não paga', { n: R.b });
+  }
+
   /* ── Pacotes de datas especiais (ex.: Natal 24/12 · 3 noites R$ 2.400 · 4 noites R$ 2.900).
      Nas noites de um pacote só se vende uma das opções; o preço é sempre o do banco (calcular_estadia). */
   var cachePac = {}, pacotes = {};                    /* pacotes: "checkin|noites" → pacote, dos meses já consultados */
@@ -409,5 +430,5 @@ window.Disponibilidade = (function () {
   /* Troca de idioma: redesenha o resultado no idioma novo. */
   function idiomaMudou() { if (ultimo) renderizar(ultimo.resposta); }
 
-  return { precosNoCalendario: precosNoCalendario, noiteOcupada: noiteOcupada, saidaValida: saidaValida, consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
+  return { rotuloFaixa: rotuloFaixa, precosNoCalendario: precosNoCalendario, noiteOcupada: noiteOcupada, saidaValida: saidaValida, consultar: consultar, estadoMudou: estadoMudou, idiomaMudou: idiomaMudou, esconder: esconder };
 })();

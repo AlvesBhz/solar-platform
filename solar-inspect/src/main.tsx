@@ -29,7 +29,7 @@ import T16Assinatura from './screens/T16Assinatura';
 import T17Confirmacao from './screens/T17Confirmacao';
 import T18Sincronizacao from './screens/T18Sincronizacao';
 import T19MeuHistorico from './screens/T19MeuHistorico';
-import { T20Dashboard, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
+import { T20Dashboard, T42Pendencias, T43Cadastros, T21Unidades, T22DetalheUnidade, T23Vistorias, T24DetalheVistoria, T25Ocorrencias, T26Tratamento, T27Relatorio } from './screens/Gestao';
 import { T34Auditoria } from './screens/Admin';
 import { T31Tipos } from './screens/T31Tipos';
 import { T30Ambientes } from './screens/T30Ambientes';
@@ -42,7 +42,7 @@ const GESTAO: Perfil[] = ['GESTOR', 'ADMIN'];
 const MANUTENCAO: Perfil[] = ['MANUTENCAO', 'GESTOR', 'ADMIN'];
 import { T32Usuarios } from './screens/T32Usuarios';
 import { T28Propriedades, T29FormPropriedade } from './screens/T28Propriedades';
-import { T38Calendario, T40Simulador } from './screens/Precos';
+import { T38Calendario, T40Simulador, T44Pacotes } from './screens/Precos';
 import { T39Tarifas, T41FormTarifa } from './screens/Tarifas';
 
 createRoot(document.getElementById('root')!).render(
@@ -69,7 +69,11 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/app/vistorias/nova/:unidadeId/confirmacao" element={<ProtegeCampo><T17Confirmacao /></ProtegeCampo>} />
         <Route path="/app/sincronizacao" element={<ProtegeCampo><T18Sincronizacao /></ProtegeCampo>} />
         <Route path="/app/historico" element={<ProtegeCampo><T19MeuHistorico /></ProtegeCampo>} />
-        <Route path="/gestao" element={<ProtegeCampo perfis={GESTAO}><T20Dashboard /></ProtegeCampo>} />
+        <Route path="/gestao" element={<ProtegeCampo perfis={GESTAO}><T42Pendencias /></ProtegeCampo>} />
+        <Route path="/gestao/painel" element={<ProtegeCampo perfis={GESTAO}><T20Dashboard /></ProtegeCampo>} />
+        <Route path="/admin" element={<ProtegeCampo perfis={GESTAO}><T43Cadastros /></ProtegeCampo>} />
+        <Route path="/admin/site" element={<ProtegeCampo perfis={GESTAO}><T43Cadastros /></ProtegeCampo>} />
+        <Route path="/admin/pacotes" element={<T44Pacotes />} />
         <Route path="/gestao/unidades" element={<ProtegeCampo perfis={GESTAO}><T21Unidades /></ProtegeCampo>} />
         <Route path="/gestao/unidades/:id" element={<ProtegeCampo perfis={GESTAO}><T22DetalheUnidade /></ProtegeCampo>} />
         <Route path="/gestao/vistorias" element={<ProtegeCampo perfis={GESTAO}><T23Vistorias /></ProtegeCampo>} />

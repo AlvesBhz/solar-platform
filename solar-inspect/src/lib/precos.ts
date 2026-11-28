@@ -13,6 +13,7 @@ export type Tarifa = {
   id: number; nome: string; ini: string; fim: string; // fim = dia seguinte à última noite (igual ao banco)
   prioridade: number; valorNoite: number; valorFds: number | null; adultosInclusos: number; adultoExtra: number;
   pcCrianca: number; pcCriancaMaior: number; pcBebe: number; minNoites: number; ativo: boolean;
+  diasFds: number[]; // dias da semana (ISO: 1 = segunda … 7 = domingo) que usam valorFds; os demais usam valorNoite
 };
 export type Ajuste = { data: string; valor: number | null; minNoites: number | null; fechado: boolean; semChegada: boolean; semSaida: boolean; obs: string };
 export type Ocupacao = { ini: string; fim: string; tipo: 'reserva' | 'pre-reserva' | 'bloqueio'; rotulo: string }; // fim = dia seguinte à última noite
@@ -28,7 +29,28 @@ export const noon = (iso: string) => new Date(iso + 'T12:00:00');
 export const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 export const somar = (s: string, n: number) => { const d = noon(s); d.setDate(d.getDate() + n); return iso(d); };
 export const noites = (a: string, b: string) => Math.round((noon(b).getTime() - noon(a).getTime()) / 86400000);
-export const fimDeSemana = (s: string) => [0, 5, 6].includes(noon(s).getDay()); // sexta, sábado e domingo
+export const DIAS_PADRAO = [5, 6, 7];                                                 // sexta, sábado e domingo
+export const diaIso = (s: string) => noon(s).getDay() || 7;                            // 1 = segunda … 7 = domingo
+/** A noite usa o segundo valor da tarifa (valorFds)? Depende dos dias marcados na tarifa. */
+export const usaValor2 = (t: Pick<Tarifa, 'diasFds'>, s: string) => t.diasFds.includes(diaIso(s));
+/** Semana começando no domingo, como no calendário. */
+export const SEMANA_ISO = [{ iso: 7, curto: 'D', nome: 'domingo' }, { iso: 1, curto: 'S', nome: 'segunda' }, { iso: 2, curto: 'T', nome: 'terça' },
+  { iso: 3, curto: 'Q', nome: 'quarta' }, { iso: 4, curto: 'Q', nome: 'quinta' }, { iso: 5, curto: 'S', nome: 'sexta' }, { iso: 6, curto: 'S', nome: 'sábado' }];
+const ABREV: Record<number, string> = { 1: 'seg', 2: 'ter', 3: 'qua', 4: 'qui', 5: 'sex', 6: 'sáb', 7: 'dom' };
+/** "sex a dom", "dom a qui", "qua" ou "seg, qua e sex" (sequência que vira a semana também conta). */
+export function rotuloDias(dias: number[]): string {
+  const d = [...new Set(dias)].sort((a, b) => a - b);
+  if (!d.length) return 'nenhum dia';
+  if (d.length === 7) return 'todos os dias';
+  const tem = (x: number) => d.includes(((x - 1 + 7) % 7) + 1);
+  const ini = d.find((x) => !tem(x - 1));                                             // começo de uma sequência
+  if (ini !== undefined && d.length > 1) {
+    let n = 0; while (tem(ini + n)) n++;
+    if (n === d.length) return `${ABREV[ini]} a ${ABREV[((ini + n - 2) % 7) + 1]}`;
+  }
+  const ordem = SEMANA_ISO.map((x) => x.iso).filter((x) => d.includes(x)).map((x) => ABREV[x]);
+  return ordem.length === 1 ? ordem[0] : `${ordem.slice(0, -1).join(', ')} e ${ordem[ordem.length - 1]}`;
+}
 export const diaSemana = (s: string) => noon(s).toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
 export const dataCurta = (s: string) => noon(s).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
 export const dataLonga = (s: string) => noon(s).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -56,9 +78,9 @@ const dados: { tarifas: Tarifa[]; tarifasDe: number | null; tarifasEm: number; a
   return {
     seq: 3, tarifasDe: null, tarifasEm: 0,
     tarifas: [
-      { id: 1, nome: 'Tarifa padrão', ini: '2026-11-01', fim: '2029-01-01', prioridade: 0, valorNoite: 800, valorFds: 1700, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 2, ativo: true },
+      { id: 1, nome: 'Tarifa padrão', ini: '2026-11-01', fim: '2029-01-01', prioridade: 0, valorNoite: 800, valorFds: 1700, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 2, ativo: true, diasFds: [5, 6, 7] },
       // exemplo desativado: mostra a situação "Inativa" sem mexer nos preços do calendário
-      { id: 2, nome: 'Alta temporada de julho (exemplo)', ini: '2027-07-01', fim: '2027-08-01', prioridade: 1, valorNoite: 1100, valorFds: 2000, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 3, ativo: false },
+      { id: 2, nome: 'Alta temporada de julho (exemplo)', ini: '2027-07-01', fim: '2027-08-01', prioridade: 1, valorNoite: 1100, valorFds: 2000, adultosInclusos: 2, adultoExtra: 0, pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 3, ativo: false, diasFds: [5, 6, 7] },
     ],
     ajustes: aj,
     pacotes: [
@@ -105,6 +127,7 @@ export async function listarTarifas(unidade: number): Promise<Tarifa[]> {
       id: Number(t.id_tarifa), nome: t.nm_tarifa, ini: t.dt_ini, fim: t.dt_fim, prioridade: t.no_prioridade, valorNoite: Number(t.vl_noite),
       valorFds: t.vl_noite_fds === null ? null : Number(t.vl_noite_fds), adultosInclusos: t.qtde_adultos_inclusos, adultoExtra: Number(t.vl_adulto_extra),
       pcCrianca: Number(t.pc_crianca), pcCriancaMaior: Number(t.pc_crianca_maior), pcBebe: Number(t.pc_bebe), minNoites: t.qtde_min_noites, ativo: t.sg_ativo,
+      diasFds: Array.isArray(t.no_dias_fds) ? t.no_dias_fds.map(Number) : DIAS_PADRAO,   // banco sem a coluna: o padrão de antes
     }));
   }
   return espera(ordenar(dados.tarifas));
@@ -137,6 +160,8 @@ export async function salvarTarifa(unidade: number, t: Omit<Tarifa, 'id'> & { id
       p_id_tarifa: t.id ?? null, p_id_unidade: unidade, p_nm_tarifa: t.nome.trim(), p_dt_ini: t.ini, p_dt_fim: t.fim, p_no_prioridade: t.prioridade,
       p_vl_noite: t.valorNoite, p_vl_noite_fds: t.valorFds, p_qtde_adultos_inclusos: t.adultosInclusos, p_vl_adulto_extra: t.adultoExtra,
       p_pc_crianca: t.pcCrianca, p_pc_crianca_maior: t.pcCriancaMaior, p_pc_bebe: t.pcBebe, p_qtde_min_noites: t.minNoites, p_sg_ativo: t.ativo,
+      // só envia os dias quando mudam do padrão: assim funciona também com o banco anterior à coluna NO_DIAS_FDS
+      ...([...t.diasFds].sort().join() === DIAS_PADRAO.join() ? {} : { p_no_dias_fds: [...new Set(t.diasFds)].sort() }),
     });
     dados.tarifasEm = 0;
     return error ? falha(error) : { ok: true };
@@ -186,6 +211,33 @@ export async function removerAjustes(unidade: number, datas: string[]): Promise<
     return error ? falha(error) : { ok: true };
   }
   datas.forEach((d) => dados.ajustes.delete(d));
+  return espera({ ok: true });
+}
+
+// ── faixas de idade das crianças (por pousada): até `bebe` anos, até `menor`, até `crianca`; acima disso, adulto
+export type Idades = { bebe: number; menor: number; crianca: number };
+export const IDADES_PADRAO: Idades = { bebe: 4, menor: 8, crianca: 13 };
+let idadesDemo: Idades = { ...IDADES_PADRAO };
+/** Rótulos das faixas: "até 4 anos", "5 a 8 anos", "9 a 13 anos" e "14+ anos". */
+export const faixas = (i: Idades) => ({ bebe: `até ${i.bebe} anos`, menor: `${i.bebe + 1} a ${i.menor} anos`, crianca: `${i.menor + 1} a ${i.crianca} anos`, adulto: `${i.crianca + 1}+ anos` });
+export async function carregarIdades(unidade: number): Promise<{ idades: Idades; editavel: boolean }> {
+  if (!REAL) return espera({ idades: { ...idadesDemo }, editavel: true });
+  try {
+    const r = ((await rpc('prc_idades', { p_id_unidade: unidade })) as any[])[0];
+    return r ? { idades: { bebe: r.no_idade_max_bebe, menor: r.no_idade_max_crianca_menor, crianca: r.no_idade_max_crianca }, editavel: true } : { idades: IDADES_PADRAO, editavel: false };
+  } catch { return { idades: IDADES_PADRAO, editavel: false }; }        // banco ainda sem a função: mostra as faixas de sempre
+}
+export function validarIdades(i: Idades): string | null {
+  return i.bebe >= 0 && i.bebe < i.menor && i.menor < i.crianca && i.crianca <= 17 ? null : 'As faixas de idade precisam crescer (ex.: até 4, até 8, até 13) e ir no máximo até 17 anos.';
+}
+export async function salvarIdades(unidade: number, i: Idades): Promise<Resultado> {
+  const e = validarIdades(i);
+  if (e) return { ok: false, erro: e };
+  if (REAL) {
+    const { error } = await supabase!.rpc('prc_salvar_idades', { p_id_unidade: unidade, p_bebe: i.bebe, p_menor: i.menor, p_crianca: i.crianca });
+    return error ? falha(error) : { ok: true };
+  }
+  idadesDemo = { ...i };
   return espera({ ok: true });
 }
 
@@ -239,8 +291,9 @@ export const ocupacaoDe = (data: string) => dados.ocupacoes.find((o) => data >= 
 export async function carregarMes(unidade: number, mes: string): Promise<void> {
   if (!REAL) return espera(undefined);
   const ini = primeiroDoMes(mes), fim = ultimoDoMes(mes);
+  // pacotes: se o banco não responder a função, o calendário funciona igual, sem pacotes
   const tarifasFrescas = dados.tarifasDe === unidade && Date.now() - dados.tarifasEm < 30000;       // virar o mês não precisa buscar as tarifas de novo
-  const [t, a, o] = await Promise.all([(tarifasFrescas ? Promise.resolve() : listarTarifas(unidade)).then(async (x) => { await listarPacotes(unidade); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
+  const [t, a, o] = await Promise.all([(tarifasFrescas ? Promise.resolve() : listarTarifas(unidade)).then(async (x) => { await listarPacotes(unidade).catch(() => { dados.pacotes = []; }); return x; }), rpc('prc_ajustes', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim }), rpc('prc_ocupacao', { p_id_unidade: unidade, p_dt_ini: ini, p_dt_fim: fim })]);
   void t;
   dados.ajustes = new Map((a as any[]).map((x): [string, Ajuste] => [x.dt_ref, {
     data: x.dt_ref, valor: x.vl_noite === null ? null : Number(x.vl_noite), minNoites: x.qtde_min_noites, fechado: x.sg_fechado, semChegada: x.sg_sem_chegada,
@@ -256,7 +309,7 @@ export type Dia = {
 };
 export function diaDe(data: string): Dia {
   const t = tarifaDe(data), a = ajusteDe(data);
-  const base = t ? (fimDeSemana(data) ? t.valorFds ?? t.valorNoite : t.valorNoite) : null;
+  const base = t ? (usaValor2(t, data) ? t.valorFds ?? t.valorNoite : t.valorNoite) : null;
   return {
     data, valor: a?.valor ?? base, minNoites: Math.max(a?.minNoites ?? t?.minNoites ?? 1, 1), tarifa: t?.nome ?? null,
     fechado: !!a?.fechado, semChegada: !!a?.semChegada, semSaida: !!a?.semSaida, ajustado: !!a, obs: a?.obs ?? '', ocupacao: ocupacaoDe(data), pacotes: pacotesDe(data),
@@ -293,7 +346,7 @@ function calcularLocal(u: Unidade, checkin: string, checkout: string, h: Hospede
     if (!t) semTarifa = true;
     if (a?.fechado) fechado = true;
     min = Math.max(min, a?.minNoites ?? t?.minNoites ?? 1);
-    const base = a?.valor ?? (t ? (fimDeSemana(d) ? t.valorFds ?? t.valorNoite : t.valorNoite) : 0);
+    const base = a?.valor ?? (t ? (usaValor2(t, d) ? t.valorFds ?? t.valorNoite : t.valorNoite) : 0);
     const inc = t?.adultosInclusos ?? 1;
     const extras = t
       ? Math.max(h.adultos - inc, 0) * t.adultoExtra

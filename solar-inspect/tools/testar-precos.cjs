@@ -31,8 +31,8 @@ function montarBanco() {
     insert into "SE"."SIT_BLOQUEIO" ("ID_UNIDADE", "DT_INI", "DT_FIM", "TP_MOTIVO")
       select "ID_UNIDADE", (now() at time zone 'America/Sao_Paulo')::date + 3, (now() at time zone 'America/Sao_Paulo')::date + 5, 'MANUTENCAO' from "SE"."SIT_UNIDADE" where "CD_UNIDADE" = 'casa-do-mirante';`);
 }
-const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::date[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
-const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes']);
+const lit = (v) => v === null || v === undefined ? 'NULL' : Array.isArray(v) ? `ARRAY[${v.map(lit).join(',')}]::${typeof v[0] === 'number' ? 'smallint' : 'date'}[]` : typeof v === 'number' || typeof v === 'boolean' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
+const TABELA = new Set(['prc_unidades', 'prc_tarifas', 'prc_ajustes', 'prc_ocupacao', 'prc_calcular', 'prc_pacotes', 'prc_idades']);
 function chamarRpc(perfil, fn, corpo) {
   const args = Object.entries(corpo || {}).map(([k, v]) => `${k} => ${lit(v)}`).join(', ');
   const chamada = `"SE".${fn}(${args})`;
@@ -105,8 +105,8 @@ function servidor(page, perfil, perdidos, chamadas) {
   const A = await novo('ADMIN');
   const p = A.page;
   await abrir(p, '/gestao');
-  const links = await p.locator('nav[aria-label="Gestão"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-  ok(['/admin/precos', '/admin/tarifas', '/admin/simulador'].every((l) => links.includes(l)), 'ADMIN vê Calendário de preços, Tarifas e Simulador no menu');
+  const links = await p.locator('nav[aria-label="Menu"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
+  ok(links.includes('/admin/precos') && !links.includes('/admin/tarifas'), 'ADMIN vê uma entrada só, Preços, no menu');
 
   // ── T38 · calendário (dados do banco)
   console.log('── T38 Calendário de preços');
@@ -115,7 +115,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await abrir(p, `/admin/precos?mes=${mes}`);
   const celula = () => p.locator('[role=gridcell]').filter({ has: p.locator(`span:text-is("${dia}")`) }).first();
   const rotulo = async () => (await celula().getAttribute('aria-label')) || '';
-  ok((await p.locator('h1').innerText()).includes('Calendário de preços'), 'título da tela');
+  ok((await p.locator('h1').innerText()).includes('Preços') && (await p.locator('nav[aria-label="Preços"] a').allInnerTexts()).join('|') === 'Calendário|Tarifas|Pacotes|Simulador', 'Preços com abas Calendário · Tarifas · Pacotes · Simulador');
   ok(!(await p.getByText('Protótipo.').isVisible().catch(() => false)), 'ligado ao banco: a faixa "Protótipo" não aparece');
   ok(A.chamadas.includes('prc_unidades') && A.chamadas.includes('prc_tarifas') && A.chamadas.includes('prc_ajustes') && A.chamadas.includes('prc_ocupacao'), 'o calendário lê unidades, tarifas, ajustes e ocupação do banco');
   const antes = await rotulo();
@@ -203,7 +203,7 @@ function servidor(page, perfil, perdidos, chamadas) {
 
   // ── Pacotes: Natal 2027 com check-in 24/12, 3 noites R$ 2.400 e 4 noites R$ 2.900
   console.log('── Pacotes');
-  await abrir(p, '/admin/precos?mes=2027-12');
+  await abrir(p, '/admin/pacotes');
   for (const [n, v] of [['3', '2400'], ['4', '2900']]) {
     await p.getByRole('button', { name: 'Novo pacote' }).click();
     const f = p.locator('form[aria-label="Novo pacote"]');
@@ -216,7 +216,9 @@ function servidor(page, perfil, perdidos, chamadas) {
   ok(/Pacote salvo/.test(await p.locator('section[aria-label=Pacotes] [role=status]').innerText()), 'mensagem "Pacote salvo"');
   const lista = await p.locator('section[aria-label=Pacotes]').innerText();
   ok(/Natal 2027/.test(lista) && /R\$\s?2\.400/.test(lista) && /R\$\s?2\.900/.test(lista) && /\+ R\$\s?500/.test(lista), 'a lista mostra as duas opções e a diferença de R$ 500');
+  await abrir(p, '/admin/precos?mes=2027-12');
   ok(/só pacote Natal 2027/.test(await natal.getAttribute('aria-label')), 'as noites do pacote ficam marcadas no calendário');
+  await abrir(p, '/admin/pacotes');
   await p.getByRole('button', { name: 'Novo pacote' }).click();
   { const f = p.locator('form[aria-label="Novo pacote"]');
     await f.getByLabel('Nome').fill('Repetido'); await f.getByLabel('Check-in').fill('2027-12-24'); await f.getByLabel('Noites').fill('3'); await f.getByLabel('Valor total (R$)').fill('100');
@@ -234,7 +236,7 @@ function servidor(page, perfil, perdidos, chamadas) {
   await datas.nth(0).fill('2027-12-25');
   txt = await resultado();
   ok(/não vende/.test(txt) && /só em pacote/.test(txt), 'simulador: estadia que não é um dos pacotes não é vendida');
-  await abrir(p, '/admin/precos?mes=2027-12');
+  await abrir(p, '/admin/pacotes');
   for (let i = 0; i < 2; i++) { await p.locator('section[aria-label=Pacotes]').getByRole('button', { name: 'Desativar' }).first().click(); await p.waitForTimeout(600); }
   ok(Number(sql(`select count(*) from "SE"."SIT_PACOTE" where "SG_ATIVO"`)) === 0, 'Desativar tira os pacotes da venda');
 
@@ -249,14 +251,19 @@ function servidor(page, perfil, perdidos, chamadas) {
   await p.getByPlaceholder(/Alta temporada de julho/).fill('Teste de sobreposição');
   const inputs = p.locator('input[type=date]');
   await inputs.nth(0).fill('2027-02-01'); await inputs.nth(1).fill('2027-02-10');
-  const prio = p.locator('label', { hasText: 'Prioridade' }).locator('input');
-  await prio.fill('0');
+  const prio = p.locator('label', { hasText: 'Prioridade' }).locator('select');
+  ok(await p.getByText('Data início').isVisible() && await p.getByText('Data fim').isVisible(), 'período com Data início e Data fim');
+  await prio.selectOption('0');
   ok(/se sobrepõe a “Tarifa padrão”/.test(await p.locator('main').innerText()) && await p.getByRole('button', { name: /Salvar tarifa/ }).isDisabled(), 'mesma prioridade e período: avisa a sobreposição e bloqueia salvar');
-  await prio.fill('3');
+  await prio.selectOption('3');
+  // dias da semana: quarta passa para o segundo valor (sexta, sábado e domingo já estão lá)
+  await p.locator('[role=group][aria-label="dias do valor 1"] label[title=quarta]').click();
+  ok(await p.locator('[role=group][aria-label="dias do valor 2"] input[aria-label^=quarta]').isChecked() && /seg, ter e qui/.test(await p.locator('form').innerText()), 'tocar num dia passa ele para o outro valor e os rótulos se ajustam');
   await p.getByRole('button', { name: /Salvar tarifa/ }).click();
   await p.waitForTimeout(700);
   ok(new URL(p.url()).pathname === '/admin/tarifas' && /Teste de sobreposição/.test(await p.locator('main').innerText()), 'tarifa salva no banco volta para a lista');
   ok(Number(sql(`select count(*) from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição' and "NO_PRIORIDADE" = 3`)) === 1, 'a tarifa existe em SIT_TARIFA');
+  ok(sql(`select "NO_DIAS_FDS"::text from "SE"."SIT_TARIFA" where "NM_TARIFA" = 'Teste de sobreposição'`) === '{3,5,6,7}', 'os dias do segundo valor ficam gravados (quarta, sexta, sábado e domingo)');
   ok(Number(sql(`select count(*) from "SE"."VST_AUDITORIA" where "NM_TABELA" = 'SIT_TARIFA' and "TP_OPERACAO" = 'INSERT' and "ID_USUARIO" = '${UIDS.ADMIN}'`)) === 1, 'a Auditoria do Inspect mostra quem criou a tarifa');
   // desativa e reativa pelo botão da lista
   await p.getByRole('row', { name: /Teste de sobreposição/ }).getByRole('button', { name: 'Desativar' }).click();
@@ -275,11 +282,20 @@ function servidor(page, perfil, perdidos, chamadas) {
   await foto(p, 'T41-desktop');
   // simula outra pessoa criando uma tarifa na mesma prioridade enquanto a tela estava aberta
   sql(`insert into "SE"."SIT_TARIFA" ("ID_UNIDADE", "NM_TARIFA", "DT_INI", "DT_FIM", "NO_PRIORIDADE", "VL_NOITE") select "ID_UNIDADE", 'Criada por outra pessoa', '2027-02-01', '2027-02-10', 7, 900 from "SE"."SIT_UNIDADE" limit 1`);
-  await p.locator('label', { hasText: 'Prioridade' }).locator('input').fill('7');
+  await p.locator('label', { hasText: 'Prioridade' }).locator('select').selectOption('7');
   await p.getByRole('button', { name: /Salvar tarifa/ }).click();
   await p.waitForTimeout(700);
   ok(/se sobrepõe a outra tarifa ativa na mesma prioridade/.test(await p.locator('main').innerText()) && new URL(p.url()).pathname === `/admin/tarifas/${id}`, 'sobreposição criada por outra pessoa: o banco recusa e a tela mostra a mensagem');
   ok(sql(`select "NO_PRIORIDADE"::text from "SE"."SIT_TARIFA" where "ID_TARIFA" = ${id}`) === '3', 'a tarifa não foi alterada pelo salvamento recusado');
+
+  // faixas de idade das crianças (por pousada): caixa de seleção no formulário
+  await abrir(p, `/admin/tarifas/${id}`);
+  await p.getByLabel('Bebês: idade máxima').selectOption('3');
+  ok(/De 4 até/.test(await p.locator('form').innerText()) && /novas faixas valem para todas as tarifas/.test(await p.locator('form').innerText()), 'mudar a idade dos bebês ajusta a faixa seguinte e avisa que vale para todas as tarifas');
+  await p.getByRole('button', { name: /Salvar tarifa/ }).click();
+  await p.waitForTimeout(700);
+  ok(sql(`select "NO_IDADE_MAX_BEBE" || '-' || "NO_IDADE_MAX_CRIANCA_MENOR" || '-' || "NO_IDADE_MAX_CRIANCA" from "SE"."SIT_PROPRIEDADE" limit 1`) === '3-8-13', 'as faixas ficam gravadas na pousada');
+  sql(`update "SE"."SIT_PROPRIEDADE" set "NO_IDADE_MAX_BEBE" = 4`);
 
   // ── celular (280 px é o menor aparelho que o app atende)
   console.log('── Celular (280, 320 e 390 px)');

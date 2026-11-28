@@ -9,7 +9,8 @@ execFileSync('psql', ['-qd', 'postgres', '-c', 'drop database if exists site_e2e
 for (const f of ['solar-inspect/database/simulado_supabase.sql', 'site/database/schema.sql', 'site/database/seed_exemplo.sql', 'solar-inspect/database/migracao_vistorias.sql', 'site/database/migracao_precos_gestao.sql', 'site/database/migracao_pacotes.sql'])
   execFileSync('psql', ['-qd', 'site_e2e', '-v', 'ON_ERROR_STOP=1', '-f', path.join(R, f)], { env: { ...process.env, PGOPTIONS: '-c client_min_messages=warning' }, stdio: ['ignore', 'ignore', 'inherit'] });
 execFileSync('psql', ['-qd', 'site_e2e', '-c', `insert into "SE"."SIT_PACOTE" ("ID_UNIDADE", "NM_PACOTE", "DT_CHECKIN", "QTDE_NOITES", "VL_TOTAL")
-  select "ID_UNIDADE", 'Natal 2026', '2026-12-24', n, v from "SE"."SIT_UNIDADE", (values (3, 2400), (4, 2900)) x(n, v) where "CD_UNIDADE" = 'casa-do-mirante'`]);
+  select "ID_UNIDADE", 'Natal 2026', '2026-12-24', n, v from "SE"."SIT_UNIDADE", (values (3, 2400), (4, 2900)) x(n, v) where "CD_UNIDADE" = 'casa-do-mirante';
+  update "SE"."SIT_PROPRIEDADE" set "NO_IDADE_MAX_BEBE" = 3, "NO_IDADE_MAX_CRIANCA_MENOR" = 7, "NO_IDADE_MAX_CRIANCA" = 12`]);   // faixas mudadas no Inspect
 const BASE = 'http://localhost:8090', FOTO = process.env.FOTO;
 let f = 0, n = 0; const ok = (c, m) => { n++; console.log((c ? 'ok  ' : 'FALHOU: ') + m); if (!c) f++; };
 const lit = (v) => v === null || v === undefined ? 'NULL' : typeof v === 'number' ? String(v) : `'${String(v).replace(/'/g, "''")}'`;
@@ -30,6 +31,10 @@ function rpc(fn, corpo) {
     });
     await p.goto(BASE + '/index.html'); await p.waitForTimeout(800);
     await p.evaluate(() => openBkPopup(new Event('click'))); await p.waitForTimeout(300);
+    await p.evaluate(() => Booking.open('guests')); await p.waitForTimeout(300);
+    const gst = await p.locator('.bk-pop-guests').innerText();
+    ok(/13\+/.test(gst) && /8 a 12/.test(gst) && /4 a 7/.test(gst) && /3/.test(gst), `${w}px: seletor de hóspedes mostra as faixas do banco (até 3, 4 a 7, 8 a 12, 13+)`);
+    await p.evaluate(() => Booking.close()); await p.waitForTimeout(200);
     await p.locator('[data-field="checkin"]').first().click(); await p.waitForTimeout(300);
     await p.locator('#calNext').click(); await p.waitForTimeout(1200);
     const dia = (d) => ({
@@ -64,6 +69,7 @@ function rpc(fn, corpo) {
   const p = await b.newPage({ viewport: { width: 390, height: 860 } });
   await p.route('https://tnjpyjbqcjrowzjfnuln.supabase.co/**', (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: rpc(new URL(r.request().url()).pathname.split('/').pop(), JSON.parse(r.request().postData() || '{}')) }));
   await p.goto(BASE + '/reserva.html?ci=2026-12-24&co=2026-12-28&a=2&c=0&m=0&b=0'); await p.waitForTimeout(1500);
+  ok(await p.locator('#fxM').innerText() === '8 a 12 anos' && /até 3 anos, 4 a 7 anos e 8 a 12 anos/.test(await p.locator('#fxContrato').innerText()), 'reserva.html: faixas e contrato com as idades do banco');
   ok(/4 · Pacote Natal 2026/.test(await p.locator('#rN').innerText()) && /R\$\s?2\.900/.test(await p.locator('#rT').innerText()), 'reserva.html: 24→28 mostra o pacote e R$ 2.900');
   await p.goto(BASE + '/reserva.html?ci=2026-12-25&co=2026-12-27&a=2&c=0&m=0&b=0'); await p.waitForTimeout(1500);
   ok(/só pacotes/.test(await p.locator('#resEstado').innerText()), 'reserva.html: 25→27 explica que só há pacotes');

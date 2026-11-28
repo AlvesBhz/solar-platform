@@ -186,7 +186,7 @@ export default function T10Checklist() {
             <div className="flex items-end justify-between gap-3">
               <div className="flex min-w-0 flex-col">
                 <span className="text-[0.625rem] uppercase tracking-[0.24em] text-fg-3">Ambiente {idx + 1} de {ambientes.length}</span>
-                <h1 className="font-serif text-[1.625rem] font-medium leading-tight text-fg-1">{amb.nome}</h1>
+                <h1 className="font-serif text-[1.375rem] font-medium leading-tight text-fg-1">{amb.nome}</h1>
               </div>
               {semResposta > 0 && (
                 <button type="button" onClick={tudoOk} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-line-2 bg-white px-3.5 text-[0.75rem] font-medium text-available transition-colors duration-fast hover:border-available">

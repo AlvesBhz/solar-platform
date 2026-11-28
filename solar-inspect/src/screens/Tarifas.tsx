@@ -5,10 +5,10 @@ import { Chips, Seletor } from '../components/Filtros';
 import GestaoShell, { TabelaResp, card } from '../components/GestaoShell';
 import { btnPrimary, btnSecondary } from '../components/ScreenShell';
 import { hoje } from '../lib/campo';
-import { alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
+import { DIAS_PADRAO, IDADES_PADRAO, SEMANA_ISO, carregarIdades, faixas, salvarIdades, validarIdades, type Idades, alternarTarifa, brl, dataLonga, listarTarifas, obterTarifa, rotuloDias, salvarTarifa, somar, tarifaDe, validarTarifa, type Tarifa } from '../lib/precos';
 import { useUnidades } from '../lib/usePrecos';
 import { usePerfilPermitido } from '../lib/useAdmin';
-import { AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
+import { AbasPrecos, AvisoPrototipo, Carregando, Falha, SemChale, campo, num, rot } from './Precos';
 
 type Filtro = 'todas' | 'ativas' | 'inativas';
 const ultimaNoite = (t: Tarifa) => somar(t.fim, -1);
@@ -40,8 +40,9 @@ export function T39Tarifas() {
   }
 
   return (
-    <GestaoShell eyebrow="Administração" titulo="Tarifas"
+    <GestaoShell eyebrow="Cadastros · Site" titulo="Preços"
       acoes={<Link to="/admin/tarifas/nova" className={`${btnPrimary} !w-auto`}><Icon icon="solar:add-circle-linear" width={18} aria-hidden="true" />Nova tarifa</Link>}>
+      <AbasPrecos />
       <AvisoPrototipo />
       <p className="max-w-3xl text-[0.8125rem] text-fg-3">
         Cada tarifa vale para um período e define o valor da noite para o casal. Quando duas tarifas cobrem a mesma noite, vale a de <strong className="font-medium text-fg-2">maior prioridade</strong>.
@@ -62,8 +63,13 @@ export function T39Tarifas() {
               <div className="text-[0.75rem] text-fg-3">Prioridade {t.prioridade}{t.id === vigente && <span className="ml-2 rounded-full bg-available/10 px-2 py-0.5 text-[0.6875rem] text-available">vale hoje</span>}</div>
             </>) },
             { h: 'Período', r: (t) => <span className="text-fg-2">{dataLonga(t.ini)} a {dataLonga(ultimaNoite(t))}</span> },
-            { h: 'Dom a qui', r: (t) => <span className="font-mono">{brl(t.valorNoite)}</span> },
-            { h: 'Sex a dom', r: (t) => <span className="font-mono">{brl(t.valorFds ?? t.valorNoite)}</span> },
+            { h: 'Valor da noite', r: (t) => (
+              <span className="flex flex-col items-end gap-0.5 md:items-start">
+                {t.valorFds === null || t.diasFds.length === 0 ? <span><span className="font-mono">{brl(t.valorNoite)}</span> <span className="text-[0.75rem] text-fg-3">todos os dias</span></span> : (<>
+                  {t.diasFds.length < 7 && <span><span className="font-mono">{brl(t.valorNoite)}</span> <span className="text-[0.75rem] text-fg-3">{rotuloDias([1, 2, 3, 4, 5, 6, 7].filter((d) => !t.diasFds.includes(d)))}</span></span>}
+                  <span><span className="font-mono">{brl(t.valorFds)}</span> <span className="text-[0.75rem] text-fg-3">{rotuloDias(t.diasFds)}</span></span>
+                </>)}
+              </span>) },
             { h: 'Mínimo', r: (t) => `${t.minNoites} ${t.minNoites === 1 ? 'noite' : 'noites'}` },
             { h: 'Situação', r: (t) => (
               <span className="inline-flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
@@ -79,10 +85,35 @@ export function T39Tarifas() {
 
 const vazia = (): Omit<Tarifa, 'id'> => ({
   nome: '', ini: hoje(), fim: somar(hoje(), 30), prioridade: 1, valorNoite: 800, valorFds: 1700, adultosInclusos: 2, adultoExtra: 0,
-  pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 2, ativo: true,
+  pcCrianca: 30, pcCriancaMaior: 100, pcBebe: 0, minNoites: 2, ativo: true, diasFds: [...DIAS_PADRAO],
 });
 
-/** T41 — Formulário de tarifa: período, valores, crianças e mínimo de noites. Mostra um exemplo de conta para conferir antes de salvar. */
+const TODOS = [1, 2, 3, 4, 5, 6, 7];
+const PRIORIDADES = [
+  { v: 0, l: '0 · Base (o ano todo)' }, { v: 1, l: '1 · Temporada' }, { v: 2, l: '2 · Feriado ou evento' },
+  ...[3, 4, 5, 6, 7, 8, 9].map((v) => ({ v, l: String(v) })),
+];
+const curto = 'min-h-10 w-full rounded-md border border-line-2 bg-white px-3 text-[0.875rem] text-fg-1 placeholder:text-fg-4 focus:border-pine focus:outline-none disabled:bg-cream disabled:text-fg-4';
+const rotC = 'flex min-w-0 flex-col gap-1 text-[0.6875rem] uppercase tracking-[0.06em] text-fg-2';
+const secao = 'font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2';
+
+/** Dias da semana (domingo a sábado) como caixinhas de marcar. */
+function Dias({ marcados, onTrocar, rotulo }: { marcados: number[]; onTrocar: (iso: number) => void; rotulo: string }) {
+  return (
+    <div role="group" aria-label={rotulo} className="flex flex-wrap gap-1">
+      {SEMANA_ISO.map((d) => {
+        const on = marcados.includes(d.iso);
+        return (
+          <label key={d.iso} title={d.nome} className={`flex h-10 w-10 cursor-pointer select-none items-center justify-center rounded-full border text-[0.8125rem] font-medium transition-colors duration-fast has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-pine ${on ? 'border-pine bg-pine text-white' : 'border-line-2 bg-white text-fg-3 hover:border-fg-3'}`}>
+            <input type="checkbox" className="sr-only" checked={on} onChange={() => onTrocar(d.iso)} aria-label={`${d.nome} (${rotulo})`} />{d.curto}
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+/** T41 — Formulário de tarifa: período, valores por dia da semana, crianças e mínimo de noites. Mostra um exemplo de conta antes de salvar. */
 export function T41FormTarifa() {
   const perfil = usePerfilPermitido(['ADMIN']);
   const navigate = useNavigate();
@@ -90,28 +121,47 @@ export function T41FormTarifa() {
   const nova = id === 'nova';
   const [t, setT] = useState<Omit<Tarifa, 'id'> & { id?: number }>(vazia);
   const [ate, setAte] = useState(() => somar(vazia().fim, -1));
-  const [fdsIgual, setFdsIgual] = useState(false);
+  const [v2, setV2] = useState('');                       // segundo valor (texto do campo)
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [pronto, setPronto] = useState(false);
+  const [idades, setIdades] = useState<Idades>(IDADES_PADRAO);
+  const [idadesOrig, setIdadesOrig] = useState<Idades | null>(null);   // null = banco sem faixas editáveis
   const un = useUnidades(!!perfil);
   const uid = un.atual?.id;
   useEffect(() => {
     if (uid === undefined) return;
+    void carregarIdades(uid).then((r) => { setIdades(r.idades); setIdadesOrig(r.editavel ? r.idades : null); });
     // carrega as tarifas do chalé (a conferência de sobreposição usa a lista) e, na edição, abre a escolhida
     listarTarifas(uid).then(() => {
-      if (nova) return setPronto(true);
+      if (nova) { setV2('1700'); return setPronto(true); }
       const x = obterTarifa(Number(id));
       if (!x) return setErro('Tarifa não encontrada neste chalé.');
-      setT(x); setAte(ultimaNoite(x)); setFdsIgual(x.valorFds === null); setPronto(true);
+      const semV2 = x.valorFds === null;
+      setT({ ...x, diasFds: semV2 ? [] : x.diasFds }); setAte(ultimaNoite(x)); setV2(semV2 ? '' : String(x.valorFds).replace('.', ',')); setPronto(true);
     }).catch(() => setErro('Não foi possível carregar a tarifa. Verifique a conexão.'));
   }, [uid, id, nova]);
   if (!perfil) return null;
 
-  const atual = { ...t, fim: ate ? somar(ate, 1) : '', valorFds: fdsIgual ? null : t.valorFds };
-  const erros = validarTarifa(atual);
-  const campoNum = (k: 'valorNoite' | 'valorFds' | 'adultoExtra' | 'pcCrianca' | 'pcCriancaMaior' | 'pcBebe' | 'adultosInclusos' | 'minNoites' | 'prioridade') =>
-    ({ inputMode: 'decimal' as const, className: campo, value: t[k] === null ? '' : String(t[k]).replace('.', ','), onChange: (e: React.ChangeEvent<HTMLInputElement>) => setT({ ...t, [k]: num(e.target.value) ?? 0 }) });
+  const dias1 = TODOS.filter((d) => !t.diasFds.includes(d));
+  const temV2 = t.diasFds.length > 0;
+  const atual = { ...t, fim: ate ? somar(ate, 1) : '', valorFds: temV2 ? num(v2) ?? -1 : null, diasFds: temV2 ? t.diasFds : [...DIAS_PADRAO] };
+  const erros = validarTarifa(atual).map((e) => e.replace('Valor de fim de semana inválido.', 'Informe o valor da noite dos dias do segundo grupo.'));
+  if (temV2 && dias1.length === 0 && !erros.length) erros.push('Deixe ao menos um dia no primeiro valor, ou desmarque os dias do segundo.');
+  const erroIdades = validarIdades(idades);
+  if (erroIdades) erros.push(erroIdades);
+  const fx = faixas(idades);
+  const mudouIdades = !!idadesOrig && (idades.bebe !== idadesOrig.bebe || idades.menor !== idadesOrig.menor || idades.crianca !== idadesOrig.crianca);
+  const idadeMax = (k: keyof Idades, de: number, rot: string) => (
+    <select className={`${curto} !min-h-9 w-[4.5rem] !px-2`} value={idades[k]} disabled={!idadesOrig} aria-label={`${rot}: idade máxima`}
+      onChange={(e) => setIdades({ ...idades, [k]: Number(e.target.value) })}>
+      {Array.from({ length: 18 - de }, (_, i) => de + i).map((n) => <option key={n} value={n}>{n}</option>)}
+    </select>
+  );
+  const campoNum = (k: 'valorNoite' | 'adultoExtra' | 'pcCrianca' | 'pcCriancaMaior' | 'pcBebe' | 'adultosInclusos' | 'minNoites', extra = {}) =>
+    ({ inputMode: 'decimal' as const, className: curto, value: String(t[k]).replace('.', ','), onChange: (e: React.ChangeEvent<HTMLInputElement>) => setT({ ...t, [k]: num(e.target.value) ?? 0 }), ...extra });
+  // um dia sai de um grupo e entra no outro
+  const trocar = (iso: number) => setT({ ...t, diasFds: t.diasFds.includes(iso) ? t.diasFds.filter((d) => d !== iso) : [...t.diasFds, iso] });
 
   // exemplo: casal + 1 criança de 5 a 8 anos
   const porPessoa = (v: number) => (t.adultosInclusos >= 1 ? v / t.adultosInclusos : v);
@@ -121,6 +171,10 @@ export function T41FormTarifa() {
     e.preventDefault();
     if (erros.length) return;
     setSalvando(true); setErro('');
+    if (mudouIdades) {
+      const ri = await salvarIdades(uid!, idades);
+      if (!ri.ok) { setSalvando(false); return setErro(ri.erro); }
+    }
     const r = await salvarTarifa(uid!, atual);
     setSalvando(false);
     if (!r.ok) return setErro(r.erro);
@@ -128,55 +182,79 @@ export function T41FormTarifa() {
   }
 
   return (
-    <GestaoShell eyebrow="Administração" titulo={nova ? 'Nova tarifa' : t.nome || 'Tarifa'}>
+    <GestaoShell eyebrow="Cadastros · Site · Preços" titulo={nova ? 'Nova tarifa' : t.nome || 'Tarifa'}>
       <AvisoPrototipo />
       {erro && <p role="alert" className="text-sm text-error">{erro}</p>}
       {un.erro ? <Falha tentar={un.tentarDeNovo} /> : un.lista && !un.atual ? <SemChale /> : !pronto && !erro ? <Carregando /> : null}
       {pronto && un.atual && (
-        <form className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-start" onSubmit={salvar} noValidate>
-          <div className={`${card} grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 p-5 sm:grid-cols-2`}>
-            <label className={`${rot} sm:col-span-2`}>Nome
-              <input className={campo} value={t.nome} onChange={(e) => setT({ ...t, nome: e.target.value })} placeholder="ex.: Alta temporada de julho" maxLength={60} />
-            </label>
-            <label className={rot}>Primeira noite<input type="date" className={campo} value={t.ini} onChange={(e) => setT({ ...t, ini: e.target.value })} /></label>
-            <label className={rot}>Última noite<input type="date" className={campo} value={ate} min={t.ini} onChange={(e) => setAte(e.target.value)} /></label>
-            <label className={rot}>Prioridade
-              <input inputMode="numeric" className={campo} value={String(t.prioridade)} onChange={(e) => setT({ ...t, prioridade: Number(e.target.value.replace(/\D/g, '')) || 0 })} />
-              <span className="normal-case tracking-normal text-fg-3">Maior número ganha quando duas tarifas cobrem a mesma noite.</span>
-            </label>
-            <label className={rot}>Mínimo de noites<input {...campoNum('minNoites')} inputMode="numeric" /></label>
+        <form className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,46rem)_minmax(0,18rem)] xl:items-start" onSubmit={salvar} noValidate>
+          <div className={`${card} flex min-w-0 flex-col gap-5 p-4 sm:p-5`}>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,1fr)_9.5rem_9.5rem]">
+              <label className={`${rotC} col-span-2 sm:col-span-1`}>Nome
+                <input className={curto} value={t.nome} onChange={(e) => setT({ ...t, nome: e.target.value })} placeholder="ex.: Alta temporada de julho" maxLength={60} />
+              </label>
+              <label className={rotC}>Data início<input type="date" className={curto} value={t.ini} onChange={(e) => setT({ ...t, ini: e.target.value })} /></label>
+              <label className={rotC}>Data fim<input type="date" className={curto} value={ate} min={t.ini} onChange={(e) => setAte(e.target.value)} /></label>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-[9.5rem_minmax(0,15rem)]">
+              <label className={rotC}>Mínimo de noites<input {...campoNum('minNoites', { inputMode: 'numeric' })} /></label>
+              <label className={rotC}>Prioridade
+                <select className={curto} value={t.prioridade} onChange={(e) => setT({ ...t, prioridade: Number(e.target.value) })}>
+                  {(PRIORIDADES.some((p) => p.v === t.prioridade) ? PRIORIDADES : [...PRIORIDADES, { v: t.prioridade, l: String(t.prioridade) }]).map((p) => <option key={p.v} value={p.v}>{p.l}</option>)}
+                </select>
+              </label>
+              <p className="col-span-2 text-[0.75rem] text-fg-3">Prioridade decide qual tarifa vale quando duas cobrem a mesma data: vale a de número maior. Ex.: a Base (0) cobre o ano; a de Carnaval (2) passa por cima dela só nos dias do Carnaval.</p>
+            </div>
 
-            <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2 sm:col-span-2">Valor da noite para o casal (R$)</h2>
-            <label className={rot}>Domingo a quinta<input {...campoNum('valorNoite')} /></label>
-            <label className={rot}>Sexta a domingo
-              <input {...campoNum('valorFds')} value={fdsIgual ? '' : t.valorFds === null ? '' : String(t.valorFds).replace('.', ',')} disabled={fdsIgual} placeholder={fdsIgual ? 'igual ao da semana' : ''} />
-            </label>
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem] sm:col-span-2"><input type="checkbox" className="h-5 w-5 accent-pine" checked={fdsIgual} onChange={(e) => { setFdsIgual(e.target.checked); setT({ ...t, valorFds: e.target.checked ? null : t.valorNoite }); }} />Sexta a domingo custa o mesmo que o resto da semana</label>
-            <label className={rot}>Adultos inclusos no valor<input {...campoNum('adultosInclusos')} inputMode="numeric" /></label>
-            <label className={rot}>Adulto extra, por noite (R$)<input {...campoNum('adultoExtra')} /></label>
+            <fieldset className="flex flex-col gap-3 border-t border-line-1 pt-4">
+              <legend className={`${secao} float-left mb-1 w-full`}>Valor da noite para o casal (R$)</legend>
+              <p className="text-[0.75rem] text-fg-3">Marque os dias de cada valor. Tocar num dia passa ele de um valor para o outro.</p>
+              <div className="flex flex-wrap items-end gap-3">
+                <Dias marcados={dias1} onTrocar={trocar} rotulo="dias do valor 1" />
+                <label className={`${rotC} w-44`}>{rotuloDias(dias1)}<input {...campoNum('valorNoite')} aria-label={`Valor da noite: ${rotuloDias(dias1)}`} /></label>
+              </div>
+              <div className="flex flex-wrap items-end gap-3">
+                <Dias marcados={t.diasFds} onTrocar={trocar} rotulo="dias do valor 2" />
+                <label className={`${rotC} w-44`}>{temV2 ? rotuloDias(t.diasFds) : 'sem segundo valor'}
+                  <input inputMode="decimal" className={curto} value={temV2 ? v2 : ''} disabled={!temV2} placeholder={temV2 ? 'ex.: 1700' : '—'} onChange={(e) => setV2(e.target.value)} aria-label={`Valor da noite: ${rotuloDias(t.diasFds)}`} />
+                </label>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-[9.5rem_11rem]">
+                <label className={rotC}>Adultos inclusos<input {...campoNum('adultosInclusos', { inputMode: 'numeric' })} /></label>
+                <label className={rotC}>Adulto extra (R$/noite)<input {...campoNum('adultoExtra')} /></label>
+              </div>
+            </fieldset>
 
-            <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2 sm:col-span-2">Crianças: percentual do valor por pessoa</h2>
-            <label className={rot}>Até 4 anos (%)<input {...campoNum('pcBebe')} /></label>
-            <label className={rot}>5 a 8 anos (%)<input {...campoNum('pcCrianca')} /></label>
-            <label className={rot}>9 a 13 anos (%)<input {...campoNum('pcCriancaMaior')} /></label>
-            <p className="text-[0.75rem] text-fg-3 sm:col-span-2">A partir de 14 anos a pessoa conta como adulto. O valor por pessoa é o valor da noite dividido pelos adultos inclusos.</p>
+            <fieldset className="flex flex-col gap-3 border-t border-line-1 pt-4">
+              <legend className={`${secao} float-left mb-1 w-full`}>Crianças: % do valor por pessoa</legend>
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-3 sm:max-w-[30rem]">
+                {([['bebe', 0, 'pcBebe', 'Bebês'], ['menor', idades.bebe + 1, 'pcCrianca', 'Crianças'], ['crianca', idades.menor + 1, 'pcCriancaMaior', 'Crianças maiores']] as const).map(([k, de, pc, nome]) => (
+                  <div key={k} className="flex flex-col gap-1.5 rounded-md border border-line-1 p-2.5">
+                    <span className="flex flex-wrap items-center gap-1.5 text-[0.75rem] text-fg-2">{k === 'bebe' ? 'Até' : `De ${de} até`} {idadeMax(k, k === 'bebe' ? 0 : de, nome)} anos</span>
+                    <label className={rotC}>% do valor<input {...campoNum(pc)} aria-label={`${fx[k]} (%)`} /></label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[0.75rem] text-fg-3">De {idades.crianca + 1} anos em diante conta como adulto. Valor por pessoa = valor da noite ÷ adultos inclusos.
+                {idadesOrig ? ' As idades valem para todas as tarifas da pousada e aparecem no site.' : ' As faixas de idade passam a ser editáveis quando o banco for atualizado.'}</p>
+              {mudouIdades && <p role="note" className="flex items-start gap-1.5 text-[0.75rem] text-warning"><Icon icon="solar:info-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />Ao salvar, as novas faixas valem para todas as tarifas e para o site.</p>}
+            </fieldset>
 
-            <label className="flex min-h-11 items-center gap-2 text-[0.875rem] sm:col-span-2"><input type="checkbox" className="h-5 w-5 accent-pine" checked={t.ativo} onChange={(e) => setT({ ...t, ativo: e.target.checked })} />Tarifa ativa (à venda no site)</label>
+            <label className="flex min-h-11 items-center gap-2 border-t border-line-1 pt-4 text-[0.875rem]"><input type="checkbox" className="h-5 w-5 accent-pine" checked={t.ativo} onChange={(e) => setT({ ...t, ativo: e.target.checked })} />Tarifa ativa (à venda no site)</label>
 
-            {erros.length > 0 && <ul className="flex flex-col gap-1 text-[0.8125rem] text-warning sm:col-span-2" role="alert">{erros.map((x) => <li key={x} className="flex items-start gap-1.5"><Icon icon="solar:danger-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />{x}</li>)}</ul>}
-            <div className="flex flex-wrap gap-3 sm:col-span-2">
-              <button type="button" className={`${btnSecondary} !w-auto`} onClick={() => navigate('/admin/tarifas')}>Cancelar</button>
-              <button type="submit" className={`${btnPrimary} !w-auto`} disabled={erros.length > 0 || salvando}><Icon icon="solar:diskette-linear" width={18} aria-hidden="true" />{salvando ? 'Salvando…' : 'Salvar tarifa'}</button>
+            {erros.length > 0 && <ul className="flex flex-col gap-1 text-[0.8125rem] text-warning" role="alert">{erros.map((x) => <li key={x} className="flex items-start gap-1.5"><Icon icon="solar:danger-circle-linear" width={16} className="mt-0.5 shrink-0" aria-hidden="true" />{x}</li>)}</ul>}
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className={`${btnSecondary} max-sm:flex-1 sm:!w-auto`} onClick={() => navigate('/admin/tarifas')}>Cancelar</button>
+              <button type="submit" className={`${btnPrimary} max-sm:flex-1 sm:!w-auto`} disabled={erros.length > 0 || salvando}><Icon icon="solar:diskette-linear" width={18} aria-hidden="true" />{salvando ? 'Salvando…' : 'Salvar tarifa'}</button>
             </div>
           </div>
 
           <aside className={`${card} flex flex-col gap-3 p-4`} aria-label="Exemplo de conta">
-            <h2 className="font-sans text-xs font-normal uppercase tracking-[0.08em] text-fg-2">Exemplo de conta</h2>
-            <p className="text-[0.75rem] text-fg-3">{un.atual.nome}</p>
-            <p className="text-[0.75rem] text-fg-3">Casal com 1 criança de 5 a 8 anos, por noite.</p>
+            <h2 className={secao}>Exemplo de conta</h2>
+            <p className="text-[0.75rem] text-fg-3">{un.atual.nome} · casal com 1 criança de {fx.menor}, por noite.</p>
             <dl className="flex flex-col gap-1.5 text-[0.8125rem]">
-              <div className="flex justify-between gap-3"><dt className="text-fg-3">Domingo a quinta</dt><dd className="font-mono text-fg-1">{brl(exemplo(t.valorNoite))}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-fg-3">Sexta a domingo</dt><dd className="font-mono text-fg-1">{brl(exemplo(fdsIgual ? t.valorNoite : t.valorFds ?? t.valorNoite))}</dd></div>
+              {dias1.length > 0 && <div className="flex justify-between gap-3"><dt className="text-fg-3">{rotuloDias(dias1)}</dt><dd className="font-mono text-fg-1">{brl(exemplo(t.valorNoite))}</dd></div>}
+              {temV2 && <div className="flex justify-between gap-3"><dt className="text-fg-3">{rotuloDias(t.diasFds)}</dt><dd className="font-mono text-fg-1">{brl(exemplo(num(v2) ?? 0))}</dd></div>}
             </dl>
             <p className="text-[0.75rem] text-fg-3">Confira também no <Link to="/admin/simulador" className="text-pine underline underline-offset-4">simulador de preço</Link> depois de salvar.</p>
           </aside>
