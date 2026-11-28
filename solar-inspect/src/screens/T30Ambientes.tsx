@@ -178,8 +178,6 @@ export function T30Ambientes() {
 
       <ul className="flex flex-col gap-4" data-lista="amb">
         {ambs.map((a, ai) => {
-          const ativosA = a.itens.filter((i) => i.ativo);
-          const criticos = ativosA.filter((i) => i.critico).length;
           return (
             <li key={a.id} className={`${card} overflow-hidden bg-white`} data-ambiente={a.nome} data-arrastar style={estilo('amb', ai)}>
               {/* cabeçalho do ambiente: alça · ícone · nome inteiro · ações, tudo na mesma linha de centro */}
@@ -188,9 +186,7 @@ export function T30Ambientes() {
                 <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cream text-pine ${a.ativo ? '' : 'opacity-50'}`}><Icon icon={iconeAmbiente(a.nome)} width={22} aria-hidden="true" /></span>
                 <div className={`min-w-0 flex-1 ${a.ativo ? '' : 'opacity-60'}`}>
                   <p className="text-[0.9375rem] font-medium leading-snug text-fg-1 [overflow-wrap:anywhere]">{a.nome}</p>
-                  <p className="text-[0.75rem] leading-snug text-fg-3">
-                    {a.ativo ? `${ativosA.length} ${ativosA.length === 1 ? 'item' : 'itens'}${criticos ? ` · ${criticos} crítico${criticos > 1 ? 's' : ''}` : ''}` : 'Oculto: não aparece nas vistorias'}
-                  </p>
+                  {!a.ativo && <p className="text-[0.75rem] leading-snug text-fg-3">Oculto: não aparece nas vistorias</p>}
                 </div>
                 <div className="flex shrink-0 items-center">
                   <BotaoIcone icone="solar:pen-linear" rotulo={`Renomear ${a.nome}`} onClick={() => abrirAmbiente(a)} />
