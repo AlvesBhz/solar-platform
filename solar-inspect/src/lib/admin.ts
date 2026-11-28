@@ -283,7 +283,6 @@ export function validarTipo(t: Omit<Tipo, 'id'>, novo: boolean): string[] {
   const e: string[] = [];
   if (novo && !/^[A-Z0-9_]{2,40}$/.test(t.codigo)) e.push('Código: 2 a 40 letras MAIÚSCULAS, números ou _ (ex.: ROTINA_MENSAL).');
   if (t.nome.trim().length < 2 || t.nome.trim().length > 60) e.push('Nome: 2 a 60 caracteres.');
-  if (t.comportamento === 'ROTINA' && !t.periodicidade) e.push('Rotina precisa de periodicidade.');
   if (t.perfis.length === 0) e.push('Escolha ao menos um perfil de campo que faz este tipo.');
   return e;
 }
